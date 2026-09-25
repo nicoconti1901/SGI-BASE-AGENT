@@ -58,7 +58,7 @@ Completado hasta **Task 4**:
 
 - Auth multi-tenant (Better Auth + Prisma) y seed de superusuario.
 - Design system “precision ledger” + shells `/platform` y `/portal`.
-- **Catálogo ISO** (`IsoRequirement`): 27 requisitos seed (esenciales + escalables) con UI filtrable en `/platform/catalog`.
+- **Catálogo ISO** (`IsoRequirement`): mapa completo de cláusulas 9001/14001/45001 (~159), con filtro **Solo esenciales · empresas primerizas** (~64 requisitos baseline).
 
 Siguiente: provisionamiento de tenants (Task 5).
 
