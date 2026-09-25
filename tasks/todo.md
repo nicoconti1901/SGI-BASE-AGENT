@@ -104,13 +104,13 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Tenant admin / superuser can invite users; assign roles; users sign in scoped to tenant.
 
 **Acceptance criteria:**
-- [ ] Invite + role assignment works for the five roles
-- [ ] Middleware/session includes `tenantId` + role
-- [ ] Viewer cannot mutate; contributor can limited writes (policy documented)
+- [x] Invite + role assignment works for the five roles
+- [x] Middleware/session includes `tenantId` + role
+- [x] Viewer cannot mutate; contributor can limited writes (policy documented)
 
 **Verification:**
-- [ ] Authz unit tests per role
-- [ ] Manual: invite user, login, see correct nav
+- [x] Authz unit tests per role
+- [x] Manual: invite user, login, see correct nav
 
 **Dependencies:** Task 5  
 **Files likely touched:** `src/lib/authz.ts`, `src/app/(tenant)/users/`, tests  
@@ -120,9 +120,9 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ## Checkpoint A: After Tasks 1–6
 
-- [ ] All tests pass
-- [ ] Build succeeds
-- [ ] Flow: superuser login → create tenant → invite user → tenant login
+- [x] All tests pass
+- [x] Build succeeds
+- [x] Flow: superuser login → create tenant → invite user → tenant login
 - [ ] Human review before Phase 2
 
 ---

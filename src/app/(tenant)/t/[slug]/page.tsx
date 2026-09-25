@@ -1,6 +1,10 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
+import { getAppSessionContext } from "@/lib/session";
+import { getMembership } from "@/lib/identity";
+import { ActivateTenantButton } from "@/app/(tenant)/t/[slug]/ActivateTenantButton";
+import { canTenantRole } from "@/domain/identity/authz";
 
 type Params = Promise<{ slug: string }>;
 
@@ -15,6 +19,32 @@ export default async function TenantPortalBySlugPage({
     notFound();
   }
 
+  const ctx = await getAppSessionContext();
+  if (!ctx) {
+    redirect("/login");
+  }
+
+  const membership = await getMembership(ctx.userId, tenant.id);
+  if (!membership && !ctx.isPlatformSuperuser) {
+    return (
+      <div className="mx-auto max-w-2xl">
+        <h1 className="font-[family-name:var(--font-display)] text-3xl">
+          Sin membresía
+        </h1>
+        <p className="mt-3 text-[var(--color-ink-muted)]">
+          {ctx.email} no es miembro de <strong>{tenant.name}</strong>.
+        </p>
+      </div>
+    );
+  }
+
+  const canInvite = canTenantRole(membership?.role, "invite_users", {
+    isPlatformSuperuser: ctx.isPlatformSuperuser,
+  });
+  const canWrite = canTenantRole(membership?.role, "write", {
+    isPlatformSuperuser: ctx.isPlatformSuperuser,
+  });
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div>
@@ -25,23 +55,41 @@ export default async function TenantPortalBySlugPage({
           {tenant.name}
         </h1>
         <p className="mt-2 text-[var(--color-ink-muted)]">
-          Tenant <strong>{tenant.slug}</strong> · perfil {tenant.size} /{" "}
-          {tenant.activity}. Plantilla con{" "}
-          <strong>{tenant._count.requirements}</strong> requisitos ISO.
+          Tenant <strong>{tenant.slug}</strong> · {tenant.size} / {tenant.activity}{" "}
+          · {tenant._count.requirements} requisitos
+        </p>
+        <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+          Sesión {ctx.email}
+          {membership ? ` · ${membership.role}` : " · platform_superuser"}
+          {ctx.tenantId === tenant.id ? " · activo" : ""}
+          {" · "}
+          {canWrite ? "puede editar" : "solo lectura"}
         </p>
       </div>
 
-      <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface)] px-5 py-8 text-sm text-[var(--color-ink-muted)]">
-        Shell path-based listo. En Task 6 se conectan usuarios del tenant; el
-        dashboard de cumplimiento llega en Task 12.
+      <div className="flex flex-wrap gap-2">
+        <ActivateTenantButton slug={slug} />
+        {canInvite ? (
+          <Link
+            href={`/t/${slug}/users`}
+            className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white"
+          >
+            Gestionar usuarios
+          </Link>
+        ) : (
+          <Link
+            href={`/t/${slug}/users`}
+            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+          >
+            Ver usuarios
+          </Link>
+        )}
       </div>
 
-      <Link
-        href="/portal"
-        className="text-sm font-medium text-[var(--color-accent)] hover:underline"
-      >
-        Ver shell genérico `/portal`
-      </Link>
+      <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface)] px-5 py-8 text-sm text-[var(--color-ink-muted)]">
+        Identity-access listo. Viewer no muta; contributor escribe; tenant_admin
+        invita. El gap analysis llega en Task 7.
+      </div>
     </div>
   );
 }
