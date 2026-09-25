@@ -16,20 +16,28 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const result = await authClient.signIn.email({
-      email,
-      password,
-    });
+    try {
+      const result = await authClient.signIn.email({
+        email,
+        password,
+      });
 
-    setLoading(false);
+      if (result.error) {
+        setError(result.error.message ?? "No se pudo iniciar sesión");
+        return;
+      }
 
-    if (result.error) {
-      setError(result.error.message ?? "No se pudo iniciar sesión");
-      return;
+      router.push("/platform");
+      router.refresh();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Error de red al iniciar sesión";
+      setError(
+        `${message}. Revisá que la app y la API usen el mismo origen (mismo puerto).`,
+      );
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/platform");
-    router.refresh();
   }
 
   return (
