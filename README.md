@@ -54,15 +54,13 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Ya está en marcha el **corte técnico de la Task 2**:
+Completado hasta **Task 3**:
 
-- Schema Prisma con usuarios, sesiones, tenants, memberships y aislamiento por `tenantId`.
-- Better Auth montado en `/api/auth/[...all]`.
-- Página `/login` y panel `/platform` (protegido).
-- Seed del superusuario de plataforma.
-- Tests de aislamiento multi-tenant (unitarios + integración contra Postgres).
+- Auth multi-tenant (Better Auth + Prisma) y seed de superusuario.
+- **Design system “precision ledger”**: tokens en `src/styles/tokens.css`, tipografía Fraunces + Source Sans 3.
+- Shells accesibles de **plataforma** (`/platform`) y **portal tenant** (`/portal`) con landmarks `nav` / `main`.
 
-Lo que sigue es el design system / shell (Task 3) y el catálogo ISO (Task 4).
+Siguiente: catálogo ISO (Task 4).
 
 ---
 
