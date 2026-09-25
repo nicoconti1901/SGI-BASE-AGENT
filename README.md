@@ -54,13 +54,13 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado hasta **Task 3**:
+Completado hasta **Task 4**:
 
 - Auth multi-tenant (Better Auth + Prisma) y seed de superusuario.
-- **Design system “precision ledger”**: tokens en `src/styles/tokens.css`, tipografía Fraunces + Source Sans 3.
-- Shells accesibles de **plataforma** (`/platform`) y **portal tenant** (`/portal`) con landmarks `nav` / `main`.
+- Design system “precision ledger” + shells `/platform` y `/portal`.
+- **Catálogo ISO** (`IsoRequirement`): 27 requisitos seed (esenciales + escalables) con UI filtrable en `/platform/catalog`.
 
-Siguiente: catálogo ISO (Task 4).
+Siguiente: provisionamiento de tenants (Task 5).
 
 ---
 
