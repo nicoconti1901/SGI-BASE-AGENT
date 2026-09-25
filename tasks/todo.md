@@ -28,13 +28,13 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Add PostgreSQL/Prisma models for `Tenant`, `User`, membership/roles; integrate Better Auth (or document Auth.js fallback); seed one platform superuser via env.
 
 **Acceptance criteria:**
-- [ ] Migrations apply cleanly
-- [ ] Superuser can sign in
-- [ ] Queries are tenant-scoped helpers (deny cross-tenant by default)
+- [x] Migrations apply cleanly
+- [x] Superuser can sign in
+- [x] Queries are tenant-scoped helpers (deny cross-tenant by default)
 
 **Verification:**
-- [ ] Unit/integration test: two tenants cannot read each other’s rows
-- [ ] Manual: login as superuser
+- [x] Unit/integration test: two tenants cannot read each other’s rows
+- [x] Manual: login as superuser
 
 **Dependencies:** Task 1  
 **Files likely touched:** `prisma/schema.prisma`, `src/lib/auth.ts`, `src/lib/db.ts`, `tests/...`  
