@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { prisma } from "@/lib/db";
+import { labelGapStatus, type RequirementStatus } from "@/domain/assessment/gap";
 
 type Params = Promise<{ slug: string }>;
 
@@ -54,8 +55,14 @@ export default async function TenantDetailPage({ params }: { params: Params }) {
 
       <div className="flex flex-wrap gap-3">
         <Link
-          href={`/t/${tenant.slug}`}
+          href={`/platform/tenants/${tenant.slug}/gap`}
           className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white"
+        >
+          Cargar gap / assessment
+        </Link>
+        <Link
+          href={`/t/${tenant.slug}`}
+          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
         >
           Abrir portal `/t/{tenant.slug}`
         </Link>
@@ -75,6 +82,7 @@ export default async function TenantDetailPage({ params }: { params: Params }) {
               <th className="px-4 py-3 font-medium">Cláusula</th>
               <th className="px-4 py-3 font-medium">Título</th>
               <th className="px-4 py-3 font-medium">Tipo</th>
+              <th className="px-4 py-3 font-medium">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -92,6 +100,9 @@ export default async function TenantDetailPage({ params }: { params: Params }) {
                 <td className="px-4 py-3">{row.requirement.title}</td>
                 <td className="px-4 py-3">
                   {row.requirement.essential ? "Esencial" : "Escalable"}
+                </td>
+                <td className="px-4 py-3">
+                  {labelGapStatus(row.status as RequirementStatus)}
                 </td>
               </tr>
             ))}

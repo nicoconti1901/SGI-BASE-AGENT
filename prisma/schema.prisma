@@ -24,18 +24,35 @@ enum IsoStandard {
   ISO45001
 }
 
+enum GapStatus {
+  pending
+  not_applicable
+  missing
+  partial
+  compliant
+  automated
+}
+
+enum DocumentFate {
+  keep
+  replace
+  create
+  undecided
+}
+
 model User {
-  id            String        @id @default(cuid())
+  id            String               @id @default(cuid())
   name          String
   email         String
-  emailVerified Boolean       @default(false)
+  emailVerified Boolean              @default(false)
   image         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
   platformRole  PlatformRole?
   sessions      Session[]
   accounts      Account[]
   memberships   Membership[]
+  gapAudits     GapAssessmentAudit[]
 
   @@unique([email])
   @@map("user")
@@ -151,17 +168,47 @@ model IsoRequirement {
 
 /// Requirement assigned to a tenant from the catalog template (Task 5).
 model TenantRequirement {
-  id            String         @id @default(cuid())
-  tenantId      String
-  requirementId String
-  status        String         @default("pending")
-  source        String         @default("template")
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  requirement   IsoRequirement @relation(fields: [requirementId], references: [id], onDelete: Restrict)
+  id                String               @id @default(cuid())
+  tenantId          String
+  requirementId     String
+  status            GapStatus            @default(pending)
+  source            String               @default("template")
+  notes             String?
+  hasClientDocument Boolean              @default(false)
+  documentFate      DocumentFate         @default(undecided)
+  assessedAt        DateTime?
+  assessedByUserId  String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  tenant            Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  requirement       IsoRequirement       @relation(fields: [requirementId], references: [id], onDelete: Restrict)
+  audits            GapAssessmentAudit[]
 
   @@unique([tenantId, requirementId])
   @@index([tenantId])
+  @@index([tenantId, status])
   @@map("tenant_requirement")
+}
+
+/// Auditoría de cambios de gap por requisito (Task 7).
+model GapAssessmentAudit {
+  id                   String            @id @default(cuid())
+  tenantId             String
+  tenantRequirementId  String
+  userId               String
+  previousStatus       GapStatus
+  newStatus            GapStatus
+  previousNotes        String?
+  newNotes             String?
+  previousHasDocument  Boolean
+  newHasDocument       Boolean
+  previousDocumentFate DocumentFate
+  newDocumentFate      DocumentFate
+  createdAt            DateTime          @default(now())
+  tenantRequirement    TenantRequirement @relation(fields: [tenantRequirementId], references: [id], onDelete: Cascade)
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantRequirementId])
+  @@map("gap_assessment_audit")
 }

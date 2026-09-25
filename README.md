@@ -54,12 +54,12 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado hasta **Task 6** + Checkpoint A (pendiente solo tu review humana):
+Completado hasta **Task 7** (assessment-gap):
 
-- Auth, design system, catálogo ISO, provisionamiento de tenants.
-- **Identity-access**: invitar usuarios a `/t/[slug]/users`, roles en español (Consulta, Colaborador, Responsable de proceso, Administrador de la organización), `activeTenantId` en sesión y política authz documentada.
+- Auth, design system, catálogo ISO, provisionamiento de tenants e identity-access.
+- **Gap analysis**: en `/platform/tenants/[slug]/gap` el administrador de plataforma carga estado por requisito (Pendiente, No aplica, Faltante, Parcial, Conforme, Automatizado), marca si hay documento del cliente, deja notas y guarda en lote. El destino documental (Conservar / Reemplazar / Crear) se calcula con `decideDocumentFate`. Cada cambio queda en `gap_assessment_audit`.
 
-Siguiente (Phase 2): assessment-gap (Task 7), tras tu OK del Checkpoint A.
+Siguiente: Task 8 — control documental + object storage.
 
 ---
 
@@ -186,8 +186,8 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 1. `ims-catalog` — catálogo de requisitos ISO  
 2. `tenant-provisioning` — alta de empresa y plantilla inicial  
 3. `identity-access` — usuarios, roles y sesiones  
-4. `assessment-gap` — carga de gap por superusuario  
-5. `document-control` — procedimientos, registros y versiones  
+4. `assessment-gap` — carga de gap por superusuario ✅  
+5. `document-control` — procedimientos, registros y versiones ← siguiente  
 6. `automation-offers` — motor de vencimientos + ofertas  
 7. `operations-core` — NC, riesgos, auditorías, indicadores  
 8. `client-portal` — UI para operar el SGI configurado  

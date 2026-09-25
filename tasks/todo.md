@@ -123,7 +123,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 - [x] All tests pass
 - [x] Build succeeds
 - [x] Flow: superuser login → create tenant → invite user → tenant login
-- [ ] Human review before Phase 2
+- [x] Human review before Phase 2 (continuar con Task 7 a pedido)
 
 ---
 
@@ -132,13 +132,13 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Superuser loads per-requirement status (missing/partial/compliant/N/A) and notes for a tenant; decide keep/replace/create hints.
 
 **Acceptance criteria:**
-- [ ] Gap form per tenant requirement
-- [ ] Bulk save; audit of who changed what
-- [ ] Domain function `decideDocumentFate` used
+- [x] Gap form per tenant requirement
+- [x] Bulk save; audit of who changed what
+- [x] Domain function `decideDocumentFate` used
 
 **Verification:**
-- [ ] Unit tests for fate rules
-- [ ] Manual: load gap for a tenant
+- [x] Unit tests for fate rules
+- [x] Manual: load gap for a tenant
 
 **Dependencies:** Checkpoint A  
 **Files likely touched:** `src/domain/assessment/`, `src/app/(platform)/tenants/[id]/gap/`, tests  
