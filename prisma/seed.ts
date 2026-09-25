@@ -69,8 +69,19 @@ async function seedCatalog() {
     });
   }
 
+  const keys = ESSENTIAL_CATALOG_SEED.map((r) => r.clauseKey);
+  const removed = await prisma.isoRequirement.deleteMany({
+    where: { clauseKey: { notIn: keys } },
+  });
+
   const count = await prisma.isoRequirement.count();
-  console.log(`Catálogo ISO: ${count} requisitos (seed upsert OK)`);
+  const essentials = await prisma.isoRequirement.count({
+    where: { essential: true },
+  });
+  console.log(
+    `Catálogo ISO: ${count} requisitos (${essentials} esenciales para primerizas)` +
+      (removed.count ? `; eliminados obsoletos: ${removed.count}` : ""),
+  );
 }
 
 async function main() {

@@ -5,12 +5,23 @@ import {
   filterRequirements,
   type CatalogRequirement,
 } from "@/domain/ims/catalog";
-import { ESSENTIAL_CATALOG_SEED } from "@/domain/ims/seed-data";
+import {
+  ESSENTIAL_CATALOG_SEED,
+  catalogStats,
+} from "@/domain/ims/seed-data";
 
 describe("ims catalog seed invariants", () => {
   it("has requirements for all three standards", () => {
     const standards = new Set(ESSENTIAL_CATALOG_SEED.map((r) => r.standard));
     expect(standards).toEqual(new Set(["ISO9001", "ISO14001", "ISO45001"]));
+  });
+
+  it("covers the full operational clause map (not a tiny sample)", () => {
+    const stats = catalogStats();
+    expect(stats.total).toBeGreaterThanOrEqual(140);
+    expect(stats.byStandard.ISO9001.total).toBeGreaterThanOrEqual(55);
+    expect(stats.byStandard.ISO14001.total).toBeGreaterThanOrEqual(35);
+    expect(stats.byStandard.ISO45001.total).toBeGreaterThanOrEqual(45);
   });
 
   it("rejects duplicate clause keys", () => {
@@ -23,12 +34,16 @@ describe("ims catalog seed invariants", () => {
     expect(() => assertUniqueClauseKeys(withDup)).toThrow(/duplicate clauseKey/i);
   });
 
-  it("marks at least one essential requirement per standard", () => {
+  it("marks a primerizas baseline (essential) per standard", () => {
+    const stats = catalogStats();
+    expect(stats.essential).toBeGreaterThan(40);
+    expect(stats.essential).toBeLessThan(90);
+    expect(stats.scalable).toBeGreaterThan(50);
     for (const standard of ["ISO9001", "ISO14001", "ISO45001"] as const) {
-      const essentials = ESSENTIAL_CATALOG_SEED.filter(
-        (r) => r.standard === standard && r.essential,
+      expect(stats.byStandard[standard].essential).toBeGreaterThan(15);
+      expect(stats.byStandard[standard].essential).toBeLessThan(
+        stats.byStandard[standard].total,
       );
-      expect(essentials.length).toBeGreaterThan(0);
     }
   });
 });
@@ -40,15 +55,11 @@ describe("ims catalog lookup helpers", () => {
     expect(findByClauseKey(ESSENTIAL_CATALOG_SEED, "missing")).toBeNull();
   });
 
-  it("filters by standard and essential flag", () => {
-    const only9001 = filterRequirements(ESSENTIAL_CATALOG_SEED, {
-      standard: "ISO9001",
-    });
-    expect(only9001.every((r) => r.standard === "ISO9001")).toBe(true);
-
+  it("filters essentials for primerizas companies", () => {
     const essentials = filterRequirements(ESSENTIAL_CATALOG_SEED, {
       essential: true,
     });
     expect(essentials.every((r) => r.essential)).toBe(true);
+    expect(essentials.length).toBe(catalogStats().essential);
   });
 });
