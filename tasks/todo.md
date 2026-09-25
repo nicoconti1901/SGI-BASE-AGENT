@@ -85,13 +85,13 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Superuser creates tenant (name, slug/URL, size, activity); system applies essential requirement template from catalog.
 
 **Acceptance criteria:**
-- [ ] Tenant created with unique slug
-- [ ] Essential requirements assigned based on size + activity rules (documented defaults)
-- [ ] Tenant reachable at configured path/subdomain strategy (path-based MVP OK)
+- [x] Tenant created with unique slug
+- [x] Essential requirements assigned based on size + activity rules (documented defaults)
+- [x] Tenant reachable at configured path/subdomain strategy (path-based MVP OK)
 
 **Verification:**
-- [ ] Integration test: create tenant → template rows exist
-- [ ] Manual: create tenant from platform UI
+- [x] Integration test: create tenant → template rows exist
+- [x] Manual: create tenant from platform UI
 
 **Dependencies:** Task 4  
 **Files likely touched:** `src/domain/tenant/`, `src/app/(platform)/tenants/`, `prisma/`  
