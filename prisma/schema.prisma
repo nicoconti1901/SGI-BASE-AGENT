@@ -18,6 +18,12 @@ enum TenantRole {
   viewer
 }
 
+enum IsoStandard {
+  ISO9001
+  ISO14001
+  ISO45001
+}
+
 model User {
   id            String        @id @default(cuid())
   name          String
@@ -122,4 +128,21 @@ model Document {
 
   @@index([tenantId])
   @@map("document")
+}
+
+/// Global ISO requirement catalog (Task 4). Shared across tenants.
+model IsoRequirement {
+  id         String      @id @default(cuid())
+  standard   IsoStandard
+  clauseCode String
+  clauseKey  String      @unique
+  title      String
+  summary    String
+  essential  Boolean     @default(false)
+  tags       String[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([standard, essential])
+  @@map("iso_requirement")
 }

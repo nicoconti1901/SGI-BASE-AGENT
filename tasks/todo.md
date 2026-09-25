@@ -66,13 +66,13 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Model ISO requirements (9001/14001/45001), essential vs scalable flags, seed essential set; platform UI to browse catalog.
 
 **Acceptance criteria:**
-- [ ] Seed loads essential requirements for three standards
-- [ ] Domain helpers for lookup by standard/clause
-- [ ] Superuser can list/filter catalog
+- [x] Seed loads essential requirements for three standards
+- [x] Domain helpers for lookup by standard/clause
+- [x] Superuser can list/filter catalog
 
 **Verification:**
-- [ ] Unit tests for seed invariants (no duplicate clause keys)
-- [ ] Manual: catalog page shows seeded rows
+- [x] Unit tests for seed invariants (no duplicate clause keys)
+- [x] Manual: catalog page shows seeded rows
 
 **Dependencies:** Task 2, Task 3  
 **Files likely touched:** `src/domain/ims/`, `prisma/`, `src/app/(platform)/catalog/`, `tests/`  
