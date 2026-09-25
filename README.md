@@ -54,13 +54,12 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado hasta **Task 4**:
+Completado hasta **Task 5**:
 
-- Auth multi-tenant (Better Auth + Prisma) y seed de superusuario.
-- Design system “precision ledger” + shells `/platform` y `/portal`.
-- **Catálogo ISO** (`IsoRequirement`): mapa completo de cláusulas 9001/14001/45001 (~159), con filtro **Solo esenciales · empresas primerizas** (~64 requisitos baseline).
+- Auth multi-tenant + design system + catálogo ISO completo.
+- **Provisionamiento de tenants**: alta desde `/platform/tenants`, plantilla por tamaño/actividad, portal path-based `/t/[slug]`.
 
-Siguiente: provisionamiento de tenants (Task 5).
+Siguiente: usuarios y roles de tenant (Task 6) → luego Checkpoint A.
 
 ---
 
