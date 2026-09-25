@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { canTenantRole } from "@/domain/identity/authz";
+import {
+  canTenantRole,
+  labelTenantRole,
+  PLATFORM_ROLE_LABEL,
+  TENANT_ROLE_LABELS,
+} from "@/domain/identity/authz";
 
 describe("tenant authz policy", () => {
   it("viewer cannot mutate", () => {
@@ -23,5 +28,16 @@ describe("tenant authz policy", () => {
     expect(
       canTenantRole(null, "invite_users", { isPlatformSuperuser: true }),
     ).toBe(true);
+  });
+
+  it("exposes professional Spanish labels", () => {
+    expect(TENANT_ROLE_LABELS.viewer).toBe("Consulta");
+    expect(TENANT_ROLE_LABELS.contributor).toBe("Colaborador");
+    expect(TENANT_ROLE_LABELS.process_owner).toBe("Responsable de proceso");
+    expect(TENANT_ROLE_LABELS.tenant_admin).toBe(
+      "Administrador de la organización",
+    );
+    expect(labelTenantRole("process_owner")).toBe("Responsable de proceso");
+    expect(PLATFORM_ROLE_LABEL).toBe("Administrador de plataforma");
   });
 });

@@ -57,7 +57,7 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 Completado hasta **Task 6** + Checkpoint A (pendiente solo tu review humana):
 
 - Auth, design system, catálogo ISO, provisionamiento de tenants.
-- **Identity-access**: invitar usuarios a `/t/[slug]/users`, roles (viewer/contributor/process_owner/tenant_admin), `activeTenantId` en sesión y política authz documentada.
+- **Identity-access**: invitar usuarios a `/t/[slug]/users`, roles en español (Consulta, Colaborador, Responsable de proceso, Administrador de la organización), `activeTenantId` en sesión y política authz documentada.
 
 Siguiente (Phase 2): assessment-gap (Task 7), tras tu OK del Checkpoint A.
 
@@ -138,13 +138,17 @@ Abrí [http://localhost:3000](http://localhost:3000) → **Iniciar sesión** →
 
 ### Roles
 
-| Rol | Ámbito | Uso |
-|---|---|---|
-| `platform_superuser` | Plataforma | Implementador: ve tenants, carga gaps, provisiona |
-| `tenant_admin` | Tenant | Administra usuarios y configuración de la empresa |
-| `process_owner` | Tenant | Responsable de procesos / requisitos |
-| `contributor` | Tenant | Alta y edición limitada |
-| `viewer` | Tenant | Solo lectura |
+Los valores técnicos en base de datos siguen en inglés; en la UI se muestran nombres profesionales en español:
+
+| Código (DB) | Nombre en UI | Ámbito | Uso |
+|---|---|---|---|
+| `platform_superuser` | Administrador de plataforma | Plataforma | Implementador: ve tenants, carga gaps, provisiona |
+| `tenant_admin` | Administrador de la organización | Tenant | Gestiona usuarios, roles y configuración del SGI |
+| `process_owner` | Responsable de proceso | Tenant | Lidera procesos y puede eliminar registros operativos |
+| `contributor` | Colaborador | Tenant | Carga y actualiza información del sistema de gestión |
+| `viewer` | Consulta | Tenant | Solo lectura |
+
+Las etiquetas viven en `src/domain/identity/authz.ts` (`TENANT_ROLE_LABELS`, `PLATFORM_ROLE_LABEL`).
 
 El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers en `src/domain/tenancy` y `src/lib/tenant-queries.ts`. Un usuario de tenant A no puede leer recursos de tenant B. El superusuario puede operar sobre un tenant **explícito**, no “todo mezclado”.
 

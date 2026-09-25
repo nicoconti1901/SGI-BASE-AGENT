@@ -5,6 +5,11 @@ import {
   inviteMemberAction,
   type InviteState,
 } from "@/app/(tenant)/t/[slug]/users/actions";
+import {
+  TENANT_ROLE_DESCRIPTIONS,
+  TENANT_ROLE_LABELS,
+  TENANT_ROLE_OPTIONS,
+} from "@/domain/identity/authz";
 
 const initial: InviteState = {};
 
@@ -59,12 +64,21 @@ export function InviteMemberForm({ slug }: { slug: string }) {
           defaultValue="contributor"
           className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         >
-          <option value="tenant_admin">tenant_admin</option>
-          <option value="process_owner">process_owner</option>
-          <option value="contributor">contributor</option>
-          <option value="viewer">viewer</option>
+          {TENANT_ROLE_OPTIONS.map((role) => (
+            <option key={role} value={role}>
+              {TENANT_ROLE_LABELS[role]}
+            </option>
+          ))}
         </select>
       </label>
+      <ul className="space-y-1 text-xs text-[var(--color-ink-subtle)]">
+        {TENANT_ROLE_OPTIONS.map((role) => (
+          <li key={role}>
+            <strong>{TENANT_ROLE_LABELS[role]}:</strong>{" "}
+            {TENANT_ROLE_DESCRIPTIONS[role]}
+          </li>
+        ))}
+      </ul>
 
       {state.error ? (
         <p className="text-sm text-[var(--color-danger)]">{state.error}</p>

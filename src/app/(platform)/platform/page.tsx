@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PLATFORM_ROLE_LABEL } from "@/domain/identity/authz";
 import { getSession } from "@/lib/session";
 
 export default async function PlatformHomePage() {
@@ -16,18 +17,18 @@ export default async function PlatformHomePage() {
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]">
-          Panel de superusuario
+          Panel de plataforma
         </h1>
         <p className="mt-2 text-[var(--color-ink-muted)]">
           Sesión iniciada como <strong>{session.user.email}</strong>
-          {isSuperuser ? " (platform_superuser)" : ""}.
+          {isSuperuser ? ` (${PLATFORM_ROLE_LABEL})` : ""}.
         </p>
       </div>
 
       {!isSuperuser ? (
         <p className="rounded-[var(--radius-lg)] border border-[var(--color-warning)]/30 bg-[var(--color-warning-soft)] px-4 py-3 text-sm text-[var(--color-warning)]">
-          Esta cuenta no tiene rol de superusuario de plataforma. El portal de tenant se
-          construye en tareas posteriores.
+          Esta cuenta no tiene rol de {PLATFORM_ROLE_LABEL.toLowerCase()}. El
+          portal de tenant se construye en tareas posteriores.
         </p>
       ) : (
         <p className="rounded-[var(--radius-lg)] border border-[var(--color-success)]/25 bg-[var(--color-success-soft)] px-4 py-3 text-sm text-[var(--color-success)]">

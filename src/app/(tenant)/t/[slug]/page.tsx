@@ -4,7 +4,10 @@ import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getAppSessionContext } from "@/lib/session";
 import { getMembership } from "@/lib/identity";
 import { ActivateTenantButton } from "@/app/(tenant)/t/[slug]/ActivateTenantButton";
-import { canTenantRole } from "@/domain/identity/authz";
+import {
+  canTenantRole,
+  labelPlatformOrTenantRole,
+} from "@/domain/identity/authz";
 
 type Params = Promise<{ slug: string }>;
 
@@ -60,7 +63,14 @@ export default async function TenantPortalBySlugPage({
         </p>
         <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
           Sesión {ctx.email}
-          {membership ? ` · ${membership.role}` : " · platform_superuser"}
+          {" · "}
+          {labelPlatformOrTenantRole({
+            isPlatformSuperuser: ctx.isPlatformSuperuser && !membership,
+            tenantRole: membership?.role,
+          })}
+          {ctx.isPlatformSuperuser && membership
+            ? ` · también ${labelPlatformOrTenantRole({ isPlatformSuperuser: true })}`
+            : ""}
           {ctx.tenantId === tenant.id ? " · activo" : ""}
           {" · "}
           {canWrite ? "puede editar" : "solo lectura"}
@@ -87,8 +97,9 @@ export default async function TenantPortalBySlugPage({
       </div>
 
       <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface)] px-5 py-8 text-sm text-[var(--color-ink-muted)]">
-        Identity-access listo. Viewer no muta; contributor escribe; tenant_admin
-        invita. El gap analysis llega en Task 7.
+        Identity-access listo. Consulta no muta; Colaborador escribe;
+        Administrador de la organización invita. El gap analysis llega en Task
+        7.
       </div>
     </div>
   );
