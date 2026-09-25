@@ -47,13 +47,13 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Define CSS variables, typography, and a modern app shell (platform + tenant layouts) without purple-generic defaults.
 
 **Acceptance criteria:**
-- [ ] Tokens in `src/styles/`
-- [ ] Empty platform layout and tenant layout render with distinctive visual identity
-- [ ] Critical landmarks accessible (nav, main)
+- [x] Tokens in `src/styles/`
+- [x] Empty platform layout and tenant layout render with distinctive visual identity
+- [x] Critical landmarks accessible (nav, main)
 
 **Verification:**
-- [ ] Manual visual check desktop + tablet width
-- [ ] Build succeeds
+- [x] Manual visual check desktop + tablet width
+- [x] Build succeeds
 
 **Dependencies:** Task 1  
 **Files likely touched:** `src/styles/`, `src/app/(platform)/layout.tsx`, `src/app/(tenant)/layout.tsx`, shell components  

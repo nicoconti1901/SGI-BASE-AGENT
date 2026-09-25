@@ -1,0 +1,65 @@
+/**
+ * SGI Base — design tokens
+ * Direction: "precision ledger" — trust, audit clarity, industrial calm.
+ * Avoid: purple SaaS, cream+terracotta editorial, heavy glassmorphism.
+ */
+
+:root {
+  /* Surfaces */
+  --color-canvas: #e8edf2;
+  --color-surface: #f7f9fb;
+  --color-surface-raised: #ffffff;
+  --color-ink: #0b1320;
+  --color-ink-muted: #4a5568;
+  --color-ink-subtle: #7a8699;
+  --color-line: #c5ced9;
+  --color-line-strong: #8b98a8;
+
+  /* Accent — teal industrial (quality / environment), not purple */
+  --color-accent: #0f6e6a;
+  --color-accent-hover: #0b5754;
+  --color-accent-soft: #d4eeec;
+  --color-accent-ink: #073f3d;
+
+  /* Semantic */
+  --color-danger: #b42318;
+  --color-danger-soft: #fde8e6;
+  --color-success: #1b6b3a;
+  --color-success-soft: #e3f5ea;
+  --color-warning: #9a6700;
+  --color-warning-soft: #fff4d6;
+
+  /* Platform vs tenant shell tints */
+  --color-platform-rail: #0b1320;
+  --color-platform-rail-ink: #e8edf2;
+  --color-tenant-rail: #12353a;
+  --color-tenant-rail-ink: #e8f4f3;
+
+  /* Typography */
+  --font-display: var(--font-sgi-display), "Georgia", serif;
+  --font-sans: var(--font-sgi-sans), "Segoe UI", sans-serif;
+  --font-mono: var(--font-sgi-mono), ui-monospace, monospace;
+
+  /* Space rhythm (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* Radius — restrained, not pill-heavy */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  /* Elevation */
+  --shadow-soft: 0 1px 0 rgb(11 19 32 / 6%), 0 8px 24px rgb(11 19 32 / 6%);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 160ms;
+  --duration-med: 280ms;
+}

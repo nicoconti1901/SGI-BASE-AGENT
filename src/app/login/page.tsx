@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
@@ -43,17 +44,22 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-6">
       <div>
-        <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">SGI Base</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900">
+        <p className="text-xs uppercase tracking-[0.28em] text-[var(--color-ink-subtle)]">
+          SGI Base
+        </p>
+        <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]">
           Iniciar sesión
         </h1>
-        <p className="mt-2 text-zinc-600">
+        <p className="mt-2 text-[var(--color-ink-muted)]">
           Acceso para superusuario de plataforma y usuarios de tenant.
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <label className="flex flex-col gap-1 text-sm text-zinc-700">
+      <form
+        onSubmit={onSubmit}
+        className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-6 shadow-[var(--shadow-soft)]"
+      >
+        <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
           Email
           <input
             type="email"
@@ -61,10 +67,10 @@ export default function LoginPage() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 outline-none ring-zinc-400 focus:ring-2"
+            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)] outline-none focus:border-[var(--color-accent)]"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm text-zinc-700">
+        <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
           Contraseña
           <input
             type="password"
@@ -72,18 +78,24 @@ export default function LoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 outline-none ring-zinc-400 focus:ring-2"
+            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)] outline-none focus:border-[var(--color-accent)]"
           />
         </label>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? (
+          <p className="text-sm text-[var(--color-danger)]">{error}</p>
+        ) : null}
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
         >
           {loading ? "Ingresando…" : "Entrar"}
         </button>
       </form>
+
+      <Link href="/" className="text-sm text-[var(--color-accent)] hover:underline">
+        Volver al inicio
+      </Link>
     </main>
   );
 }
