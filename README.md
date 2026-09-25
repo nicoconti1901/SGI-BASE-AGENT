@@ -54,12 +54,12 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado hasta **Task 5**:
+Completado hasta **Task 6** + Checkpoint A (pendiente solo tu review humana):
 
-- Auth multi-tenant + design system + catálogo ISO completo.
-- **Provisionamiento de tenants**: alta desde `/platform/tenants`, plantilla por tamaño/actividad, portal path-based `/t/[slug]`.
+- Auth, design system, catálogo ISO, provisionamiento de tenants.
+- **Identity-access**: invitar usuarios a `/t/[slug]/users`, roles (viewer/contributor/process_owner/tenant_admin), `activeTenantId` en sesión y política authz documentada.
 
-Siguiente: usuarios y roles de tenant (Task 6) → luego Checkpoint A.
+Siguiente (Phase 2): assessment-gap (Task 7), tras tu OK del Checkpoint A.
 
 ---
 
