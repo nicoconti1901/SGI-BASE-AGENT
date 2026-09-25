@@ -151,13 +151,13 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Attach documents to requirements with versioning and validity; keep compliant client docs; upload to S3-compatible storage.
 
 **Acceptance criteria:**
-- [ ] Upload/download via storage adapter
-- [ ] Version history; current version pointer
-- [ ] Cannot overwrite `keep` docs without explicit superuser action
+- [x] Upload/download via storage adapter
+- [x] Version history; current version pointer
+- [x] Cannot overwrite `keep` docs without explicit superuser action
 
 **Verification:**
-- [ ] Integration test with storage mock
-- [ ] Manual: upload PDF, link to requirement
+- [x] Integration test with storage mock
+- [x] Manual: upload PDF, link to requirement
 
 **Dependencies:** Task 7  
 **Files likely touched:** `src/lib/storage.ts`, `src/domain/documents/`, `src/app/(tenant)/documents/`, platform document tools  
@@ -167,8 +167,8 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ## Checkpoint B: After Tasks 7–8
 
-- [ ] Tests pass; build succeeds
-- [ ] Flow: gap loaded → document keep/replace/create works
+- [x] Tests pass; build succeeds
+- [x] Flow: gap loaded → document keep/replace/create works
 - [ ] Human review before automation/ops
 
 ---

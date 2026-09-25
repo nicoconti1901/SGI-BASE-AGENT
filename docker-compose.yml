@@ -17,5 +17,20 @@ services:
       timeout: 5s
       retries: 10
 
+  minio:
+    image: minio/minio:latest
+    container_name: sgi-base-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: sgi
+      MINIO_ROOT_PASSWORD: sgisecret123
+    command: server /data --console-address ":9001"
+    volumes:
+      - sgi_minio_data:/data
+
 volumes:
   sgi_pg_data:
+  sgi_minio_data:

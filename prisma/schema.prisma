@@ -135,17 +135,46 @@ model Membership {
   @@map("membership")
 }
 
-/// Placeholder tenant-owned entity for isolation tests (Task 2).
+/// Controlled document with version history (Task 8).
 model Document {
-  id        String   @id @default(cuid())
-  tenantId  String
-  title     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id                  String              @id @default(cuid())
+  tenantId            String
+  title               String
+  kind                String              @default("procedure")
+  fate                DocumentFate        @default(undecided)
+  tenantRequirementId String?
+  currentVersionId    String?             @unique
+  validFrom           DateTime?
+  validUntil          DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantRequirement   TenantRequirement?  @relation(fields: [tenantRequirementId], references: [id], onDelete: SetNull)
+  versions            DocumentVersion[]   @relation("DocumentVersions")
+  currentVersion      DocumentVersion?    @relation("DocumentCurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
+  @@index([tenantRequirementId])
   @@map("document")
+}
+
+model DocumentVersion {
+  id            String     @id @default(cuid())
+  documentId    String
+  versionNumber Int
+  storageKey    String
+  fileName      String
+  contentType   String
+  sizeBytes     Int
+  uploadedById  String?
+  notes         String?
+  createdAt     DateTime   @default(now())
+  document      Document   @relation("DocumentVersions", fields: [documentId], references: [id], onDelete: Cascade)
+  currentOf     Document?  @relation("DocumentCurrentVersion")
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
+  @@map("document_version")
 }
 
 /// Global ISO requirement catalog (Task 4). Shared across tenants.
@@ -183,6 +212,7 @@ model TenantRequirement {
   tenant            Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   requirement       IsoRequirement       @relation(fields: [requirementId], references: [id], onDelete: Restrict)
   audits            GapAssessmentAudit[]
+  documents         Document[]
 
   @@unique([tenantId, requirementId])
   @@index([tenantId])

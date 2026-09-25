@@ -98,9 +98,16 @@ export default async function TenantPortalBySlugPage({
 
       <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface)] px-5 py-8 text-sm text-[var(--color-ink-muted)]">
         Identity-access listo. Consulta no muta; Colaborador escribe;
-        Administrador de la organización invita. El gap analysis llega en Task
-        7.
+        Administrador de la organización invita. Gap y documentos en el panel de
+        plataforma.
       </div>
+
+      <Link
+        href={`/t/${slug}/documents`}
+        className="w-fit rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+      >
+        Ver documentos
+      </Link>
     </div>
   );
 }

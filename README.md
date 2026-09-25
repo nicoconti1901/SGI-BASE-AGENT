@@ -54,12 +54,12 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado hasta **Task 7** (assessment-gap):
+Completado hasta **Task 8** (document-control) + Checkpoint B (review humana opcional):
 
-- Auth, design system, catálogo ISO, provisionamiento de tenants e identity-access.
-- **Gap analysis**: en `/platform/tenants/[slug]/gap` el administrador de plataforma carga estado por requisito (Pendiente, No aplica, Faltante, Parcial, Conforme, Automatizado), marca si hay documento del cliente, deja notas y guarda en lote. El destino documental (Conservar / Reemplazar / Crear) se calcula con `decideDocumentFate`. Cada cambio queda en `gap_assessment_audit`.
+- Gap analysis en `/platform/tenants/[slug]/gap`.
+- **Control documental**: subir/descargar en `/platform/tenants/[slug]/documents`, versiones, vínculo a requisito, protección de docs Conservar. Storage S3-compatible (MinIO en Docker) o memoria si no hay env S3. Vista cliente en `/t/[slug]/documents`.
 
-Siguiente: Task 8 — control documental + object storage.
+Siguiente: Task 9 — automation-offers (vencimientos + notificaciones).
 
 ---
 
@@ -93,10 +93,12 @@ En `.env` ya hay valores de desarrollo seguros para local. **Cambiá** `BETTER_A
 ### 3. Base de datos
 
 ```bash
-npm run db:up          # levanta Postgres 16 en el puerto 5432
+npm run db:up          # levanta Postgres 16 + MinIO (S3) en Docker
 npm run db:migrate     # aplica migraciones (primera vez: crea el schema)
 npm run db:seed        # crea el superusuario
 ```
+
+Para object storage real en local, copiá las variables `S3_*` de `.env.example` a `.env` (MinIO en `localhost:9000`, consola en `:9001`). Sin esas variables, los archivos viven en memoria del proceso (útil para tests; se pierden al reiniciar).
 
 Credenciales por defecto del seed (solo local):
 
@@ -187,8 +189,8 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 2. `tenant-provisioning` — alta de empresa y plantilla inicial  
 3. `identity-access` — usuarios, roles y sesiones  
 4. `assessment-gap` — carga de gap por superusuario ✅  
-5. `document-control` — procedimientos, registros y versiones ← siguiente  
-6. `automation-offers` — motor de vencimientos + ofertas  
+5. `document-control` — procedimientos, registros y versiones ✅  
+6. `automation-offers` — motor de vencimientos + ofertas ← siguiente  
 7. `operations-core` — NC, riesgos, auditorías, indicadores  
 8. `client-portal` — UI para operar el SGI configurado  
 
