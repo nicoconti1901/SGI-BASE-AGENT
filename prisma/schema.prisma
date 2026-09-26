@@ -121,6 +121,8 @@ model Tenant {
   offerActivations TenantOfferActivation[]
   notifications    InAppNotification[]
   automationRuns   AutomationRun[]
+  nonconformities  Nonconformity[]
+  correctiveActions CorrectiveAction[]
 
   @@map("tenant")
 }
@@ -351,4 +353,47 @@ model AutomationRun {
   @@index([offerCode, startedAt])
   @@index([tenantId, startedAt])
   @@map("automation_run")
+}
+
+enum WorkflowStatus {
+  open
+  in_progress
+  closed
+}
+
+model Nonconformity {
+  id              String             @id @default(cuid())
+  tenantId        String
+  title           String
+  description     String?
+  status          WorkflowStatus     @default(open)
+  ownerName       String?
+  source          String?
+  createdByUserId String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actions         CorrectiveAction[]
+
+  @@index([tenantId, status])
+  @@map("nonconformity")
+}
+
+model CorrectiveAction {
+  id               String        @id @default(cuid())
+  tenantId         String
+  nonconformityId  String
+  title            String
+  description      String?
+  status           WorkflowStatus @default(open)
+  ownerName        String?
+  dueAt            DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  tenant           Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  nonconformity    Nonconformity @relation(fields: [nonconformityId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@index([nonconformityId])
+  @@map("corrective_action")
 }

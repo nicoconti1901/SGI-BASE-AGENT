@@ -198,13 +198,13 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Create/list nonconformities and corrective actions with owners and due dates (feeds due engine).
 
 **Acceptance criteria:**
-- [ ] CRUD NC + actions scoped to tenant
-- [ ] Status workflow minimal (open → in_progress → closed)
-- [ ] Due dates create due items when present
+- [x] CRUD NC + actions scoped to tenant
+- [x] Status workflow minimal (open → in_progress → closed)
+- [x] Due dates create due items when present
 
 **Verification:**
-- [ ] Domain + API tests
-- [ ] Manual: create NC with action due date
+- [x] Domain + API tests
+- [x] Manual: create NC with action due date
 
 **Dependencies:** Task 9 (or Task 8 if due items created eagerly; prefer Task 9)  
 **Files likely touched:** `src/domain/operations/nc.ts`, tenant NC routes, tests  

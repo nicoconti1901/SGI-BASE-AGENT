@@ -132,6 +132,56 @@ export async function createDueItem(
   });
 }
 
+/** Crea o actualiza el DueItem abierto de una entidad (NC/acción/etc.). */
+export async function upsertOpenDueItemForEntity(
+  input: CreateDueItemInput & { entityId: string },
+  db: PrismaClient = prisma,
+) {
+  const existing = await db.dueItem.findFirst({
+    where: {
+      tenantId: input.tenantId,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      status: "open",
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (existing) {
+    return db.dueItem.update({
+      where: { id: existing.id },
+      data: {
+        title: input.title.trim(),
+        dueAt: input.dueAt,
+        leadDays: input.leadDays ?? existing.leadDays,
+        lastReminderKind: null,
+        lastRemindedAt: null,
+      },
+    });
+  }
+
+  return createDueItem(input, db);
+}
+
+export async function closeDueItemsForEntity(
+  input: {
+    tenantId: string;
+    entityType: string;
+    entityId: string;
+  },
+  db: PrismaClient = prisma,
+) {
+  return db.dueItem.updateMany({
+    where: {
+      tenantId: input.tenantId,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      status: "open",
+    },
+    data: { status: "closed" },
+  });
+}
+
 export async function listDueItems(
   tenantId: string,
   db: PrismaClient = prisma,

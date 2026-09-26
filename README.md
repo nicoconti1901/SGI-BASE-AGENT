@@ -54,12 +54,12 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado hasta **Task 9** (automation-offers):
+Completado hasta **Task 10** (operations-core · NC):
 
-- Gap + control documental.
-- **Motor de vencimientos**: oferta nativa `due_reminders`, activación por tenant, ítems `DueItem`, scan invocable (`/platform/automations` o `npm run job:due-scan`), notificaciones in-app + email stub, auditoría en `automation_run`.
+- Motor de vencimientos (Task 9).
+- **No conformidades y acciones correctivas** en `/t/[slug]/operations`: workflow Abierta → En curso → Cerrada; si una acción tiene fecha, se crea/actualiza un `DueItem` (`corrective_action`) y se cierra al cerrar la acción.
 
-Siguiente: Task 10 — operations-core (NC + acciones correctivas).
+Siguiente: Task 11 — riesgos, auditorías e indicadores.
 
 ---
 
@@ -191,7 +191,7 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 4. `assessment-gap` — carga de gap por superusuario ✅  
 5. `document-control` — procedimientos, registros y versiones ✅  
 6. `automation-offers` — motor de vencimientos + ofertas ✅  
-7. `operations-core` — NC, riesgos, auditorías, indicadores ← siguiente  
+7. `operations-core` — NC, riesgos, auditorías, indicadores ← en curso (NC ✅)  
 8. `client-portal` — UI para operar el SGI configurado  
 
 ---
