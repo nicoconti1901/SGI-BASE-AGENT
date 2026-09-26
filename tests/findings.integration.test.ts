@@ -2,7 +2,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
 import { createFindingDraft, publishFinding } from "@/lib/findings";
-import { confirmRootCause } from "@/domain/findings/five-whys";
+import {
+  confirmRootCause,
+  createInitialWhyStep,
+} from "@/domain/findings/five-whys";
 import { FINDING_MEASURE_ENTITY_TYPE } from "@/domain/findings/types";
 import { MemoryEmailSender, setEmailSenderForTests } from "@/lib/mail";
 
@@ -78,29 +81,34 @@ describe.skipIf(!hasDatabase)("findings publish integration", () => {
       db,
     });
 
+    const first = createInitialWhyStep(finding.description);
     const rca = confirmRootCause(
       [
         {
-          order: 1,
-          question: "¿Por qué?",
+          ...first,
           answer: "Medición fuera de tolerancia registrada",
-          isRootCause: false,
         },
         {
+          id: "s2",
           order: 2,
+          branchId: first.branchId,
+          branchLabel: first.branchLabel,
           question: "¿Por qué?",
           answer: "Instrumento sin verificación vigente",
           isRootCause: false,
         },
         {
+          id: "s3",
           order: 3,
+          branchId: first.branchId,
+          branchLabel: first.branchLabel,
           question: "¿Por qué?",
           answer: "No existe procedimiento de control metrológico",
           isRootCause: true,
         },
       ],
       notifyId,
-      finding.title,
+      finding.description,
     );
 
     const published = await publishFinding({

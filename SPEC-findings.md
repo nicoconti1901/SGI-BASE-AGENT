@@ -116,11 +116,13 @@ Canales MVP: **in-app** + **email stub**. No broadcast al tenant.
 
 No es un textarea. Es un modo investigación **paso a paso + cadena visual**:
 
-1. **Hecho / síntoma** — problem statement (desde título+descripción), validado (concreto, sin culpa, sin solución).  
-2. **Cadena viva** — timeline vertical: Hecho → Porqué 1 → … → ★ Causa raíz. Un nodo activo a la vez; “Agregar otro porqué” / “Esta es la causa raíz”. Evidencia opcional por paso.  
-3. **Coach anti-patrones** — chips: culpa a persona, vaga, es síntoma, parece solución, salto lógico.  
-4. **Confirmar causa raíz** — checklist (específica, de proceso/sistema, accionable, evita recurrencia) + stamp `rootCauseConfirmedAt`.  
-5. **Preview** — cómo se verá el bloque en la ficha del hecho.
+1. **Material de apoyo** — panel colapsable: para qué sirve, secuencia de 10 pasos, cuándo abrir ramas, 3 casos industriales condensados (`why-guidance` + `FiveWhysSupportPanel`).  
+2. **Antes de los porqués** — checklist de hechos reunidos + secuencia temporal. Los 5 Porqués **no reemplazan** la investigación de campo.  
+3. **Hecho / punto de partida** — `problemStatement` **independiente del título**. Reglas + ejemplos; no se precarga desde el título.  
+4. **Árbol con ramas** — una cadena por mecanismo causal independiente; varias causas raíz permitidas (una por rama). Preguntas orientadas a “¿por qué el sistema permitió…?”.  
+5. **Orientación por nivel** — inmediata → proceso → control → gestión → raíz sistémica + evidencia por paso.  
+6. **Coach anti-patrones** — chips: culpa, vaguedad, síntoma, solución, salto lógico.  
+7. **Confirmar causa(s) raíz** — ≥3 niveles en al menos una rama, raíz marcada, checklist mín. 3 ítems, verificación de no recurrencia.
 
 **Reglas:** mín. 3 niveles, recomendado 5, máx. 8. Exactamente un paso `isRootCause` en la cadena principal. MVP: 1 cadena + opcional 2ª contribuyente (árbol React Flow = fase 2). Motion: avance de nodo, highlight de raíz, alerta en anti-patrón.
 
@@ -180,8 +182,13 @@ type RootCauseAnalysis = {
 ### Fuera de alcance MVP (módulo)
 
 - CAPA formal multi-nivel.  
-- Adjuntos de evidencia (slice con document-control).  
 - Alta automática desde auditoría (Task 11).
+
+### Adjuntos operativos (MVP)
+
+- Documentación del hallazgo (`finding_doc`): fotos, registros, etc. en object storage; **no** pasan por Document/fate.  
+- Evidencia de cierre de medida (`measure_evidence`): **obligatoria** (≥1 archivo) para cerrar.  
+- Tipos: PDF, imagen, Word, texto · máx. 15 MB.
 
 ---
 
@@ -189,8 +196,8 @@ type RootCauseAnalysis = {
 
 1. **Nuevo hallazgo** → tipo → wizard.  
 2. Datos → **Laboratorio 5 Porqués** → Medidas (responsable + vencimiento + “ataca causa raíz”) → Notificados → Revisar y **Publicar**.  
-3. Bandeja: filtros tipo / estado / responsable.  
-4. Detalle: bloque de causa raíz siempre visible; cadena expandible; medidas y DueItems.
+3. Bandeja de seguimiento (tabla): filtros texto / tipo / estado; columnas Título · Tipo · Detección · Lugar · Próx. venc. · Medidas (estado corr./prev. con color) · Estado hallazgo · Ver/Editar. Anulados ocultos por defecto.  
+4. Detalle: causa raíz visible; documentación del hallazgo; cierre de medida **con evidencia obligatoria**.
 
 ---
 

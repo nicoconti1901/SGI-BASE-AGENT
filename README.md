@@ -44,8 +44,8 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 | Auth | **Better Auth** (email/password) |
 | Base de datos | **PostgreSQL + Prisma** |
 | Jobs / vencimientos | Inngest (o cron + cola) — pendiente |
-| Archivos | Almacenamiento S3-compatible (R2 / S3) — pendiente |
-| Email | SMTP/API (Resend u equivalente) — pendiente |
+| Archivos | Almacenamiento S3-compatible (MinIO local / R2 / S3) — docs controlados + adjuntos de hallazgos |
+| Email | Stub + envío real configurable |
 | Hosting | Vercel + Postgres gestionado (Neon / Render) |
 | Tests | Vitest (unit/integration) + Playwright (e2e) |
 | Calidad | ESLint + Prettier |
@@ -54,14 +54,42 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado hasta **Hallazgos unificados** (`SPEC-findings.md` aprobado):
+Completado y **profundizado** el módulo de **Hallazgos** (`SPEC-findings.md`):
 
-- Entrada siempre por **Hallazgo** (NC / observación / incidente / oportunidad).
-- **Laboratorio 5 Porqués** interactivo con causa raíz obligatoria y visible en la ficha.
-- Medidas con **responsable = usuario del tenant**, vencimientos → DueItem, notificados explícitos.
-- UI: `/t/[slug]/findings` (bandeja + wizard + detalle). Las rutas `/operations` redirigen acá.
+### Hallazgos — lo que ya opera
 
-Siguiente: Task 11 — riesgos, auditorías e indicadores (pueden generar hallazgos).
+| Pieza | Qué hace |
+|---|---|
+| **Entrada unificada** | Siempre se crea un **Hallazgo** (NC, observación, incidente u oportunidad). |
+| **Laboratorio 5 Porqués** | Análisis interactivo: hecho comprobado (no el título), checklist de investigación, **ramas** causales, orientación por nivel y material de apoyo con ejemplos industriales. |
+| **Causa raíz** | Obligatoria para publicar; visible en la ficha; puede haber una raíz por rama. |
+| **Medidas** | Correctivas / preventivas con responsable (usuario del tenant), vencimiento → DueItem, y **evidencia de archivo obligatoria** para cerrar. |
+| **Documentación del hallazgo** | Adjuntos operativos (fotos, PDF, registros) en object storage; **no** son documentos controlados del SGI. |
+| **Bandeja de seguimiento** | Tabla con filtros (texto, tipo, estado), columnas esenciales, **estado del hallazgo** y **estado de cada medida** en color. Alta vía botón → `/findings/new`. |
+
+Rutas: `/t/[slug]/findings` (bandeja), `/findings/new` (alta), `/findings/[id]` (ficha), `/findings/[id]/edit` (borrador). Las rutas `/operations` redirigen acá.
+
+### Pendiente inmediato (hallazgos)
+
+- **Task 10d** — Dar **lógica real** a los estados del hallazgo (`draft` → `published` → `in_progress` → `closed` / `cancelled`): transiciones, quién puede cerrar/anular, y cierre del hallazgo solo cuando las medidas estén cerradas.
+
+### Siguiente módulo de producto
+
+**Task 11** — Riesgos, auditorías e indicadores (con la misma profundidad que hallazgos; la entrevista de Riesgos sigue pendiente).
+
+---
+
+## Hallazgos en la práctica (guía rápida)
+
+1. En la bandeja, usá **Crear hallazgo** (tipo + título preliminar).
+2. Completá el borrador: datos del hecho, **laboratorio 5 Porqués** (hecho verificable → ramas → confirmar causa raíz), medidas, notificados.
+3. Adjuntá documentación del hecho si hace falta (fotos / registros).
+4. **Publicá** → se crean DueItems y notificaciones.
+5. En la ficha, cerrá cada medida **adjuntando evidencia**; el seguimiento en bandeja muestra el estado de esas medidas.
+
+Tipos de archivo admitidos: PDF, PNG/JPEG, Word, texto · máx. 15 MB (`serverActions.bodySizeLimit` = 16 MB en `next.config.ts`).
+
+Detalle de producto del módulo: [`SPEC-findings.md`](./SPEC-findings.md).
 
 ---
 
@@ -193,10 +221,15 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 4. `assessment-gap` — carga de gap por superusuario ✅  
 5. `document-control` — procedimientos, registros y versiones ✅  
 6. `automation-offers` — motor de vencimientos + ofertas ✅  
-7. `operations-core` — NC, riesgos, auditorías, indicadores ← en curso (NC ✅)  
+7. `operations-core` — hallazgos unificados ✅ (profundización en curso: estados Task 10d); luego riesgos, auditorías, indicadores  
 8. `client-portal` — UI para operar el SGI configurado  
 
 ---
+
+## Specs de módulo
+
+- [`SPEC.md`](./SPEC.md) — producto / MVP  
+- [`SPEC-findings.md`](./SPEC-findings.md) — hallazgos, 5 Porqués, medidas, adjuntos, bandeja  
 
 ## Contribución y flujo con el agente
 
@@ -239,6 +272,7 @@ Repositorio privado / de producto. Uso interno del proyecto SGI Base salvo acuer
 
 - Repositorio: [github.com/nicoconti1901/SGI-BASE-AGENT](https://github.com/nicoconti1901/SGI-BASE-AGENT)
 - Spec: [`SPEC.md`](./SPEC.md)
+- Hallazgos: [`SPEC-findings.md`](./SPEC-findings.md)
 - Capability map: [`CAPABILITY-MAP.md`](./CAPABILITY-MAP.md)
 - Plan: [`tasks/plan.md`](./tasks/plan.md)
 - Tareas: [`tasks/todo.md`](./tasks/todo.md)

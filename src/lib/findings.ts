@@ -6,24 +6,60 @@ import {
 } from "@/lib/automation";
 import { getEmailSender } from "@/lib/mail";
 import { assertCanPublishFinding } from "@/domain/findings/publish";
+import { assertCanCloseMeasureWithEvidence } from "@/domain/findings/attachments";
 import {
   FINDING_MEASURE_ENTITY_TYPE,
   FINDING_TYPE_LABELS,
   type FindingDraft,
   type FindingType,
+  type FindingsListFilters,
   type RootCauseAnalysis,
   labelFindingType,
 } from "@/domain/findings/types";
 
-export async function listFindings(tenantId: string, db: PrismaClient = prisma) {
+export function buildFindingsWhere(
+  tenantId: string,
+  filters: FindingsListFilters = {},
+): Prisma.FindingWhereInput {
+  const where: Prisma.FindingWhereInput = { tenantId };
+
+  if (filters.type) {
+    where.type = filters.type;
+  }
+
+  if (!filters.status || filters.status === "all") {
+    if (!filters.status) {
+      where.status = { not: "cancelled" };
+    }
+  } else {
+    where.status = filters.status;
+  }
+
+  const q = filters.q?.trim();
+  if (q) {
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+      { location: { contains: q, mode: "insensitive" } },
+    ];
+  }
+
+  return where;
+}
+
+export async function listFindings(
+  tenantId: string,
+  filters: FindingsListFilters = {},
+  db: PrismaClient = prisma,
+) {
   return db.finding.findMany({
-    where: { tenantId },
+    where: buildFindingsWhere(tenantId, filters),
     include: {
       measures: { orderBy: { dueAt: "asc" } },
       notifyRecipients: true,
       _count: { select: { measures: true } },
     },
-    orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+    orderBy: [{ detectedAt: "desc" }, { updatedAt: "desc" }],
   });
 }
 
@@ -35,8 +71,14 @@ export async function getFinding(
   return db.finding.findFirst({
     where: { id, tenantId },
     include: {
-      measures: { orderBy: [{ status: "asc" }, { dueAt: "asc" }] },
+      measures: {
+        orderBy: [{ status: "asc" }, { dueAt: "asc" }],
+        include: {
+          evidence: { orderBy: { createdAt: "desc" } },
+        },
+      },
       notifyRecipients: true,
+      attachments: { orderBy: { createdAt: "desc" } },
     },
   });
 }
@@ -284,8 +326,16 @@ export async function closeFindingMeasure(input: {
   const db = input.db ?? prisma;
   const measure = await db.findingMeasure.findFirst({
     where: { id: input.measureId, tenantId: input.tenantId },
+    include: {
+      evidence: { where: { kind: "measure_evidence" } },
+    },
   });
   if (!measure) throw new Error("Medida no encontrada");
+  if (measure.status === "closed") {
+    throw new Error("La medida ya está cerrada");
+  }
+
+  assertCanCloseMeasureWithEvidence(measure.evidence.length);
 
   const updated = await db.findingMeasure.update({
     where: { id: measure.id },

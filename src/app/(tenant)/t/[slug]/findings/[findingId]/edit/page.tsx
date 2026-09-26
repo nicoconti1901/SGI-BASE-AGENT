@@ -6,6 +6,11 @@ import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
 import { getFinding, listTenantMemberOptions } from "@/lib/findings";
 import { FindingEditor } from "@/app/(tenant)/t/[slug]/findings/FindingEditor";
+import { FindingDocUploadForm } from "@/app/(tenant)/t/[slug]/findings/FindingAttachments";
+import {
+  AttachmentCard,
+  AttachmentEmptyState,
+} from "@/app/(tenant)/t/[slug]/findings/FindingPresence";
 import type { FindingType, RootCauseAnalysis } from "@/domain/findings/types";
 
 type Params = Promise<{ slug: string; findingId: string }>;
@@ -98,6 +103,43 @@ export default async function EditFindingPage({
           }}
         />
       )}
+
+      <section className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="font-[family-name:var(--font-display)] text-xl">
+              Documentación del hallazgo
+            </h2>
+            <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
+              Fotos, registros u otros archivos del hecho (podés adjuntar ya en
+              borrador).
+            </p>
+          </div>
+          <span className="rounded-[var(--radius-sm)] bg-[var(--color-surface)] px-2.5 py-1 text-xs font-semibold text-[var(--color-ink-muted)]">
+            {
+              finding.attachments.filter((a) => a.kind === "finding_doc")
+                .length
+            }{" "}
+            archivo(s)
+          </span>
+        </div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          {finding.attachments
+            .filter((a) => a.kind === "finding_doc")
+            .map((a) => (
+              <AttachmentCard key={a.id} attachment={a} />
+            ))}
+        </div>
+        {finding.attachments.filter((a) => a.kind === "finding_doc").length ===
+        0 ? (
+          <div className="mt-4">
+            <AttachmentEmptyState message="Todavía no hay documentación adjunta." />
+          </div>
+        ) : null}
+        <div className="mt-5 border-t border-[var(--color-line)] pt-4">
+          <FindingDocUploadForm slug={slug} findingId={finding.id} />
+        </div>
+      </section>
     </div>
   );
 }

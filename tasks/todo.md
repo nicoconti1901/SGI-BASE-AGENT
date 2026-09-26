@@ -251,6 +251,27 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ---
 
+## Task 10d: findings — lógica de estados del hallazgo
+
+**Description:** Dar lógica real a los estados de cada hallazgo (`draft` → `published` → `in_progress` → `closed` / `cancelled`). Hoy el badge existe en bandeja/detalle, pero las transiciones no están gobernadas por reglas de dominio (p. ej. pasar a en curso cuando hay medidas abiertas, cerrar solo si todas las medidas están cerradas con evidencia, anular con motivo).
+
+**Acceptance criteria:**
+- [ ] Dominio: reglas de transición válidas + gates (quién puede, desde qué estado, qué precondiciones)
+- [ ] Al publicar → `published`; al tener ≥1 medida abierta post-publicación → `in_progress` (o regla equivalente aprobada)
+- [ ] Cerrar hallazgo solo si todas las medidas están `closed` (con evidencia)
+- [ ] Anular con motivo / permiso; no reabrir sin rol adecuado
+- [ ] UI bandeja/detalle refleja estado derivado o transiciones explícitas; acciones visibles según estado
+
+**Verification:**
+- [ ] Unit tests de transiciones y bloqueos
+- [ ] Manual: publicar → cerrar medidas → cerrar hallazgo; intentar cerrar con medida abierta falla
+
+**Dependencies:** Task 10c (bandeja + adjuntos + cierre de medidas)  
+**Files:** `src/domain/findings/`, `src/lib/findings.ts`, UI detalle/bandeja, `SPEC-findings.md`  
+**Estimated scope:** M
+
+---
+
 ## Task 11: operations-core — risks, audits, indicators
 
 **Description:** Minimal usable modules for risks, internal audits, and indicators (with due/measurement dates hooked to due engine).

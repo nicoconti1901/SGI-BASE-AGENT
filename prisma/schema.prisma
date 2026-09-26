@@ -124,6 +124,7 @@ model Tenant {
   nonconformities  Nonconformity[]
   correctiveActions CorrectiveAction[]
   findings         Finding[]
+  findingAttachments FindingAttachment[]
 
   @@map("tenant")
 }
@@ -446,6 +447,7 @@ model Finding {
   tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   measures        FindingMeasure[]
   notifyRecipients FindingNotifyRecipient[]
+  attachments     FindingAttachment[]
 
   @@index([tenantId, status])
   @@index([tenantId, type])
@@ -466,11 +468,40 @@ model FindingMeasure {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   finding          Finding       @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  evidence         FindingAttachment[]
 
   @@index([tenantId, status])
   @@index([findingId])
   @@index([ownerUserId])
   @@map("finding_measure")
+}
+
+/// Adjuntos operativos (fotos, registros, evidencia de cierre). No es control documental formal.
+enum FindingAttachmentKind {
+  finding_doc
+  measure_evidence
+}
+
+model FindingAttachment {
+  id           String                 @id @default(cuid())
+  tenantId     String
+  findingId    String
+  measureId    String?
+  kind         FindingAttachmentKind
+  storageKey   String
+  fileName     String
+  contentType  String
+  sizeBytes    Int
+  label        String?
+  uploadedById String?
+  createdAt    DateTime               @default(now())
+  tenant       Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  finding      Finding                @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  measure      FindingMeasure?        @relation(fields: [measureId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, findingId])
+  @@index([measureId])
+  @@map("finding_attachment")
 }
 
 model FindingNotifyRecipient {

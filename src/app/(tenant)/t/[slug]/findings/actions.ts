@@ -12,6 +12,7 @@ import {
   publishFinding,
   saveFindingDraft,
 } from "@/lib/findings";
+import { uploadFindingAttachment } from "@/lib/finding-attachments";
 import { isFindingType, type FindingDraft, type MeasureKind, type RootCauseAnalysis } from "@/domain/findings/types";
 import { createInitialWhyStep } from "@/domain/findings/five-whys";
 
@@ -53,8 +54,8 @@ function parseDraft(formData: FormData): FindingDraft {
   } else {
     rca = {
       method: "five_whys",
-      problemStatement: String(formData.get("title") ?? ""),
-      steps: [createInitialWhyStep(String(formData.get("title") ?? ""))],
+      problemStatement: "",
+      steps: [createInitialWhyStep()],
       rootCause: null,
       rootCauseConfirmedAt: null,
       rootCauseConfirmedByUserId: null,
@@ -185,23 +186,88 @@ export async function saveOrPublishFindingAction(
   }
 }
 
+export async function uploadFindingDocAction(
+  slug: string,
+  findingId: string,
+  _prev: FindingActionState,
+  formData: FormData,
+): Promise<FindingActionState> {
+  const auth = await requireWrite(slug);
+  if ("error" in auth && auth.error) return { error: auth.error };
+  if (!("tenant" in auth) || !auth.tenant || !auth.ctx) {
+    return { error: "Sin acceso" };
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Seleccioná un archivo" };
+  }
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await uploadFindingAttachment({
+      tenantId: auth.tenant.id,
+      findingId,
+      kind: "finding_doc",
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+      body: buffer,
+      uploadedById: auth.ctx.userId,
+      label: String(formData.get("label") ?? ""),
+    });
+    revalidatePath(`/t/${slug}/findings/${findingId}`);
+    revalidatePath(`/t/${slug}/findings/${findingId}/edit`);
+    return { ok: "Archivo adjunto" };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "No se pudo subir",
+    };
+  }
+}
+
 export async function closeMeasureAction(
   slug: string,
   findingId: string,
   measureId: string,
-  _formData?: FormData,
-): Promise<void> {
+  _prev: FindingActionState,
+  formData: FormData,
+): Promise<FindingActionState> {
   const auth = await requireWrite(slug);
-  if ("error" in auth && auth.error) {
-    throw new Error(auth.error);
-  }
-  if (!("tenant" in auth) || !auth.tenant) {
-    throw new Error("Sin acceso");
+  if ("error" in auth && auth.error) return { error: auth.error };
+  if (!("tenant" in auth) || !auth.tenant || !auth.ctx) {
+    return { error: "Sin acceso" };
   }
 
-  await closeFindingMeasure({
-    tenantId: auth.tenant.id,
-    measureId,
-  });
-  revalidatePath(`/t/${slug}/findings/${findingId}`);
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return {
+      error:
+        "Para cerrar la medida adjuntá una evidencia (foto, PDF o registro)",
+    };
+  }
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await uploadFindingAttachment({
+      tenantId: auth.tenant.id,
+      findingId,
+      measureId,
+      kind: "measure_evidence",
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+      body: buffer,
+      uploadedById: auth.ctx.userId,
+      label: String(formData.get("label") ?? "Evidencia de cierre"),
+    });
+    await closeFindingMeasure({
+      tenantId: auth.tenant.id,
+      measureId,
+    });
+    revalidatePath(`/t/${slug}/findings/${findingId}`);
+    return { ok: "Medida cerrada con evidencia" };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "No se pudo cerrar",
+    };
+  }
 }
