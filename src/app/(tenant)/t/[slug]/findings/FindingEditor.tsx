@@ -235,7 +235,6 @@ export function FindingEditor({
           2. Análisis de causa
         </h2>
         <FiveWhysLab
-          problemStatement={title || description}
           initial={rca}
           userId={userId}
           onConfirmed={setRca}
