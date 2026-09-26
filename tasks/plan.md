@@ -111,3 +111,18 @@ See `tasks/todo.md` for full acceptance criteria. Ordered:
 ## Approval
 
 Plan ready for human review before `/build`.
+
+---
+
+## Addendum: Task 11 — Riesgos y oportunidades (Nivel 2) — 2026-09-26
+
+SPEC aprobado: `SPEC-risks-opportunities.md`. Implementado como slices verticales:
+
+1. Domain + Prisma (`Risk`, `Opportunity`, assessments versionados, `Action`/`ActionLink`/`ActionAttachment`)
+2. Action compartida con DueItem (`operational_action`); completar ≠ efectividad
+3. UI Explorar contexto + detalle canvas riesgo/oportunidad
+4. Assessments + decisiones de respuesta/persecución
+5. Workspace 4 capas en `/t/[slug]/risks`; nav `/portal/risks`
+6. Señales stale / review triggers en dominio
+
+Fuera de alcance: FMEA, heat map home, migrar FindingMeasure → Action, 45001, auditorías/indicadores.

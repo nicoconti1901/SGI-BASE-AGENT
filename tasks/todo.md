@@ -272,28 +272,41 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ---
 
-## Task 11: operations-core — risks, audits, indicators
+## Task 11: operations-core — riesgos y oportunidades (ISO 9001:2026)
 
-**Description:** Minimal usable modules for risks, internal audits, and indicators (with due/measurement dates hooked to due engine).
+**Description:** Módulo de **riesgos** y **oportunidades** del SGC según ISO 9001:2026 (6.1.1–6.1.3), con objetos semánticos separados, acciones/efectividad, revisión y evidencia. **No** es un registro genérico ni matriz obligatoria. Investigación: `RESEARCH-risks-opportunities.md`. SPEC: `SPEC-risks-opportunities.md` (Nivel 2 aprobado PO 2026-09-26).
 
 **Acceptance criteria:**
-- [ ] Each entity list + create/edit in tenant UI
-- [ ] Indicators support target + last value + next measurement due
-- [ ] Audits have planned date → due item
+- [x] Informe de investigación + SPEC Nivel 2 aprobado
+- [x] Risk ≠ Opportunity; lifecycles; assessments versionados; review/stale
+- [x] MVP: Explorar contexto → canvas → assessment → decisión → Action compartida → efectividad
+- [x] DueItem en acciones; enlace opcional a hallazgos (sin auto-conversión)
+- [x] Workspace Discovery · Decisions · Execution · Learning; nav tenant
+
+**Sub-tareas (plan vertical):**
+- [x] 11.1 Prisma + domain Risk/Opportunity + tests
+- [x] 11.2 Action compartida + DueItem + evidencia + efectividad
+- [x] 11.3 Wizard Explorar contexto + canvases + rutas/nav
+- [x] 11.4 Assessments versionados + decisiones
+- [x] 11.5 Workspace 4 capas + ejecución acciones
+- [x] 11.6 Revisión/stale + escenario canónico + checkpoint
 
 **Verification:**
-- [ ] Tests for indicator due generation
-- [ ] Manual smoke on three modules
+- [x] `tests/risks-opportunities.test.ts` (dominio + filtros)
+- [x] `npm test` + `npm run build` verdes
+- [x] Migración `20260926200000_add_risks_opportunities_actions`
 
-**Dependencies:** Task 10  
-**Files likely touched:** `src/domain/operations/`, tenant routes for risks/audits/indicators  
-**Estimated scope:** M (split further in `/build` if needed)
+**Dependencies:** Task 10 findings; skill riesgos-oportunidades  
+**Files:** `src/domain/risks/`, `src/domain/opportunities/`, `src/domain/actions/`, `src/lib/risks.ts`, `src/lib/opportunities.ts`, `src/lib/actions.ts`, `src/app/(tenant)/t/[slug]/risks/**`  
+**Estimated scope:** L
 
 ---
 
+## Task 11b (luego): auditorías e indicadores
+
 ## Checkpoint C: After Tasks 9–11
 
-- [ ] Tests pass; build succeeds
+- [x] Tests pass; build succeeds (post Task 11 risks/opportunities)
 - [ ] Due reminders work for at least docs/actions/indicators
 - [ ] Human review before portal polish
 

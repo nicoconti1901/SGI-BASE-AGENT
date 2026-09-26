@@ -54,28 +54,52 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado y **profundizado** el módulo de **Hallazgos** (`SPEC-findings.md`):
-
-### Hallazgos — lo que ya opera
+### Hallazgos — operativo (con profundización pendiente)
 
 | Pieza | Qué hace |
 |---|---|
-| **Entrada unificada** | Siempre se crea un **Hallazgo** (NC, observación, incidente u oportunidad). |
-| **Laboratorio 5 Porqués** | Análisis interactivo: hecho comprobado (no el título), checklist de investigación, **ramas** causales, orientación por nivel y material de apoyo con ejemplos industriales. |
-| **Causa raíz** | Obligatoria para publicar; visible en la ficha; puede haber una raíz por rama. |
-| **Medidas** | Correctivas / preventivas con responsable (usuario del tenant), vencimiento → DueItem, y **evidencia de archivo obligatoria** para cerrar. |
-| **Documentación del hallazgo** | Adjuntos operativos (fotos, PDF, registros) en object storage; **no** son documentos controlados del SGI. |
-| **Bandeja de seguimiento** | Tabla con filtros (texto, tipo, estado), columnas esenciales, **estado del hallazgo** y **estado de cada medida** en color. Alta vía botón → `/findings/new`. |
+| **Entrada unificada** | Siempre se crea un **Hallazgo** (NC, observación, incidente u oportunidad de mejora). |
+| **Laboratorio 5 Porqués** | Hecho comprobado, checklist, **ramas** causales y material de apoyo industrial. |
+| **Medidas** | Owner del tenant, vencimiento → DueItem, **evidencia de archivo** para cerrar. |
+| **Bandeja** | Filtros, estado del hallazgo y de cada medida. |
 
-Rutas: `/t/[slug]/findings` (bandeja), `/findings/new` (alta), `/findings/[id]` (ficha), `/findings/[id]/edit` (borrador). Las rutas `/operations` redirigen acá.
+Rutas: `/t/[slug]/findings`. Spec: [`SPEC-findings.md`](./SPEC-findings.md).
 
-### Pendiente inmediato (hallazgos)
+**Pendiente (Task 10d):** lógica real de ciclo de vida del hallazgo (`draft` → `published` → `in_progress` → `closed` / `cancelled`).
 
-- **Task 10d** — Dar **lógica real** a los estados del hallazgo (`draft` → `published` → `in_progress` → `closed` / `cancelled`): transiciones, quién puede cerrar/anular, y cierre del hallazgo solo cuando las medidas estén cerradas.
+### Riesgos y oportunidades — Nivel 2 Controlado ✅
 
-### Siguiente módulo de producto
+Módulo nuevo alineado a **ISO 9001:2026 §6.1** (riesgo ≠ oportunidad; no ERM genérico ni heat map como home). Spec: [`SPEC-risks-opportunities.md`](./SPEC-risks-opportunities.md). Research: [`RESEARCH-risks-opportunities.md`](./RESEARCH-risks-opportunities.md).
 
-**Task 11** — Riesgos, auditorías e indicadores (con la misma profundidad que hallazgos; la entrevista de Riesgos sigue pendiente).
+| Pieza | Qué hace |
+|---|---|
+| **Explorar contexto** | Entrada principal: partís de una fuente (proceso, proveedor, hallazgo, cambio…) y decidís si nace riesgo, oportunidad, ambos o ninguno. |
+| **Riesgo** | Canvas causa → evento → efecto + controles existentes; lifecycle propio. |
+| **Oportunidad** | Hipótesis condición → circunstancia → beneficio; **no** es “riesgo positivo”. |
+| **Evaluación** | Default **cualitativo** (Bajo/Medio/Alto/Crítico); P×I disponible; cada assessment es una **versión nueva** (no se sobrescribe). |
+| **Decisión** | Respuesta del riesgo / persecución de la oportunidad, con racional y responsable. |
+| **Acción compartida** | Modelo único (`Action`) vinculable a riesgo y/o oportunidad (y opcionalmente hallazgo). Completar ≠ efectividad; evidencia obligatoria para completar; DueItem al vencer. |
+| **Workspace** | Discovery · Decisions · Execution · Learning — la matriz no es la pantalla principal. |
+
+Rutas: `/t/[slug]/risks` (workspace), `/risks/explore` (descubrimiento), `/risks/[id]` y `/risks/opportunities/[id]` (fichas). Nav del portal: **Riesgos y oportunidades**.
+
+### Qué sigue
+
+- **Task 10d** — estados de hallazgos.  
+- **Task 11b** — auditorías e indicadores.  
+- **Task 12+** — portal cliente / dashboards / E2E.
+
+---
+
+## Riesgos y oportunidades en la práctica (guía rápida)
+
+1. En el portal, abrí **Riesgos y oportunidades** (o `/t/[slug]/risks`).
+2. Usá **Explorar contexto**: describí la fuente (ej. “Proveedor único de acero”) y marcá si creás riesgo, oportunidad o ambos.
+3. En la ficha del riesgo, completá el canvas, registrá una evaluación cualitativa y la decisión de respuesta.
+4. Agregá **acciones** con responsable y vencimiento; adjuntá evidencia para completarlas; después registrá **efectividad** (distinto de “completada”).
+5. Volvé al workspace: las cuatro capas muestran qué falta descubrir, decidir, ejecutar o aprender (incluye señales *stale*).
+
+El alta directa de riesgo queda como **atajo secundario**; el flujo pensado para auditoría y uso diario es explorar la fuente primero.
 
 ---
 
@@ -87,7 +111,7 @@ Rutas: `/t/[slug]/findings` (bandeja), `/findings/new` (alta), `/findings/[id]` 
 4. **Publicá** → se crean DueItems y notificaciones.
 5. En la ficha, cerrá cada medida **adjuntando evidencia**; el seguimiento en bandeja muestra el estado de esas medidas.
 
-Tipos de archivo admitidos: PDF, PNG/JPEG, Word, texto · máx. 15 MB (`serverActions.bodySizeLimit` = 16 MB en `next.config.ts`).
+Tipos de archivo admitidos (hallazgos y acciones): PDF, PNG/JPEG, Word, texto · máx. 15 MB (`serverActions.bodySizeLimit` = 16 MB en `next.config.ts`).
 
 Detalle de producto del módulo: [`SPEC-findings.md`](./SPEC-findings.md).
 
@@ -198,17 +222,20 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 
 ```text
 ├── SPEC.md                 # Spec de producto / MVP (aprobada)
+├── SPEC-findings.md        # Hallazgos
+├── SPEC-risks-opportunities.md
+├── RESEARCH-risks-opportunities.md
 ├── CAPABILITY-MAP.md       # Módulos y orden de build
 ├── tasks/                  # plan.md + todo.md
-├── docker-compose.yml      # Postgres local
+├── docker-compose.yml      # Postgres + MinIO local
 ├── prisma/                 # Schema, migraciones y seed
 ├── src/
-│   ├── app/                # Next.js App Router (login, platform, api/auth)
-│   ├── domain/             # Lógica de dominio (tenancy, …)
-│   └── lib/                # auth, db, session, tenant-queries
+│   ├── app/                # App Router (portal, tenants, APIs)
+│   ├── domain/             # findings, risks, opportunities, actions, …
+│   └── lib/                # auth, db, persistence helpers
 ├── tests/                  # Vitest
 ├── e2e/                    # Playwright
-└── .cursor/                # Skills, commands y agents del flujo de trabajo
+└── .cursor/                # Skills, commands y agents
 ```
 
 ---
@@ -221,7 +248,7 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 4. `assessment-gap` — carga de gap por superusuario ✅  
 5. `document-control` — procedimientos, registros y versiones ✅  
 6. `automation-offers` — motor de vencimientos + ofertas ✅  
-7. `operations-core` — hallazgos unificados ✅ (profundización en curso: estados Task 10d); luego riesgos, auditorías, indicadores  
+7. `operations-core` — hallazgos unificados ✅ · **riesgos y oportunidades Nivel 2** ✅ · luego auditorías e indicadores (Task 11b)  
 8. `client-portal` — UI para operar el SGI configurado  
 
 ---
@@ -230,6 +257,8 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 
 - [`SPEC.md`](./SPEC.md) — producto / MVP  
 - [`SPEC-findings.md`](./SPEC-findings.md) — hallazgos, 5 Porqués, medidas, adjuntos, bandeja  
+- [`SPEC-risks-opportunities.md`](./SPEC-risks-opportunities.md) — riesgos y oportunidades ISO 9001:2026  
+- [`RESEARCH-risks-opportunities.md`](./RESEARCH-risks-opportunities.md) — ledger de investigación normativa  
 
 ## Contribución y flujo con el agente
 
@@ -273,6 +302,7 @@ Repositorio privado / de producto. Uso interno del proyecto SGI Base salvo acuer
 - Repositorio: [github.com/nicoconti1901/SGI-BASE-AGENT](https://github.com/nicoconti1901/SGI-BASE-AGENT)
 - Spec: [`SPEC.md`](./SPEC.md)
 - Hallazgos: [`SPEC-findings.md`](./SPEC-findings.md)
+- Riesgos y oportunidades: [`SPEC-risks-opportunities.md`](./SPEC-risks-opportunities.md)
 - Capability map: [`CAPABILITY-MAP.md`](./CAPABILITY-MAP.md)
 - Plan: [`tasks/plan.md`](./tasks/plan.md)
 - Tareas: [`tasks/todo.md`](./tasks/todo.md)
