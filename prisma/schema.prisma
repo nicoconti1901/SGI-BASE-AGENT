@@ -41,18 +41,19 @@ enum DocumentFate {
 }
 
 model User {
-  id            String               @id @default(cuid())
-  name          String
-  email         String
-  emailVerified Boolean              @default(false)
-  image         String?
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  platformRole  PlatformRole?
-  sessions      Session[]
-  accounts      Account[]
-  memberships   Membership[]
-  gapAudits     GapAssessmentAudit[]
+  id             String               @id @default(cuid())
+  name           String
+  email          String
+  emailVerified  Boolean              @default(false)
+  image          String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  platformRole   PlatformRole?
+  sessions       Session[]
+  accounts       Account[]
+  memberships    Membership[]
+  gapAudits      GapAssessmentAudit[]
+  notifications  InAppNotification[]
 
   @@unique([email])
   @@map("user")
@@ -106,16 +107,20 @@ model Verification {
 }
 
 model Tenant {
-  id           String              @id @default(cuid())
-  name         String
-  slug         String              @unique
-  size         String?
-  activity     String?
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  memberships  Membership[]
-  documents    Document[]
-  requirements TenantRequirement[]
+  id               String                   @id @default(cuid())
+  name             String
+  slug             String                   @unique
+  size             String?
+  activity         String?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  memberships      Membership[]
+  documents        Document[]
+  requirements     TenantRequirement[]
+  dueItems         DueItem[]
+  offerActivations TenantOfferActivation[]
+  notifications    InAppNotification[]
+  automationRuns   AutomationRun[]
 
   @@map("tenant")
 }
@@ -241,4 +246,109 @@ model GapAssessmentAudit {
   @@index([tenantId, createdAt])
   @@index([tenantRequirementId])
   @@map("gap_assessment_audit")
+}
+
+enum DueItemStatus {
+  open
+  closed
+  cancelled
+}
+
+enum OfferKind {
+  native
+  integration
+}
+
+enum AutomationRunStatus {
+  running
+  succeeded
+  failed
+}
+
+/// Catálogo global de automatizaciones (MVP: motor de vencimientos).
+model AutomationOffer {
+  id           String                   @id @default(cuid())
+  code         String                   @unique
+  name         String
+  description  String
+  kind         OfferKind                @default(native)
+  enabledGlobal Boolean                 @default(true)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  activations  TenantOfferActivation[]
+
+  @@map("automation_offer")
+}
+
+model TenantOfferActivation {
+  id             String          @id @default(cuid())
+  tenantId       String
+  offerId        String
+  active         Boolean         @default(true)
+  activatedAt    DateTime        @default(now())
+  deactivatedAt  DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  offer          AutomationOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, offerId])
+  @@index([tenantId, active])
+  @@map("tenant_offer_activation")
+}
+
+/// Ítem genérico con vencimiento (doc, NC, indicador, etc.).
+model DueItem {
+  id               String                 @id @default(cuid())
+  tenantId         String
+  title            String
+  entityType       String
+  entityId         String?
+  dueAt            DateTime
+  leadDays         Int                    @default(7)
+  status           DueItemStatus          @default(open)
+  lastRemindedAt   DateTime?
+  lastReminderKind String?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  tenant           Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  notifications    InAppNotification[]
+
+  @@index([tenantId, status, dueAt])
+  @@index([tenantId, entityType, entityId])
+  @@map("due_item")
+}
+
+model InAppNotification {
+  id         String    @id @default(cuid())
+  tenantId   String
+  userId     String?
+  title      String
+  body       String
+  dueItemId  String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  dueItem    DueItem?  @relation(fields: [dueItemId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([userId, readAt])
+  @@map("in_app_notification")
+}
+
+model AutomationRun {
+  id         String               @id @default(cuid())
+  tenantId   String?
+  offerCode  String
+  status     AutomationRunStatus  @default(running)
+  summary    Json?
+  error      String?
+  startedAt  DateTime             @default(now())
+  finishedAt DateTime?
+  tenant     Tenant?              @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@index([offerCode, startedAt])
+  @@index([tenantId, startedAt])
+  @@map("automation_run")
 }

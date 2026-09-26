@@ -169,7 +169,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 - [x] Tests pass; build succeeds
 - [x] Flow: gap loaded → document keep/replace/create works
-- [ ] Human review before automation/ops
+- [x] Human review before automation/ops (continuar con Task 9 a pedido)
 
 ---
 
@@ -178,14 +178,14 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Model due items (generic), offer catalog stub, activation per tenant; scheduled scan + email/in-app reminder for upcoming/overdue items. No undeclared automations.
 
 **Acceptance criteria:**
-- [ ] Create due item linked to entity (doc, indicator, action, etc.)
-- [ ] Job scans and emits reminders
-- [ ] Offer can be activated/deactivated per tenant
-- [ ] Audit log of automation runs
+- [x] Create due item linked to entity (doc, indicator, action, etc.)
+- [x] Job scans and emits reminders
+- [x] Offer can be activated/deactivated per tenant
+- [x] Audit log of automation runs
 
 **Verification:**
-- [ ] Unit tests for due calculation / reminder windows
-- [ ] Manual or job-dev: trigger scan, see notification
+- [x] Unit tests for due calculation / reminder windows
+- [x] Manual or job-dev: trigger scan, see notification
 
 **Dependencies:** Checkpoint B  
 **Files likely touched:** `src/domain/automation/`, `src/lib/jobs/`, email adapter, UI offers page  

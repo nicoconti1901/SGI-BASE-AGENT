@@ -2,6 +2,7 @@ export const platformNavItems = [
   { href: "/platform", label: "Inicio" },
   { href: "/platform/tenants", label: "Tenants" },
   { href: "/platform/catalog", label: "Catálogo ISO" },
+  { href: "/platform/automations", label: "Automatizaciones" },
 ] as const;
 
 export const tenantNavItems = [

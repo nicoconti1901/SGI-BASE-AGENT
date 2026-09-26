@@ -54,12 +54,12 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado hasta **Task 8** (document-control) + Checkpoint B (review humana opcional):
+Completado hasta **Task 9** (automation-offers):
 
-- Gap analysis en `/platform/tenants/[slug]/gap`.
-- **Control documental**: subir/descargar en `/platform/tenants/[slug]/documents`, versiones, vínculo a requisito, protección de docs Conservar. Storage S3-compatible (MinIO en Docker) o memoria si no hay env S3. Vista cliente en `/t/[slug]/documents`.
+- Gap + control documental.
+- **Motor de vencimientos**: oferta nativa `due_reminders`, activación por tenant, ítems `DueItem`, scan invocable (`/platform/automations` o `npm run job:due-scan`), notificaciones in-app + email stub, auditoría en `automation_run`.
 
-Siguiente: Task 9 — automation-offers (vencimientos + notificaciones).
+Siguiente: Task 10 — operations-core (NC + acciones correctivas).
 
 ---
 
@@ -190,8 +190,8 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 3. `identity-access` — usuarios, roles y sesiones  
 4. `assessment-gap` — carga de gap por superusuario ✅  
 5. `document-control` — procedimientos, registros y versiones ✅  
-6. `automation-offers` — motor de vencimientos + ofertas ← siguiente  
-7. `operations-core` — NC, riesgos, auditorías, indicadores  
+6. `automation-offers` — motor de vencimientos + ofertas ✅  
+7. `operations-core` — NC, riesgos, auditorías, indicadores ← siguiente  
 8. `client-portal` — UI para operar el SGI configurado  
 
 ---

@@ -38,6 +38,11 @@ export default async function PlatformHomePage() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <ShellCard
+          title="Automatizaciones"
+          body="Ofertas, scan de vencimientos y auditoría de runs."
+          href="/platform/automations"
+        />
+        <ShellCard
           title="Tenants"
           body="Alta de empresas y plantillas esenciales."
           href="/platform/tenants"

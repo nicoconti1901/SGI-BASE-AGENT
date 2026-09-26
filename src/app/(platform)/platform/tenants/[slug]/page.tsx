@@ -67,6 +67,12 @@ export default async function TenantDetailPage({ params }: { params: Params }) {
           Documentos
         </Link>
         <Link
+          href={`/platform/tenants/${tenant.slug}/automations`}
+          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+        >
+          Automatizaciones
+        </Link>
+        <Link
           href={`/t/${tenant.slug}`}
           className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
         >

@@ -84,9 +84,16 @@ async function seedCatalog() {
   );
 }
 
+async function seedAutomationOffers() {
+  const { ensureNativeOffersSeeded } = await import("../src/lib/automation");
+  await ensureNativeOffersSeeded();
+  console.log("Ofertas de automatización nativas aseguradas");
+}
+
 async function main() {
   await seedSuperuser();
   await seedCatalog();
+  await seedAutomationOffers();
 }
 
 main()

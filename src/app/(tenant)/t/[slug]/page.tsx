@@ -102,12 +102,20 @@ export default async function TenantPortalBySlugPage({
         plataforma.
       </div>
 
-      <Link
-        href={`/t/${slug}/documents`}
-        className="w-fit rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
-      >
-        Ver documentos
-      </Link>
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href={`/t/${slug}/documents`}
+          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+        >
+          Ver documentos
+        </Link>
+        <Link
+          href={`/t/${slug}/automations`}
+          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+        >
+          Automatizaciones
+        </Link>
+      </div>
     </div>
   );
 }
