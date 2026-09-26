@@ -10,9 +10,10 @@ Plataforma empresarial de Sistema de Gestión Integrada. El desarrollador (super
 | `assessment-gap` | Carga (por superusuario) del SGI existente, gaps, qué respetar vs. reemplazar | `ims-catalog`, `tenant-provisioning` |
 | `document-control` | Procedimientos, registros, versiones, vigencia; conservar docs válidos del cliente | `assessment-gap`, `identity-access` |
 | `automation-offers` | Ofertas nativas + integraciones; seguimiento, indicadores y todo con vencimiento | `assessment-gap`, `ims-catalog` |
-| `operations-core` | Flujos esenciales: NC/acciones, riesgos, auditorías internas, indicadores | `document-control`, `identity-access` |
+| `operations-core` | Flujos esenciales: **hallazgos** (NC/observación/incidente/mejora) + causa + medidas; riesgos; auditorías; indicadores | `document-control`, `identity-access`, `automation-offers` |
+| `findings` | (submódulo / spec) Alta unificada de hallazgos, 5 Porqués, medidas con responsables y notificados | `operations-core`, `identity-access`, `automation-offers` |
 | `client-portal` | UI moderna para operar el SGI ya configurado | `identity-access`, `document-control`, `operations-core`, `automation-offers` |
 
-**Build order:** `ims-catalog` → `tenant-provisioning` → `identity-access` → `assessment-gap` → `document-control` → `automation-offers` → `operations-core` → `client-portal`
+**Build order:** `ims-catalog` → `tenant-provisioning` → `identity-access` → `assessment-gap` → `document-control` → `automation-offers` → `operations-core` (findings primero) → `client-portal`
 
 **Status:** Approved by product owner (2026-09-25).

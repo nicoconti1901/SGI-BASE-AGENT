@@ -8,7 +8,7 @@ export const platformNavItems = [
 export const tenantNavItems = [
   { href: "/portal", label: "Panel" },
   { href: "/portal/documents", label: "Documentos" },
-  { href: "/portal/operations", label: "Operaciones" },
+  { href: "/portal/operations", label: "Hallazgos" },
   { href: "/portal/automations", label: "Automatizaciones" },
 ] as const;
 

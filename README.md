@@ -54,12 +54,14 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 ## Estado actual del repositorio
 
-Completado hasta **Task 10** (operations-core · NC):
+Completado hasta **Hallazgos unificados** (`SPEC-findings.md` aprobado):
 
-- Motor de vencimientos (Task 9).
-- **No conformidades y acciones correctivas** en `/t/[slug]/operations`: workflow Abierta → En curso → Cerrada; si una acción tiene fecha, se crea/actualiza un `DueItem` (`corrective_action`) y se cierra al cerrar la acción.
+- Entrada siempre por **Hallazgo** (NC / observación / incidente / oportunidad).
+- **Laboratorio 5 Porqués** interactivo con causa raíz obligatoria y visible en la ficha.
+- Medidas con **responsable = usuario del tenant**, vencimientos → DueItem, notificados explícitos.
+- UI: `/t/[slug]/findings` (bandeja + wizard + detalle). Las rutas `/operations` redirigen acá.
 
-Siguiente: Task 11 — riesgos, auditorías e indicadores.
+Siguiente: Task 11 — riesgos, auditorías e indicadores (pueden generar hallazgos).
 
 ---
 

@@ -123,6 +123,7 @@ model Tenant {
   automationRuns   AutomationRun[]
   nonconformities  Nonconformity[]
   correctiveActions CorrectiveAction[]
+  findings         Finding[]
 
   @@map("tenant")
 }
@@ -396,4 +397,90 @@ model CorrectiveAction {
   @@index([tenantId, status])
   @@index([nonconformityId])
   @@map("corrective_action")
+}
+
+enum FindingType {
+  nonconformity
+  observation
+  incident
+  opportunity
+}
+
+enum FindingStatus {
+  draft
+  published
+  in_progress
+  closed
+  cancelled
+}
+
+enum MeasureKind {
+  corrective
+  preventive
+}
+
+enum RcaStatus {
+  incomplete
+  confirmed
+}
+
+model Finding {
+  id              String            @id @default(cuid())
+  tenantId        String
+  type            FindingType
+  status          FindingStatus     @default(draft)
+  title           String
+  description     String
+  detectedAt      DateTime
+  source          String?
+  location        String?
+  severity        String?
+  createdByUserId String?
+  publishedAt     DateTime?
+  /// JSON RootCauseAnalysis (five_whys)
+  rcaJson         Json?
+  rcaStatus       RcaStatus         @default(incomplete)
+  rootCause       String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  measures        FindingMeasure[]
+  notifyRecipients FindingNotifyRecipient[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, type])
+  @@map("finding")
+}
+
+model FindingMeasure {
+  id               String        @id @default(cuid())
+  findingId        String
+  tenantId         String
+  kind             MeasureKind
+  title            String
+  description      String?
+  ownerUserId      String
+  dueAt            DateTime?
+  linkedRootCause  Boolean       @default(false)
+  status           WorkflowStatus @default(open)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  finding          Finding       @relation(fields: [findingId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@index([findingId])
+  @@index([ownerUserId])
+  @@map("finding_measure")
+}
+
+model FindingNotifyRecipient {
+  id        String   @id @default(cuid())
+  findingId String
+  userId    String
+  createdAt DateTime @default(now())
+  finding   Finding  @relation(fields: [findingId], references: [id], onDelete: Cascade)
+
+  @@unique([findingId, userId])
+  @@index([userId])
+  @@map("finding_notify_recipient")
 }

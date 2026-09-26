@@ -212,6 +212,45 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ---
 
+## Task 10b: findings — dominio + persistencia + publish
+
+**Description:** Implementar `SPEC-findings.md`: Finding tipado, 5 Porqués con causa raíz obligatoria, medidas con owner usuario, notificados, DueItems al publicar. Refactor/reemplazo del modelo NC de Task 10.
+
+**Acceptance criteria:**
+- [x] Dominio: tipos, gates de publicación, 5 Whys (confirm root cause)
+- [x] Schema Prisma Finding + WhyStep/RCA + Measure + NotificationRecipient
+- [x] `publishFinding` crea DueItems y notifica solo a notificados + owners
+- [x] Migración desde Nonconformity o drop en entornos solo-dev documentado
+
+**Verification:**
+- [x] Unit tests gates + 5 Whys
+- [x] Integration: publish → due + notifications
+
+**Dependencies:** Task 10, Task 9  
+**Files:** `src/domain/findings/`, `src/lib/findings.ts`, prisma  
+**Estimated scope:** L
+
+---
+
+## Task 10c: findings — UI laboratorio + bandeja
+
+**Description:** FiveWhysLab interactivo, wizard de alta, bandeja y detalle con causa raíz destacada. Reemplaza UI `/operations` NC.
+
+**Acceptance criteria:**
+- [x] Laboratorio paso a paso + cadena visual + confirmar causa raíz
+- [x] Alta: datos → causa → medidas (user+due) → notificados → publicar
+- [x] Detalle muestra ★ causa raíz; listado filtrable por tipo
+
+**Verification:**
+- [x] Manual: publicar hallazgo NC con 5 Porqués y ver ficha
+- [x] Viewer no publica
+
+**Dependencies:** Task 10b  
+**Files:** `src/app/(tenant)/t/[slug]/findings/`, FiveWhysLab component  
+**Estimated scope:** L
+
+---
+
 ## Task 11: operations-core — risks, audits, indicators
 
 **Description:** Minimal usable modules for risks, internal audits, and indicators (with due/measurement dates hooked to due engine).

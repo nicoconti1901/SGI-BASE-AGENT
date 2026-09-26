@@ -26,7 +26,7 @@ Construir una plataforma web multi-tenant para que empresas operen un **Sistema 
 - [ ] Multi-usuario por tenant con roles; superusuario de plataforma separado.
 - [ ] Automatizaciones de seguimiento / indicadores / vencimientos: modelo de “oferta + activación” (nativo e integraciones), con al menos el motor de vencimientos y recordatorios en MVP.
 - [ ] UI moderna, no genérica; accesible (WCAG 2.1 AA en flujos críticos) y usable en desktop + tablet.
-- [ ] Operaciones core: no conformidades/acciones, riesgos, auditorías internas, indicadores (mínimo usable).
+- [ ] Operaciones core: **hallazgos unificados** (NC / observación / incidente / mejora) con causa, medidas, responsables y notificados; luego riesgos, auditorías e indicadores.
 
 ---
 
@@ -183,7 +183,7 @@ Detalle fino por módulo se abrirá en `SPEC-<module-id>.md`. Resumen de contrat
 | `assessment-gap` | Formulario/backoffice para que el superusuario cargue gap y docs existentes |
 | `document-control` | CRUD docs, versión, vigencia, vínculo a requisito; keep/replace/create |
 | `automation-offers` | Catálogo de ofertas (nativo + integración); motor de **due dates / seguimientos / indicadores**; activación por tenant |
-| `operations-core` | NC + acciones correctivas; riesgos; auditorías internas; indicadores |
+| `operations-core` | Hallazgos unificados + medidas; riesgos; auditorías; indicadores — ver `SPEC-findings.md` |
 | `client-portal` | Shell UI moderno; navegación SGI; dashboards de vencimientos y estado de requisitos |
 
 ---
