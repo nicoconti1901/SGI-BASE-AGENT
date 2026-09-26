@@ -125,6 +125,10 @@ model Tenant {
   correctiveActions CorrectiveAction[]
   findings         Finding[]
   findingAttachments FindingAttachment[]
+  risks            Risk[]
+  opportunities    Opportunity[]
+  operationalActions Action[]
+  actionAttachments ActionAttachment[]
 
   @@map("tenant")
 }
@@ -448,6 +452,8 @@ model Finding {
   measures        FindingMeasure[]
   notifyRecipients FindingNotifyRecipient[]
   attachments     FindingAttachment[]
+  risks           Risk[]
+  opportunities   Opportunity[]
 
   @@index([tenantId, status])
   @@index([tenantId, type])
@@ -514,4 +520,243 @@ model FindingNotifyRecipient {
   @@unique([findingId, userId])
   @@index([userId])
   @@map("finding_notify_recipient")
+}
+
+/// --- Riesgos y oportunidades (ISO 9001:2026 §6.1) ---
+
+enum RiskStatus {
+  identified
+  analyzing
+  evaluated
+  response_planned
+  implementing
+  effectiveness_review
+  monitored
+  closed
+}
+
+enum OpportunityStatus {
+  discovered
+  analyzing
+  evaluated
+  decision
+  pursuing
+  implementing
+  benefit_review
+  realized
+  closed
+}
+
+enum SourceKind {
+  process
+  finding
+  supplier
+  change
+  objective
+  stakeholder
+  indicator
+  other
+}
+
+enum AssessmentMethod {
+  qualitative
+  probability_impact
+}
+
+enum RiskResponseDecision {
+  mitigate
+  accept
+  transfer
+  avoid
+  monitor
+  retain
+}
+
+enum OpportunityPursuitDecision {
+  pursue_now
+  pursue_later
+  monitor
+  investigate
+  do_not_pursue
+  close
+}
+
+enum ActionStatus {
+  open
+  in_progress
+  completed
+  cancelled
+}
+
+enum EffectivenessStatus {
+  pending
+  effective
+  partially_effective
+  not_effective
+  not_applicable
+}
+
+enum ActionLinkTarget {
+  risk
+  opportunity
+  finding
+}
+
+model Risk {
+  id                   String                @id @default(cuid())
+  tenantId             String
+  title                String
+  status               RiskStatus            @default(identified)
+  /// causa
+  cause                String                @default("")
+  /// evento
+  event                String                @default("")
+  /// efecto
+  effect               String                @default("")
+  /// JSON string[]
+  existingControlsJson Json                  @default("[]")
+  sourceKind           SourceKind            @default(other)
+  sourceLabel          String                @default("")
+  findingId            String?
+  responseDecision     RiskResponseDecision?
+  responseRationale    String?
+  responseOwnerUserId  String?
+  nextReviewAt         DateTime?
+  closeReason          String?
+  closeRationale       String?
+  createdByUserId      String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  finding              Finding?              @relation(fields: [findingId], references: [id], onDelete: SetNull)
+  assessments          RiskAssessment[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, sourceKind])
+  @@index([findingId])
+  @@map("risk")
+}
+
+model RiskAssessment {
+  id            String           @id @default(cuid())
+  tenantId      String
+  riskId        String
+  version       Int
+  method        AssessmentMethod
+  /// qualitative level or P×I payload
+  resultJson    Json
+  rationale     String
+  assessedById  String?
+  assessedAt    DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  risk          Risk             @relation(fields: [riskId], references: [id], onDelete: Cascade)
+
+  @@unique([riskId, version])
+  @@index([tenantId, riskId])
+  @@map("risk_assessment")
+}
+
+model Opportunity {
+  id                   String                       @id @default(cuid())
+  tenantId             String
+  title                String
+  status               OpportunityStatus            @default(discovered)
+  condition            String                       @default("")
+  circumstance         String                       @default("")
+  benefit              String                       @default("")
+  sourceKind           SourceKind                   @default(other)
+  sourceLabel          String                       @default("")
+  findingId            String?
+  pursuitDecision      OpportunityPursuitDecision?
+  pursuitRationale     String?
+  pursuitOwnerUserId   String?
+  benefitExpected      String?
+  benefitObserved      String?
+  nextReviewAt         DateTime?
+  closeRationale       String?
+  createdByUserId      String?
+  createdAt            DateTime                     @default(now())
+  updatedAt            DateTime                     @updatedAt
+  tenant               Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  finding              Finding?                     @relation(fields: [findingId], references: [id], onDelete: SetNull)
+  assessments          OpportunityAssessment[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, sourceKind])
+  @@index([findingId])
+  @@map("opportunity")
+}
+
+model OpportunityAssessment {
+  id            String           @id @default(cuid())
+  tenantId      String
+  opportunityId String
+  version       Int
+  method        AssessmentMethod
+  resultJson    Json
+  rationale     String
+  assessedById  String?
+  assessedAt    DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  opportunity   Opportunity      @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@unique([opportunityId, version])
+  @@index([tenantId, opportunityId])
+  @@map("opportunity_assessment")
+}
+
+model Action {
+  id                   String              @id @default(cuid())
+  tenantId             String
+  title                String
+  description          String?
+  status               ActionStatus        @default(open)
+  ownerUserId          String
+  dueAt                DateTime?
+  effectivenessStatus  EffectivenessStatus @default(pending)
+  effectivenessNote    String?
+  effectivenessAt      DateTime?
+  createdByUserId      String?
+  completedAt          DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  tenant               Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  links                ActionLink[]
+  attachments          ActionAttachment[]
+
+  @@index([tenantId, status])
+  @@index([ownerUserId])
+  @@index([tenantId, dueAt])
+  @@map("action")
+}
+
+model ActionLink {
+  id         String          @id @default(cuid())
+  actionId   String
+  targetType ActionLinkTarget
+  targetId   String
+  createdAt  DateTime        @default(now())
+  action     Action          @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@unique([actionId, targetType, targetId])
+  @@index([targetType, targetId])
+  @@map("action_link")
+}
+
+model ActionAttachment {
+  id           String   @id @default(cuid())
+  tenantId     String
+  actionId     String
+  storageKey   String
+  fileName     String
+  contentType  String
+  sizeBytes    Int
+  label        String?
+  uploadedById String?
+  createdAt    DateTime @default(now())
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  action       Action   @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, actionId])
+  @@map("action_attachment")
 }
