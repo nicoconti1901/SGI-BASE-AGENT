@@ -50,3 +50,12 @@ describe("audit permissions", () => {
     expect(canTenantRole("process_owner", "approve_audit_program")).toBe(false);
   });
 });
+
+describe("finding lifecycle permissions", () => {
+  it("lets admins and process owners verify, only admins cancel or reopen", () => {
+    expect(canTenantRole("process_owner", "verify_findings")).toBe(true);
+    expect(canTenantRole("contributor", "verify_findings")).toBe(false);
+    expect(canTenantRole("tenant_admin", "cancel_findings")).toBe(true);
+    expect(canTenantRole("process_owner", "cancel_findings")).toBe(false);
+  });
+});

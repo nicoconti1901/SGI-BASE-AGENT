@@ -19,6 +19,7 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:demo": "tsx scripts/seed-tisico-users.ts",
+    "db:recalc-findings": "tsx scripts/recalc-finding-statuses.ts",
     "db:studio": "prisma studio",
     "job:due-scan": "tsx scripts/due-scan.ts"
   },

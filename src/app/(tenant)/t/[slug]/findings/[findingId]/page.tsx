@@ -5,7 +5,22 @@ import { getAppSessionContext } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
-import { getFinding } from "@/lib/findings";
+import { getFinding, listTenantMemberOptions } from "@/lib/findings";
+import {
+  VERIFICATION_RESULT_LABELS,
+  canApplyFindingAction,
+  needsNewCorrectiveMeasure,
+  pendingSteps,
+  requiresEffectivenessVerification,
+  verifierIsSoleOwner,
+} from "@/domain/findings/lifecycle";
+import {
+  AddMeasureForm,
+  ReasonForm,
+  RescheduleForm,
+  StartMeasureButton,
+  VerifyForm,
+} from "@/app/(tenant)/t/[slug]/findings/LifecycleForms";
 import {
   CloseMeasureWithEvidenceForm,
   FindingDocUploadForm,
@@ -29,6 +44,15 @@ type Params = Promise<{ slug: string; findingId: string }>;
 
 function isPast(date: Date): boolean {
   return date.getTime() < Date.now();
+}
+
+/** Fuera del componente: el render no llama funciones impuras directamente. */
+function currentTime(): Date {
+  return new Date();
+}
+
+function formatDay(d: Date): string {
+  return d.toLocaleDateString("es-AR");
 }
 
 export default async function FindingDetailPage({
@@ -67,6 +91,31 @@ export default async function FindingDetailPage({
   const docs = finding.attachments.filter((a) => a.kind === "finding_doc");
   const findingStatus = finding.status as FindingStatus;
   const statusTone = FINDING_STATUS_TONE[findingStatus];
+
+  // Ciclo de vida (Task 10d)
+  const now = currentTime();
+  const opts = { isPlatformSuperuser: ctx.isPlatformSuperuser };
+  const canVerify = canTenantRole(membership?.role, "verify_findings", opts);
+  const canCancel = canTenantRole(membership?.role, "cancel_findings", opts);
+  const workable = findingStatus === "published" || findingStatus === "in_progress";
+  const members = await listTenantMemberOptions(tenant.id);
+  const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "Usuario";
+  const needsNew = needsNewCorrectiveMeasure({
+    reworkSince: finding.reworkSince,
+    measures: finding.measures,
+  });
+  const lifecycleSteps: FindingStatus[] = requiresEffectivenessVerification(finding.type)
+    ? ["published", "in_progress", "verification", "closed"]
+    : ["published", "in_progress", "closed"];
+  const currentStepIndex = lifecycleSteps.indexOf(findingStatus);
+  const steps = pendingSteps({
+    status: findingStatus,
+    type: finding.type,
+    reworkSince: finding.reworkSince,
+    measures: finding.measures,
+    verificationDueAt: finding.verificationDueAt,
+    now,
+  });
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8">
@@ -113,6 +162,83 @@ export default async function FindingDetailPage({
           Bandeja
         </Link>
       </div>
+
+      {findingStatus === "cancelled" ? (
+        <p className="rounded-[var(--radius-md)] border border-[var(--color-danger)]/40 bg-[var(--color-danger-soft)] px-4 py-3 text-sm text-[var(--color-danger)]">
+          Anulado
+          {finding.cancelledAt ? ` el ${formatDay(finding.cancelledAt)}` : ""}
+          {finding.cancelReason ? `: ${finding.cancelReason}` : ""}
+        </p>
+      ) : (
+        <section aria-label="Estado del hallazgo" className="flex flex-col gap-3">
+          <ol className="grid gap-2" style={{ gridTemplateColumns: `repeat(${lifecycleSteps.length}, minmax(0, 1fr))` }}>
+            {lifecycleSteps.map((s, i) => (
+              <li
+                key={s}
+                aria-current={i === currentStepIndex ? "step" : undefined}
+                className={`rounded-[var(--radius-md)] border px-3 py-2 text-sm ${
+                  i === currentStepIndex
+                    ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] font-semibold text-[var(--color-accent-ink)]"
+                    : i < currentStepIndex
+                      ? "border-[var(--color-line)] text-[var(--color-success)]"
+                      : "border-[var(--color-line)] text-[var(--color-ink-subtle)]"
+                }`}
+              >
+                {FINDING_STATUS_LABELS[s]}
+              </li>
+            ))}
+          </ol>
+          {steps.length > 0 ? (
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
+              <p className="font-medium">Qué falta</p>
+              <ul className="mt-1 list-disc pl-5 text-[var(--color-ink-muted)]">
+                {steps.map((s) => (
+                  <li key={s}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </section>
+      )}
+
+      {findingStatus === "verification" ? (
+        <section className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-accent)] bg-[var(--color-surface-raised)] p-5">
+          <div>
+            <h2 className="font-[family-name:var(--font-display)] text-xl">Verificación de eficacia</h2>
+            <p className="text-sm text-[var(--color-ink-muted)]">
+              ISO §10.2.1 d) · Programada para el{" "}
+              <span className="font-[family-name:var(--font-mono)]">
+                {finding.verificationDueAt ? formatDay(finding.verificationDueAt) : "—"}
+              </span>
+            </p>
+          </div>
+          {canVerify ? (
+            <>
+              <VerifyForm
+                slug={slug}
+                findingId={finding.id}
+                soleOwner={verifierIsSoleOwner(
+                  ctx.userId,
+                  finding.measures.map((m) => m.ownerUserId),
+                )}
+                early={Boolean(finding.verificationDueAt && now < finding.verificationDueAt)}
+                dueLabel={finding.verificationDueAt ? formatDay(finding.verificationDueAt) : null}
+              />
+              {finding.verificationDueAt ? (
+                <RescheduleForm
+                  slug={slug}
+                  findingId={finding.id}
+                  current={finding.verificationDueAt.toISOString().slice(0, 10)}
+                />
+              ) : null}
+            </>
+          ) : (
+            <p className="text-sm text-[var(--color-ink-muted)]">
+              La verifica el administrador o un responsable de proceso.
+            </p>
+          )}
+        </section>
+      ) : null}
 
       <section className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5">
         <h2 className="text-xs uppercase tracking-wide text-[var(--color-ink-subtle)]">
@@ -262,7 +388,12 @@ export default async function FindingDetailPage({
                     </p>
                   </div>
                 )}
-                {canWrite && measure.status !== "closed" ? (
+                {workable &&
+                measure.status === "open" &&
+                (canWrite || measure.ownerUserId === ctx.userId) ? (
+                  <StartMeasureButton slug={slug} findingId={finding.id} measureId={measure.id} />
+                ) : null}
+                {workable && canWrite && measure.status !== "closed" ? (
                   <CloseMeasureWithEvidenceForm
                     slug={slug}
                     findingId={finding.id}
@@ -273,6 +404,96 @@ export default async function FindingDetailPage({
             );
           })}
         </ul>
+        {workable && canWrite ? (
+          <div className="mt-4">
+            <AddMeasureForm
+              slug={slug}
+              findingId={finding.id}
+              members={members.map((m) => ({ id: m.id, name: m.name }))}
+              highlight={needsNew}
+            />
+          </div>
+        ) : null}
+      </section>
+
+      {findingStatus === "closed" ? (
+        <p className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
+          <span className="font-medium">¿Cambia algún riesgo?</span> ISO §10.2.1 e) pide actualizar
+          riesgos y oportunidades si hace falta.{" "}
+          <Link href={`/t/${slug}/risks/explore`} className="text-[var(--color-accent)] hover:underline">
+            Explorar riesgos desde este hallazgo →
+          </Link>
+        </p>
+      ) : null}
+
+      {finding.verifications.length > 0 ? (
+        <section className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-6">
+          <h2 className="font-[family-name:var(--font-display)] text-xl">Verificaciones de eficacia</h2>
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+            {finding.verifications.map((v) => (
+              <li key={v.id} className="flex flex-col gap-1 px-4 py-3 text-sm">
+                <p>
+                  <span
+                    className={`mr-2 rounded-[var(--radius-sm)] px-2 py-0.5 text-xs font-semibold ${
+                      v.result === "effective"
+                        ? "bg-[var(--color-success-soft)] text-[var(--color-success)]"
+                        : "bg-[var(--color-danger-soft)] text-[var(--color-danger)]"
+                    }`}
+                  >
+                    {VERIFICATION_RESULT_LABELS[v.result]}
+                  </span>
+                  <span className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
+                    {formatDay(v.verifiedAt)}
+                  </span>{" "}
+                  · {nameOf(v.verifiedByUserId)}
+                </p>
+                <p>{v.evidence}</p>
+                {v.independenceException ? (
+                  <p className="text-xs text-[var(--color-ink-muted)]">
+                    Excepción de independencia: {v.independenceException}
+                  </p>
+                ) : null}
+                {v.earlyReason ? (
+                  <p className="text-xs text-[var(--color-ink-muted)]">Verificada antes de lo programado: {v.earlyReason}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <section className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-6">
+        <details>
+          <summary className="cursor-pointer font-[family-name:var(--font-display)] text-xl">
+            Historial ({finding.statusEvents.length})
+          </summary>
+          <ol className="mt-3 flex flex-col gap-2 text-sm">
+            {finding.statusEvents.map((e) => (
+              <li key={e.id} className="border-l-2 border-[var(--color-line)] pl-3">
+                <p>
+                  <span className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
+                    {formatDay(e.createdAt)}
+                  </span>{" "}
+                  {e.fromStatus ? `${FINDING_STATUS_LABELS[e.fromStatus]} → ` : ""}
+                  <span className="font-medium">{FINDING_STATUS_LABELS[e.toStatus]}</span> ·{" "}
+                  {e.actorUserId ? nameOf(e.actorUserId) : "Automático"}
+                </p>
+                {e.reason ? <p className="text-[var(--color-ink-muted)]">{e.reason}</p> : null}
+              </li>
+            ))}
+            {finding.statusEvents.length === 0 ? (
+              <li className="text-[var(--color-ink-muted)]">
+                Sin cambios registrados (el historial empezó a guardarse con el ciclo de vida).
+              </li>
+            ) : null}
+          </ol>
+        </details>
+        {canCancel && canApplyFindingAction("cancel", findingStatus) ? (
+          <ReasonForm slug={slug} findingId={finding.id} kind="cancel" />
+        ) : null}
+        {canCancel && canApplyFindingAction("reopen", findingStatus) ? (
+          <ReasonForm slug={slug} findingId={finding.id} kind="reopen" />
+        ) : null}
       </section>
     </div>
   );

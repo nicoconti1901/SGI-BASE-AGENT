@@ -255,11 +255,16 @@ export default async function FindingsListPage({
                   finding.status === "draft"
                     ? `/t/${slug}/findings/${finding.id}/edit`
                     : `/t/${slug}/findings/${finding.id}`;
-                const nextDue = nearestOpenMeasureDueAt(finding.measures);
+                // En verificación, lo que vence es la verificación de eficacia.
+                const inVerification = finding.status === "verification";
+                const nextDue = inVerification
+                  ? finding.verificationDueAt
+                  : nearestOpenMeasureDueAt(finding.measures);
                 const overdue =
                   nextDue &&
                   isPast(nextDue) &&
-                  finding.status !== "closed";
+                  finding.status !== "closed" &&
+                  finding.status !== "cancelled";
                 return (
                   <tr
                     key={finding.id}
@@ -287,6 +292,9 @@ export default async function FindingsListPage({
                       }`}
                     >
                       {nextDue ? formatDate(nextDue) : "—"}
+                      {inVerification && nextDue ? (
+                        <span className="block text-xs">verificar eficacia</span>
+                      ) : null}
                     </td>
                     <td className="px-3 py-3">
                       <MeasureStatusCell measures={finding.measures} />

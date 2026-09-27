@@ -5,6 +5,7 @@ import {
   closeDueItemsForEntity,
 } from "@/lib/automation";
 import { getEmailSender } from "@/lib/mail";
+import { syncFindingStatus } from "@/lib/finding-lifecycle";
 import { assertCanPublishFinding } from "@/domain/findings/publish";
 import { assertCanCloseMeasureWithEvidence } from "@/domain/findings/attachments";
 import {
@@ -80,6 +81,8 @@ export async function getFinding(
       notifyRecipients: true,
       attachments: { orderBy: { createdAt: "desc" } },
       audit: { select: { id: true, code: true, title: true } },
+      verifications: { orderBy: { verifiedAt: "desc" } },
+      statusEvents: { orderBy: { createdAt: "asc" } },
     },
   });
 }
@@ -240,6 +243,15 @@ export async function publishFinding(input: {
     },
     include: { measures: true, notifyRecipients: true },
   });
+  await db.findingStatusEvent.create({
+    data: {
+      tenantId: input.tenantId,
+      findingId: published.id,
+      fromStatus: "draft",
+      toStatus: "published",
+      actorUserId: input.actorUserId,
+    },
+  });
 
   for (const measure of published.measures) {
     if (measure.dueAt) {
@@ -322,6 +334,8 @@ export async function publishFinding(input: {
 export async function closeFindingMeasure(input: {
   tenantId: string;
   measureId: string;
+  /** Quién cierra: queda en la medida y en el historial del hallazgo. */
+  actorUserId: string;
   db?: PrismaClient;
 }) {
   const db = input.db ?? prisma;
@@ -329,9 +343,13 @@ export async function closeFindingMeasure(input: {
     where: { id: input.measureId, tenantId: input.tenantId },
     include: {
       evidence: { where: { kind: "measure_evidence" } },
+      finding: { select: { status: true } },
     },
   });
   if (!measure) throw new Error("Medida no encontrada");
+  if (measure.finding.status !== "published" && measure.finding.status !== "in_progress") {
+    throw new Error("Las medidas se cierran con el hallazgo publicado o en curso");
+  }
   if (measure.status === "closed") {
     throw new Error("La medida ya está cerrada");
   }
@@ -340,7 +358,7 @@ export async function closeFindingMeasure(input: {
 
   const updated = await db.findingMeasure.update({
     where: { id: measure.id },
-    data: { status: "closed" },
+    data: { status: "closed", closedAt: new Date(), closedByUserId: input.actorUserId },
   });
 
   await closeDueItemsForEntity(
@@ -349,6 +367,12 @@ export async function closeFindingMeasure(input: {
       entityType: FINDING_MEASURE_ENTITY_TYPE,
       entityId: measure.id,
     },
+    db,
+  );
+
+  // Puede pasar el hallazgo a en curso, en verificación o cerrado (R2, R3).
+  await syncFindingStatus(
+    { tenantId: input.tenantId, findingId: measure.findingId, actorUserId: input.actorUserId },
     db,
   );
 

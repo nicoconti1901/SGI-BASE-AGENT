@@ -253,22 +253,19 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ## Task 10d: findings — lógica de estados del hallazgo
 
-**Description:** Dar lógica real a los estados de cada hallazgo (`draft` → `published` → `in_progress` → `closed` / `cancelled`). Hoy el badge existe en bandeja/detalle, pero las transiciones no están gobernadas por reglas de dominio (p. ej. pasar a en curso cuando hay medidas abiertas, cerrar solo si todas las medidas están cerradas con evidencia, anular con motivo).
+**Description:** Ciclo de vida real del hallazgo según §10.2 (9001/14001/45001) y la guía ISO/TC 176 APG: estados derivados de las medidas, **verificación de eficacia** antes de cerrar NC e incidentes, anulación y reapertura con motivo, e historial. Research: `RESEARCH-findings-lifecycle.md`. SPEC: `SPEC-findings-lifecycle.md` (aprobado PO 2026-09-27).
 
-**Acceptance criteria:**
-- [ ] Dominio: reglas de transición válidas + gates (quién puede, desde qué estado, qué precondiciones)
-- [ ] Al publicar → `published`; al tener ≥1 medida abierta post-publicación → `in_progress` (o regla equivalente aprobada)
-- [ ] Cerrar hallazgo solo si todas las medidas están `closed` (con evidencia)
-- [ ] Anular con motivo / permiso; no reabrir sin rol adecuado
-- [ ] UI bandeja/detalle refleja estado derivado o transiciones explícitas; acciones visibles según estado
+**Decisiones PO (2026-09-27):** verificación obligatoria para NC e incidente · plazo 30 días editable (antes, con motivo) · verifica admin o responsable de proceso independiente (excepción justificada) · anula y reabre solo el admin.
 
-**Verification:**
-- [ ] Unit tests de transiciones y bloqueos
-- [ ] Manual: publicar → cerrar medidas → cerrar hallazgo; intentar cerrar con medida abierta falla
+**Sub-tareas (plan vertical):**
+- [x] 10d.1 Dominio + Prisma + tests (estado `verification`, transiciones, gates, independencia, historial)
+- [x] 10d.2 Persistencia: medidas iniciar/cerrar con derivación de estado, verificación, anular, reabrir, DueItem, recálculo de existentes
+- [x] 10d.3 UI: ficha con pasos, "qué falta", verificación, historial, acciones por rol; bandeja con filtro "En verificación"
+- [ ] 10d.4 e2e + README
 
 **Dependencies:** Task 10c (bandeja + adjuntos + cierre de medidas)  
-**Files:** `src/domain/findings/`, `src/lib/findings.ts`, UI detalle/bandeja, `SPEC-findings.md`  
-**Estimated scope:** M
+**Files:** `src/domain/findings/`, `src/lib/findings.ts`, UI detalle/bandeja  
+**Estimated scope:** L
 
 ---
 
