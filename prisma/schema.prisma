@@ -133,6 +133,8 @@ model Tenant {
   audits             Audit[]
   auditItems         AuditChecklistItem[]
   auditEvidence      AuditEvidenceAttachment[]
+  objectives         Objective[]
+  indicators         Indicator[]
 
   @@map("tenant")
 }
@@ -979,4 +981,124 @@ model AuditEvidenceAttachment {
 
   @@index([tenantId, itemId])
   @@map("audit_evidence_attachment")
+}
+
+// ─── Objetivos e indicadores (Task 11c) — SPEC-indicators.md ───────────────
+
+enum ObjectiveStatus {
+  active
+  achieved
+  not_achieved
+  cancelled
+}
+
+enum IndicatorDirection {
+  higher_better
+  lower_better
+}
+
+enum IndicatorFrequency {
+  monthly
+  quarterly
+  semiannual
+  annual
+}
+
+enum IndicatorKind {
+  leading
+  lagging
+}
+
+enum MeasurementStatus {
+  on_target
+  alert
+  off_target
+}
+
+/// Objetivo del SGI (§6.2): medible, con responsable, fecha y plan.
+model Objective {
+  id              String          @id @default(cuid())
+  tenantId        String
+  code            String
+  title           String
+  description     String          @default("")
+  standards       IsoStandard[]
+  ownerUserId     String
+  dueDate         DateTime
+  plan            String          @default("")
+  status          ObjectiveStatus @default(active)
+  closingNote     String?
+  closedAt        DateTime?
+  createdByUserId String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  indicators      Indicator[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, status])
+  @@map("objective")
+}
+
+/// Indicador (§9.1) que sigue el avance de un objetivo.
+model Indicator {
+  id             String             @id @default(cuid())
+  tenantId       String
+  objectiveId    String
+  name           String
+  formula        String             @default("")
+  unit           String
+  direction      IndicatorDirection
+  target         Float
+  alertThreshold Float?
+  frequency      IndicatorFrequency
+  kind           IndicatorKind
+  ownerUserId    String
+  active         Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  tenant         Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  objective      Objective          @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  measurements   Measurement[]
+
+  @@index([tenantId, objectiveId])
+  @@index([ownerUserId])
+  @@map("indicator")
+}
+
+/// Valor de un período. Un período se carga una sola vez; se corrige con registro.
+model Measurement {
+  id               String                  @id @default(cuid())
+  tenantId         String
+  indicatorId      String
+  periodKey        String
+  periodStart      DateTime
+  value            Float
+  status           MeasurementStatus
+  analysis         String?
+  findingId        String?
+  recordedByUserId String
+  recordedAt       DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  indicator        Indicator               @relation(fields: [indicatorId], references: [id], onDelete: Cascade)
+  corrections      MeasurementCorrection[]
+
+  @@unique([indicatorId, periodKey])
+  @@index([tenantId, indicatorId, periodStart])
+  @@map("measurement")
+}
+
+model MeasurementCorrection {
+  id            String      @id @default(cuid())
+  tenantId      String
+  measurementId String
+  previousValue Float
+  newValue      Float
+  reason        String
+  byUserId      String
+  createdAt     DateTime    @default(now())
+  measurement   Measurement @relation(fields: [measurementId], references: [id], onDelete: Cascade)
+
+  @@index([measurementId])
+  @@map("measurement_correction")
 }
