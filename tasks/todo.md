@@ -261,7 +261,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 - [x] 10d.1 Dominio + Prisma + tests (estado `verification`, transiciones, gates, independencia, historial)
 - [x] 10d.2 Persistencia: medidas iniciar/cerrar con derivación de estado, verificación, anular, reabrir, DueItem, recálculo de existentes
 - [x] 10d.3 UI: ficha con pasos, "qué falta", verificación, historial, acciones por rol; bandeja con filtro "En verificación"
-- [ ] 10d.4 e2e + README
+- [x] 10d.4 e2e + README (verificado en navegador por PO: publicado → en curso → en verificación → cerrado)
 
 **Dependencies:** Task 10c (bandeja + adjuntos + cierre de medidas)  
 **Files:** `src/domain/findings/`, `src/lib/findings.ts`, UI detalle/bandeja  
@@ -333,7 +333,20 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ---
 
-## Task 11c (luego): indicadores
+## Task 11c: operations-core — objetivos e indicadores (9001/14001/45001)
+
+**Description:** Objetivos del SGI (§6.2) con indicadores medibles (§9.1): carga manual por período, estado determinista (en meta / alerta / fuera de meta), análisis obligatorio de desvíos con camino a Hallazgos y Riesgos, vencimientos de carga y tablero. Research: `RESEARCH-indicators.md`. SPEC: `SPEC-indicators.md` (aprobado PO 2026-09-27).
+
+**Decisiones PO (2026-09-27):** objetivos con sus indicadores · carga manual por período · desvío = análisis + ofrecer hallazgo/riesgo · integrado 9001/14001/45001.
+
+**Sub-tareas (plan vertical):**
+- [x] 11c.1 Dominio + Prisma + tests
+- [ ] 11c.2 Objetivos e indicadores: alta, edición, permisos, vencimientos
+- [ ] 11c.3 Carga por período, correcciones, análisis de desvío, vínculo a Hallazgos y Riesgos
+- [ ] 11c.4 Tablero con tendencias, guía, menú, e2e, README
+
+**Dependencies:** Task 10c (findings), Task 11 (riesgos), Task 8 (DueItem)
+**Estimated scope:** L
 
 ## Checkpoint C: After Tasks 9–11
 
