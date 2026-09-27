@@ -16,14 +16,10 @@ export default async function PlatformTenantsPage() {
     <div className="mx-auto flex max-w-5xl flex-col gap-8">
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl tracking-tight">
-          Tenants
+          Empresas
         </h1>
         <p className="mt-2 text-[var(--color-ink-muted)]">
-          Alta de empresas y aplicación automática de plantilla ISO. URL path-based:{" "}
-          <code className="font-[family-name:var(--font-mono)] text-xs">
-            /t/[slug]
-          </code>
-          .
+          Cada empresa nueva recibe la plantilla ISO según su tamaño y actividad.
         </p>
       </div>
 
@@ -35,7 +31,7 @@ export default async function PlatformTenantsPage() {
         </h2>
         {tenants.length === 0 ? (
           <p className="text-sm text-[var(--color-ink-muted)]">
-            Todavía no hay tenants. Creá el primero con el formulario.
+            Todavía no hay empresas. Creá la primera con el formulario.
           </p>
         ) : (
           <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]">
@@ -46,7 +42,7 @@ export default async function PlatformTenantsPage() {
                   <th className="px-4 py-3 font-medium">Slug</th>
                   <th className="px-4 py-3 font-medium">Perfil</th>
                   <th className="px-4 py-3 font-medium">Requisitos</th>
-                  <th className="px-4 py-3 font-medium">Portal</th>
+                  <th className="px-4 py-3 font-medium"><span className="sr-only">Acciones</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -75,7 +71,7 @@ export default async function PlatformTenantsPage() {
                         href={`/t/${tenant.slug}`}
                         className="text-[var(--color-accent)] hover:underline"
                       >
-                        Abrir
+                        Entrar al portal →
                       </Link>
                     </td>
                   </tr>

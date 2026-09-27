@@ -35,6 +35,16 @@
   --color-tenant-rail: #12353a;
   --color-tenant-rail-ink: #e8f4f3;
 
+  /* Persona logueada — se reconoce de un vistazo por color */
+  --color-persona-superuser: #b45309;
+  --color-persona-superuser-soft: #fdf0dc;
+  --color-persona-admin: #0f6e6a;
+  --color-persona-admin-soft: #d4eeec;
+  --color-persona-member: #2f5d8a;
+  --color-persona-member-soft: #e1ebf5;
+  --color-member-rail: #1c3450;
+  --color-member-rail-ink: #e6eef7;
+
   /* Typography */
   --font-display: var(--font-sgi-display), "Georgia", serif;
   --font-sans: var(--font-sgi-sans), "Segoe UI", sans-serif;

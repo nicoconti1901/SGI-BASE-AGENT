@@ -1,13 +1,9 @@
-import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getAppSessionContext } from "@/lib/session";
 import { getMembership } from "@/lib/identity";
-import { ActivateTenantButton } from "@/app/(tenant)/t/[slug]/ActivateTenantButton";
-import {
-  canTenantRole,
-  labelPlatformOrTenantRole,
-} from "@/domain/identity/authz";
+import { canTenantRole } from "@/domain/identity/authz";
 
 type Params = Promise<{ slug: string }>;
 
@@ -22,105 +18,74 @@ export default async function TenantPortalBySlugPage({
     notFound();
   }
 
+  // El layout ya verificó el acceso; acá solo se decide qué ofrecer.
   const ctx = await getAppSessionContext();
   if (!ctx) {
     redirect("/login");
   }
 
   const membership = await getMembership(ctx.userId, tenant.id);
-  if (!membership && !ctx.isPlatformSuperuser) {
-    return (
-      <div className="mx-auto max-w-2xl">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl">
-          Sin membresía
-        </h1>
-        <p className="mt-3 text-[var(--color-ink-muted)]">
-          {ctx.email} no es miembro de <strong>{tenant.name}</strong>.
-        </p>
-      </div>
-    );
-  }
+  const opts = { isPlatformSuperuser: ctx.isPlatformSuperuser };
+  const canWrite = canTenantRole(membership?.role, "write", opts);
+  const canInvite = canTenantRole(membership?.role, "invite_users", opts);
+  const firstName = ctx.name.split(" ")[0] || ctx.name;
 
-  const canInvite = canTenantRole(membership?.role, "invite_users", {
-    isPlatformSuperuser: ctx.isPlatformSuperuser,
-  });
-  const canWrite = canTenantRole(membership?.role, "write", {
-    isPlatformSuperuser: ctx.isPlatformSuperuser,
-  });
+  const base = `/t/${slug}`;
+  const modules = [
+    {
+      href: `${base}/findings`,
+      title: "Hallazgos",
+      body: canWrite ? "Registrá y seguí hallazgos y acciones." : "Consultá hallazgos y acciones.",
+    },
+    {
+      href: `${base}/risks`,
+      title: "Riesgos y oportunidades",
+      body: canWrite ? "Detectá, evaluá y tratá riesgos." : "Consultá riesgos y su tratamiento.",
+    },
+    {
+      href: `${base}/audits`,
+      title: "Auditorías internas",
+      body: "Programa del año, planes y resultados de auditoría.",
+    },
+    {
+      href: `${base}/documents`,
+      title: "Documentos",
+      body: "Procedimientos y registros vigentes.",
+    },
+    {
+      href: `${base}/automations`,
+      title: "Automatizaciones",
+      body: "Vencimientos y avisos programados.",
+    },
+    {
+      href: `${base}/users`,
+      title: "Usuarios",
+      body: canInvite ? "Sumá personas y asigná roles." : "Quiénes forman parte de la empresa.",
+    },
+  ];
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex max-w-4xl flex-col gap-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-[var(--color-ink-subtle)]">
-          Portal del cliente
-        </p>
-        <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl tracking-tight">
-          {tenant.name}
+        <h1 className="font-[family-name:var(--font-display)] text-3xl tracking-tight">
+          Hola, {firstName}
         </h1>
         <p className="mt-2 text-[var(--color-ink-muted)]">
-          Tenant <strong>{tenant.slug}</strong> · {tenant.size} / {tenant.activity}{" "}
-          · {tenant._count.requirements} requisitos
-        </p>
-        <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
-          Sesión {ctx.email}
-          {" · "}
-          {labelPlatformOrTenantRole({
-            isPlatformSuperuser: ctx.isPlatformSuperuser && !membership,
-            tenantRole: membership?.role,
-          })}
-          {ctx.isPlatformSuperuser && membership
-            ? ` · también ${labelPlatformOrTenantRole({ isPlatformSuperuser: true })}`
-            : ""}
-          {ctx.tenantId === tenant.id ? " · activo" : ""}
-          {" · "}
-          {canWrite ? "puede editar" : "solo lectura"}
+          {tenant.name} · {tenant._count.requirements} requisitos ISO en seguimiento
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <ActivateTenantButton slug={slug} />
-        {canInvite ? (
+      <div className="grid gap-3 sm:grid-cols-2">
+        {modules.map((m) => (
           <Link
-            href={`/t/${slug}/users`}
-            className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white"
+            key={m.href}
+            href={m.href}
+            className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)] transition duration-[var(--duration-med)] ease-[var(--ease-out)] hover:-translate-y-0.5 hover:border-[var(--color-accent)]"
           >
-            Gestionar usuarios
+            <h2 className="font-[family-name:var(--font-display)] text-xl">{m.title}</h2>
+            <p className="mt-2 text-sm text-[var(--color-ink-muted)]">{m.body}</p>
           </Link>
-        ) : (
-          <Link
-            href={`/t/${slug}/users`}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
-          >
-            Ver usuarios
-          </Link>
-        )}
-      </div>
-
-      <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface)] px-5 py-8 text-sm text-[var(--color-ink-muted)]">
-        Identity-access listo. Consulta no muta; Colaborador escribe;
-        Administrador de la organización invita. Gap y documentos en el panel de
-        plataforma.
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <Link
-          href={`/t/${slug}/documents`}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
-        >
-          Ver documentos
-        </Link>
-        <Link
-          href={`/t/${slug}/findings`}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
-        >
-          Hallazgos
-        </Link>
-        <Link
-          href={`/t/${slug}/automations`}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
-        >
-          Automatizaciones
-        </Link>
+        ))}
       </div>
     </div>
   );
