@@ -65,7 +65,7 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 
 Rutas: `/t/[slug]/findings`. Spec: [`SPEC-findings.md`](./SPEC-findings.md).
 
-**Pendiente (Task 10d):** lógica real de ciclo de vida del hallazgo (`draft` → `published` → `in_progress` → `closed` / `cancelled`).
+**Ciclo de vida (Task 10d):** Publicado → En curso (al iniciar o cerrar una medida) → En verificación (al cerrar la última; solo NC e incidentes) → Cerrado (con eficacia verificada). Una verificación no eficaz o una reapertura vuelve a En curso y exige una nueva medida correctiva. Anular y reabrir: solo el administrador, con motivo. Cada cambio queda en el historial. Spec: [`SPEC-findings-lifecycle.md`](./SPEC-findings-lifecycle.md).
 
 ### Riesgos y oportunidades — Nivel 2 Controlado ✅
 
@@ -101,7 +101,6 @@ Rutas: `/t/[slug]/audits` (programa y listado), `/audits/new` (planificación), 
 
 ### Qué sigue
 
-- **Task 10d** — estados de hallazgos.  
 - **Task 11c** — indicadores.  
 - **Task 11d** — auditorías externas con carga del informe del organismo.  
 - **Task 12+** — portal cliente / dashboards / E2E.
@@ -126,7 +125,8 @@ El alta directa de riesgo queda como **atajo secundario**; el flujo pensado para
 2. Completá el borrador: datos del hecho, **laboratorio 5 Porqués** (hecho verificable → ramas → confirmar causa raíz), medidas, notificados.
 3. Adjuntá documentación del hecho si hace falta (fotos / registros).
 4. **Publicá** → se crean DueItems y notificaciones.
-5. En la ficha, cerrá cada medida **adjuntando evidencia**; el seguimiento en bandeja muestra el estado de esas medidas.
+5. En la ficha, cada responsable **inicia** su medida y la cierra **adjuntando evidencia**.
+6. Al cerrar la última medida, una NC o un incidente pasa a **En verificación**: pasado el plazo (30 días por defecto, editable) el administrador o un responsable de proceso que no haya ejecutado todas las medidas registra si las acciones fueron **eficaces**. Observaciones y oportunidades de mejora se cierran al cerrar sus medidas.
 
 Tipos de archivo admitidos (hallazgos y acciones): PDF, PNG/JPEG, Word, texto · máx. 15 MB (`serverActions.bodySizeLimit` = 16 MB en `next.config.ts`).
 
@@ -205,6 +205,7 @@ Abrí [http://localhost:3000](http://localhost:3000). En desarrollo, el home mue
 | `npm run db:migrate` | `prisma migrate dev` |
 | `npm run db:seed` | Seed del superusuario |
 | `npm run db:seed:demo` | Integrantes de prueba de Tisico (idempotente) |
+| `npm run db:recalc-findings` | Recalcula el estado de los hallazgos existentes según sus medidas (`-- --dry-run` para solo mostrar cambios) |
 | `npm run db:studio` | Prisma Studio |
 
 ---
