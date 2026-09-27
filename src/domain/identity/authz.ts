@@ -5,7 +5,9 @@ export type AuthzAction =
   | "write"
   | "invite_users"
   | "manage_roles"
-  | "delete";
+  | "delete"
+  | "plan_audits"
+  | "approve_audit_program";
 
 /**
  * Política documentada (Task 6):
@@ -14,12 +16,21 @@ export type AuthzAction =
  * - Responsable de proceso: igual que colaborador + delete de entidades de negocio
  * - Administrador de la organización: invite, manage_roles, write, delete
  * - Administrador de plataforma: todo
+ * - Auditorías (SPEC-audits): planifica admin o responsable de proceso; aprueba el programa solo el admin
  */
 const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
   viewer: ["read"],
   contributor: ["read", "write"],
-  process_owner: ["read", "write", "delete"],
-  tenant_admin: ["read", "write", "delete", "invite_users", "manage_roles"],
+  process_owner: ["read", "write", "delete", "plan_audits"],
+  tenant_admin: [
+    "read",
+    "write",
+    "delete",
+    "invite_users",
+    "manage_roles",
+    "plan_audits",
+    "approve_audit_program",
+  ],
 };
 
 /** Etiquetas profesionales en español (UI). Los valores técnicos siguen en inglés en DB. */

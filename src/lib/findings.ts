@@ -79,6 +79,7 @@ export async function getFinding(
       },
       notifyRecipients: true,
       attachments: { orderBy: { createdAt: "desc" } },
+      audit: { select: { id: true, code: true, title: true } },
     },
   });
 }

@@ -56,6 +56,13 @@ async function main() {
   console.log(`Tenant: ${tenant.name} (${tenant.slug})`);
 
   for (const user of USERS) {
+    const existing = await prisma.membership.findFirst({
+      where: { tenantId: tenant.id, user: { email: user.email } },
+    });
+    if (existing) {
+      console.log(`Ya existe ${user.role.padEnd(14)} ${user.email}`);
+      continue;
+    }
     const result = await inviteTenantMember({
       tenantId: tenant.id,
       name: user.name,

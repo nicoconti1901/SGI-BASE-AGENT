@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FINDING_SEVERITY_LABELS } from "@/domain/audits/types";
 import { notFound, redirect } from "next/navigation";
 import { getAppSessionContext } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
@@ -25,6 +26,10 @@ import {
 } from "@/domain/findings/types";
 
 type Params = Promise<{ slug: string; findingId: string }>;
+
+function isPast(date: Date): boolean {
+  return date.getTime() < Date.now();
+}
 
 export default async function FindingDetailPage({
   params,
@@ -85,7 +90,21 @@ export default async function FindingDetailPage({
             Detectado {finding.detectedAt.toISOString().slice(0, 10)}
             {finding.source ? ` · ${finding.source}` : ""}
             {finding.location ? ` · ${finding.location}` : ""}
+            {finding.severity && FINDING_SEVERITY_LABELS[finding.severity]
+              ? ` · ${FINDING_SEVERITY_LABELS[finding.severity]}`
+              : ""}
           </p>
+          {finding.audit ? (
+            <p className="mt-1 text-sm">
+              Origen:{" "}
+              <Link
+                href={`/t/${slug}/audits/${finding.audit.id}`}
+                className="text-[var(--color-accent)] underline-offset-2 hover:underline"
+              >
+                auditoría interna {finding.audit.code} · {finding.audit.title}
+              </Link>
+            </p>
+          ) : null}
         </div>
         <Link
           href={`/t/${slug}/findings`}
@@ -208,7 +227,7 @@ export default async function FindingDetailPage({
           {finding.measures.map((measure) => {
             const overdue = Boolean(
               measure.dueAt &&
-                measure.dueAt.getTime() < Date.now() &&
+                isPast(measure.dueAt) &&
                 measure.status !== "closed",
             );
             return (

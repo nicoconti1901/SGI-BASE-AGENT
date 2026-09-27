@@ -3,9 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { getAppSessionContext } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership, listTenantMembers } from "@/lib/identity";
-import { canTenantRole, labelPlatformOrTenantRole, labelTenantRole, PLATFORM_ROLE_LABEL } from "@/domain/identity/authz";
+import { canTenantRole, labelTenantRole, PLATFORM_ROLE_LABEL } from "@/domain/identity/authz";
 import { InviteMemberForm } from "@/app/(tenant)/t/[slug]/users/InviteMemberForm";
-import { ActivateTenantButton } from "@/app/(tenant)/t/[slug]/ActivateTenantButton";
 
 type Params = Promise<{ slug: string }>;
 
@@ -54,31 +53,8 @@ export default async function TenantUsersPage({ params }: { params: Params }) {
             {tenant.name}
           </p>
           <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl tracking-tight">
-            Usuarios del tenant
+            Usuarios
           </h1>
-          <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
-            Sesión: {ctx.email}
-            {" · "}
-            {labelPlatformOrTenantRole({
-              isPlatformSuperuser: ctx.isPlatformSuperuser && !membership,
-              tenantRole: membership?.role,
-            })}
-            {ctx.isPlatformSuperuser && membership
-              ? ` (${PLATFORM_ROLE_LABEL})`
-              : ""}
-            {ctx.tenantId === tenant.id
-              ? " · tenant activo"
-              : " · tenant no activo en sesión"}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <ActivateTenantButton slug={slug} />
-          <Link
-            href={`/t/${slug}`}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
-          >
-            Volver al portal
-          </Link>
         </div>
       </div>
 

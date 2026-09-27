@@ -62,6 +62,17 @@ export default async function EditFindingPage({
           <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl tracking-tight">
             Completar y publicar
           </h1>
+          {finding.audit ? (
+            <p className="mt-2 text-sm">
+              Surgió de la{" "}
+              <Link
+                href={`/t/${slug}/audits/${finding.audit.id}`}
+                className="text-[var(--color-accent)] underline-offset-2 hover:underline"
+              >
+                auditoría interna {finding.audit.code} · {finding.audit.title}
+              </Link>
+            </p>
+          ) : null}
         </div>
         <Link
           href={`/t/${slug}/findings`}

@@ -1,5 +1,6 @@
 "use client";
 
+import { describeAssessmentResult } from "@/domain/risks/assessment";
 import { useActionState } from "react";
 import {
   saveOpportunityCanvasAction,
@@ -89,7 +90,7 @@ export function OpportunityDetailForms({
     <div className="flex flex-col gap-8">
       <form action={canvasAction} className="flex flex-col gap-3">
         <h2 className="font-[family-name:var(--font-display)] text-xl">
-          Hipótesis: condición → circunstancia → beneficio
+          Descripción: situación actual → circunstancia → beneficio
         </h2>
         {canvasState.error ? (
           <p className="text-sm text-[var(--color-danger)]">{canvasState.error}</p>
@@ -102,28 +103,28 @@ export function OpportunityDetailForms({
           defaultValue={opportunity.title}
           required
           disabled={!canWrite}
-          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
         />
         <input
           name="condition"
           defaultValue={opportunity.condition}
-          placeholder="Condición"
+          placeholder="Situación actual: cómo es hoy"
           disabled={!canWrite}
-          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
         />
         <input
           name="circumstance"
           defaultValue={opportunity.circumstance}
-          placeholder="Circunstancia"
+          placeholder="Circunstancia favorable: qué cambió o qué aparece"
           disabled={!canWrite}
-          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
         />
         <input
           name="benefit"
           defaultValue={opportunity.benefit}
-          placeholder="Beneficio"
+          placeholder="Beneficio esperado: qué mejora concreta traería"
           disabled={!canWrite}
-          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
         />
         {canWrite ? (
           <button
@@ -131,25 +132,25 @@ export function OpportunityDetailForms({
             disabled={canvasPending}
             className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white"
           >
-            Guardar hipótesis
+            Guardar descripción
           </button>
         ) : null}
       </form>
 
       <section className="flex flex-col gap-3">
         <h2 className="font-[family-name:var(--font-display)] text-xl">
-          Evaluaciones (versionadas)
+          Evaluaciones
         </h2>
         <ul className="flex flex-col gap-2 text-sm">
           {opportunity.assessments.map((a) => (
             <li
               key={a.id}
-              className="rounded-md border border-[var(--color-border)] px-3 py-2"
+              className="rounded-md border border-[var(--color-line)] px-3 py-2"
             >
-              <strong>v{a.version}</strong> · {a.method} ·{" "}
+              <strong>Versión {a.version}</strong> · {describeAssessmentResult(a.method, a.resultJson)} ·{" "}
               {new Date(a.assessedAt).toLocaleString("es-AR")}
               <div className="text-[var(--color-ink-muted)]">
-                {JSON.stringify(a.resultJson)} — {a.rationale}
+                {a.rationale}
               </div>
             </li>
           ))}
@@ -158,7 +159,7 @@ export function OpportunityDetailForms({
           ) : null}
         </ul>
         {canWrite ? (
-          <form action={assessAction} className="flex flex-col gap-2 rounded-md border border-dashed border-[var(--color-border)] p-3">
+          <form action={assessAction} className="flex flex-col gap-2 rounded-md border border-dashed border-[var(--color-line)] p-3">
             {assessState.error ? (
               <p className="text-sm text-[var(--color-danger)]">
                 {assessState.error}
@@ -172,7 +173,7 @@ export function OpportunityDetailForms({
             <select
               name="level"
               defaultValue="medium"
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             >
               {QUALITATIVE_LEVELS.map((l) => (
                 <option key={l} value={l}>
@@ -184,8 +185,8 @@ export function OpportunityDetailForms({
               name="rationale"
               required
               rows={2}
-              placeholder="Racional (valor / factibilidad)"
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              placeholder="Justificación: qué valor aporta y qué tan factible es"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             />
             <button
               type="submit"
@@ -231,7 +232,7 @@ export function OpportunityDetailForms({
               name="decision"
               required
               defaultValue={opportunity.pursuitDecision ?? "pursue_now"}
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             >
               {Object.entries(OPPORTUNITY_PURSUIT_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -242,7 +243,7 @@ export function OpportunityDetailForms({
             <select
               name="ownerUserId"
               defaultValue={opportunity.pursuitOwnerUserId ?? ""}
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             >
               <option value="">Responsable (opcional)…</option>
               {members.map((m) => (
@@ -256,8 +257,8 @@ export function OpportunityDetailForms({
               required
               defaultValue={opportunity.pursuitRationale ?? ""}
               rows={2}
-              placeholder="Racional"
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              placeholder="Justificación de la decisión"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             />
             <label className="text-sm">
               Próxima revisión
@@ -271,7 +272,7 @@ export function OpportunityDetailForms({
                         .slice(0, 10)
                     : ""
                 }
-                className="mt-1 block rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+                className="mt-1 block rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
               />
             </label>
             <button
@@ -294,7 +295,7 @@ export function OpportunityDetailForms({
             <button
               key={to}
               type="button"
-              className="rounded-md border border-[var(--color-border)] px-3 py-1 text-sm"
+              className="rounded-md border border-[var(--color-line)] px-3 py-1 text-sm"
               onClick={async () => {
                 await transitionOpportunityAction(slug, opportunity.id, to);
               }}

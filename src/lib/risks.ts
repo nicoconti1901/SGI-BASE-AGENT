@@ -202,7 +202,7 @@ export async function addRiskAssessment(
   ) {
     const from = risk.status === "monitored" ? "monitored" : risk.status === "identified" ? "identified" : "analyzing";
     // From identified we need analyzing first if jumping — allow evaluated from analyzing
-    let next: RiskStatus = "evaluated";
+    const next: RiskStatus = "evaluated";
     if (from === "identified") {
       await db.risk.update({
         where: { id: risk.id },
@@ -242,7 +242,7 @@ export async function setRiskResponseDecision(
   const risk = await getRisk(input.tenantId, input.riskId, db);
   if (!risk) throw new Error("Riesgo no encontrado");
   if (!input.rationale.trim()) {
-    throw new Error("El racional de la decisión es obligatorio");
+    throw new Error("La justificación de la decisión es obligatoria");
   }
   if (!input.ownerUserId) {
     throw new Error("Asigná un responsable de la respuesta");

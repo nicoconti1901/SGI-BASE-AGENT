@@ -6,6 +6,7 @@ import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
 import { listRecentFindingsForLink } from "@/lib/risks-workspace";
 import { ExploreContextForm } from "@/app/(tenant)/t/[slug]/risks/ExploreContextForm";
+import { GuideLink } from "@/app/(tenant)/t/[slug]/risks/FormFields";
 
 type Params = Promise<{ slug: string }>;
 
@@ -39,15 +40,18 @@ export default async function ExploreContextPage({
           href={`/t/${slug}/risks`}
           className="text-sm text-[var(--color-accent)]"
         >
-          ← Workspace
+          ← Riesgos y oportunidades
         </Link>
         <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl">
-          Explorar contexto
+          Explorar una fuente
         </h1>
         <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
-          Partí de una fuente (proceso, proveedor, hallazgo, cambio…) y decidí
-          si nace un riesgo, una oportunidad, ambos o ninguno.
+          Elegí un proceso, proveedor, cambio u objetivo y anotá qué riesgos u
+          oportunidades aparecen.
         </p>
+        <div className="mt-2">
+          <GuideLink slug={slug} />
+        </div>
       </div>
       <ExploreContextForm slug={slug} findings={findings} />
     </div>

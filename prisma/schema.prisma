@@ -41,19 +41,19 @@ enum DocumentFate {
 }
 
 model User {
-  id             String               @id @default(cuid())
-  name           String
-  email          String
-  emailVerified  Boolean              @default(false)
-  image          String?
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  platformRole   PlatformRole?
-  sessions       Session[]
-  accounts       Account[]
-  memberships    Membership[]
-  gapAudits      GapAssessmentAudit[]
-  notifications  InAppNotification[]
+  id            String               @id @default(cuid())
+  name          String
+  email         String
+  emailVerified Boolean              @default(false)
+  image         String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  platformRole  PlatformRole?
+  sessions      Session[]
+  accounts      Account[]
+  memberships   Membership[]
+  gapAudits     GapAssessmentAudit[]
+  notifications InAppNotification[]
 
   @@unique([email])
   @@map("user")
@@ -107,28 +107,32 @@ model Verification {
 }
 
 model Tenant {
-  id               String                   @id @default(cuid())
-  name             String
-  slug             String                   @unique
-  size             String?
-  activity         String?
-  createdAt        DateTime                 @default(now())
-  updatedAt        DateTime                 @updatedAt
-  memberships      Membership[]
-  documents        Document[]
-  requirements     TenantRequirement[]
-  dueItems         DueItem[]
-  offerActivations TenantOfferActivation[]
-  notifications    InAppNotification[]
-  automationRuns   AutomationRun[]
-  nonconformities  Nonconformity[]
-  correctiveActions CorrectiveAction[]
-  findings         Finding[]
+  id                 String                    @id @default(cuid())
+  name               String
+  slug               String                    @unique
+  size               String?
+  activity           String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  memberships        Membership[]
+  documents          Document[]
+  requirements       TenantRequirement[]
+  dueItems           DueItem[]
+  offerActivations   TenantOfferActivation[]
+  notifications      InAppNotification[]
+  automationRuns     AutomationRun[]
+  nonconformities    Nonconformity[]
+  correctiveActions  CorrectiveAction[]
+  findings           Finding[]
   findingAttachments FindingAttachment[]
-  risks            Risk[]
-  opportunities    Opportunity[]
+  risks              Risk[]
+  opportunities      Opportunity[]
   operationalActions Action[]
-  actionAttachments ActionAttachment[]
+  actionAttachments  ActionAttachment[]
+  auditPrograms      AuditProgram[]
+  audits             Audit[]
+  auditItems         AuditChecklistItem[]
+  auditEvidence      AuditEvidenceAttachment[]
 
   @@map("tenant")
 }
@@ -150,21 +154,21 @@ model Membership {
 
 /// Controlled document with version history (Task 8).
 model Document {
-  id                  String              @id @default(cuid())
+  id                  String             @id @default(cuid())
   tenantId            String
   title               String
-  kind                String              @default("procedure")
-  fate                DocumentFate        @default(undecided)
+  kind                String             @default("procedure")
+  fate                DocumentFate       @default(undecided)
   tenantRequirementId String?
-  currentVersionId    String?             @unique
+  currentVersionId    String?            @unique
   validFrom           DateTime?
   validUntil          DateTime?
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantRequirement   TenantRequirement?  @relation(fields: [tenantRequirementId], references: [id], onDelete: SetNull)
-  versions            DocumentVersion[]   @relation("DocumentVersions")
-  currentVersion      DocumentVersion?    @relation("DocumentCurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  tenant              Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantRequirement   TenantRequirement? @relation(fields: [tenantRequirementId], references: [id], onDelete: SetNull)
+  versions            DocumentVersion[]  @relation("DocumentVersions")
+  currentVersion      DocumentVersion?   @relation("DocumentCurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
   @@index([tenantRequirementId])
@@ -172,7 +176,7 @@ model Document {
 }
 
 model DocumentVersion {
-  id            String     @id @default(cuid())
+  id            String    @id @default(cuid())
   documentId    String
   versionNumber Int
   storageKey    String
@@ -181,9 +185,9 @@ model DocumentVersion {
   sizeBytes     Int
   uploadedById  String?
   notes         String?
-  createdAt     DateTime   @default(now())
-  document      Document   @relation("DocumentVersions", fields: [documentId], references: [id], onDelete: Cascade)
-  currentOf     Document?  @relation("DocumentCurrentVersion")
+  createdAt     DateTime  @default(now())
+  document      Document  @relation("DocumentVersions", fields: [documentId], references: [id], onDelete: Cascade)
+  currentOf     Document? @relation("DocumentCurrentVersion")
 
   @@unique([documentId, versionNumber])
   @@index([documentId])
@@ -226,6 +230,7 @@ model TenantRequirement {
   requirement       IsoRequirement       @relation(fields: [requirementId], references: [id], onDelete: Restrict)
   audits            GapAssessmentAudit[]
   documents         Document[]
+  auditItems        AuditChecklistItem[]
 
   @@unique([tenantId, requirementId])
   @@index([tenantId])
@@ -275,30 +280,30 @@ enum AutomationRunStatus {
 
 /// Catálogo global de automatizaciones (MVP: motor de vencimientos).
 model AutomationOffer {
-  id           String                   @id @default(cuid())
-  code         String                   @unique
-  name         String
-  description  String
-  kind         OfferKind                @default(native)
+  id            String                  @id @default(cuid())
+  code          String                  @unique
+  name          String
+  description   String
+  kind          OfferKind               @default(native)
   enabledGlobal Boolean                 @default(true)
-  createdAt    DateTime                 @default(now())
-  updatedAt    DateTime                 @updatedAt
-  activations  TenantOfferActivation[]
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  activations   TenantOfferActivation[]
 
   @@map("automation_offer")
 }
 
 model TenantOfferActivation {
-  id             String          @id @default(cuid())
-  tenantId       String
-  offerId        String
-  active         Boolean         @default(true)
-  activatedAt    DateTime        @default(now())
-  deactivatedAt  DateTime?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  offer          AutomationOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  id            String          @id @default(cuid())
+  tenantId      String
+  offerId       String
+  active        Boolean         @default(true)
+  activatedAt   DateTime        @default(now())
+  deactivatedAt DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  tenant        Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  offer         AutomationOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, offerId])
   @@index([tenantId, active])
@@ -307,19 +312,19 @@ model TenantOfferActivation {
 
 /// Ítem genérico con vencimiento (doc, NC, indicador, etc.).
 model DueItem {
-  id               String                 @id @default(cuid())
+  id               String              @id @default(cuid())
   tenantId         String
   title            String
   entityType       String
   entityId         String?
   dueAt            DateTime
-  leadDays         Int                    @default(7)
-  status           DueItemStatus          @default(open)
+  leadDays         Int                 @default(7)
+  status           DueItemStatus       @default(open)
   lastRemindedAt   DateTime?
   lastReminderKind String?
-  createdAt        DateTime               @default(now())
-  updatedAt        DateTime               @updatedAt
-  tenant           Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  tenant           Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   notifications    InAppNotification[]
 
   @@index([tenantId, status, dueAt])
@@ -328,17 +333,17 @@ model DueItem {
 }
 
 model InAppNotification {
-  id         String    @id @default(cuid())
-  tenantId   String
-  userId     String?
-  title      String
-  body       String
-  dueItemId  String?
-  readAt     DateTime?
-  createdAt  DateTime  @default(now())
-  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  dueItem    DueItem?  @relation(fields: [dueItemId], references: [id], onDelete: SetNull)
+  id        String    @id @default(cuid())
+  tenantId  String
+  userId    String?
+  title     String
+  body      String
+  dueItemId String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  dueItem   DueItem?  @relation(fields: [dueItemId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, createdAt])
   @@index([userId, readAt])
@@ -346,15 +351,15 @@ model InAppNotification {
 }
 
 model AutomationRun {
-  id         String               @id @default(cuid())
+  id         String              @id @default(cuid())
   tenantId   String?
   offerCode  String
-  status     AutomationRunStatus  @default(running)
+  status     AutomationRunStatus @default(running)
   summary    Json?
   error      String?
-  startedAt  DateTime             @default(now())
+  startedAt  DateTime            @default(now())
   finishedAt DateTime?
-  tenant     Tenant?              @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  tenant     Tenant?             @relation(fields: [tenantId], references: [id], onDelete: SetNull)
 
   @@index([offerCode, startedAt])
   @@index([tenantId, startedAt])
@@ -386,18 +391,18 @@ model Nonconformity {
 }
 
 model CorrectiveAction {
-  id               String        @id @default(cuid())
-  tenantId         String
-  nonconformityId  String
-  title            String
-  description      String?
-  status           WorkflowStatus @default(open)
-  ownerName        String?
-  dueAt            DateTime?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  tenant           Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  nonconformity    Nonconformity @relation(fields: [nonconformityId], references: [id], onDelete: Cascade)
+  id              String         @id @default(cuid())
+  tenantId        String
+  nonconformityId String
+  title           String
+  description     String?
+  status          WorkflowStatus @default(open)
+  ownerName       String?
+  dueAt           DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  nonconformity   Nonconformity  @relation(fields: [nonconformityId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, status])
   @@index([nonconformityId])
@@ -430,51 +435,55 @@ enum RcaStatus {
 }
 
 model Finding {
-  id              String            @id @default(cuid())
-  tenantId        String
-  type            FindingType
-  status          FindingStatus     @default(draft)
-  title           String
-  description     String
-  detectedAt      DateTime
-  source          String?
-  location        String?
-  severity        String?
-  createdByUserId String?
-  publishedAt     DateTime?
+  id               String                   @id @default(cuid())
+  tenantId         String
+  type             FindingType
+  status           FindingStatus            @default(draft)
+  title            String
+  description      String
+  detectedAt       DateTime
+  source           String?
+  location         String?
+  severity         String?
+  createdByUserId  String?
+  publishedAt      DateTime?
   /// JSON RootCauseAnalysis (five_whys)
-  rcaJson         Json?
-  rcaStatus       RcaStatus         @default(incomplete)
-  rootCause       String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  measures        FindingMeasure[]
+  rcaJson          Json?
+  rcaStatus        RcaStatus                @default(incomplete)
+  rootCause        String?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  tenant           Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  measures         FindingMeasure[]
   notifyRecipients FindingNotifyRecipient[]
-  attachments     FindingAttachment[]
-  risks           Risk[]
-  opportunities   Opportunity[]
+  attachments      FindingAttachment[]
+  risks            Risk[]
+  opportunities    Opportunity[]
+  auditId          String?
+  audit            Audit?                   @relation(fields: [auditId], references: [id], onDelete: SetNull)
+  auditItem        AuditChecklistItem?      @relation("AuditItemFinding")
 
   @@index([tenantId, status])
   @@index([tenantId, type])
+  @@index([auditId])
   @@map("finding")
 }
 
 model FindingMeasure {
-  id               String        @id @default(cuid())
-  findingId        String
-  tenantId         String
-  kind             MeasureKind
-  title            String
-  description      String?
-  ownerUserId      String
-  dueAt            DateTime?
-  linkedRootCause  Boolean       @default(false)
-  status           WorkflowStatus @default(open)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  finding          Finding       @relation(fields: [findingId], references: [id], onDelete: Cascade)
-  evidence         FindingAttachment[]
+  id              String              @id @default(cuid())
+  findingId       String
+  tenantId        String
+  kind            MeasureKind
+  title           String
+  description     String?
+  ownerUserId     String
+  dueAt           DateTime?
+  linkedRootCause Boolean             @default(false)
+  status          WorkflowStatus      @default(open)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  finding         Finding             @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  evidence        FindingAttachment[]
 
   @@index([tenantId, status])
   @@index([findingId])
@@ -489,7 +498,7 @@ enum FindingAttachmentKind {
 }
 
 model FindingAttachment {
-  id           String                 @id @default(cuid())
+  id           String                @id @default(cuid())
   tenantId     String
   findingId    String
   measureId    String?
@@ -500,10 +509,10 @@ model FindingAttachment {
   sizeBytes    Int
   label        String?
   uploadedById String?
-  createdAt    DateTime               @default(now())
-  tenant       Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  finding      Finding                @relation(fields: [findingId], references: [id], onDelete: Cascade)
-  measure      FindingMeasure?        @relation(fields: [measureId], references: [id], onDelete: Cascade)
+  createdAt    DateTime              @default(now())
+  tenant       Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  finding      Finding               @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  measure      FindingMeasure?       @relation(fields: [measureId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, findingId])
   @@index([measureId])
@@ -638,18 +647,18 @@ model Risk {
 }
 
 model RiskAssessment {
-  id            String           @id @default(cuid())
-  tenantId      String
-  riskId        String
-  version       Int
-  method        AssessmentMethod
+  id           String           @id @default(cuid())
+  tenantId     String
+  riskId       String
+  version      Int
+  method       AssessmentMethod
   /// qualitative level or P×I payload
-  resultJson    Json
-  rationale     String
-  assessedById  String?
-  assessedAt    DateTime         @default(now())
-  createdAt     DateTime         @default(now())
-  risk          Risk             @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  resultJson   Json
+  rationale    String
+  assessedById String?
+  assessedAt   DateTime         @default(now())
+  createdAt    DateTime         @default(now())
+  risk         Risk             @relation(fields: [riskId], references: [id], onDelete: Cascade)
 
   @@unique([riskId, version])
   @@index([tenantId, riskId])
@@ -657,29 +666,29 @@ model RiskAssessment {
 }
 
 model Opportunity {
-  id                   String                       @id @default(cuid())
-  tenantId             String
-  title                String
-  status               OpportunityStatus            @default(discovered)
-  condition            String                       @default("")
-  circumstance         String                       @default("")
-  benefit              String                       @default("")
-  sourceKind           SourceKind                   @default(other)
-  sourceLabel          String                       @default("")
-  findingId            String?
-  pursuitDecision      OpportunityPursuitDecision?
-  pursuitRationale     String?
-  pursuitOwnerUserId   String?
-  benefitExpected      String?
-  benefitObserved      String?
-  nextReviewAt         DateTime?
-  closeRationale       String?
-  createdByUserId      String?
-  createdAt            DateTime                     @default(now())
-  updatedAt            DateTime                     @updatedAt
-  tenant               Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  finding              Finding?                     @relation(fields: [findingId], references: [id], onDelete: SetNull)
-  assessments          OpportunityAssessment[]
+  id                 String                      @id @default(cuid())
+  tenantId           String
+  title              String
+  status             OpportunityStatus           @default(discovered)
+  condition          String                      @default("")
+  circumstance       String                      @default("")
+  benefit            String                      @default("")
+  sourceKind         SourceKind                  @default(other)
+  sourceLabel        String                      @default("")
+  findingId          String?
+  pursuitDecision    OpportunityPursuitDecision?
+  pursuitRationale   String?
+  pursuitOwnerUserId String?
+  benefitExpected    String?
+  benefitObserved    String?
+  nextReviewAt       DateTime?
+  closeRationale     String?
+  createdByUserId    String?
+  createdAt          DateTime                    @default(now())
+  updatedAt          DateTime                    @updatedAt
+  tenant             Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  finding            Finding?                    @relation(fields: [findingId], references: [id], onDelete: SetNull)
+  assessments        OpportunityAssessment[]
 
   @@index([tenantId, status])
   @@index([tenantId, sourceKind])
@@ -706,23 +715,23 @@ model OpportunityAssessment {
 }
 
 model Action {
-  id                   String              @id @default(cuid())
-  tenantId             String
-  title                String
-  description          String?
-  status               ActionStatus        @default(open)
-  ownerUserId          String
-  dueAt                DateTime?
-  effectivenessStatus  EffectivenessStatus @default(pending)
-  effectivenessNote    String?
-  effectivenessAt      DateTime?
-  createdByUserId      String?
-  completedAt          DateTime?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  tenant               Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  links                ActionLink[]
-  attachments          ActionAttachment[]
+  id                  String              @id @default(cuid())
+  tenantId            String
+  title               String
+  description         String?
+  status              ActionStatus        @default(open)
+  ownerUserId         String
+  dueAt               DateTime?
+  effectivenessStatus EffectivenessStatus @default(pending)
+  effectivenessNote   String?
+  effectivenessAt     DateTime?
+  createdByUserId     String?
+  completedAt         DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  links               ActionLink[]
+  attachments         ActionAttachment[]
 
   @@index([tenantId, status])
   @@index([ownerUserId])
@@ -731,12 +740,12 @@ model Action {
 }
 
 model ActionLink {
-  id         String          @id @default(cuid())
+  id         String           @id @default(cuid())
   actionId   String
   targetType ActionLinkTarget
   targetId   String
-  createdAt  DateTime        @default(now())
-  action     Action          @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now())
+  action     Action           @relation(fields: [actionId], references: [id], onDelete: Cascade)
 
   @@unique([actionId, targetType, targetId])
   @@index([targetType, targetId])
@@ -759,4 +768,163 @@ model ActionAttachment {
 
   @@index([tenantId, actionId])
   @@map("action_attachment")
+}
+
+// ─── Auditorías internas (Task 11b) — SPEC-audits.md ───────────────────────
+
+enum AuditProgramStatus {
+  draft
+  approved
+  closed
+}
+
+enum AuditStatus {
+  planned
+  prepared
+  in_progress
+  reporting
+  closed
+  cancelled
+}
+
+enum AuditMode {
+  onsite
+  remote
+  hybrid
+}
+
+enum AuditTeamRole {
+  lead
+  auditor
+}
+
+enum AuditItemResult {
+  pending
+  conforming
+  nc_major
+  nc_minor
+  observation
+  improvement
+  not_applicable
+}
+
+/// Programa anual de auditorías de una empresa (uno por año).
+model AuditProgram {
+  id                 String             @id @default(cuid())
+  tenantId           String
+  year               Int
+  objectives         String             @default("")
+  frequencyRationale String             @default("")
+  status             AuditProgramStatus @default(draft)
+  approvedByUserId   String?
+  approvedAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  audits             Audit[]
+
+  @@unique([tenantId, year])
+  @@map("audit_program")
+}
+
+model Audit {
+  id                    String               @id @default(cuid())
+  tenantId              String
+  programId             String?
+  code                  String
+  title                 String
+  objective             String               @default("")
+  scope                 String               @default("")
+  standards             IsoStandard[]
+  plannedStart          DateTime
+  plannedEnd            DateTime
+  mode                  AuditMode            @default(onsite)
+  status                AuditStatus          @default(planned)
+  impartialityException String?
+  cancelReason          String?
+  startedAt             DateTime?
+  reportConclusion      String?
+  reportStrengths       String?
+  workersCommunicated   Boolean              @default(false)
+  reportIssuedAt        DateTime?
+  closedAt              DateTime?
+  createdByUserId       String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  tenant                Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  program               AuditProgram?        @relation(fields: [programId], references: [id], onDelete: SetNull)
+  team                  AuditTeamMember[]
+  auditees              AuditAuditee[]
+  items                 AuditChecklistItem[]
+  findings              Finding[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, status])
+  @@index([programId])
+  @@map("audit")
+}
+
+model AuditTeamMember {
+  id      String        @id @default(cuid())
+  auditId String
+  userId  String
+  role    AuditTeamRole
+  audit   Audit         @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@unique([auditId, userId])
+  @@index([userId])
+  @@map("audit_team_member")
+}
+
+/// A quién/qué se audita. userId opcional: un área puede no tener responsable cargado.
+model AuditAuditee {
+  id      String  @id @default(cuid())
+  auditId String
+  userId  String?
+  area    String
+  audit   Audit   @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([auditId])
+  @@map("audit_auditee")
+}
+
+model AuditChecklistItem {
+  id                  String                    @id @default(cuid())
+  tenantId            String
+  auditId             String
+  tenantRequirementId String?
+  question            String
+  sortOrder           Int
+  result              AuditItemResult           @default(pending)
+  evidence            String?
+  findingId           String?                   @unique
+  updatedByUserId     String?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  tenant              Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  audit               Audit                     @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  requirement         TenantRequirement?        @relation(fields: [tenantRequirementId], references: [id], onDelete: SetNull)
+  finding             Finding?                  @relation("AuditItemFinding", fields: [findingId], references: [id], onDelete: SetNull)
+  attachments         AuditEvidenceAttachment[]
+
+  @@index([auditId, sortOrder])
+  @@index([tenantRequirementId])
+  @@map("audit_checklist_item")
+}
+
+model AuditEvidenceAttachment {
+  id           String             @id @default(cuid())
+  tenantId     String
+  itemId       String
+  storageKey   String
+  fileName     String
+  contentType  String
+  sizeBytes    Int
+  uploadedById String?
+  createdAt    DateTime           @default(now())
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  item         AuditChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, itemId])
+  @@map("audit_evidence_attachment")
 }

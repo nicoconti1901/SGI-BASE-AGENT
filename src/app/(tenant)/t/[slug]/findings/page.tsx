@@ -93,6 +93,10 @@ function MeasureStatusCell({
   );
 }
 
+function isPast(date: Date): boolean {
+  return date.getTime() < Date.now();
+}
+
 export default async function FindingsListPage({
   params,
   searchParams,
@@ -254,7 +258,7 @@ export default async function FindingsListPage({
                 const nextDue = nearestOpenMeasureDueAt(finding.measures);
                 const overdue =
                   nextDue &&
-                  nextDue.getTime() < Date.now() &&
+                  isPast(nextDue) &&
                   finding.status !== "closed";
                 return (
                   <tr

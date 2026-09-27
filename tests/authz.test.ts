@@ -41,3 +41,12 @@ describe("tenant authz policy", () => {
     expect(PLATFORM_ROLE_LABEL).toBe("Administrador de plataforma");
   });
 });
+
+describe("audit permissions", () => {
+  it("lets admins and process owners plan, only admins approve the program", () => {
+    expect(canTenantRole("process_owner", "plan_audits")).toBe(true);
+    expect(canTenantRole("contributor", "plan_audits")).toBe(false);
+    expect(canTenantRole("tenant_admin", "approve_audit_program")).toBe(true);
+    expect(canTenantRole("process_owner", "approve_audit_program")).toBe(false);
+  });
+});

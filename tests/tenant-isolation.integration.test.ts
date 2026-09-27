@@ -16,8 +16,10 @@ describe.skipIf(!hasDatabase)("tenant document isolation (integration)", () => {
   let docAId = "";
 
   beforeAll(async () => {
-    await db.document.deleteMany();
-    await db.membership.deleteMany();
+    // Limpiar solo los tenants de este test: la base puede ser la de desarrollo.
+    const leftovers = { tenant: { slug: { in: ["acme-a", "acme-b"] } } };
+    await db.document.deleteMany({ where: leftovers });
+    await db.membership.deleteMany({ where: leftovers });
     await db.tenant.deleteMany({
       where: { slug: { in: ["acme-a", "acme-b"] } },
     });

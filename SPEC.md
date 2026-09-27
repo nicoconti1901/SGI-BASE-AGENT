@@ -40,7 +40,7 @@ Elegido por madurez de mercado, DX, UI moderna y despliegue SaaS multi-tenant.
 | UI | **Tailwind CSS + componentes propios** (base shadcn/ui solo como primitives) | Diseño distintivo y moderno sin look “template AI”; tokens de marca propios |
 | Auth | **Better Auth** (o Auth.js si Better Auth no cierra en setup) | Sesiones seguras, roles, multi-tenant |
 | DB | **PostgreSQL + Prisma** | Relacional fuerte para catálogo ISO, docs, vencimientos |
-| Jobs / vencimientos | **Inngest** (o cron + cola si se prefiere menos SaaS) | Recordatorios, seguimientos, indicadores periódicos |
+| Jobs / vencimientos | **n8n** como orquestador (schedule + integraciones) llamando endpoints de la app; cron del host si alcanza | Recordatorios, seguimientos, indicadores periódicos, integraciones externas |
 | Storage | **S3-compatible** (R2 / S3) | PDFs y adjuntos de procedimientos/registros |
 | Email | Proveedor SMTP/API (Resend u equivalente) | Notificaciones de vencimiento |
 | Hosting | **Vercel** (app) + **Neon/Postgres gestionado** (o Render Postgres) | Deploy predecible; filesystem efímero → no persistir archivos locales |

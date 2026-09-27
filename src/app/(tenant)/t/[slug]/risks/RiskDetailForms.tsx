@@ -1,5 +1,6 @@
 "use client";
 
+import { describeAssessmentResult } from "@/domain/risks/assessment";
 import { useActionState } from "react";
 import {
   saveRiskCanvasAction,
@@ -80,7 +81,7 @@ export function RiskDetailForms({
     <div className="flex flex-col gap-8">
       <form action={canvasAction} className="flex flex-col gap-3">
         <h2 className="font-[family-name:var(--font-display)] text-xl">
-          Canvas: causa → evento → efecto
+          Descripción: causa → evento → efecto
         </h2>
         {canvasState.error ? (
           <p className="text-sm text-[var(--color-danger)]">{canvasState.error}</p>
@@ -93,36 +94,36 @@ export function RiskDetailForms({
           defaultValue={risk.title}
           required
           disabled={!canWrite}
-          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
         />
         <input
           name="cause"
           defaultValue={risk.cause}
-          placeholder="Causa"
+          placeholder="Causa: por qué podría pasar"
           disabled={!canWrite}
-          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
         />
         <input
           name="event"
           defaultValue={risk.event}
-          placeholder="Evento"
+          placeholder="Evento: qué podría ocurrir"
           disabled={!canWrite}
-          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
         />
         <input
           name="effect"
           defaultValue={risk.effect}
-          placeholder="Efecto"
+          placeholder="Efecto: qué consecuencia tendría"
           disabled={!canWrite}
-          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
         />
         <textarea
           name="existingControls"
           defaultValue={controls}
           rows={3}
-          placeholder="Controles existentes (uno por línea)"
+          placeholder="Controles existentes: lo que ya hacen hoy para prevenirlo (uno por línea)"
           disabled={!canWrite}
-          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
         />
         {canWrite ? (
           <button
@@ -130,25 +131,25 @@ export function RiskDetailForms({
             disabled={canvasPending}
             className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white"
           >
-            Guardar canvas
+            Guardar descripción
           </button>
         ) : null}
       </form>
 
       <section className="flex flex-col gap-3">
         <h2 className="font-[family-name:var(--font-display)] text-xl">
-          Evaluaciones (versionadas)
+          Evaluaciones
         </h2>
         <ul className="flex flex-col gap-2 text-sm">
           {risk.assessments.map((a) => (
             <li
               key={a.id}
-              className="rounded-md border border-[var(--color-border)] px-3 py-2"
+              className="rounded-md border border-[var(--color-line)] px-3 py-2"
             >
-              <strong>v{a.version}</strong> · {a.method} ·{" "}
+              <strong>Versión {a.version}</strong> · {describeAssessmentResult(a.method, a.resultJson)} ·{" "}
               {new Date(a.assessedAt).toLocaleString("es-AR")}
               <div className="text-[var(--color-ink-muted)]">
-                {JSON.stringify(a.resultJson)} — {a.rationale}
+                {a.rationale}
               </div>
             </li>
           ))}
@@ -157,7 +158,7 @@ export function RiskDetailForms({
           ) : null}
         </ul>
         {canWrite ? (
-          <form action={assessAction} className="flex flex-col gap-2 rounded-md border border-dashed border-[var(--color-border)] p-3">
+          <form action={assessAction} className="flex flex-col gap-2 rounded-md border border-dashed border-[var(--color-line)] p-3">
             {assessState.error ? (
               <p className="text-sm text-[var(--color-danger)]">
                 {assessState.error}
@@ -172,7 +173,7 @@ export function RiskDetailForms({
             <select
               name="level"
               defaultValue="medium"
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             >
               {QUALITATIVE_LEVELS.map((l) => (
                 <option key={l} value={l}>
@@ -184,8 +185,8 @@ export function RiskDetailForms({
               name="rationale"
               required
               rows={2}
-              placeholder="Racional"
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              placeholder="Justificación: por qué este nivel"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             />
             <button
               type="submit"
@@ -229,7 +230,7 @@ export function RiskDetailForms({
               name="decision"
               required
               defaultValue={risk.responseDecision ?? "mitigate"}
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             >
               {Object.entries(RISK_RESPONSE_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -241,7 +242,7 @@ export function RiskDetailForms({
               name="ownerUserId"
               required
               defaultValue={risk.responseOwnerUserId ?? ""}
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             >
               <option value="">Responsable…</option>
               {members.map((m) => (
@@ -255,8 +256,8 @@ export function RiskDetailForms({
               required
               defaultValue={risk.responseRationale ?? ""}
               rows={2}
-              placeholder="Racional"
-              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+              placeholder="Justificación de la decisión"
+              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
             />
             <label className="text-sm">
               Próxima revisión
@@ -268,7 +269,7 @@ export function RiskDetailForms({
                     ? new Date(risk.nextReviewAt).toISOString().slice(0, 10)
                     : ""
                 }
-                className="mt-1 block rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+                className="mt-1 block rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
               />
             </label>
             <button
@@ -291,7 +292,7 @@ export function RiskDetailForms({
             <button
               key={to}
               type="button"
-              className="rounded-md border border-[var(--color-border)] px-3 py-1 text-sm"
+              className="rounded-md border border-[var(--color-line)] px-3 py-1 text-sm"
               onClick={async () => {
                 await transitionRiskAction(slug, risk.id, to);
               }}

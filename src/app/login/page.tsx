@@ -1,45 +1,15 @@
-"use client";
-
-import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { LoginForm } from "@/app/login/LoginForm";
+import { SignOutButton } from "@/components/shell/SignOutButton";
+import { getAppSessionContext } from "@/lib/session";
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await authClient.signIn.email({
-        email,
-        password,
-      });
-
-      if (result.error) {
-        setError(result.error.message ?? "No se pudo iniciar sesión");
-        return;
-      }
-
-      router.push("/platform");
-      router.refresh();
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Error de red al iniciar sesión";
-      setError(
-        `${message}. Revisá que la app y la API usen el mismo origen (mismo puerto).`,
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ email?: string; aviso?: string }>;
+}) {
+  const { email, aviso } = await searchParams;
+  const ctx = await getAppSessionContext();
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-6">
@@ -50,48 +20,32 @@ export default function LoginPage() {
         <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]">
           Iniciar sesión
         </h1>
-        <p className="mt-2 text-[var(--color-ink-muted)]">
-          Acceso para superusuario de plataforma y usuarios de tenant.
-        </p>
       </div>
 
-      <form
-        onSubmit={onSubmit}
-        className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-6 shadow-[var(--shadow-soft)]"
-      >
-        <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
-          Email
-          <input
-            type="email"
-            required
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)] outline-none focus:border-[var(--color-accent)]"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
-          Contraseña
-          <input
-            type="password"
-            required
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)] outline-none focus:border-[var(--color-accent)]"
-          />
-        </label>
-        {error ? (
-          <p className="text-sm text-[var(--color-danger)]">{error}</p>
-        ) : null}
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
-        >
-          {loading ? "Ingresando…" : "Entrar"}
-        </button>
-      </form>
+      {ctx ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
+          <span>
+            Ya estás dentro como <strong>{ctx.email}</strong>
+          </span>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/portal"
+              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-2 font-semibold text-white"
+            >
+              Continuar
+            </Link>
+            <SignOutButton />
+          </div>
+        </div>
+      ) : null}
+
+      {aviso === "clave" ? (
+        <p role="status" className="rounded-[var(--radius-md)] bg-[var(--color-warning-soft)] px-4 py-3 text-sm text-[var(--color-warning)]">
+          Esta cuenta tiene otra contraseña. Ingresala para continuar.
+        </p>
+      ) : null}
+
+      <LoginForm defaultEmail={email ?? ""} />
 
       <Link href="/" className="text-sm text-[var(--color-accent)] hover:underline">
         Volver al inicio

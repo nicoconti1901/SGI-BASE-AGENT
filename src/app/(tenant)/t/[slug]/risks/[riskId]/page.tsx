@@ -53,11 +53,11 @@ export default async function RiskDetailPage({ params }: { params: Params }) {
           href={`/t/${slug}/risks`}
           className="text-sm text-[var(--color-accent)]"
         >
-          ← Workspace
+          ← Riesgos y oportunidades
         </Link>
         <p className="mt-2 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
           Riesgo · {RISK_STATUS_LABELS[risk.status as RiskStatus]}
-          {health?.stale ? " · STALE" : ""}
+          {health?.stale ? " · Revisión vencida" : ""}
         </p>
         <h1 className="font-[family-name:var(--font-display)] text-3xl">
           {risk.title}

@@ -2,11 +2,11 @@ import type {
   AssessmentInput,
   QualitativeLevel,
 } from "@/domain/risks/types";
-import { QUALITATIVE_LEVELS } from "@/domain/risks/types";
+import { QUALITATIVE_LEVEL_LABELS, QUALITATIVE_LEVELS } from "@/domain/risks/types";
 
 export function assertValidAssessmentInput(input: AssessmentInput): void {
   if (!input.rationale.trim()) {
-    throw new Error("El racional de la evaluación es obligatorio");
+    throw new Error("La justificación de la evaluación es obligatoria");
   }
   if (input.method === "qualitative") {
     if (!QUALITATIVE_LEVELS.includes(input.level)) {
@@ -40,4 +40,21 @@ export function qualitativeResultLabel(level: QualitativeLevel): string {
 
 export function nextAssessmentVersion(existingMax: number | null): number {
   return (existingMax ?? 0) + 1;
+}
+
+/** Texto legible de una evaluación guardada (ej. "Cualitativa · Nivel alto"). */
+export function describeAssessmentResult(method: string, result: unknown): string {
+  const r = (result ?? {}) as {
+    level?: QualitativeLevel;
+    probability?: number;
+    impact?: number;
+    score?: number;
+  };
+  if (method === "qualitative" && r.level) {
+    return `Cualitativa · Nivel ${QUALITATIVE_LEVEL_LABELS[r.level].toLowerCase()}`;
+  }
+  if (method === "probability_impact") {
+    return `Probabilidad ${r.probability} × Impacto ${r.impact} = ${r.score}`;
+  }
+  return "Evaluación";
 }

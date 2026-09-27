@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { nextCookies } from "better-auth/next-js";
 import { prisma } from "@/lib/db";
 
 const appUrl = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
@@ -39,6 +40,8 @@ export const auth = betterAuth({
       },
     },
   },
+  // Debe ir último: permite que las server actions (acceso rápido dev) fijen la cookie.
+  plugins: [nextCookies()],
 });
 
 export type Session = typeof auth.$Infer.Session;

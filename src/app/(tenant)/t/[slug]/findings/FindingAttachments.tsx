@@ -2,7 +2,6 @@
 
 import {
   useActionState,
-  useEffect,
   useRef,
   useState,
   type ChangeEvent,
@@ -45,16 +44,19 @@ export function FindingDocUploadForm({
   slug: string;
   findingId: string;
 }) {
-  const action = uploadFindingDocAction.bind(null, slug, findingId);
-  const [state, formAction, pending] = useActionState(action, initial);
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-
-  useEffect(() => {
-    if (!state.ok) return;
-    setFile(null);
-    if (inputRef.current) inputRef.current.value = "";
-  }, [state.ok]);
+  const [state, formAction, pending] = useActionState(
+    async (prev: FindingActionState, formData: FormData) => {
+      const result = await uploadFindingDocAction(slug, findingId, prev, formData);
+      if (result.ok) {
+        setFile(null);
+        if (inputRef.current) inputRef.current.value = "";
+      }
+      return result;
+    },
+    initial,
+  );
 
   function onChange(e: ChangeEvent<HTMLInputElement>) {
     setFile(e.target.files?.[0] ?? null);

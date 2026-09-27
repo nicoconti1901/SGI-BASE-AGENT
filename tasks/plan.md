@@ -13,7 +13,7 @@ Scaffold a multi-tenant Next.js SaaS and deliver vertical slices in capability-m
 | Auth | Better Auth + roles `platform_superuser` \| `tenant_admin` \| `process_owner` \| `contributor` \| `viewer` | Matches SPEC actors; open question #1 closed with defaults |
 | Catalog | Seeded ISO requirement rows (not hard-coded UI) | Versionable; supports greenfield templates by size/activity |
 | Files | S3-compatible only | Ephemeral host FS (Vercel/Render) |
-| Jobs | Inngest for due scans + email | Reliable schedules without DIY cron |
+| Jobs / integraciones | **n8n** (self-hosted) solo como orquestador: dispara `scanDueReminders` vía endpoint autenticado (secreto compartido, idempotente) y ejecuta ofertas de tipo *integración* (Slack/Teams/WhatsApp, Sheets, email externo). La lógica de dominio (vencimientos, tenant scope, auditoría) queda en la app; n8n nunca escribe en la DB directo. Si una automatización es solo interna y simple, se resuelve nativa (cron del host) sin n8n | Evita construir scheduler + conectores propios; mantiene invariantes en el dominio |
 | UI | Design tokens + shadcn primitives, custom shell | Modern non-generic look per SPEC |
 | Language MVP | Spanish only | Open question #2 default |
 | Brand MVP | Temporary “SGI Base” identity | Open question #5 default |
