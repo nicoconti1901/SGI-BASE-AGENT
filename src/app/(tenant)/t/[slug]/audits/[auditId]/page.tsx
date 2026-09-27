@@ -24,6 +24,8 @@ import {
   StartAuditForm,
   type RunnerItem,
 } from "@/app/(tenant)/t/[slug]/audits/ChecklistForms";
+import { AuditReportForm, TransitionButton } from "@/app/(tenant)/t/[slug]/audits/ReportForms";
+import { summarizeResults } from "@/domain/audits/guide";
 import { formatDate, loadAuditsAccess, toDateInput } from "@/app/(tenant)/t/[slug]/audits/access";
 
 const STEPS = [
@@ -71,6 +73,7 @@ export default async function AuditDetailPage({
     attachments: i.attachments.map((a) => ({ id: a.id, fileName: a.fileName })),
   }));
   const answered = checklist.filter((i) => i.result !== "pending").length;
+  const summary = summarizeResults(checklist.map((i) => i.result));
 
   const nameOf = (id: string | null) => members.find((m) => m.id === id)?.name ?? "—";
   const lead = audit.team.find((m) => m.role === "lead");
@@ -313,10 +316,97 @@ export default async function AuditDetailPage({
         </section>
       ) : null}
 
-      {audit.status === "in_progress" || audit.status === "reporting" ? (
-        <p className="text-sm text-[var(--color-ink-muted)]">
-          El informe y el cierre se habilitan en la próxima entrega.
-        </p>
+      {audit.status === "in_progress" && canExecute ? (
+        <div className="border-t border-[var(--color-line)] pt-4">
+          <TransitionButton
+            slug={slug}
+            auditId={audit.id}
+            to="reporting"
+            label="Pasar al informe"
+            primaryStyle
+          />
+        </div>
+      ) : null}
+
+      {audit.status === "reporting" || audit.status === "closed" ? (
+        <section className="flex flex-col gap-4 border-t border-[var(--color-line)] pt-6">
+          <h2 className="font-[family-name:var(--font-display)] text-xl">4 · Informe</h2>
+          <div className="grid gap-3 sm:grid-cols-4">
+            {(
+              [
+                ["Conformes", summary.conforming],
+                ["No conformidades", summary.nc_major + summary.nc_minor],
+                ["Observaciones", summary.observation],
+                ["Oportunidades de mejora", summary.improvement],
+              ] as const
+            ).map(([label, value]) => (
+              <div key={label} className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3">
+                <div className="text-2xl font-semibold tabular-nums">{value}</div>
+                <div className="text-xs text-[var(--color-ink-muted)]">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {audit.status === "reporting" && canExecute ? (
+            <>
+              <AuditReportForm
+                slug={slug}
+                auditId={audit.id}
+                objective={audit.objective}
+                conclusion={audit.reportConclusion ?? ""}
+                strengths={audit.reportStrengths ?? ""}
+                includes45001={audit.standards.includes("ISO45001")}
+                workersCommunicated={audit.workersCommunicated}
+              />
+              <div className="flex flex-wrap items-start gap-3 border-t border-[var(--color-line)] pt-4">
+                <TransitionButton
+                  slug={slug}
+                  auditId={audit.id}
+                  to="closed"
+                  label="Emitir informe y cerrar"
+                  primaryStyle
+                />
+                <TransitionButton
+                  slug={slug}
+                  auditId={audit.id}
+                  to="in_progress"
+                  label="Volver a la lista de verificación"
+                />
+              </div>
+            </>
+          ) : (
+            <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-[10rem_1fr]">
+              <dt className="font-medium">Objetivo</dt>
+              <dd>{audit.objective}</dd>
+              <dt className="font-medium">Conclusión</dt>
+              <dd>{audit.reportConclusion ?? "Pendiente"}</dd>
+              {audit.reportStrengths ? (
+                <>
+                  <dt className="font-medium">Fortalezas</dt>
+                  <dd>{audit.reportStrengths}</dd>
+                </>
+              ) : null}
+              {audit.impartialityException ? (
+                <>
+                  <dt className="font-medium">Excepción de imparcialidad</dt>
+                  <dd>{audit.impartialityException}</dd>
+                </>
+              ) : null}
+              {audit.standards.includes("ISO45001") ? (
+                <>
+                  <dt className="font-medium">Comunicado a trabajadores</dt>
+                  <dd>{audit.workersCommunicated ? "Sí" : "No registrado"}</dd>
+                </>
+              ) : null}
+              {audit.reportIssuedAt ? (
+                <>
+                  <dt className="font-medium">Emitido</dt>
+                  <dd className="font-[family-name:var(--font-mono)]">{formatDate(audit.reportIssuedAt)}</dd>
+                </>
+              ) : null}
+            </dl>
+          )}
+        </section>
       ) : null}
     </div>
   );

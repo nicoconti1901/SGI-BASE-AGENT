@@ -5,8 +5,10 @@ import {
   AuditGateError,
   approveProgram,
   createAudit,
+  getProgramCoverage,
   getProgramWithAudits,
   saveAuditPlan,
+  saveAuditReport,
   saveProgram,
   transitionAudit,
   type AuditPlanDraft,
@@ -233,6 +235,29 @@ describe.skipIf(!hasDatabase)("audits program and planning (integration)", () =>
     expect(stored.description).toBe("2 OC sin proveedor evaluado");
 
     await transitionAudit({ tenantId, auditId: audit.id, to: "reporting" }, db);
+
+    // Cerrar exige conclusión; al cerrar, los requisitos cuentan para la cobertura.
+    await expect(
+      transitionAudit({ tenantId, auditId: audit.id, to: "closed" }, db),
+    ).rejects.toBeInstanceOf(AuditGateError);
+    await saveAuditReport(
+      {
+        tenantId,
+        auditId: audit.id,
+        conclusion: "La planificación cumple, con una NC menor en riesgos",
+        strengths: "",
+        workersCommunicated: true,
+      },
+      db,
+    );
+    const closed = await transitionAudit({ tenantId, auditId: audit.id, to: "closed" }, db);
+    expect(closed.reportIssuedAt).not.toBeNull();
+    // Sin ISO 45001 en la auditoría, la marca de comunicación a trabajadores no aplica.
+    expect(closed.workersCommunicated).toBe(false);
+
+    const coverage = await getProgramCoverage(tenantId, 2031, db);
+    const iso9001 = coverage.find((row) => row.standard === "ISO9001");
+    expect(iso9001?.covered).toBe(2);
   });
 
   it("keeps the draft finding in sync with the item result", async () => {
