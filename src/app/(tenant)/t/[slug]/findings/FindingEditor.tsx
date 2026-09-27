@@ -28,6 +28,10 @@ type MeasureState = {
 
 const initial: FindingActionState = {};
 
+function defaultDueDate(): string {
+  return new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+}
+
 export function FindingEditor({
   slug,
   findingId,
@@ -60,7 +64,7 @@ export function FindingEditor({
   const [location, setLocation] = useState(initialValues.location);
   const [severity, setSeverity] = useState(initialValues.severity);
   const [rca, setRca] = useState<RootCauseAnalysis | null>(initialValues.rca);
-  const [measures, setMeasures] = useState<MeasureState[]>(
+  const [measures, setMeasures] = useState<MeasureState[]>(() =>
     initialValues.measures.length
       ? initialValues.measures
       : [
@@ -69,7 +73,7 @@ export function FindingEditor({
             title: "",
             description: "",
             ownerUserId: members[0]?.id ?? "",
-            dueAt: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
+            dueAt: defaultDueDate(),
             linkedRootCause: true,
           },
         ],

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   addWhyBranch,
   appendWhyStep,
@@ -86,10 +86,7 @@ export function FiveWhysLab({
     steps[0] ??
     createInitialWhyStep();
   const levelGuide = guideForWhyLevel(active.order);
-  const warnings = useMemo(
-    () => detectWhyAnswerWarnings(active.answer),
-    [active.answer],
-  );
+  const warnings = detectWhyAnswerWarnings(active.answer);
 
   function applyStatementToChain(nextStatement: string) {
     const trimmed = nextStatement.trim();
