@@ -43,7 +43,7 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 | UI | Tailwind CSS + componentes propios (primitives estilo shadcn/ui) |
 | Auth | **Better Auth** (email/password) |
 | Base de datos | **PostgreSQL + Prisma** |
-| Jobs / vencimientos | n8n (orquestador vía endpoint autenticado) — pendiente |
+| Jobs / vencimientos | n8n programa `POST /api/automation/scan` (autenticado con `AUTOMATION_WEBHOOK_SECRET`); workflow en [`n8n/`](./n8n/README.md). En local también `npm run job:due-scan` |
 | Archivos | Almacenamiento S3-compatible (MinIO local / R2 / S3) — docs controlados + adjuntos de hallazgos |
 | Email | Stub + envío real configurable |
 | Hosting | Vercel + Postgres gestionado (Neon / Render) |
@@ -83,7 +83,7 @@ Módulo nuevo alineado a **ISO 9001:2026 §6.1** (riesgo ≠ oportunidad; no ERM
 
 Rutas: `/t/[slug]/risks` (workspace), `/risks/explore` (descubrimiento), `/risks/[id]` y `/risks/opportunities/[id]` (fichas). Nav del portal: **Riesgos y oportunidades**.
 
-### Auditorías internas integradas — en construcción (Task 11b)
+### Auditorías internas integradas ✅ (Task 11b)
 
 Ciclo de auditoría interna para **ISO 9001:2026, ISO 14001:2015 e ISO 45001:2018 §9.2**, con ISO 19011 como guía. Una misma auditoría puede cubrir varias normas. Spec: [`SPEC-audits.md`](./SPEC-audits.md). Research: [`RESEARCH-audits.md`](./RESEARCH-audits.md).
 
@@ -93,13 +93,14 @@ Ciclo de auditoría interna para **ISO 9001:2026, ISO 14001:2015 e ISO 45001:201
 | **Plan de auditoría** | Objetivo, alcance y criterios obligatorios antes de iniciar; equipo auditor con control de imparcialidad. | ✅ |
 | **Lista de verificación** | Generada desde el catálogo de requisitos de la empresa, más preguntas propias; resultado y evidencia (adjuntos) por ítem. | ✅ |
 | **Hallazgos** | NC mayor, NC menor, observación u oportunidad de mejora: cada uno crea un **Hallazgo** vinculado a la auditoría, visible desde su ficha. | ✅ |
-| **Informe y cierre** | Informe, cierre y cobertura del programa. | Pendiente (11b.5) |
+| **Informe y cierre** | Conclusión respecto del objetivo, fortalezas y resumen de resultados; marca de comunicación a trabajadores si incluye ISO 45001; cerrar emite el informe. | ✅ |
+| **Cobertura** | Por norma, requisitos revisados en auditorías cerradas del año. | ✅ |
+| **Guía** | Guía breve de auditoría interna (objetivo, evidencia, clasificación, imparcialidad, informe). | ✅ |
 
-Rutas: `/t/[slug]/audits` (programa y listado), `/audits/new` (planificación), `/audits/[id]` (ejecución). La evidencia se descarga por `/api/audits/evidence/[id]/download`, con control de acceso por empresa.
+Rutas: `/t/[slug]/audits` (programa y listado), `/audits/new` (planificación), `/audits/[id]` (ejecución e informe), `/audits/guia` (guía). La evidencia se descarga por `/api/audits/evidence/[id]/download`, con control de acceso por empresa.
 
 ### Qué sigue
 
-- **Task 11b.5** — informe, cierre y cobertura de auditorías internas.  
 - **Task 10d** — estados de hallazgos.  
 - **Task 11c** — indicadores.  
 - **Task 11d** — auditorías externas con carga del informe del organismo.  

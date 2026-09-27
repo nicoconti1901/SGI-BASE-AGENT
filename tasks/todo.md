@@ -313,7 +313,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 - [x] 11b.2 Programa anual + planificación + DueItems
 - [x] 11b.3 Checklist desde catálogo + ejecución con evidencia/adjuntos
 - [x] 11b.4 Hallazgos automáticos → Finding + vínculo inverso
-- [ ] 11b.5 Informe + cierre + cobertura + guía + nav + e2e
+- [x] 11b.5 Informe + cierre + cobertura + guía + nav + e2e
 
 **Dependencies:** Task 10c (findings), Task 9 (storage), Task 8 (DueItem)
 **Estimated scope:** L
