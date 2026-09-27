@@ -294,6 +294,22 @@ export async function scanDueReminders(options?: {
       }
 
       const kind = classification as Exclude<ReminderKind, "none">;
+
+      // Claim atómico: solo el scan que cambia lastReminderKind notifica.
+      // Evita duplicados si n8n reintenta o dos scans corren a la vez.
+      const claim = await db.dueItem.updateMany({
+        where: {
+          id: item.id,
+          status: "open",
+          lastReminderKind: item.lastReminderKind,
+        },
+        data: {
+          lastRemindedAt: now,
+          lastReminderKind: kind,
+        },
+      });
+      if (claim.count === 0) continue;
+
       const title =
         kind === "overdue"
           ? `Vencido: ${item.title}`
@@ -329,14 +345,6 @@ export async function scanDueReminders(options?: {
           });
         }
       }
-
-      await db.dueItem.update({
-        where: { id: item.id },
-        data: {
-          lastRemindedAt: now,
-          lastReminderKind: kind,
-        },
-      });
 
       reminded += 1;
       tenantsTouched.add(item.tenantId);

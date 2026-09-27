@@ -1,0 +1,40 @@
+{
+  "name": "SGI · Scan diario de vencimientos",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 7 * * *" }] }
+      },
+      "id": "schedule",
+      "name": "Diario 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SGI_BASE_URL }}/api/automation/scan",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.SGI_AUTOMATION_WEBHOOK_SECRET }}" }
+          ]
+        },
+        "options": { "timeout": 120000 }
+      },
+      "id": "scan",
+      "name": "POST /api/automation/scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Diario 07:00": { "main": [[{ "node": "POST /api/automation/scan", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "timezone": "America/Argentina/Buenos_Aires" }
+}
