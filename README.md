@@ -43,7 +43,7 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 | UI | Tailwind CSS + componentes propios (primitives estilo shadcn/ui) |
 | Auth | **Better Auth** (email/password) |
 | Base de datos | **PostgreSQL + Prisma** |
-| Jobs / vencimientos | Inngest (o cron + cola) — pendiente |
+| Jobs / vencimientos | n8n (orquestador vía endpoint autenticado) — pendiente |
 | Archivos | Almacenamiento S3-compatible (MinIO local / R2 / S3) — docs controlados + adjuntos de hallazgos |
 | Email | Stub + envío real configurable |
 | Hosting | Vercel + Postgres gestionado (Neon / Render) |
@@ -83,10 +83,26 @@ Módulo nuevo alineado a **ISO 9001:2026 §6.1** (riesgo ≠ oportunidad; no ERM
 
 Rutas: `/t/[slug]/risks` (workspace), `/risks/explore` (descubrimiento), `/risks/[id]` y `/risks/opportunities/[id]` (fichas). Nav del portal: **Riesgos y oportunidades**.
 
+### Auditorías internas integradas — en construcción (Task 11b)
+
+Ciclo de auditoría interna para **ISO 9001:2026, ISO 14001:2015 e ISO 45001:2018 §9.2**, con ISO 19011 como guía. Una misma auditoría puede cubrir varias normas. Spec: [`SPEC-audits.md`](./SPEC-audits.md). Research: [`RESEARCH-audits.md`](./RESEARCH-audits.md).
+
+| Pieza | Qué hace | Estado |
+|---|---|---|
+| **Programa anual** | Auditorías planificadas por empresa, con justificación de frecuencia y vencimientos (`DueItem`). | ✅ |
+| **Plan de auditoría** | Objetivo, alcance y criterios obligatorios antes de iniciar; equipo auditor con control de imparcialidad. | ✅ |
+| **Lista de verificación** | Generada desde el catálogo de requisitos de la empresa, más preguntas propias; resultado y evidencia (adjuntos) por ítem. | ✅ |
+| **Hallazgos** | NC mayor, NC menor, observación u oportunidad de mejora: cada uno crea un **Hallazgo** vinculado a la auditoría, visible desde su ficha. | ✅ |
+| **Informe y cierre** | Informe, cierre y cobertura del programa. | Pendiente (11b.5) |
+
+Rutas: `/t/[slug]/audits` (programa y listado), `/audits/new` (planificación), `/audits/[id]` (ejecución). La evidencia se descarga por `/api/audits/evidence/[id]/download`, con control de acceso por empresa.
+
 ### Qué sigue
 
+- **Task 11b.5** — informe, cierre y cobertura de auditorías internas.  
 - **Task 10d** — estados de hallazgos.  
-- **Task 11b** — auditorías e indicadores.  
+- **Task 11c** — indicadores.  
+- **Task 11d** — auditorías externas con carga del informe del organismo.  
 - **Task 12+** — portal cliente / dashboards / E2E.
 
 ---
@@ -150,6 +166,7 @@ En `.env` ya hay valores de desarrollo seguros para local. **Cambiá** `BETTER_A
 npm run db:up          # levanta Postgres 16 + MinIO (S3) en Docker
 npm run db:migrate     # aplica migraciones (primera vez: crea el schema)
 npm run db:seed        # crea el superusuario
+npm run db:seed:demo   # integrantes de prueba en la empresa "tisico" (clave Tisico123!)
 ```
 
 Para object storage real en local, copiá las variables `S3_*` de `.env.example` a `.env` (MinIO en `localhost:9000`, consola en `:9001`). Sin esas variables, los archivos viven en memoria del proceso (útil para tests; se pierden al reiniciar).
@@ -167,7 +184,7 @@ Credenciales por defecto del seed (solo local):
 npm run dev
 ```
 
-Abrí [http://localhost:3000](http://localhost:3000) → **Iniciar sesión** → deberías llegar a `/platform` como `platform_superuser`.
+Abrí [http://localhost:3000](http://localhost:3000). En desarrollo, el home muestra **Acceso rápido** con un clic para el superusuario, el administrador de cada empresa y cada integrante. Cada uno cae directo en su lugar: el superusuario en `/platform`, el resto en `/t/<empresa>`.
 
 ---
 
@@ -186,6 +203,7 @@ Abrí [http://localhost:3000](http://localhost:3000) → **Iniciar sesión** →
 | `npm run db:up` / `db:down` | Docker Compose Postgres |
 | `npm run db:migrate` | `prisma migrate dev` |
 | `npm run db:seed` | Seed del superusuario |
+| `npm run db:seed:demo` | Integrantes de prueba de Tisico (idempotente) |
 | `npm run db:studio` | Prisma Studio |
 
 ---
@@ -214,7 +232,19 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 - `src/lib/auth.ts` — Better Auth + Prisma adapter
 - `src/lib/db.ts` — cliente Prisma
 - `src/app/login/page.tsx` — inicio de sesión
-- `src/app/platform/page.tsx` — panel post-login
+- `src/domain/identity/persona.ts` — superusuario / administrador de empresa / integrante, capacidades visibles y destino post-login
+- `src/app/(platform)/layout.tsx` y `src/app/(tenant)/t/[slug]/layout.tsx` — guardas de acceso y shell con la identidad visible
+- `/portal` — entrada única: lleva a cada usuario a su espacio (no hay que "activar" nada)
+
+### Quién ve qué
+
+| Persona | Entra a | Color del shell |
+|---|---|---|
+| Superusuario | `/platform` y cualquier empresa | Ámbar |
+| Administrador de la empresa | `/t/<empresa>`; gestiona usuarios | Verde azulado |
+| Integrante | `/t/<empresa>`; edita o solo lectura según rol | Azul acero |
+
+La cabecera muestra siempre la persona, el rol, si puede editar y **Cerrar sesión**.
 
 ---
 
@@ -248,7 +278,7 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 4. `assessment-gap` — carga de gap por superusuario ✅  
 5. `document-control` — procedimientos, registros y versiones ✅  
 6. `automation-offers` — motor de vencimientos + ofertas ✅  
-7. `operations-core` — hallazgos unificados ✅ · **riesgos y oportunidades Nivel 2** ✅ · luego auditorías e indicadores (Task 11b)  
+7. `operations-core` — hallazgos unificados ✅ · **riesgos y oportunidades Nivel 2** ✅ · auditorías internas (Task 11b, en curso) · luego indicadores (Task 11c)  
 8. `client-portal` — UI para operar el SGI configurado  
 
 ---
@@ -259,6 +289,8 @@ El aislamiento es **deny-by-default**: las queries de negocio pasan por helpers 
 - [`SPEC-findings.md`](./SPEC-findings.md) — hallazgos, 5 Porqués, medidas, adjuntos, bandeja  
 - [`SPEC-risks-opportunities.md`](./SPEC-risks-opportunities.md) — riesgos y oportunidades ISO 9001:2026  
 - [`RESEARCH-risks-opportunities.md`](./RESEARCH-risks-opportunities.md) — ledger de investigación normativa  
+- [`SPEC-audits.md`](./SPEC-audits.md) — auditorías internas integradas 9001 / 14001 / 45001  
+- [`RESEARCH-audits.md`](./RESEARCH-audits.md) — investigación normativa de auditorías (ISO 19011)  
 
 ## Contribución y flujo con el agente
 

@@ -302,7 +302,41 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ---
 
-## Task 11b (luego): auditorías e indicadores
+## Task 11b: operations-core — auditorías internas integradas (9001/14001/45001)
+
+**Description:** Ciclo completo de auditoría interna: programa anual → plan (objetivo, alcance, criterios) → lista de verificación desde el catálogo del tenant → hallazgos que crean `Finding` → informe → cierre, con cobertura del programa. Research: `RESEARCH-audits.md`. SPEC: `SPEC-audits.md` (aprobado PO 2026-09-27).
+
+**Decisiones PO (2026-09-27):** auditorías antes que indicadores · integrada 9001/14001/45001 · ciclo completo · SPEC antes de construir.
+
+**Sub-tareas (plan vertical):**
+- [x] 11b.1 Dominio + Prisma + tests (lifecycle, gates, imparcialidad, mapeo a Finding, cobertura)
+- [x] 11b.2 Programa anual + planificación + DueItems
+- [x] 11b.3 Checklist desde catálogo + ejecución con evidencia/adjuntos
+- [x] 11b.4 Hallazgos automáticos → Finding + vínculo inverso
+- [ ] 11b.5 Informe + cierre + cobertura + guía + nav + e2e
+
+**Dependencies:** Task 10c (findings), Task 9 (storage), Task 8 (DueItem)
+**Estimated scope:** L
+
+---
+
+## Task 11d (pendiente, pedido PO 2026-09-27): auditorías externas con carga de informe
+
+**Description:** Sección de **auditorías externas** (certificación / 3.ª parte, clientes / 2.ª parte). Se adjunta el **informe del auditor externo** (PDF) y el sistema **extrae los hallazgos automáticamente** (NC mayor/menor, observaciones, oportunidades de mejora, con cláusula y evidencia) para registrarlos como `Finding` vinculados a la auditoría externa.
+
+**Notas para el SPEC (a definir antes de construir):**
+- Extracción: parseo del PDF + extracción asistida (LLM) con **revisión humana obligatoria** antes de crear los hallazgos (el usuario confirma/edita cada uno); nunca crear en silencio.
+- Datos de la auditoría externa: organismo, tipo (certificación inicial, seguimiento, recertificación, cliente), normas, fechas, auditor, resultado/recomendación.
+- Plazos típicos del organismo para responder NC (p. ej. 30/90 días) → `DueItem`.
+- Reutilizar: `Finding` (con origen auditoría externa), storage para el informe, cobertura del programa (opcional).
+- Riesgos: calidad de extracción según formato de cada organismo; datos sensibles del informe; costo por documento.
+
+**Dependencies:** Task 11b (auditorías internas, vínculo Finding ↔ auditoría)
+**Estimated scope:** L (requiere research + SPEC)
+
+---
+
+## Task 11c (luego): indicadores
 
 ## Checkpoint C: After Tasks 9–11
 
@@ -362,3 +396,15 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 - Implement **one task at a time**; stop at checkpoints for human review.
 - Prefer TDD on `src/domain/**`.
 - Do not invent automation behaviors beyond Task 9 engine until an automation-spec is approved.
+- Automatizaciones: priorizar **n8n** solo cuando aporte (schedule externo o integración con terceros). n8n llama endpoints autenticados e idempotentes de la app (`scanDueReminders`, futuras ofertas de integración); nunca accede a la DB ni duplica reglas de dominio. Si basta con lógica nativa, no se usa n8n.
+
+## Task N8N-1: trigger de vencimientos desde n8n
+
+**Description:** Exponer `POST /api/automation/scan` protegido por `AUTOMATION_WEBHOOK_SECRET` que ejecuta `scanDueReminders`; workflow n8n exportado en `n8n/` con Schedule Trigger diario → HTTP Request.
+
+**Acceptance criteria:**
+- [x] Sin secreto válido → 401; con secreto → corre scan y registra `AutomationRun`
+- [x] Reintentos de n8n no duplican notificaciones (idempotencia por día/ítem)
+- [x] Workflow JSON versionado + variables documentadas en `.env.example`
+
+**Verification:** test de integración del endpoint (401 / 200 / doble llamada sin duplicados).
