@@ -10,15 +10,17 @@ import {
 } from "@/domain/opportunities/lifecycle";
 import {
   assertValidAssessmentInput,
+  describeAssessmentResult,
   nextAssessmentVersion,
 } from "@/domain/risks/assessment";
+import { SOURCE_GUIDANCE, WORKSPACE_STAGES } from "@/domain/risks/guide";
 import { isStale, suggestReviewTriggers } from "@/domain/risks/review";
 import {
   assertCanCompleteAction,
   assertCanRecordEffectiveness,
   hasLearnedFromAction,
 } from "@/domain/actions/types";
-import { RISK_STATUSES } from "@/domain/risks/types";
+import { RISK_STATUSES, SOURCE_KINDS } from "@/domain/risks/types";
 import { OPPORTUNITY_STATUSES } from "@/domain/opportunities/types";
 import { buildRisksWhere } from "@/lib/risks";
 import { buildOpportunitiesWhere } from "@/lib/opportunities";
@@ -85,7 +87,7 @@ describe("assessment versioning rules", () => {
         level: "low",
         rationale: "  ",
       }),
-    ).toThrow(/racional/i);
+    ).toThrow(/justificación/i);
   });
 
   it("checks P×I score consistency", () => {
@@ -228,5 +230,33 @@ describe("list filters", () => {
 describe("shared action entity type", () => {
   it("uses dedicated DueItem entity type", () => {
     expect(ACTION_ENTITY_TYPE).toBe("operational_action");
+  });
+});
+
+describe("assessment display", () => {
+  it("describes stored results in plain Spanish", () => {
+    expect(describeAssessmentResult("qualitative", { level: "high" })).toBe(
+      "Cualitativa · Nivel alto",
+    );
+    expect(
+      describeAssessmentResult("probability_impact", { probability: 2, impact: 4, score: 8 }),
+    ).toBe("Probabilidad 2 × Impacto 4 = 8");
+  });
+});
+
+describe("identification guide", () => {
+  it("has a guiding question for every source kind", () => {
+    for (const kind of SOURCE_KINDS) {
+      expect(SOURCE_GUIDANCE[kind].question.length).toBeGreaterThan(10);
+    }
+  });
+
+  it("defines the four workspace stages in order", () => {
+    expect(WORKSPACE_STAGES.map((s) => s.key)).toEqual([
+      "discovery",
+      "decisions",
+      "execution",
+      "learning",
+    ]);
   });
 });

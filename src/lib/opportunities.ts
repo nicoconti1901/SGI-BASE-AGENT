@@ -220,7 +220,7 @@ export async function setOpportunityPursuitDecision(
   const opp = await getOpportunity(input.tenantId, input.opportunityId, db);
   if (!opp) throw new Error("Oportunidad no encontrada");
   if (!input.rationale.trim()) {
-    throw new Error("El racional de la decisión es obligatorio");
+    throw new Error("La justificación de la decisión es obligatoria");
   }
 
   if (opp.status !== "evaluated" && opp.status !== "decision") {

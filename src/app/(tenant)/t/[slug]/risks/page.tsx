@@ -5,6 +5,7 @@ import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
 import { loadRisksWorkspace } from "@/lib/risks-workspace";
+import { WORKSPACE_STAGES } from "@/domain/risks/guide";
 import { RISK_STATUS_LABELS, RISK_STATUS_TONE } from "@/domain/risks/types";
 import {
   OPPORTUNITY_STATUS_LABELS,
@@ -42,39 +43,43 @@ export default async function RisksWorkspacePage({
 
   const ws = await loadRisksWorkspace(tenant.id);
 
+  const [discovery, decisions, execution, learning] = WORKSPACE_STAGES;
+  const btn = "rounded-md border border-[var(--color-line)] bg-[var(--color-surface-raised)] px-4 py-2 text-sm font-medium hover:border-[var(--color-accent)]";
+
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm text-[var(--color-ink-muted)]">
-            ISO 9001 · Riesgos y oportunidades
-          </p>
-          <h1 className="font-[family-name:var(--font-display)] text-3xl tracking-tight">
-            Workspace
-          </h1>
-          <p className="mt-2 max-w-xl text-sm text-[var(--color-ink-muted)]">
-            Discovery · Decisions · Execution · Learning — no una matriz como
-            pantalla principal.
-          </p>
+      <header className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm text-[var(--color-ink-muted)]">ISO 9001 · §6.1</p>
+            <h1 className="font-[family-name:var(--font-display)] text-3xl tracking-tight">
+              Riesgos y oportunidades
+            </h1>
+          </div>
+          <Link
+            href={`/t/${slug}/risks/guia`}
+            className="text-sm font-medium text-[var(--color-accent)] hover:underline"
+          >
+            Guía para identificar →
+          </Link>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {canWrite ? (
+        {canWrite ? (
+          <div className="flex flex-wrap gap-2">
             <Link
               href={`/t/${slug}/risks/explore`}
+              title="Partí de un proceso, proveedor o cambio y anotá lo que surja"
               className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white"
             >
-              Explorar contexto
+              Explorar una fuente
             </Link>
-          ) : null}
-          {canWrite ? (
-            <Link
-              href={`/t/${slug}/risks/explore?direct=risk`}
-              className="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm"
-            >
-              Alta directa (atajo)
+            <Link href={`/t/${slug}/risks/new?tipo=riesgo`} className={btn}>
+              + Riesgo
             </Link>
-          ) : null}
-        </div>
+            <Link href={`/t/${slug}/risks/new?tipo=oportunidad`} className={btn}>
+              + Oportunidad
+            </Link>
+          </div>
+        ) : null}
       </header>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -86,61 +91,52 @@ export default async function RisksWorkspacePage({
         <Stat label="Acciones en curso" value={ws.counts.openActions} />
       </div>
 
-      <WorkspaceLayer
-        title="1 · Discovery"
-        subtitle="Fuentes y análisis en curso"
-      >
+      <WorkspaceLayer stage={discovery}>
         <ItemList
           slug={slug}
-          empty="Nada pendiente de descubrir."
+          empty={discovery.empty}
           risks={ws.discovery.risks}
           opportunities={ws.discovery.opportunities}
         />
       </WorkspaceLayer>
 
-      <WorkspaceLayer
-        title="2 · Decisions"
-        subtitle="Qué falta evaluar o decidir"
-      >
+      <WorkspaceLayer stage={decisions}>
         <ItemList
           slug={slug}
-          empty="Sin decisiones pendientes."
+          empty={decisions.empty}
           risks={ws.decisions.risks}
           opportunities={ws.decisions.opportunities}
         />
       </WorkspaceLayer>
 
-      <WorkspaceLayer
-        title="3 · Execution"
-        subtitle="Respuestas y acciones en curso"
-      >
+      <WorkspaceLayer stage={execution}>
         <ItemList
           slug={slug}
-          empty="Sin ejecución activa."
+          empty={execution.empty}
           risks={ws.execution.risks}
           opportunities={ws.execution.opportunities}
         />
         {ws.execution.openActions.length > 0 ? (
-          <ul className="mt-3 space-y-1 text-sm">
-            {ws.execution.openActions.map((a) => (
-              <li key={a.id} className="text-[var(--color-ink-muted)]">
-                Acción: {a.title}
-                {a.dueAt
-                  ? ` · vence ${a.dueAt.toLocaleDateString("es-AR")}`
-                  : ""}
-              </li>
-            ))}
-          </ul>
+          <div className="mt-1">
+            <h3 className="text-sm font-medium">Acciones abiertas</h3>
+            <ul className="mt-1 space-y-1 text-sm">
+              {ws.execution.openActions.map((a) => (
+                <li key={a.id} className="text-[var(--color-ink-muted)]">
+                  {a.title}
+                  {a.dueAt
+                    ? ` · vence ${a.dueAt.toLocaleDateString("es-AR")}`
+                    : " · sin fecha"}
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : null}
       </WorkspaceLayer>
 
-      <WorkspaceLayer
-        title="4 · Learning"
-        subtitle="Efectividad, stale y revisiones"
-      >
+      <WorkspaceLayer stage={learning}>
         {ws.learning.actionsNeedingEffectiveness.length > 0 ? (
           <div className="mb-3">
-            <h3 className="text-sm font-medium">Efectividad pendiente</h3>
+            <h3 className="text-sm font-medium">Acciones completadas para verificar eficacia</h3>
             <ul className="mt-1 space-y-1 text-sm">
               {ws.learning.actionsNeedingEffectiveness.map((a) => (
                 <li key={a.id}>{a.title}</li>
@@ -150,7 +146,11 @@ export default async function RisksWorkspacePage({
         ) : null}
         <ItemList
           slug={slug}
-          empty="Sin señales de revisión / stale."
+          empty={
+            ws.learning.actionsNeedingEffectiveness.length > 0
+              ? "No hay registros con revisión vencida."
+              : learning.empty
+          }
           risks={ws.learning.staleRisks}
           opportunities={ws.learning.staleOpportunities}
         />
@@ -161,7 +161,7 @@ export default async function RisksWorkspacePage({
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md border border-[var(--color-border)] px-4 py-3">
+    <div className="rounded-md border border-[var(--color-line)] px-4 py-3">
       <div className="text-2xl font-semibold tabular-nums">{value}</div>
       <div className="text-xs text-[var(--color-ink-muted)]">{label}</div>
     </div>
@@ -169,21 +169,22 @@ function Stat({ label, value }: { label: string; value: number }) {
 }
 
 function WorkspaceLayer({
-  title,
-  subtitle,
+  stage,
   children,
 }: {
-  title: string;
-  subtitle: string;
+  stage: (typeof WORKSPACE_STAGES)[number];
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6">
+    <section className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-6">
       <div>
         <h2 className="font-[family-name:var(--font-display)] text-xl">
-          {title}
+          {stage.title}
         </h2>
-        <p className="text-sm text-[var(--color-ink-muted)]">{subtitle}</p>
+        <p className="text-sm text-[var(--color-ink-muted)]">{stage.what}</p>
+        <p className="mt-1 text-sm">
+          <span className="font-medium">Qué hacer:</span> {stage.next}
+        </p>
       </div>
       {children}
     </section>
@@ -210,7 +211,7 @@ function ItemList({
     return <p className="text-sm text-[var(--color-ink-muted)]">{empty}</p>;
   }
   return (
-    <ul className="divide-y divide-[var(--color-border)] rounded-md border border-[var(--color-border)]">
+    <ul className="divide-y divide-[var(--color-line)] rounded-md border border-[var(--color-line)]">
       {risks.map((r) => {
         const status = r.status as RiskStatus;
         const tone = RISK_STATUS_TONE[status];

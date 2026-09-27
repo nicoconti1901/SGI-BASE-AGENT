@@ -65,6 +65,7 @@ export async function exploreContextAction(
     return { error: "Elegí crear riesgo, oportunidad, o ambos" };
   }
 
+  let destination = `/t/${slug}/risks`;
   try {
     let riskId: string | undefined;
     let oppId: string | undefined;
@@ -112,12 +113,13 @@ export async function exploreContextAction(
     }
 
     revalidatePath(`/t/${slug}/risks`);
-    if (riskId && !oppId) redirect(`/t/${slug}/risks/${riskId}`);
-    if (oppId && !riskId) redirect(`/t/${slug}/risks/opportunities/${oppId}`);
-    redirect(`/t/${slug}/risks`);
+    if (riskId && !oppId) destination = `/t/${slug}/risks/${riskId}`;
+    else if (oppId && !riskId) destination = `/t/${slug}/risks/opportunities/${oppId}`;
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Error al explorar" };
   }
+  // redirect() lanza NEXT_REDIRECT: va fuera del try para que el catch no lo muestre como error.
+  redirect(destination);
 }
 
 export async function createRiskDirectAction(
@@ -131,6 +133,7 @@ export async function createRiskDirectAction(
     return { error: "Sesión inválida" };
   }
 
+  let riskId: string;
   try {
     const risk = await createRisk({
       tenantId: gate.tenant.id,
@@ -152,10 +155,47 @@ export async function createRiskDirectAction(
       },
     });
     revalidatePath(`/t/${slug}/risks`);
-    redirect(`/t/${slug}/risks/${risk.id}`);
+    riskId = risk.id;
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Error al crear riesgo" };
   }
+  redirect(`/t/${slug}/risks/${riskId}`);
+}
+
+export async function createOpportunityDirectAction(
+  slug: string,
+  _prev: RoActionState,
+  formData: FormData,
+): Promise<RoActionState> {
+  const gate = await requireWrite(slug);
+  if ("error" in gate && gate.error) return { error: gate.error };
+  if (!("tenant" in gate) || !gate.tenant || !gate.ctx) {
+    return { error: "Sesión inválida" };
+  }
+
+  let opportunityId: string;
+  try {
+    const opp = await createOpportunity({
+      tenantId: gate.tenant.id,
+      createdByUserId: gate.ctx.userId,
+      draft: {
+        title: String(formData.get("title") ?? ""),
+        hypothesis: {
+          condition: String(formData.get("condition") ?? ""),
+          circumstance: String(formData.get("circumstance") ?? ""),
+          benefit: String(formData.get("benefit") ?? ""),
+        },
+        sourceKind: parseSourceKind(String(formData.get("sourceKind") ?? "")),
+        sourceLabel: String(formData.get("sourceLabel") ?? ""),
+        findingId: String(formData.get("findingId") ?? "").trim() || null,
+      },
+    });
+    revalidatePath(`/t/${slug}/risks`);
+    opportunityId = opp.id;
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Error al crear oportunidad" };
+  }
+  redirect(`/t/${slug}/risks/opportunities/${opportunityId}`);
 }
 
 export async function saveRiskCanvasAction(
@@ -182,7 +222,7 @@ export async function saveRiskCanvasAction(
         .filter(Boolean),
     });
     revalidatePath(`/t/${slug}/risks/${riskId}`);
-    return { ok: "Canvas actualizado" };
+    return { ok: "Descripción guardada" };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Error al guardar" };
   }
@@ -315,7 +355,7 @@ export async function saveOpportunityCanvasAction(
       benefit: String(formData.get("benefit") ?? ""),
     });
     revalidatePath(`/t/${slug}/risks/opportunities/${opportunityId}`);
-    return { ok: "Canvas actualizado" };
+    return { ok: "Descripción guardada" };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Error al guardar" };
   }

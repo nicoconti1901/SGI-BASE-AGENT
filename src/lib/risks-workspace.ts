@@ -7,7 +7,7 @@ import {
 } from "@/lib/actions";
 import { isStale } from "@/domain/risks/review";
 
-/** Agrega las 4 capas del workspace Nivel 2. */
+/** Agrega las 4 etapas: identificación, evaluación y decisión, tratamiento, seguimiento. */
 export async function loadRisksWorkspace(tenantId: string) {
   const now = new Date();
 
@@ -19,25 +19,16 @@ export async function loadRisksWorkspace(tenantId: string) {
       listActionsNeedingEffectiveness(tenantId),
     ]);
 
+  // Cada registro aparece en una sola etapa según su estado.
   const discovery = {
-    risks: risks.filter(
-      (r) =>
-        r.status === "identified" ||
-        r.status === "analyzing" ||
-        (!r.cause.trim() && !r.event.trim()),
-    ),
-    opportunities: opportunities.filter(
-      (o) =>
-        o.status === "discovered" ||
-        o.status === "analyzing" ||
-        (!o.condition.trim() && !o.benefit.trim()),
+    risks: risks.filter((r) => ["identified", "analyzing"].includes(r.status)),
+    opportunities: opportunities.filter((o) =>
+      ["discovered", "analyzing"].includes(o.status),
     ),
   };
 
   const decisions = {
-    risks: risks.filter((r) =>
-      ["evaluated", "response_planned"].includes(r.status),
-    ),
+    risks: risks.filter((r) => r.status === "evaluated"),
     opportunities: opportunities.filter((o) =>
       ["evaluated", "decision"].includes(o.status),
     ),

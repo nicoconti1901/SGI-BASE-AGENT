@@ -62,7 +62,7 @@ export function LinkedActionsPanel({
         {actions.map((a) => (
           <li
             key={a.id}
-            className="rounded-md border border-[var(--color-border)] p-4"
+            className="rounded-md border border-[var(--color-line)] p-4"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <strong>{a.title}</strong>
@@ -95,7 +95,7 @@ export function LinkedActionsPanel({
             ) : null}
 
             {canWrite && a.status !== "completed" && a.status !== "cancelled" ? (
-              <div className="mt-3 flex flex-col gap-2 border-t border-[var(--color-border)] pt-3">
+              <div className="mt-3 flex flex-col gap-2 border-t border-[var(--color-line)] pt-3">
                 <UploadEvidenceForm
                   slug={slug}
                   actionId={a.id}
@@ -128,7 +128,7 @@ export function LinkedActionsPanel({
       </ul>
 
       {canWrite ? (
-        <form action={createAction} className="flex flex-col gap-3 rounded-md border border-dashed border-[var(--color-border)] p-4">
+        <form action={createAction} className="flex flex-col gap-3 rounded-md border border-dashed border-[var(--color-line)] p-4">
           <h3 className="text-sm font-medium">Nueva acción</h3>
           {createState.error ? (
             <p className="text-sm text-[var(--color-danger)]">
@@ -145,18 +145,18 @@ export function LinkedActionsPanel({
             name="title"
             required
             placeholder="Qué se va a hacer"
-            className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+            className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
           />
           <textarea
             name="description"
             rows={2}
             placeholder="Detalle (opcional)"
-            className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+            className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
           />
           <select
             name="ownerUserId"
             required
-            className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+            className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
           >
             <option value="">Responsable…</option>
             {members.map((m) => (
@@ -168,7 +168,7 @@ export function LinkedActionsPanel({
           <input
             type="date"
             name="dueAt"
-            className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+            className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
           />
           <button
             type="submit"
@@ -201,7 +201,7 @@ function UploadEvidenceForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md border border-[var(--color-border)] px-2 py-1 text-xs"
+        className="rounded-md border border-[var(--color-line)] px-2 py-1 text-xs"
       >
         Adjuntar evidencia
       </button>
@@ -224,7 +224,7 @@ function CompleteButton({
   return (
     <button
       type="button"
-      className="rounded-md border border-[var(--color-border)] px-2 py-1 text-xs"
+      className="rounded-md border border-[var(--color-line)] px-2 py-1 text-xs"
       onClick={async () => {
         await completeActionAction(slug, actionId, returnPath);
       }}
@@ -248,14 +248,14 @@ function EffectivenessForm({
   return (
     <form
       action={formAction}
-      className="mt-3 flex flex-col gap-2 border-t border-[var(--color-border)] pt-3"
+      className="mt-3 flex flex-col gap-2 border-t border-[var(--color-line)] pt-3"
     >
       <input type="hidden" name="returnPath" value={returnPath} />
       <label className="text-xs font-medium">Evaluar efectividad</label>
       <select
         name="effectiveness"
         required
-        className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-sm"
+        className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-2 py-1 text-sm"
       >
         <option value="effective">Efectiva</option>
         <option value="partially_effective">Parcialmente efectiva</option>
@@ -266,7 +266,7 @@ function EffectivenessForm({
         name="note"
         rows={2}
         placeholder="Comentario (obligatorio si no es plena)"
-        className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-sm"
+        className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-2 py-1 text-sm"
       />
       <button
         type="submit"
