@@ -59,3 +59,12 @@ describe("finding lifecycle permissions", () => {
     expect(canTenantRole("process_owner", "cancel_findings")).toBe(false);
   });
 });
+
+describe("objectives permissions", () => {
+  it("lets admins and process owners manage objectives", () => {
+    expect(canTenantRole("tenant_admin", "manage_objectives")).toBe(true);
+    expect(canTenantRole("process_owner", "manage_objectives")).toBe(true);
+    expect(canTenantRole("contributor", "manage_objectives")).toBe(false);
+    expect(canTenantRole("viewer", "manage_objectives")).toBe(false);
+  });
+});
