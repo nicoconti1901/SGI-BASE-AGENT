@@ -420,8 +420,14 @@ enum FindingStatus {
   draft
   published
   in_progress
+  verification
   closed
   cancelled
+}
+
+enum VerificationResult {
+  effective
+  not_effective
 }
 
 enum MeasureKind {
@@ -435,38 +441,81 @@ enum RcaStatus {
 }
 
 model Finding {
-  id               String                   @id @default(cuid())
-  tenantId         String
-  type             FindingType
-  status           FindingStatus            @default(draft)
-  title            String
-  description      String
-  detectedAt       DateTime
-  source           String?
-  location         String?
-  severity         String?
-  createdByUserId  String?
-  publishedAt      DateTime?
+  id                String                   @id @default(cuid())
+  tenantId          String
+  type              FindingType
+  status            FindingStatus            @default(draft)
+  title             String
+  description       String
+  detectedAt        DateTime
+  source            String?
+  location          String?
+  severity          String?
+  createdByUserId   String?
+  publishedAt       DateTime?
   /// JSON RootCauseAnalysis (five_whys)
-  rcaJson          Json?
-  rcaStatus        RcaStatus                @default(incomplete)
-  rootCause        String?
-  createdAt        DateTime                 @default(now())
-  updatedAt        DateTime                 @updatedAt
-  tenant           Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  measures         FindingMeasure[]
-  notifyRecipients FindingNotifyRecipient[]
-  attachments      FindingAttachment[]
-  risks            Risk[]
-  opportunities    Opportunity[]
-  auditId          String?
-  audit            Audit?                   @relation(fields: [auditId], references: [id], onDelete: SetNull)
-  auditItem        AuditChecklistItem?      @relation("AuditItemFinding")
+  rcaJson           Json?
+  rcaStatus         RcaStatus                @default(incomplete)
+  rootCause         String?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  tenant            Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  measures          FindingMeasure[]
+  notifyRecipients  FindingNotifyRecipient[]
+  attachments       FindingAttachment[]
+  risks             Risk[]
+  opportunities     Opportunity[]
+  auditId           String?
+  audit             Audit?                   @relation(fields: [auditId], references: [id], onDelete: SetNull)
+  auditItem         AuditChecklistItem?      @relation("AuditItemFinding")
+  /// Ciclo de vida (Task 10d) — SPEC-findings-lifecycle.md
+  verificationDueAt DateTime?
+  closedAt          DateTime?
+  cancelledAt       DateTime?
+  cancelledByUserId String?
+  cancelReason      String?
+  /// Desde cuándo hace falta una medida correctiva nueva (no eficaz / reapertura)
+  reworkSince       DateTime?
+  verifications     FindingVerification[]
+  statusEvents      FindingStatusEvent[]
 
   @@index([tenantId, status])
   @@index([tenantId, type])
   @@index([auditId])
   @@map("finding")
+}
+
+/// Intentos de verificación de eficacia (§10.2.1 d). Se conservan todos.
+model FindingVerification {
+  id                    String             @id @default(cuid())
+  tenantId              String
+  findingId             String
+  result                VerificationResult
+  evidence              String
+  independenceException String?
+  earlyReason           String?
+  verifiedByUserId      String
+  verifiedAt            DateTime           @default(now())
+  finding               Finding            @relation(fields: [findingId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, findingId])
+  @@map("finding_verification")
+}
+
+/// Historial de estados del hallazgo (§10.2.2 información documentada).
+model FindingStatusEvent {
+  id          String         @id @default(cuid())
+  tenantId    String
+  findingId   String
+  fromStatus  FindingStatus?
+  toStatus    FindingStatus
+  actorUserId String?
+  reason      String?
+  createdAt   DateTime       @default(now())
+  finding     Finding        @relation(fields: [findingId], references: [id], onDelete: Cascade)
+
+  @@index([findingId, createdAt])
+  @@map("finding_status_event")
 }
 
 model FindingMeasure {
@@ -480,6 +529,9 @@ model FindingMeasure {
   dueAt           DateTime?
   linkedRootCause Boolean             @default(false)
   status          WorkflowStatus      @default(open)
+  startedAt       DateTime?
+  closedAt        DateTime?
+  closedByUserId  String?
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
   finding         Finding             @relation(fields: [findingId], references: [id], onDelete: Cascade)

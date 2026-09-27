@@ -8,6 +8,7 @@ export type FindingStatus =
   | "draft"
   | "published"
   | "in_progress"
+  | "verification"
   | "closed"
   | "cancelled";
 
@@ -92,6 +93,7 @@ export const FINDING_STATUS_LABELS: Record<FindingStatus, string> = {
   draft: "Borrador",
   published: "Publicado",
   in_progress: "En curso",
+  verification: "En verificación",
   closed: "Cerrado",
   cancelled: "Anulado",
 };
@@ -104,6 +106,7 @@ export const FINDING_STATUS_TONE: Record<
   draft: { bg: "var(--color-surface)", fg: "var(--color-ink-muted)" },
   published: { bg: "var(--color-accent-soft)", fg: "var(--color-accent)" },
   in_progress: { bg: "var(--color-warning-soft)", fg: "var(--color-warning)" },
+  verification: { bg: "var(--color-accent-soft)", fg: "var(--color-accent-ink)" },
   closed: { bg: "var(--color-success-soft)", fg: "var(--color-success)" },
   cancelled: { bg: "var(--color-danger-soft)", fg: "var(--color-danger)" },
 };
