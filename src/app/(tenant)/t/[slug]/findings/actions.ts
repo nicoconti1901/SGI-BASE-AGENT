@@ -262,6 +262,7 @@ export async function closeMeasureAction(
     await closeFindingMeasure({
       tenantId: auth.tenant.id,
       measureId,
+      actorUserId: auth.ctx.userId,
     });
     revalidatePath(`/t/${slug}/findings/${findingId}`);
     return { ok: "Medida cerrada con evidencia" };
