@@ -11,6 +11,7 @@ import {
   approveProgram,
   createAudit,
   saveAuditPlan,
+  saveAuditReport,
   saveProgram,
   transitionAudit,
 } from "@/lib/audits";
@@ -341,4 +342,46 @@ export async function uploadAuditEvidenceAction(
   }
   revalidateAudit(slug, auditId);
   return { ok: "Evidencia adjuntada" };
+}
+
+// ─── Informe y cierre (11b.5) ───────────────────────────────────────────────
+
+/** Pasar a informe, volver a ejecución o cerrar: lo hace el equipo auditor. */
+export async function executorTransitionAction(
+  slug: string,
+  auditId: string,
+  to: "reporting" | "in_progress" | "closed",
+): Promise<AuditActionState> {
+  const gate = await requireExecutor(slug, auditId);
+  if ("error" in gate) return { error: gate.error };
+  try {
+    await transitionAudit({ tenantId: gate.tenant.id, auditId, to });
+  } catch (e) {
+    return toState(e, "No se pudo cambiar el estado");
+  }
+  revalidateAudit(slug, auditId);
+  return { ok: to === "closed" ? "Informe emitido y auditoría cerrada" : "Estado actualizado" };
+}
+
+export async function saveAuditReportAction(
+  slug: string,
+  auditId: string,
+  _prev: AuditActionState,
+  formData: FormData,
+): Promise<AuditActionState> {
+  const gate = await requireExecutor(slug, auditId);
+  if ("error" in gate) return { error: gate.error };
+  try {
+    await saveAuditReport({
+      tenantId: gate.tenant.id,
+      auditId,
+      conclusion: String(formData.get("conclusion") ?? ""),
+      strengths: String(formData.get("strengths") ?? ""),
+      workersCommunicated: formData.get("workersCommunicated") === "on",
+    });
+  } catch (e) {
+    return toState(e, "No se pudo guardar el informe");
+  }
+  revalidateAudit(slug, auditId);
+  return { ok: "Informe guardado" };
 }

@@ -8,6 +8,7 @@ import {
   assertCanTransitionAudit,
   auditCode,
   closeReadinessIssues,
+  computeCoverage,
   executionReadinessIssues,
   planReadinessIssues,
   reportDueAt,
@@ -342,4 +343,56 @@ export async function transitionAudit(
     );
   }
   return updated;
+}
+
+// ─── Informe y cobertura (11b.5) ────────────────────────────────────────────
+
+/** El informe se redacta con la auditoría en etapa de informe; cerrar lo emite. */
+export async function saveAuditReport(
+  input: {
+    tenantId: string;
+    auditId: string;
+    conclusion: string;
+    strengths: string;
+    workersCommunicated: boolean;
+  },
+  db: PrismaClient = prisma,
+) {
+  const audit = await db.audit.findFirst({
+    where: { id: input.auditId, tenantId: input.tenantId },
+  });
+  if (!audit) throw new Error("Auditoría no encontrada");
+  if (audit.status !== "reporting") {
+    throw new AuditGateError(["El informe se redacta cuando la lista de verificación está completa"]);
+  }
+  return db.audit.update({
+    where: { id: audit.id },
+    data: {
+      reportConclusion: input.conclusion.trim() || null,
+      reportStrengths: input.strengths.trim() || null,
+      workersCommunicated: audit.standards.includes("ISO45001") && input.workersCommunicated,
+    },
+  });
+}
+
+/** Cobertura del programa: requisitos de la empresa auditados en auditorías cerradas del año. */
+export async function getProgramCoverage(
+  tenantId: string,
+  year: number,
+  db: PrismaClient = prisma,
+) {
+  const [requirements, items] = await Promise.all([
+    db.tenantRequirement.findMany({
+      where: { tenantId },
+      select: { id: true, requirement: { select: { standard: true } } },
+    }),
+    db.auditChecklistItem.findMany({
+      where: { tenantId, audit: { program: { year }, status: "closed" } },
+      select: { tenantRequirementId: true, result: true },
+    }),
+  ]);
+  return computeCoverage(
+    requirements.map((r) => ({ id: r.id, standard: r.requirement.standard })),
+    items.map((i) => ({ ...i, auditClosed: true })),
+  );
 }

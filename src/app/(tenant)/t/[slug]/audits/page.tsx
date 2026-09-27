@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getProgramWithAudits } from "@/lib/audits";
+import { getProgramCoverage, getProgramWithAudits } from "@/lib/audits";
 import { listTenantMemberOptions } from "@/lib/findings";
 import {
   AUDIT_PROGRAM_STATUS_LABELS,
@@ -31,9 +31,10 @@ export default async function AuditsPage({
   const year = Number(anio) || new Date().getFullYear();
   const { tenant, canPlan, canApprove } = await loadAuditsAccess(slug);
 
-  const [{ program, audits }, members] = await Promise.all([
+  const [{ program, audits }, members, coverage] = await Promise.all([
     getProgramWithAudits(tenant.id, year),
     listTenantMemberOptions(tenant.id),
+    getProgramCoverage(tenant.id, year),
   ]);
   const nameOf = (id?: string) => members.find((m) => m.id === id)?.name ?? "Sin asignar";
   const status = program?.status ?? "draft";
@@ -46,6 +47,12 @@ export default async function AuditsPage({
           <h1 className="font-[family-name:var(--font-display)] text-3xl tracking-tight">
             Auditorías internas
           </h1>
+          <Link
+            href={`/t/${slug}/audits/guia`}
+            className="mt-1 inline-block text-sm font-medium text-[var(--color-accent)] hover:underline"
+          >
+            Guía de auditoría interna →
+          </Link>
         </div>
         <nav aria-label="Año" className="flex items-center gap-3 text-sm">
           <Link href={`/t/${slug}/audits?anio=${year - 1}`} className="text-[var(--color-accent)]">
@@ -108,6 +115,49 @@ export default async function AuditsPage({
           </p>
         )}
       </section>
+
+      {coverage.length > 0 ? (
+        <section className="flex flex-col gap-3" aria-labelledby="cobertura">
+          <div>
+            <h2 id="cobertura" className="font-[family-name:var(--font-display)] text-xl">
+              Cobertura {year}
+            </h2>
+            <p className="text-sm text-[var(--color-ink-muted)]">
+              Requisitos de la empresa revisados en auditorías cerradas del año. El programa debería
+              cubrir el sistema completo en su ciclo.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {coverage.map((row) => {
+              const pct = row.total ? Math.round((row.covered / row.total) * 100) : 0;
+              return (
+                <div key={row.standard} className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-sm font-semibold">{AUDIT_STANDARD_LABELS[row.standard]}</span>
+                    <span className="text-2xl font-semibold tabular-nums">{pct}%</span>
+                  </div>
+                  <div
+                    className="mt-2 h-1.5 rounded-[var(--radius-sm)] bg-[var(--color-surface)]"
+                    role="progressbar"
+                    aria-valuenow={pct}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Cobertura ${AUDIT_STANDARD_LABELS[row.standard]}`}
+                  >
+                    <div
+                      className="h-full rounded-[var(--radius-sm)] bg-[var(--color-accent)]"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs tabular-nums text-[var(--color-ink-muted)]">
+                    {row.covered} de {row.total} requisitos
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">

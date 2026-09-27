@@ -101,4 +101,35 @@ test("arma la lista desde el catálogo, inicia y registra resultados", async ({ 
   // Borrador: se abre el editor, con el enlace de vuelta a la auditoría.
   await expect(page.getByRole("heading", { name: "Completar y publicar" })).toBeVisible();
   await expect(page.getByRole("link", { name: /auditoría interna AI-2099-/ })).toBeVisible();
+
+  // Volver a la auditoría, redactar el informe y cerrarla.
+  await page.getByRole("link", { name: /auditoría interna AI-2099-/ }).click();
+  await page.getByRole("button", { name: "Pasar al informe" }).click();
+  await expect(page.getByRole("heading", { name: "4 · Informe" })).toBeVisible();
+  await page.getByRole("button", { name: "Emitir informe y cerrar" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Falta:" })).toContainText(
+    "Escribí la conclusión del informe",
+  );
+  await page.getByLabel("Conclusión").fill("El contexto está definido pero su revisión está atrasada (NC menor).");
+  await page.getByRole("button", { name: "Guardar informe" }).click();
+  await expect(page.getByText("Informe guardado")).toBeVisible();
+  await page.getByRole("button", { name: "Emitir informe y cerrar" }).click();
+  await expect(page.getByText(/AI-2099-\d+ · Cerrada/)).toBeVisible();
+  await expect(page.getByText("El contexto está definido pero su revisión está atrasada (NC menor).")).toBeVisible();
+
+  // La cobertura del programa 2099 ya suma los requisitos auditados.
+  await page.goto("/t/tisico/audits?anio=2099");
+  await expect(page.getByRole("heading", { name: "Cobertura 2099" })).toBeVisible();
+  await expect(page.getByRole("progressbar", { name: "Cobertura ISO 9001" })).not.toHaveAttribute(
+    "aria-valuenow",
+    "0",
+  );
+});
+
+test("la guía de auditoría está accesible desde la sección", async ({ page }) => {
+  await quickLogin(page, /Elena Consulta/);
+  await page.goto("/t/tisico/audits");
+  await page.getByRole("link", { name: "Guía de auditoría interna →" }).click();
+  await expect(page.getByRole("heading", { name: "Guía de auditoría interna" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cómo escribir el objetivo" })).toBeVisible();
 });

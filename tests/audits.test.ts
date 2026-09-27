@@ -19,6 +19,7 @@ import {
   checklistItemsForRequirement,
   compareClauses,
 } from "@/domain/audits/checklist";
+import { summarizeResults } from "@/domain/audits/guide";
 
 const readyPlan: AuditPlanInput = {
   objective: "Verificar que despacho cumple los requisitos del cliente",
@@ -207,5 +208,14 @@ describe("start gate", () => {
     expect(startReadinessIssues({ plannedStart, now: new Date("2026-10-10T15:00:00Z"), reason: null })).toEqual([]);
     expect(startReadinessIssues({ plannedStart, now: new Date("2026-10-01T15:00:00Z"), reason: "" })).toHaveLength(1);
     expect(startReadinessIssues({ plannedStart, now: new Date("2026-10-01T15:00:00Z"), reason: "Viaje del auditado" })).toEqual([]);
+  });
+});
+
+describe("report summary", () => {
+  it("counts results by type", () => {
+    const s = summarizeResults(["conforming", "conforming", "nc_minor", "not_applicable"]);
+    expect(s.conforming).toBe(2);
+    expect(s.nc_minor).toBe(1);
+    expect(s.nc_major).toBe(0);
   });
 });
