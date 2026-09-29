@@ -284,3 +284,63 @@ export async function readAuditEvidenceFile(
   if (!object) return null;
   return { attachment, body: object.body, contentType: object.contentType };
 }
+
+// ─── Informe del auditor externo ────────────────────────────────────────────
+
+export async function uploadExternalAuditReport(input: {
+  tenantId: string;
+  auditId: string;
+  fileName: string;
+  contentType: string;
+  body: Buffer;
+  uploadedById: string;
+  db?: PrismaClient;
+  storage?: ObjectStorage;
+}) {
+  const db = input.db ?? prisma;
+  const storage = input.storage ?? getObjectStorage();
+  const audit = await db.audit.findFirst({
+    where: { id: input.auditId, tenantId: input.tenantId, kind: "external" },
+  });
+  if (!audit) throw new Error("Auditoría no encontrada");
+  if (audit.status === "cancelled") {
+    throw new AuditGateError(["La auditoría externa está cancelada"]);
+  }
+  const contentType = resolveUploadContentType(input.contentType, input.fileName);
+  if (!isAllowedUploadContentType(contentType)) {
+    throw new AuditGateError([`Tipo de archivo no permitido: ${input.contentType}`]);
+  }
+  if (input.body.length === 0) throw new AuditGateError(["El archivo está vacío"]);
+  if (input.body.length > MAX_EVIDENCE_BYTES) {
+    throw new AuditGateError(["El archivo supera el máximo de 15 MB"]);
+  }
+
+  const attachment = await db.auditReportAttachment.create({
+    data: {
+      tenantId: input.tenantId,
+      auditId: audit.id,
+      storageKey: "pending",
+      fileName: input.fileName,
+      contentType,
+      sizeBytes: input.body.length,
+      uploadedById: input.uploadedById,
+    },
+  });
+  const safeName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const storageKey = `tenants/${input.tenantId}/audits/${audit.id}/report/${attachment.id}/${safeName}`;
+  await storage.putObject(storageKey, input.body, contentType);
+  return db.auditReportAttachment.update({ where: { id: attachment.id }, data: { storageKey } });
+}
+
+export async function readExternalAuditReport(
+  attachmentId: string,
+  options?: { db?: PrismaClient; storage?: ObjectStorage },
+) {
+  const db = options?.db ?? prisma;
+  const storage = options?.storage ?? getObjectStorage();
+  const attachment = await db.auditReportAttachment.findUnique({ where: { id: attachmentId } });
+  if (!attachment || attachment.storageKey === "pending") return null;
+  const object = await storage.getObject(attachment.storageKey);
+  if (!object) return null;
+  return { attachment, body: object.body, contentType: object.contentType };
+}
