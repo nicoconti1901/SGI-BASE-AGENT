@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getProgramCoverage, getProgramWithAudits } from "@/lib/audits";
+import { getProgramCoverage, getProgramWithAudits, listExternalAudits } from "@/lib/audits";
 import { listTenantMemberOptions } from "@/lib/findings";
 import {
   AUDIT_PROGRAM_STATUS_LABELS,
@@ -24,20 +24,23 @@ export default async function AuditsPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ anio?: string }>;
+  searchParams: Promise<{ anio?: string; programa?: string }>;
 }) {
   const { slug } = await params;
-  const { anio } = await searchParams;
+  const { anio, programa } = await searchParams;
   const year = Number(anio) || new Date().getFullYear();
   const { tenant, canPlan, canApprove } = await loadAuditsAccess(slug);
 
-  const [{ program, audits }, members, coverage] = await Promise.all([
+  const [{ program, audits }, members, coverage, externalAudits] = await Promise.all([
     getProgramWithAudits(tenant.id, year),
     listTenantMemberOptions(tenant.id),
     getProgramCoverage(tenant.id, year),
+    listExternalAudits(tenant.id, year),
   ]);
   const nameOf = (id?: string) => members.find((m) => m.id === id)?.name ?? "Sin asignar";
   const status = program?.status ?? "draft";
+  const programApproved = status === "approved";
+  const showProgram = programa === "1";
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8">
@@ -65,55 +68,72 @@ export default async function AuditsPage({
         </nav>
       </header>
 
-      <section className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="font-[family-name:var(--font-display)] text-xl">Programa {year}</h2>
-          <span
-            className={`rounded px-2 py-0.5 text-xs font-semibold ${
-              status === "approved"
-                ? "bg-[var(--color-success-soft)] text-[var(--color-success)]"
-                : "bg-[var(--color-warning-soft)] text-[var(--color-warning)]"
-            }`}
-          >
-            {AUDIT_PROGRAM_STATUS_LABELS[status]}
-          </span>
-          {program?.approvedAt ? (
-            <span className="text-xs text-[var(--color-ink-muted)]">
-              aprobado el {formatDate(program.approvedAt)}
+      <section
+        aria-label={`Programa ${year}`}
+        className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] px-5 py-4"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="font-[family-name:var(--font-display)] text-lg">Programa {year}</h2>
+            <span
+              className={`rounded px-2 py-0.5 text-xs font-semibold ${
+                programApproved
+                  ? "bg-[var(--color-success-soft)] text-[var(--color-success)]"
+                  : "bg-[var(--color-warning-soft)] text-[var(--color-warning)]"
+              }`}
+            >
+              {AUDIT_PROGRAM_STATUS_LABELS[status]}
             </span>
-          ) : null}
+            {program?.approvedAt ? (
+              <span className="text-xs text-[var(--color-ink-muted)]">
+                aprobado el {formatDate(program.approvedAt)}
+              </span>
+            ) : null}
+          </div>
+          <Link
+            href={
+              showProgram
+                ? `/t/${slug}/audits?anio=${year}`
+                : `/t/${slug}/audits?anio=${year}&programa=1`
+            }
+            className="text-sm font-medium text-[var(--color-accent)] hover:underline"
+          >
+            {showProgram ? "Ocultar programa" : canApprove ? "Gestionar programa" : "Ver programa"}
+          </Link>
         </div>
-        {canApprove ? (
-          <>
-            {status === "approved" ? (
-              <p className="text-xs text-[var(--color-ink-muted)]">
-                Si lo modificás, vuelve a borrador y hay que aprobarlo de nuevo.
-              </p>
-            ) : null}
-            <ProgramForm
-              slug={slug}
-              year={year}
-              objectives={program?.objectives ?? ""}
-              frequencyRationale={program?.frequencyRationale ?? ""}
-              canApprove={status !== "approved"}
-            />
-          </>
-        ) : program?.objectives ? (
-          <dl className="text-sm">
-            <dt className="font-medium">Objetivos</dt>
-            <dd className="text-[var(--color-ink-muted)]">{program.objectives}</dd>
-            {program.frequencyRationale ? (
-              <>
-                <dt className="mt-2 font-medium">Criterio de frecuencia</dt>
-                <dd className="text-[var(--color-ink-muted)]">{program.frequencyRationale}</dd>
-              </>
-            ) : null}
-          </dl>
-        ) : (
-          <p className="text-sm text-[var(--color-ink-muted)]">
-            El administrador de la empresa todavía no definió el programa de este año.
-          </p>
-        )}
+        {showProgram ? (
+          canApprove ? (
+            <>
+              {programApproved ? (
+                <p className="text-xs text-[var(--color-ink-muted)]">
+                  Si lo modificás, vuelve a borrador y hay que aprobarlo de nuevo.
+                </p>
+              ) : null}
+              <ProgramForm
+                slug={slug}
+                year={year}
+                objectives={program?.objectives ?? ""}
+                frequencyRationale={program?.frequencyRationale ?? ""}
+                canApprove={!programApproved}
+              />
+            </>
+          ) : program?.objectives ? (
+            <dl className="text-sm">
+              <dt className="font-medium">Objetivos</dt>
+              <dd className="text-[var(--color-ink-muted)]">{program.objectives}</dd>
+              {program.frequencyRationale ? (
+                <>
+                  <dt className="mt-2 font-medium">Criterio de frecuencia</dt>
+                  <dd className="text-[var(--color-ink-muted)]">{program.frequencyRationale}</dd>
+                </>
+              ) : null}
+            </dl>
+          ) : (
+            <p className="text-sm text-[var(--color-ink-muted)]">
+              El administrador de la empresa todavía no definió el programa de este año.
+            </p>
+          )
+        ) : null}
       </section>
 
       {coverage.length > 0 ? (
@@ -123,8 +143,8 @@ export default async function AuditsPage({
               Cobertura {year}
             </h2>
             <p className="text-sm text-[var(--color-ink-muted)]">
-              Requisitos de la empresa revisados en auditorías cerradas del año. El programa debería
-              cubrir el sistema completo en su ciclo.
+              Requisitos de la empresa revisados en auditorías internas cerradas del año. El programa
+              debería cubrir el sistema completo en su ciclo.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -161,7 +181,7 @@ export default async function AuditsPage({
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-[family-name:var(--font-display)] text-xl">Auditorías del año</h2>
+          <h2 className="font-[family-name:var(--font-display)] text-xl">Auditorías planificadas</h2>
           {canPlan ? (
             <Link
               href={`/t/${slug}/audits/new`}
@@ -206,6 +226,68 @@ export default async function AuditsPage({
                   </div>
                   <span className={`rounded px-2 py-0.5 text-xs font-semibold ${STATUS_TONE[a.status]}`}>
                     {AUDIT_STATUS_LABELS[a.status]}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-3" aria-labelledby="externas">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="externas" className="font-[family-name:var(--font-display)] text-xl">
+              Auditorías externas
+            </h2>
+            <p className="text-sm text-[var(--color-ink-muted)]">
+              Certificadoras, clientes o autoridades. No forman parte del programa ni de la cobertura;
+              sus hallazgos se gestionan en Hallazgos.
+            </p>
+          </div>
+          {canPlan ? (
+            <Link
+              href={`/t/${slug}/audits/externas/new`}
+              className="rounded-md border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+            >
+              Planificar auditoría externa
+            </Link>
+          ) : null}
+        </div>
+        {externalAudits.length === 0 ? (
+          <p className="text-sm text-[var(--color-ink-muted)]">
+            No hay auditorías externas planificadas para {year}.
+          </p>
+        ) : (
+          <ul className="divide-y divide-[var(--color-line)] rounded-md border border-[var(--color-line)]">
+            {externalAudits.map((a) => (
+              <li key={a.id}>
+                <Link
+                  href={`/t/${slug}/audits/${a.id}`}
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 hover:bg-[var(--color-surface)]"
+                >
+                  <div className="min-w-0">
+                    <p>
+                      <span className="mr-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
+                        {a.code}
+                      </span>
+                      <span className="font-medium">{a.title}</span>
+                    </p>
+                    <p className="text-xs text-[var(--color-ink-muted)]">
+                      {a.externalBody}
+                      {" · "}
+                      {formatDate(a.plannedStart)}
+                      {a.plannedEnd.getTime() !== a.plannedStart.getTime()
+                        ? ` – ${formatDate(a.plannedEnd)}`
+                        : ""}
+                      {a.standards.length
+                        ? ` · ${a.standards.map((s) => AUDIT_STANDARD_LABELS[s]).join(", ")}`
+                        : ""}
+                      {a._count.findings ? ` · ${a._count.findings} hallazgos` : ""}
+                    </p>
+                  </div>
+                  <span className={`rounded px-2 py-0.5 text-xs font-semibold ${STATUS_TONE[a.status]}`}>
+                    {a.status === "closed" ? "Realizada" : AUDIT_STATUS_LABELS[a.status]}
                   </span>
                 </Link>
               </li>
