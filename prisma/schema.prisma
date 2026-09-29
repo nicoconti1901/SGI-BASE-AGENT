@@ -133,6 +133,7 @@ model Tenant {
   audits             Audit[]
   auditItems         AuditChecklistItem[]
   auditEvidence      AuditEvidenceAttachment[]
+  auditReportFiles   AuditReportAttachment[]
   objectives         Objective[]
   indicators         Indicator[]
 
@@ -841,6 +842,18 @@ enum AuditStatus {
   cancelled
 }
 
+enum ExternalAuditType {
+  certification_initial
+  surveillance
+  recertification
+  customer
+}
+
+enum AuditKind {
+  internal
+  external
+}
+
 enum AuditMode {
   onsite
   remote
@@ -885,6 +898,15 @@ model Audit {
   id                    String               @id @default(cuid())
   tenantId              String
   programId             String?
+  kind                  AuditKind            @default(internal)
+  /// Entidad que audita (solo kind = external): certificadora, cliente, autoridad.
+  externalBody          String?
+  externalType          ExternalAuditType?
+  externalAuditor       String?
+  /// Resultado o recomendación del organismo, tal como figura en su informe.
+  externalResult        String?
+  /// Plazo del organismo para responder las NC (genera DueItem).
+  responseDueAt         DateTime?
   code                  String
   title                 String
   objective             String               @default("")
@@ -911,9 +933,11 @@ model Audit {
   auditees              AuditAuditee[]
   items                 AuditChecklistItem[]
   findings              Finding[]
+  reportFiles           AuditReportAttachment[]
 
   @@unique([tenantId, code])
   @@index([tenantId, status])
+  @@index([tenantId, kind])
   @@index([programId])
   @@map("audit")
 }
@@ -981,6 +1005,24 @@ model AuditEvidenceAttachment {
 
   @@index([tenantId, itemId])
   @@map("audit_evidence_attachment")
+}
+
+/// Informe del auditor externo (PDF) adjunto a la auditoría.
+model AuditReportAttachment {
+  id           String   @id @default(cuid())
+  tenantId     String
+  auditId      String
+  storageKey   String
+  fileName     String
+  contentType  String
+  sizeBytes    Int
+  uploadedById String?
+  createdAt    DateTime @default(now())
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  audit        Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, auditId])
+  @@map("audit_report_attachment")
 }
 
 // ─── Objetivos e indicadores (Task 11c) — SPEC-indicators.md ───────────────
