@@ -528,8 +528,8 @@ export async function saveExternalAudit(
   db: PrismaClient = prisma,
 ) {
   const audit = await findExternalAudit(input.tenantId, input.auditId, db);
-  if (audit.status !== "planned") {
-    throw new AuditGateError(["Solo se edita el plan de una auditoría externa pendiente"]);
+  if (audit.status === "cancelled") {
+    throw new AuditGateError(["No se puede editar una auditoría externa cancelada"]);
   }
   assertExternalDraft(input.draft);
   const updated = await db.audit.update({ where: { id: audit.id }, data: externalData(input.draft) });

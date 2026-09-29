@@ -9,6 +9,7 @@ import {
   createExternalAudit,
   createExternalFinding,
   listExternalAudits,
+  saveExternalAudit,
   getProgramCoverage,
   getProgramWithAudits,
   saveAuditPlan,
@@ -28,6 +29,8 @@ import {
   uploadAuditEvidence,
   uploadExternalAuditReport,
 } from "@/lib/audit-checklist";
+import { listFindings } from "@/lib/findings";
+import { confirmExtractedFindings, extractFindingsFromReport } from "@/lib/audit-extraction";
 import { MemoryObjectStorage } from "@/lib/storage/types";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -362,7 +365,78 @@ describe.skipIf(!hasDatabase)("audits program and planning (integration)", () =>
     expect(finding).toMatchObject({ type: "nonconformity", severity: "minor", status: "draft", auditId: audit.id });
     expect(finding.source).toContain("AE-2033-01");
 
+    // Cuenta en el seguimiento general de hallazgos de la empresa.
+    const tracked = await listFindings(tenantId, {}, db);
+    expect(tracked.map((f) => f.id)).toContain(finding.id);
+
     await completeExternalAudit({ tenantId, auditId: audit.id }, db);
     expect((await db.audit.findUniqueOrThrow({ where: { id: audit.id } })).status).toBe("closed");
+
+    // Realizada, todavía se cargan el resultado y el plazo que llegan con el informe.
+    const edited = await saveExternalAudit(
+      { tenantId, auditId: audit.id, draft: { ...draft, externalResult: "Recomienda certificar" } },
+      db,
+    );
+    expect(edited.status).toBe("closed");
+    expect(edited.externalResult).toBe("Recomienda certificar");
+  });
+
+  it("extracts proposals without persisting and creates only confirmed, non-duplicated findings", async () => {
+    const audit = await createExternalAudit(
+      {
+        tenantId,
+        createdByUserId: userIds[0],
+        draft: {
+          title: "Seguimiento",
+          externalBody: "Certificadora Y",
+          externalType: "surveillance",
+          externalAuditor: "",
+          externalResult: "",
+          responseDueAt: null,
+          scope: "",
+          standards: [],
+          plannedStart: new Date("2034-02-01"),
+          plannedEnd: new Date("2034-02-02"),
+        },
+      },
+      db,
+    );
+    const storage = new MemoryObjectStorage();
+    const report = await uploadExternalAuditReport(
+      {
+        tenantId,
+        auditId: audit.id,
+        fileName: "informe.pdf",
+        contentType: "application/pdf",
+        body: Buffer.from("%PDF-1.4"),
+        uploadedById: userIds[0],
+        db,
+        storage,
+      },
+    );
+    const client = async () => [
+      { kind: "nc_minor", clause: "8.4", title: "Proveedores sin evaluar", description: "Falta evaluación", quote: "q", page: 3 },
+      { kind: "observation", clause: "", title: "Registro incompleto", description: "Faltan firmas", quote: "", page: null },
+    ];
+    const proposals = await extractFindingsFromReport(
+      { tenantId, auditId: audit.id, attachmentId: report.id },
+      { db, storage, client },
+    );
+    expect(proposals).toHaveLength(2);
+    expect(await db.finding.count({ where: { auditId: audit.id } })).toBe(0);
+
+    // Otra empresa no puede analizar este informe.
+    await expect(
+      extractFindingsFromReport({ tenantId: "otra", auditId: audit.id, attachmentId: report.id }, { db, storage, client }),
+    ).rejects.toBeInstanceOf(AuditGateError);
+
+    const first = await confirmExtractedFindings({ tenantId, auditId: audit.id, userId: userIds[0], proposals: [proposals[0]] }, db);
+    expect(first).toEqual({ created: 1, skipped: 0 });
+    const second = await confirmExtractedFindings({ tenantId, auditId: audit.id, userId: userIds[0], proposals }, db);
+    expect(second).toEqual({ created: 1, skipped: 1 });
+    const findings = await db.finding.findMany({ where: { auditId: audit.id } });
+    expect(findings).toHaveLength(2);
+    expect(findings.every((f) => f.status === "draft")).toBe(true);
+    expect(findings.find((f) => f.title === "Proveedores sin evaluar")?.description).toContain("Cláusula 8.4.");
   });
 });

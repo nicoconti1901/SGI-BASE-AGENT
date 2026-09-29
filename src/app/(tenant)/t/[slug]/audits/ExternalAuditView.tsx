@@ -41,6 +41,7 @@ export async function ExternalAuditView({
     orderBy: { createdAt: "asc" },
   });
   const pending = audit.status === "planned";
+  const editable = canPlan && audit.status !== "cancelled";
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-8">
@@ -64,7 +65,7 @@ export async function ExternalAuditView({
 
       <section className="flex flex-col gap-3">
         <h2 className="font-[family-name:var(--font-display)] text-xl">Plan</h2>
-        {pending && canPlan ? (
+        {editable ? (
           <ExternalAuditPlanForm
             slug={slug}
             auditId={audit.id}

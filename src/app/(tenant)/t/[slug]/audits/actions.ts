@@ -37,6 +37,9 @@ import {
   uploadExternalAuditReport,
 } from "@/lib/audit-checklist";
 
+import { confirmExtractedFindings, extractFindingsFromReport, isExtractionEnabled } from "@/lib/audit-extraction";
+import type { ProposedFinding } from "@/domain/audits/extraction";
+
 export type AuditActionState = { error?: string; issues?: string[]; ok?: string };
 
 const STANDARDS: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
@@ -219,7 +222,8 @@ export async function uploadExternalReportAction(
   const gate = await requirePermission(slug, "plan_audits");
   if ("error" in gate) return { error: gate.error };
   const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) return { error: "Elegí un archivo" };
+  if (!(file instanceof File) || !file.name) return { error: "Elegí el PDF del informe antes de adjuntar" };
+  if (file.size === 0) return { error: "El archivo está vacío" };
   try {
     await uploadExternalAuditReport({
       tenantId: gate.tenant.id,
@@ -234,6 +238,53 @@ export async function uploadExternalReportAction(
   }
   revalidatePath(`/t/${slug}/audits/${auditId}`);
   return { ok: "Informe adjuntado" };
+}
+
+export type ExtractionState = AuditActionState & { proposals?: ProposedFinding[] };
+
+export async function extractReportFindingsAction(
+  slug: string,
+  auditId: string,
+  attachmentId: string,
+): Promise<ExtractionState> {
+  const gate = await requirePermission(slug, "plan_audits");
+  if ("error" in gate) return { error: gate.error };
+  if (!isExtractionEnabled()) return { error: "La extracción automática no está configurada" };
+  try {
+    const proposals = await extractFindingsFromReport({
+      tenantId: gate.tenant.id,
+      auditId,
+      attachmentId,
+    });
+    return proposals.length > 0
+      ? { proposals }
+      : { ok: "El modelo no encontró hallazgos declarados en el informe." };
+  } catch (e) {
+    return toState(e, "No se pudo analizar el informe");
+  }
+}
+
+export async function confirmExtractedFindingsAction(
+  slug: string,
+  auditId: string,
+  proposals: ProposedFinding[],
+): Promise<AuditActionState> {
+  const gate = await requirePermission(slug, "plan_audits");
+  if ("error" in gate) return { error: gate.error };
+  try {
+    const { created, skipped } = await confirmExtractedFindings({
+      tenantId: gate.tenant.id,
+      auditId,
+      userId: gate.ctx.userId,
+      proposals,
+    });
+    revalidatePath(`/t/${slug}/audits/${auditId}`);
+    return {
+      ok: `${created} hallazgo(s) registrados como borrador${skipped ? `; ${skipped} ya existían y se omitieron` : ""}.`,
+    };
+  } catch (e) {
+    return toState(e, "No se pudieron registrar los hallazgos");
+  }
 }
 
 export async function addExternalFindingAction(

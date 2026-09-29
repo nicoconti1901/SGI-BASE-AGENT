@@ -1,6 +1,6 @@
 # Spec: `external-audits` — Auditorías externas e informe del organismo (9001 / 14001 / 45001)
 
-**Estado:** Borrador para aprobación del PO (decisiones de alcance tomadas 2026-09-29)
+**Estado:** Implementado (11d.1–11d.3); decisiones de alcance del PO 2026-09-29
 **Fecha:** 2026-09-29
 **Fuera de alcance:** cobertura del programa interno · indicadores · auditorías a proveedores · portal del organismo
 
@@ -21,8 +21,7 @@ Registrar las auditorías que hace un tercero (certificadora, cliente, autoridad
 ## A construir (11d.3) — extracción asistida
 
 1. El usuario elige un informe adjunto y pulsa "Extraer hallazgos".
-2. Se extrae el texto del PDF en servidor.
-3. Se envía a un modelo de Anthropic con salida estructurada: por hallazgo, `tipo` (NC mayor / NC menor / observación / oportunidad), `cláusula`, `título`, `descripción y evidencia`, `cita textual` con página.
+2. El PDF se envía a un modelo de Anthropic como documento (lo lee entero, incluidos escaneos; sin parseo propio) con salida estructurada: por hallazgo, `tipo` (NC mayor / NC menor / observación / oportunidad), `cláusula`, `título`, `descripción y evidencia`, `cita textual` con página.
 4. **Revisión humana obligatoria:** se muestra una lista de propuestas; el usuario confirma, edita o descarta cada una. Nunca se crea un `Finding` sin confirmación.
 5. Confirmadas, se crean como borrador con el mismo origen que la carga manual y la cita textual en la descripción.
 
@@ -37,7 +36,7 @@ Registrar las auditorías que hace un tercero (certificadora, cliente, autoridad
 ## ASSUMPTIONS (corregir ahora o se dan por válidas)
 
 1. Proveedor: API de Anthropic con clave en variable de entorno (`ANTHROPIC_API_KEY`); sin clave, el botón no aparece.
-2. Solo PDF con texto en esta etapa; sin OCR.
+2. Solo informes en PDF (hasta 15 MB); el modelo lee el PDF nativamente, sin OCR propio.
 3. Límite de tamaño y de páginas por extracción para acotar costo; se registra el uso por empresa.
 4. El informe contiene datos sensibles: se envía solo al ejecutar la extracción, no se conserva en el proveedor, y el usuario ve un aviso previo.
 5. Los plazos que figuren en el informe **no** se extraen: se cargan a mano en el plan (ya existe el campo).
