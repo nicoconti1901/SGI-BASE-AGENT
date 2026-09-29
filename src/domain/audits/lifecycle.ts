@@ -144,6 +144,11 @@ export function auditCode(year: number, sequence: number): string {
   return `AI-${year}-${String(sequence).padStart(2, "0")}`;
 }
 
+/** Código de auditoría externa, correlativo por año: AE-2026-01. */
+export function externalAuditCode(year: number, sequence: number): string {
+  return `AE-${year}-${String(sequence).padStart(2, "0")}`;
+}
+
 export type CoverageRow = { standard: AuditStandard; total: number; covered: number };
 
 /**

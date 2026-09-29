@@ -102,7 +102,7 @@ Rutas: `/t/[slug]/audits` (programa y listado), `/audits/new` (planificación), 
 ### Qué sigue
 
 - **Task 11c** — indicadores.  
-- **Task 11d** — auditorías externas con carga del informe del organismo.  
+- **Task 11d** — auditorías externas: alta, informe PDF adjunto y hallazgos manuales listos (11d.1–11d.2); falta la extracción automática con revisión humana (11d.3, ver `SPEC-external-audits.md`).  
 - **Task 12+** — portal cliente / dashboards / E2E.
 
 ---

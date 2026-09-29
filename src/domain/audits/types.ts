@@ -12,6 +12,15 @@ export type AuditStatus =
   | "closed"
   | "cancelled";
 
+export type ExternalAuditType = "certification_initial" | "surveillance" | "recertification" | "customer";
+
+export const EXTERNAL_AUDIT_TYPE_LABELS: Record<ExternalAuditType, string> = {
+  certification_initial: "Certificación inicial",
+  surveillance: "Seguimiento",
+  recertification: "Recertificación",
+  customer: "Cliente (2.ª parte)",
+};
+
 export type AuditMode = "onsite" | "remote" | "hybrid";
 
 export type AuditTeamRole = "lead" | "auditor";
@@ -82,3 +91,4 @@ export const AUDIT_REPORT_GRACE_DAYS = 10;
 
 export const AUDIT_START_ENTITY_TYPE = "audit_start";
 export const AUDIT_REPORT_ENTITY_TYPE = "audit_report";
+export const AUDIT_EXTERNAL_RESPONSE_ENTITY_TYPE = "audit_external_response";

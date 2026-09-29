@@ -9,7 +9,11 @@ import { canTenantRole, type AuthzAction } from "@/domain/identity/authz";
 import {
   AuditGateError,
   approveProgram,
+  completeExternalAudit,
   createAudit,
+  createExternalAudit,
+  createExternalFinding,
+  saveExternalAudit,
   saveAuditPlan,
   saveAuditReport,
   saveProgram,
@@ -20,6 +24,7 @@ import type {
   AuditMode,
   AuditStandard,
   AuditStatus,
+  ExternalAuditType,
 } from "@/domain/audits/types";
 import { canExecuteAudit } from "@/domain/audits/checklist";
 import {
@@ -29,12 +34,19 @@ import {
   removeChecklistItem,
   setRequirementItems,
   uploadAuditEvidence,
+  uploadExternalAuditReport,
 } from "@/lib/audit-checklist";
 
 export type AuditActionState = { error?: string; issues?: string[]; ok?: string };
 
 const STANDARDS: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
 const MODES: AuditMode[] = ["onsite", "remote", "hybrid"];
+const EXTERNAL_TYPES: ExternalAuditType[] = [
+  "certification_initial",
+  "surveillance",
+  "recertification",
+  "customer",
+];
 
 async function requirePermission(slug: string, action: AuthzAction) {
   const ctx = await getAppSessionContext();
@@ -116,6 +128,137 @@ export async function createAuditAction(
   }
   revalidatePath(`/t/${slug}/audits`);
   redirect(`/t/${slug}/audits/${auditId}`);
+}
+
+function parseExternalDraft(formData: FormData) {
+  return {
+    title: String(formData.get("title") ?? ""),
+    externalBody: String(formData.get("externalBody") ?? ""),
+    externalType: EXTERNAL_TYPES.includes(String(formData.get("externalType")) as ExternalAuditType)
+      ? (String(formData.get("externalType")) as ExternalAuditType)
+      : null,
+    externalAuditor: String(formData.get("externalAuditor") ?? ""),
+    externalResult: String(formData.get("externalResult") ?? ""),
+    responseDueAt: formData.get("responseDueAt") ? parseDate(formData.get("responseDueAt")) : null,
+    scope: String(formData.get("scope") ?? ""),
+    standards: formData
+      .getAll("standards")
+      .map(String)
+      .filter((s): s is AuditStandard => STANDARDS.includes(s as AuditStandard)),
+    plannedStart: parseDate(formData.get("plannedStart")),
+    plannedEnd: parseDate(formData.get("plannedEnd")),
+  };
+}
+
+export async function createExternalAuditAction(
+  slug: string,
+  _prev: AuditActionState,
+  formData: FormData,
+): Promise<AuditActionState> {
+  const gate = await requirePermission(slug, "plan_audits");
+  if ("error" in gate) return { error: gate.error };
+  let auditId: string;
+  try {
+    const audit = await createExternalAudit({
+      tenantId: gate.tenant.id,
+      createdByUserId: gate.ctx.userId,
+      draft: parseExternalDraft(formData),
+    });
+    auditId = audit.id;
+  } catch (e) {
+    return toState(e, "No se pudo crear la auditoría externa");
+  }
+  revalidatePath(`/t/${slug}/audits`);
+  redirect(`/t/${slug}/audits/${auditId}`);
+}
+
+export async function saveExternalAuditAction(
+  slug: string,
+  auditId: string,
+  _prev: AuditActionState,
+  formData: FormData,
+): Promise<AuditActionState> {
+  const gate = await requirePermission(slug, "plan_audits");
+  if ("error" in gate) return { error: gate.error };
+  try {
+    await saveExternalAudit({
+      tenantId: gate.tenant.id,
+      auditId,
+      draft: parseExternalDraft(formData),
+    });
+  } catch (e) {
+    return toState(e, "No se pudo guardar la auditoría externa");
+  }
+  revalidatePath(`/t/${slug}/audits/${auditId}`);
+  revalidatePath(`/t/${slug}/audits`);
+  return { ok: "Plan guardado" };
+}
+
+export async function completeExternalAuditAction(
+  slug: string,
+  auditId: string,
+): Promise<AuditActionState> {
+  const gate = await requirePermission(slug, "plan_audits");
+  if ("error" in gate) return { error: gate.error };
+  try {
+    await completeExternalAudit({ tenantId: gate.tenant.id, auditId });
+  } catch (e) {
+    return toState(e, "No se pudo marcar como realizada");
+  }
+  revalidatePath(`/t/${slug}/audits/${auditId}`);
+  revalidatePath(`/t/${slug}/audits`);
+  return { ok: "Auditoría marcada como realizada" };
+}
+
+export async function uploadExternalReportAction(
+  slug: string,
+  auditId: string,
+  _prev: AuditActionState,
+  formData: FormData,
+): Promise<AuditActionState> {
+  const gate = await requirePermission(slug, "plan_audits");
+  if ("error" in gate) return { error: gate.error };
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Elegí un archivo" };
+  try {
+    await uploadExternalAuditReport({
+      tenantId: gate.tenant.id,
+      auditId,
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+      body: Buffer.from(await file.arrayBuffer()),
+      uploadedById: gate.ctx.userId,
+    });
+  } catch (e) {
+    return toState(e, "No se pudo adjuntar el informe");
+  }
+  revalidatePath(`/t/${slug}/audits/${auditId}`);
+  return { ok: "Informe adjuntado" };
+}
+
+export async function addExternalFindingAction(
+  slug: string,
+  auditId: string,
+  _prev: AuditActionState,
+  formData: FormData,
+): Promise<AuditActionState> {
+  const gate = await requirePermission(slug, "plan_audits");
+  if ("error" in gate) return { error: gate.error };
+  try {
+    await createExternalFinding({
+      tenantId: gate.tenant.id,
+      auditId,
+      userId: gate.ctx.userId,
+      result: String(formData.get("result") ?? "") as AuditItemResult,
+      title: String(formData.get("title") ?? ""),
+      description: String(formData.get("description") ?? ""),
+      detectedAt: parseDate(formData.get("detectedAt")),
+    });
+  } catch (e) {
+    return toState(e, "No se pudo registrar el hallazgo");
+  }
+  revalidatePath(`/t/${slug}/audits/${auditId}`);
+  return { ok: "Hallazgo registrado como borrador en Hallazgos" };
 }
 
 export async function saveAuditPlanAction(

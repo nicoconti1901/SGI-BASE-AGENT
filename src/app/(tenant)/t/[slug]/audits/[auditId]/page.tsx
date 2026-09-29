@@ -24,7 +24,8 @@ import {
   StartAuditForm,
   type RunnerItem,
 } from "@/app/(tenant)/t/[slug]/audits/ChecklistForms";
-import { AuditReportForm, TransitionButton } from "@/app/(tenant)/t/[slug]/audits/ReportForms";
+import { ExternalAuditView } from "@/app/(tenant)/t/[slug]/audits/ExternalAuditView";
+import { AuditReportForm,TransitionButton } from "@/app/(tenant)/t/[slug]/audits/ReportForms";
 import { summarizeResults } from "@/domain/audits/guide";
 import { formatDate, loadAuditsAccess, toDateInput } from "@/app/(tenant)/t/[slug]/audits/access";
 
@@ -53,6 +54,9 @@ export default async function AuditDetailPage({
     getChecklist(tenant.id, auditId),
   ]);
   if (!audit) notFound();
+  if (audit.kind === "external") {
+    return <ExternalAuditView slug={slug} tenantId={tenant.id} audit={audit} canPlan={canPlan} />;
+  }
   const candidates =
     canPlan && (audit.status === "planned" || audit.status === "prepared")
       ? await listChecklistCandidates(tenant.id, audit.standards)

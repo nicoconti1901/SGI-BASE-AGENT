@@ -10,17 +10,22 @@ import {
   closeReadinessIssues,
   computeCoverage,
   executionReadinessIssues,
+  externalAuditCode,
+  findingFromItemResult,
   planReadinessIssues,
   reportDueAt,
   startReadinessIssues,
 } from "@/domain/audits/lifecycle";
 import {
   AUDIT_REPORT_ENTITY_TYPE,
+  AUDIT_EXTERNAL_RESPONSE_ENTITY_TYPE,
   AUDIT_START_ENTITY_TYPE,
   AUDIT_START_LEAD_DAYS,
+  type AuditItemResult,
   type AuditMode,
   type AuditStandard,
   type AuditStatus,
+  type ExternalAuditType,
 } from "@/domain/audits/types";
 
 /** Error de negocio con lista de lo que falta, para mostrarla tal cual en la UI. */
@@ -41,7 +46,7 @@ export async function getProgramWithAudits(
   const [program, audits] = await Promise.all([
     db.auditProgram.findUnique({ where: { tenantId_year: { tenantId, year } } }),
     db.audit.findMany({
-      where: { tenantId, program: { year } },
+      where: { tenantId, kind: "internal", program: { year } },
       include: {
         team: { where: { role: "lead" } },
         _count: { select: { findings: true, items: true } },
@@ -223,7 +228,7 @@ export async function saveAuditPlan(
   const audit = await db.audit.findFirst({
     where: { id: input.auditId, tenantId: input.tenantId },
   });
-  if (!audit) throw new Error("Auditoría no encontrada");
+  if (!audit || audit.kind !== "internal") throw new Error("Auditoría no encontrada");
   if (audit.status !== "planned" && audit.status !== "prepared") {
     throw new AuditGateError(["El plan solo se puede editar antes de iniciar la auditoría"]);
   }
@@ -296,6 +301,9 @@ export async function transitionAudit(
     include: { team: true, auditees: true, items: { select: { result: true, findingId: true } } },
   });
   if (!audit) throw new Error("Auditoría no encontrada");
+  if (audit.kind === "external" && input.to !== "cancelled") {
+    throw new AuditGateError(["Las auditorías externas solo se marcan como realizadas o canceladas"]);
+  }
   assertCanTransitionAudit(audit.status, input.to);
 
   const data: Prisma.AuditUpdateInput = { status: input.to };
@@ -395,4 +403,193 @@ export async function getProgramCoverage(
     requirements.map((r) => ({ id: r.id, standard: r.requirement.standard })),
     items.map((i) => ({ ...i, auditClosed: true })),
   );
+}
+
+// ─── Auditorías externas ────────────────────────────────────────────────────
+// No pertenecen al programa anual ni a la cobertura (programId null, kind external);
+// sí generan hallazgos con auditId.
+
+export async function listExternalAudits(tenantId: string, year: number, db: PrismaClient = prisma) {
+  return db.audit.findMany({
+    where: {
+      tenantId,
+      kind: "external",
+      plannedStart: { gte: new Date(Date.UTC(year, 0, 1)), lt: new Date(Date.UTC(year + 1, 0, 1)) },
+    },
+    include: { _count: { select: { findings: true } } },
+    orderBy: { plannedStart: "asc" },
+  });
+}
+
+export type ExternalAuditDraft = {
+  title: string;
+  externalBody: string;
+  externalType: ExternalAuditType | null;
+  externalAuditor: string;
+  externalResult: string;
+  responseDueAt: Date | null;
+  scope: string;
+  standards: AuditStandard[];
+  plannedStart: Date;
+  plannedEnd: Date;
+};
+
+function assertExternalDraft(draft: ExternalAuditDraft) {
+  if (!draft.title.trim()) throw new AuditGateError(["Poné un título a la auditoría"]);
+  if (!draft.externalBody.trim()) throw new AuditGateError(["Indicá la entidad que audita"]);
+  if (!draft.externalType) throw new AuditGateError(["Elegí el tipo de auditoría externa"]);
+  assertDates(draft.plannedStart, draft.plannedEnd);
+  if (draft.responseDueAt && Number.isNaN(draft.responseDueAt.getTime())) {
+    throw new AuditGateError(["La fecha límite de respuesta no es válida"]);
+  }
+}
+
+function externalData(draft: ExternalAuditDraft) {
+  return {
+    title: draft.title.trim(),
+    externalBody: draft.externalBody.trim(),
+    externalType: draft.externalType,
+    externalAuditor: draft.externalAuditor.trim() || null,
+    externalResult: draft.externalResult.trim() || null,
+    responseDueAt: draft.responseDueAt,
+    scope: draft.scope.trim(),
+    standards: draft.standards,
+    plannedStart: draft.plannedStart,
+    plannedEnd: draft.plannedEnd,
+  };
+}
+
+/** Un vencimiento abierto para responder las NC del organismo, mientras la auditoría siga vigente. */
+async function syncExternalResponseDue(
+  audit: { id: string; tenantId: string; code: string; title: string; status: AuditStatus; responseDueAt: Date | null },
+  db: PrismaClient,
+) {
+  if (audit.responseDueAt && audit.status !== "cancelled") {
+    await upsertOpenDueItemForEntity(
+      {
+        tenantId: audit.tenantId,
+        title: `Responder a la auditoría externa ${audit.code}: ${audit.title}`,
+        entityType: AUDIT_EXTERNAL_RESPONSE_ENTITY_TYPE,
+        entityId: audit.id,
+        dueAt: audit.responseDueAt,
+        leadDays: 7,
+      },
+      db,
+    );
+  } else {
+    await closeDueItemsForEntity(
+      { tenantId: audit.tenantId, entityType: AUDIT_EXTERNAL_RESPONSE_ENTITY_TYPE, entityId: audit.id },
+      db,
+    );
+  }
+}
+
+export async function createExternalAudit(
+  input: { tenantId: string; createdByUserId: string; draft: ExternalAuditDraft },
+  db: PrismaClient = prisma,
+) {
+  assertExternalDraft(input.draft);
+  const year = input.draft.plannedStart.getUTCFullYear();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const audit = await db.$transaction(async (tx) => {
+        const sameYear = await tx.audit.count({
+          where: { tenantId: input.tenantId, code: { startsWith: `AE-${year}-` } },
+        });
+        return tx.audit.create({
+          data: {
+            ...externalData(input.draft),
+            tenantId: input.tenantId,
+            kind: "external",
+            code: externalAuditCode(year, sameYear + 1 + attempt),
+            createdByUserId: input.createdByUserId,
+          },
+        });
+      });
+      await syncExternalResponseDue(audit, db);
+      return audit;
+    } catch (error) {
+      const duplicateCode =
+        error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+      if (!duplicateCode || attempt === 1) throw error;
+    }
+  }
+  throw new Error("No se pudo generar el código de auditoría");
+}
+
+async function findExternalAudit(tenantId: string, auditId: string, db: PrismaClient) {
+  const audit = await db.audit.findFirst({ where: { id: auditId, tenantId, kind: "external" } });
+  if (!audit) throw new Error("Auditoría no encontrada");
+  return audit;
+}
+
+export async function saveExternalAudit(
+  input: { tenantId: string; auditId: string; draft: ExternalAuditDraft },
+  db: PrismaClient = prisma,
+) {
+  const audit = await findExternalAudit(input.tenantId, input.auditId, db);
+  if (audit.status !== "planned") {
+    throw new AuditGateError(["Solo se edita el plan de una auditoría externa pendiente"]);
+  }
+  assertExternalDraft(input.draft);
+  const updated = await db.audit.update({ where: { id: audit.id }, data: externalData(input.draft) });
+  await syncExternalResponseDue(updated, db);
+  return updated;
+}
+
+/** Marca la auditoría externa como realizada; no exige checklist ni informe propios. */
+export async function completeExternalAudit(
+  input: { tenantId: string; auditId: string },
+  db: PrismaClient = prisma,
+) {
+  const audit = await findExternalAudit(input.tenantId, input.auditId, db);
+  if (audit.status !== "planned") {
+    throw new AuditGateError(["La auditoría externa ya no está pendiente"]);
+  }
+  return db.audit.update({
+    where: { id: audit.id },
+    data: { status: "closed", closedAt: new Date() },
+  });
+}
+
+/** Registra un hallazgo de auditoría externa como borrador en Hallazgos. */
+export async function createExternalFinding(
+  input: {
+    tenantId: string;
+    auditId: string;
+    userId: string;
+    result: AuditItemResult;
+    title: string;
+    description: string;
+    detectedAt: Date;
+  },
+  db: PrismaClient = prisma,
+) {
+  const audit = await findExternalAudit(input.tenantId, input.auditId, db);
+  if (audit.status === "cancelled") {
+    throw new AuditGateError(["La auditoría externa está cancelada"]);
+  }
+  const mapping = findingFromItemResult(input.result);
+  const title = input.title.trim();
+  const description = input.description.trim();
+  const issues: string[] = [];
+  if (!mapping) issues.push("Elegí el tipo de hallazgo");
+  if (!title) issues.push("Poné un título al hallazgo");
+  if (!description) issues.push("Describí el hallazgo y su evidencia");
+  if (Number.isNaN(input.detectedAt.getTime())) issues.push("Indicá la fecha del hallazgo");
+  if (issues.length > 0 || !mapping) throw new AuditGateError(issues);
+  return db.finding.create({
+    data: {
+      tenantId: input.tenantId,
+      auditId: audit.id,
+      type: mapping.type,
+      severity: mapping.severity,
+      title,
+      description,
+      status: "draft",
+      detectedAt: input.detectedAt,
+      source: `Auditoría externa ${audit.code} · ${audit.externalBody ?? ""}`,
+      createdByUserId: input.userId,
+    },
+  });
 }
