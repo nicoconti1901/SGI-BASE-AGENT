@@ -317,7 +317,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ---
 
-## Task 11d (en curso, pedido PO 2026-09-27): auditorías externas con carga de informe
+## Task 11d (hecha, pedido PO 2026-09-27): auditorías externas con carga de informe
 
 **Description:** Sección de **auditorías externas** (certificación / 3.ª parte, clientes / 2.ª parte). Se adjunta el **informe del auditor externo** (PDF) y el sistema **extrae los hallazgos automáticamente** (NC mayor/menor, observaciones, oportunidades de mejora, con cláusula y evidencia) para registrarlos como `Finding` vinculados a la auditoría externa.
 
@@ -333,7 +333,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Sub-tareas:**
 - [x] 11d.1 Modelo (`Audit.kind`, tipo, auditor, resultado, plazo de respuesta → DueItem), sección en `/audits`, fuera de programa/cobertura/indicadores
 - [x] 11d.2 Informe PDF adjunto (storage + descarga) y alta manual de hallazgos como borrador con origen auditoría externa
-- [ ] 11d.3 Extracción asistida (PDF → texto → Claude → propuestas) con revisión humana obligatoria antes de crear `Finding`
+- [x] 11d.3 Extracción asistida (PDF → texto → Claude → propuestas) con revisión humana obligatoria antes de crear `Finding`
 
 **Dependencies:** Task 11b (auditorías internas, vínculo Finding ↔ auditoría)
 **Estimated scope:** L
