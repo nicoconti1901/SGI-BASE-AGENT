@@ -5,7 +5,8 @@ import { readExternalAuditReport } from "@/lib/audit-checklist";
 
 type Params = Promise<{ attachmentId: string }>;
 
-export async function GET(_request: Request, { params }: { params: Params }) {
+export async function GET(request: Request, { params }: { params: Params }) {
+  const inline = new URL(request.url).searchParams.get("inline") === "1";
   const ctx = await getAppSessionContext();
   if (!ctx) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
@@ -28,7 +29,8 @@ export async function GET(_request: Request, { params }: { params: Params }) {
     status: 200,
     headers: {
       "Content-Type": file.contentType,
-      "Content-Disposition": `attachment; filename="${encodeURIComponent(file.attachment.fileName)}"`,
+      "Content-Disposition": `${inline && file.contentType === "application/pdf" ? "inline" : "attachment"}; filename="${encodeURIComponent(file.attachment.fileName)}"`,
+      "X-Content-Type-Options": "nosniff",
       "Content-Length": String(file.body.length),
       "Cache-Control": "private, no-store",
     },

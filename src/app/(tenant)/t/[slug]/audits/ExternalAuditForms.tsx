@@ -28,6 +28,11 @@ const primary =
 const secondary =
   "self-start rounded-md border border-[var(--color-line)] px-4 py-2 text-sm font-medium disabled:opacity-60";
 
+const saveChanges =
+  "self-start rounded-md border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-4 py-2 text-sm font-medium text-[var(--color-accent)] disabled:opacity-60";
+const complete =
+  "self-start rounded-md bg-[var(--color-success)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60";
+
 const STANDARDS: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
 const FINDING_RESULTS: AuditItemResult[] = ["nc_major", "nc_minor", "observation", "improvement"];
 
@@ -147,8 +152,8 @@ export function ExternalAuditPlanForm({
     <form action={action} className="flex flex-col gap-4">
       <ExternalFields defaults={defaults} />
       <Feedback state={state} />
-      <button type="submit" disabled={pending} className={secondary}>
-        {pending ? "Guardando…" : "Guardar plan"}
+      <button type="submit" disabled={pending} className={saveChanges}>
+        {pending ? "Guardando…" : "Guardar cambios"}
       </button>
     </form>
   );
@@ -203,7 +208,7 @@ export function CompleteExternalAuditButton({ slug, auditId }: { slug: string; a
   return (
     <form action={action} className="flex flex-col gap-2">
       <Feedback state={state} />
-      <button type="submit" disabled={pending} className={primary}>
+      <button type="submit" disabled={pending} className={complete}>
         {pending ? "Guardando…" : "Marcar como realizada"}
       </button>
     </form>
@@ -249,18 +254,33 @@ export function ExternalReportUpload({
   return (
     <div className="flex flex-col gap-2 text-sm">
       {files.length > 0 ? (
-        <ul className="flex flex-col gap-1">
-          {files.map((f) => (
-            <li key={f.id}>
-              <a
-                href={`/api/audits/report/${f.id}/download`}
-                className="text-[var(--color-accent)] underline-offset-2 hover:underline"
-              >
-                {f.fileName}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="flex flex-col gap-1">
+            {files.map((f) => (
+              <li key={f.id} className="flex flex-wrap items-center gap-3">
+                <a
+                  href={`/api/audits/report/${f.id}/download`}
+                  className="text-[var(--color-accent)] underline-offset-2 hover:underline"
+                >
+                  {f.fileName}
+                </a>
+                <a
+                  href={`/api/audits/report/${f.id}/download?inline=1`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium text-[var(--color-ink-muted)] underline-offset-2 hover:underline"
+                >
+                  Abrir en pestaña nueva
+                </a>
+              </li>
+            ))}
+          </ul>
+          <iframe
+            title={`Vista del informe ${files[files.length - 1].fileName}`}
+            src={`/api/audits/report/${files[files.length - 1].id}/download?inline=1`}
+            className="h-[36rem] w-full rounded-md border border-[var(--color-line)]"
+          />
+        </>
       ) : (
         <p className="text-[var(--color-ink-muted)]">Todavía no se adjuntó el informe.</p>
       )}
@@ -270,6 +290,7 @@ export function ExternalReportUpload({
             type="file"
             name="file"
             accept="application/pdf"
+            required
             aria-label="Informe del auditor externo"
             className="text-xs"
           />
