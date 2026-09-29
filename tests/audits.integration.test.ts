@@ -4,7 +4,11 @@ import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
 import {
   AuditGateError,
   approveProgram,
+  completeExternalAudit,
   createAudit,
+  createExternalAudit,
+  createExternalFinding,
+  listExternalAudits,
   getProgramCoverage,
   getProgramWithAudits,
   saveAuditPlan,
@@ -18,9 +22,11 @@ import {
   getChecklist,
   listChecklistCandidates,
   readAuditEvidenceFile,
+  readExternalAuditReport,
   recordItemResult,
   setRequirementItems,
   uploadAuditEvidence,
+  uploadExternalAuditReport,
 } from "@/lib/audit-checklist";
 import { MemoryObjectStorage } from "@/lib/storage/types";
 
@@ -292,5 +298,71 @@ describe.skipIf(!hasDatabase)("audits program and planning (integration)", () =>
     const fourth = await record("observation", "Planilla sin firma");
     await db.finding.update({ where: { id: fourth.findingId! }, data: { status: "published" } });
     await expect(record("conforming", null)).rejects.toThrow(/anulalo desde Hallazgos/);
+  });
+
+  it("keeps external audits out of the program and coverage but lets them raise findings", async () => {
+    const draft = {
+      title: "Recertificación 9001",
+      externalBody: "Certificadora X",
+      externalType: "recertification" as const,
+      externalAuditor: "",
+      externalResult: "",
+      responseDueAt: new Date("2033-06-30"),
+      scope: "Toda la organización",
+      standards: ["ISO9001" as const],
+      plannedStart: new Date("2033-05-10"),
+      plannedEnd: new Date("2033-05-12"),
+    };
+    await expect(
+      createExternalAudit({ tenantId, createdByUserId: userIds[0], draft: { ...draft, externalBody: " " } }, db),
+    ).rejects.toBeInstanceOf(AuditGateError);
+    const audit = await createExternalAudit({ tenantId, createdByUserId: userIds[0], draft }, db);
+    expect(audit.code).toBe("AE-2033-01");
+    expect(audit.programId).toBeNull();
+    expect(audit.externalType).toBe("recertification");
+    const due = await db.dueItem.findFirst({
+      where: { tenantId, entityType: "audit_external_response", entityId: audit.id, status: "open" },
+    });
+    expect(due?.dueAt.toISOString().slice(0, 10)).toBe("2033-06-30");
+
+    const storage = new MemoryObjectStorage();
+    const report = await uploadExternalAuditReport({
+      tenantId,
+      auditId: audit.id,
+      fileName: "informe.pdf",
+      contentType: "application/pdf",
+      body: Buffer.from("%PDF-1.4 informe"),
+      uploadedById: userIds[0],
+      db,
+      storage,
+      });
+    const file = await readExternalAuditReport(report.id, { db, storage });
+    expect(file?.body.toString()).toContain("informe");
+
+    const { audits } = await getProgramWithAudits(tenantId, 2033, db);
+    expect(audits.find((a) => a.id === audit.id)).toBeUndefined();
+    expect((await listExternalAudits(tenantId, 2033, db)).map((a) => a.id)).toEqual([audit.id]);
+    await expect(transitionAudit({ tenantId, auditId: audit.id, to: "prepared" }, db)).rejects.toBeInstanceOf(
+      AuditGateError,
+    );
+    await expect(saveAuditPlan({ tenantId, auditId: audit.id, plan: plan() }, db)).rejects.toThrow();
+
+    const finding = await createExternalFinding(
+      {
+        tenantId,
+        auditId: audit.id,
+        userId: userIds[0],
+        result: "nc_minor",
+        title: "Registros de calibración incompletos",
+        description: "Falta la calibración del equipo 12",
+        detectedAt: new Date("2033-05-11"),
+      },
+      db,
+    );
+    expect(finding).toMatchObject({ type: "nonconformity", severity: "minor", status: "draft", auditId: audit.id });
+    expect(finding.source).toContain("AE-2033-01");
+
+    await completeExternalAudit({ tenantId, auditId: audit.id }, db);
+    expect((await db.audit.findUniqueOrThrow({ where: { id: audit.id } })).status).toBe("closed");
   });
 });
