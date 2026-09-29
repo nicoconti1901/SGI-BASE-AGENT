@@ -1,4 +1,4 @@
----
+﻿---
 name: vercel-composition-patterns
 description:
   React composition patterns that scale. Use when refactoring components with
@@ -20,6 +20,9 @@ composing internals. These patterns make codebases easier for both humans and AI
 agents to work with as they scale.
 
 ## When to Apply
+
+**Load selectively:** open only the matching ules/*.md files for the change; never load the whole rules tree.
+
 
 Reference these guidelines when:
 
@@ -64,7 +67,7 @@ Reference these guidelines when:
 
 ### 4. React 19 APIs (MEDIUM)
 
-> **⚠️ React 19+ only.** Skip this section if using React 18 or earlier.
+> **âš ï¸ React 19+ only.** Skip this section if using React 18 or earlier.
 
 - `react19-no-forwardref` - Don't use `forwardRef`; use `use()` instead of `useContext()`
 
