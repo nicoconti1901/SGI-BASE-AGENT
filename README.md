@@ -101,7 +101,7 @@ Rutas: `/t/[slug]/audits` (programa y listado), `/audits/new` (planificación), 
 
 ### Qué sigue
 
-- **Task 11c** — indicadores.  
+- **Task 11c** — hecha: objetivos e indicadores con carga por período, análisis de desvío, tablero con tendencias y guía (`/t/[slug]/indicators`).  
 - **Task 11d** — hecha: auditorías externas con informe PDF adjunto, hallazgos manuales y extracción con IA con revisión humana (ver `SPEC-external-audits.md`; requiere `ANTHROPIC_API_KEY`).  
 - **Task 12+** — portal cliente / dashboards / E2E.
 
