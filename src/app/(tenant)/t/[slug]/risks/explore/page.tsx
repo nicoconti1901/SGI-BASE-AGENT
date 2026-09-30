@@ -6,16 +6,20 @@ import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
 import { listRecentFindingsForLink } from "@/lib/risks-workspace";
 import { ExploreContextForm } from "@/app/(tenant)/t/[slug]/risks/ExploreContextForm";
+import { SOURCE_KINDS } from "@/domain/risks/types";
 import { GuideLink } from "@/app/(tenant)/t/[slug]/risks/FormFields";
 
 type Params = Promise<{ slug: string }>;
 
 export default async function ExploreContextPage({
   params,
+  searchParams,
 }: {
   params: Params;
+  searchParams: Promise<{ kind?: string; label?: string; finding?: string }>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
   const ctx = await getAppSessionContext();
   if (!ctx) redirect("/login");
 
@@ -53,7 +57,15 @@ export default async function ExploreContextPage({
           <GuideLink slug={slug} />
         </div>
       </div>
-      <ExploreContextForm slug={slug} findings={findings} />
+      <ExploreContextForm
+        slug={slug}
+        findings={findings}
+        initialSource={{
+          kind: SOURCE_KINDS.find((k) => k === query.kind),
+          label: query.label?.slice(0, 200),
+          findingId: findings.find((f) => f.id === query.finding)?.id,
+        }}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useKeepInputs } from "@/lib/use-keep-inputs";
 import {
   approveProgramAction,
   createAuditAction,
@@ -86,14 +87,16 @@ export function ProgramForm({
     saveProgramAction.bind(null, slug, year),
     initial,
   );
+  const saveActionForm = useKeepInputs(saveAction, saveState);
   const [approveState, approveAction, approving] = useActionState(
     approveProgramAction.bind(null, slug, year),
     initial,
   );
+  const approveActionForm = useKeepInputs(approveAction, approveState);
 
   return (
     <div className="flex flex-col gap-3">
-      <form action={saveAction} className="flex flex-col gap-3">
+      <form {...saveActionForm} className="flex flex-col gap-3">
         <Field label="Objetivos del programa" hint="Ej.: auditar todos los procesos del SGI al menos una vez en el año.">
           <textarea name="objectives" rows={2} defaultValue={objectives} required className={input} />
         </Field>
@@ -109,7 +112,7 @@ export function ProgramForm({
         </button>
       </form>
       {canApprove ? (
-        <form action={approveAction} className="flex flex-col gap-2">
+        <form {...approveActionForm} className="flex flex-col gap-2">
           <Feedback state={approveState} />
           <button type="submit" disabled={approving} className={primary}>
             {approving ? "Aprobando…" : "Aprobar programa"}
@@ -124,8 +127,9 @@ export function ProgramForm({
 
 export function CreateAuditForm({ slug }: { slug: string }) {
   const [state, action, pending] = useActionState(createAuditAction.bind(null, slug), initial);
+  const actionForm = useKeepInputs(action, state);
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form {...actionForm} className="flex flex-col gap-4">
       <Feedback state={state} />
       <Field label="Título" hint="Ej.: Proceso de compras y proveedores">
         <input name="title" required className={input} />
@@ -176,6 +180,7 @@ export function AuditPlanForm({
     saveAuditPlanAction.bind(null, slug, auditId),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   const [lead, setLead] = useState(defaults.leadUserId);
   const [auditors, setAuditors] = useState<string[]>(defaults.auditorUserIds);
   const [auditees, setAuditees] = useState(
@@ -189,7 +194,7 @@ export function AuditPlanForm({
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? id;
 
   return (
-    <form action={action} className="flex flex-col gap-5">
+    <form {...actionForm} className="flex flex-col gap-5">
       <Field label="Título">
         <input name="title" required defaultValue={defaults.title} className={input} />
       </Field>
@@ -352,8 +357,9 @@ export function PrepareButton({ slug, auditId }: { slug: string; auditId: string
     transitionAuditAction.bind(null, slug, auditId, "prepared"),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   return (
-    <form action={action} className="flex flex-col gap-2">
+    <form {...actionForm} className="flex flex-col gap-2">
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={primary}>
         Marcar como preparada
@@ -367,10 +373,11 @@ export function CancelAuditForm({ slug, auditId }: { slug: string; auditId: stri
     transitionAuditAction.bind(null, slug, auditId, "cancelled"),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   return (
     <details className="text-sm">
       <summary className="cursor-pointer text-[var(--color-ink-muted)]">Cancelar auditoría</summary>
-      <form action={action} className="mt-2 flex flex-col gap-2">
+      <form {...actionForm} className="mt-2 flex flex-col gap-2">
         <Field label="Motivo">
           <input name="reason" required className={input} />
         </Field>

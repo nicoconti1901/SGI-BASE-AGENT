@@ -159,3 +159,32 @@ export function correctionIssues(reason: string | null | undefined): string[] {
 export function objectiveCode(year: number, sequence: number): string {
   return `OBJ-${year}-${String(sequence).padStart(2, "0")}`;
 }
+
+// ─── Tablero ─────────────────────────────────────────────────────────────────
+
+/** Próxima carga de un indicador y si ya venció (10 días después del fin del período). */
+export function pendingLoad(input: {
+  frequency: IndicatorFrequency;
+  lastLoadedStart: Date | null;
+  createdAt: Date;
+  now: Date;
+}): { period: Period; dueAt: Date; overdue: boolean } {
+  const period = nextPendingPeriod(input);
+  const dueAt = measurementDueAt(period);
+  return { period, dueAt, overdue: dueAt < input.now };
+}
+
+export type DashboardCounts = Record<MeasurementStatus, number> & { overdueLoads: number };
+
+/** Métricas de la cabecera: objetivos vigentes por estado y cargas vencidas. */
+export function dashboardCounts(
+  objectives: { status: string; indicatorStatuses: MeasurementStatus[]; overdueLoads: number }[],
+): DashboardCounts {
+  const counts: DashboardCounts = { on_target: 0, alert: 0, off_target: 0, no_data: 0, overdueLoads: 0 };
+  for (const o of objectives) {
+    if (o.status !== "active") continue;
+    counts[aggregateStatus(o.indicatorStatuses)] += 1;
+    counts.overdueLoads += o.overdueLoads;
+  }
+  return counts;
+}

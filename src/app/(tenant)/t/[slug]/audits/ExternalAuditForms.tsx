@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useKeepInputs } from "@/lib/use-keep-inputs";
 import {
   addExternalFindingAction,
   completeExternalAuditAction,
@@ -124,8 +125,9 @@ function ExternalFields({ defaults }: { defaults?: ExternalDefaults }) {
 
 export function CreateExternalAuditForm({ slug }: { slug: string }) {
   const [state, action, pending] = useActionState(createExternalAuditAction.bind(null, slug), initial);
+  const actionForm = useKeepInputs(action, state);
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form {...actionForm} className="flex flex-col gap-4">
       <Feedback state={state} />
       <ExternalFields />
       <button type="submit" disabled={pending} className={primary}>
@@ -148,8 +150,9 @@ export function ExternalAuditPlanForm({
     saveExternalAuditAction.bind(null, slug, auditId),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form {...actionForm} className="flex flex-col gap-4">
       <ExternalFields defaults={defaults} />
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={saveChanges}>
@@ -164,8 +167,9 @@ export function ExternalFindingForm({ slug, auditId }: { slug: string; auditId: 
     addExternalFindingAction.bind(null, slug, auditId),
     initial,
   );
+  const actionForm = useKeepInputs(action, state, { resetOnSuccess: true });
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form {...actionForm} className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Tipo de hallazgo">
           <select name="result" required defaultValue="nc_minor" className={input}>
@@ -205,8 +209,9 @@ export function CompleteExternalAuditButton({ slug, auditId }: { slug: string; a
     completeExternalAuditAction.bind(null, slug, auditId),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   return (
-    <form action={action} className="flex flex-col gap-2">
+    <form {...actionForm} className="flex flex-col gap-2">
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={complete}>
         {pending ? "Guardando…" : "Marcar como realizada"}
@@ -220,10 +225,11 @@ export function CancelExternalAuditForm({ slug, auditId }: { slug: string; audit
     transitionAuditAction.bind(null, slug, auditId, "cancelled"),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   return (
     <details className="text-sm">
       <summary className="cursor-pointer text-[var(--color-ink-muted)]">Cancelar auditoría</summary>
-      <form action={action} className="mt-2 flex flex-col gap-2">
+      <form {...actionForm} className="mt-2 flex flex-col gap-2">
         <Field label="Motivo">
           <input name="reason" required className={input} />
         </Field>
@@ -251,6 +257,7 @@ export function ExternalReportUpload({
     uploadExternalReportAction.bind(null, slug, auditId),
     initial,
   );
+  const actionForm = useKeepInputs(action, state, { resetOnSuccess: true });
   return (
     <div className="flex flex-col gap-2 text-sm">
       {files.length > 0 ? (
@@ -285,7 +292,7 @@ export function ExternalReportUpload({
         <p className="text-[var(--color-ink-muted)]">Todavía no se adjuntó el informe.</p>
       )}
       {canUpload ? (
-        <form action={action} className="flex flex-wrap items-center gap-2">
+        <form {...actionForm} className="flex flex-wrap items-center gap-2">
           <input
             type="file"
             name="file"

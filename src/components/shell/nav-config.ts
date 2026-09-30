@@ -18,6 +18,7 @@ export function tenantNavItems(slug: string): NavItem[] {
     { href: `${base}/findings`, label: "Hallazgos" },
     { href: `${base}/risks`, label: "Riesgos y oportunidades" },
     { href: `${base}/audits`, label: "Auditorías" },
+    { href: `${base}/indicators`, label: "Objetivos" },
     { href: `${base}/automations`, label: "Automatizaciones" },
     { href: `${base}/users`, label: "Usuarios" },
   ];
