@@ -1,55 +1,16 @@
 /**
  * SGI Base — design tokens
- * Direction: "precision ledger" — trust, audit clarity, industrial calm.
- * Avoid: purple SaaS, cream+terracotta editorial, heavy glassmorphism.
+ * Direction: "consola de control" — trust, audit clarity, industrial precision.
+ * Two themes, one structure:
+ *   - Light A "Sala de control diurna" (default, cobalt accent)
+ *   - Dark A  "OLED noche" (cyan accent)
+ * Selected with <html data-theme="light|dark">. Every container and control keeps
+ * a visible border in both themes; state is never conveyed by color alone.
+ * Avoid: purple SaaS, cream+terracotta editorial, glassmorphism, decorative gradients.
  */
 
+/* ── Theme-independent ─────────────────────────────────────────────── */
 :root {
-  /* Surfaces */
-  --color-canvas: #e8edf2;
-  --color-surface: #f7f9fb;
-  --color-surface-raised: #ffffff;
-  --color-ink: #0b1320;
-  --color-ink-muted: #4a5568;
-  --color-ink-subtle: #7a8699;
-  --color-line: #c5ced9;
-  --color-line-strong: #8b98a8;
-
-  /* Accent — teal industrial (quality / environment), not purple */
-  --color-accent: #0f6e6a;
-  --color-accent-hover: #0b5754;
-  --color-accent-soft: #d4eeec;
-  --color-accent-ink: #073f3d;
-
-  /* Semantic */
-  --color-danger: #b42318;
-  --color-danger-soft: #fde8e6;
-  --color-success: #1b6b3a;
-  --color-success-soft: #e3f5ea;
-  --color-warning: #9a6700;
-  --color-warning-soft: #fff4d6;
-
-  /* Platform vs tenant shell tints */
-  --color-platform-rail: #0b1320;
-  --color-platform-rail-ink: #e8edf2;
-  --color-tenant-rail: #12353a;
-  --color-tenant-rail-ink: #e8f4f3;
-
-  /* Persona logueada — se reconoce de un vistazo por color */
-  --color-persona-superuser: #b45309;
-  --color-persona-superuser-soft: #fdf0dc;
-  --color-persona-admin: #0f6e6a;
-  --color-persona-admin-soft: #d4eeec;
-  --color-persona-member: #2f5d8a;
-  --color-persona-member-soft: #e1ebf5;
-  --color-member-rail: #1c3450;
-  --color-member-rail-ink: #e6eef7;
-
-  /* Typography */
-  --font-display: var(--font-sgi-display), "Georgia", serif;
-  --font-sans: var(--font-sgi-sans), "Segoe UI", sans-serif;
-  --font-mono: var(--font-sgi-mono), ui-monospace, monospace;
-
   /* Space rhythm (4px base) */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -60,16 +21,152 @@
   --space-7: 3rem;
   --space-8: 4rem;
 
+  /* Motion (150–300ms; prefers-reduced-motion handled in globals.css) */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-med: 220ms;
+  --duration-slow: 300ms;
+
+  /* Status borders: the status color at 40% so chips keep a visible frame */
+  --color-danger-line: color-mix(in srgb, var(--color-danger) 40%, transparent);
+  --color-warning-line: color-mix(in srgb, var(--color-warning) 40%, transparent);
+  --color-success-line: color-mix(in srgb, var(--color-success) 40%, transparent);
+  --color-info-line: color-mix(in srgb, var(--color-info) 40%, transparent);
+  --color-pending-line: color-mix(in srgb, var(--color-pending) 50%, transparent);
+  --color-accent-line: color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+/* ── Light A — Sala de control diurna ──────────────────────────────── */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces */
+  --color-canvas: #f4f6fa;
+  --color-surface: #f9fafc;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #edf1f7;
+  --color-field-fill: #ffffff;
+  --color-ink: #0e1525;
+  --color-ink-muted: #4b5568;
+  --color-ink-subtle: #5e6a7f;
+  --color-line: #cbd2de;
+  --color-line-strong: #8491a8;
+
+  /* Accent — cobalto (único accent dominante) */
+  --color-accent: #2448e0;
+  --color-accent-hover: #1b3bc0;
+  --color-accent-soft: #e6ecfd;
+  --color-accent-ink: #1a37b5; /* texto sobre accent-soft */
+  --color-accent-ring: rgb(36 72 224 / 28%);
+
+  /* Texto sobre relleno sólido (accent, success, persona) */
+  --color-on-solid: #ffffff;
+
+  /* Semantic (texto/borde) + soft (relleno) */
+  --color-danger: #c4202f;
+  --color-danger-soft: #fdecee;
+  --color-danger-ring: rgb(196 32 47 / 28%);
+  --color-warning: #8a5200;
+  --color-warning-soft: #fff3dc;
+  --color-success: #13723a;
+  --color-success-soft: #e4f5ea;
+  --color-info: #0b62a8;
+  --color-info-soft: #e3f0fb;
+  --color-pending: #4b5568;
+  --color-pending-soft: #edf0f5;
+
+  /* Platform vs tenant shell tints */
+  --color-platform-rail: #0e1525;
+  --color-platform-rail-ink: #e8edf5;
+  --color-tenant-rail: #132352;
+  --color-tenant-rail-ink: #e8edf9;
+
+  /* Persona logueada — se reconoce de un vistazo por color */
+  --color-persona-superuser: #b45309;
+  --color-persona-superuser-soft: #fdf0dc;
+  --color-persona-admin: #2448e0;
+  --color-persona-admin-soft: #e6ecfd;
+  --color-persona-member: #0f6e6a;
+  --color-persona-member-soft: #d9efed;
+  --color-member-rail: #12353a;
+  --color-member-rail-ink: #e8f4f3;
+
+  /* Typography */
+  --font-display: var(--font-sgi-display-light), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sgi-sans), "Segoe UI", sans-serif;
+  --font-mono: var(--font-sgi-mono), ui-monospace, monospace;
+
   /* Radius — restrained, not pill-heavy */
   --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
 
-  /* Elevation */
-  --shadow-soft: 0 1px 0 rgb(11 19 32 / 6%), 0 8px 24px rgb(11 19 32 / 6%);
+  /* Elevation — sutil; el marco (borde) siempre está */
+  --shadow-card: 0 1px 2px rgb(14 21 37 / 6%);
+  --shadow-hover: 0 4px 12px rgb(14 21 37 / 8%);
+  --shadow-soft: 0 1px 0 rgb(14 21 37 / 6%), 0 8px 24px rgb(14 21 37 / 8%);
+}
 
-  /* Motion */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --duration-fast: 160ms;
-  --duration-med: 280ms;
+/* ── Dark A — OLED noche ───────────────────────────────────────────── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --color-canvas: #06080b;
+  --color-surface: #0a0e13;
+  --color-surface-raised: #0d1117;
+  --color-surface-sunken: #030406;
+  --color-field-fill: #030406;
+  --color-ink: #e8edf5;
+  --color-ink-muted: #9aa6b8;
+  --color-ink-subtle: #7c889b;
+  --color-line: #232b38;
+  --color-line-strong: #56647a;
+
+  /* Accent — cian eléctrico (único accent dominante) */
+  --color-accent: #38e1ff;
+  --color-accent-hover: #7bebff;
+  --color-accent-soft: #0a2730;
+  --color-accent-ink: #8bebff; /* texto sobre accent-soft */
+  --color-accent-ring: rgb(56 225 255 / 30%);
+
+  --color-on-solid: #03161b;
+
+  --color-danger: #ff6b7a;
+  --color-danger-soft: #2a1218;
+  --color-danger-ring: rgb(255 107 122 / 32%);
+  --color-warning: #ffc15a;
+  --color-warning-soft: #2b2008;
+  --color-success: #4ade9a;
+  --color-success-soft: #0e2319;
+  --color-info: #8ab4ff;
+  --color-info-soft: #101c33;
+  --color-pending: #9aa6b8;
+  --color-pending-soft: #151b24;
+
+  --color-platform-rail: #10151c;
+  --color-platform-rail-ink: #e8edf5;
+  --color-tenant-rail: #0f1a3d;
+  --color-tenant-rail-ink: #e8edf9;
+
+  --color-persona-superuser: #f5a524;
+  --color-persona-superuser-soft: #2b2008;
+  --color-persona-admin: #38e1ff;
+  --color-persona-admin-soft: #0a2730;
+  --color-persona-member: #3dd6c6;
+  --color-persona-member-soft: #0b2a27;
+  --color-member-rail: #0c2a2e;
+  --color-member-rail-ink: #e8f4f3;
+
+  --font-display: var(--font-sgi-display-dark), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-lg: 0.625rem;
+
+  /* Sin sombras: hairline interior superior + borde */
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 4%);
+  --shadow-hover: inset 0 1px 0 rgb(255 255 255 / 4%);
+  --shadow-soft: 0 8px 24px rgb(0 0 0 / 50%);
 }
