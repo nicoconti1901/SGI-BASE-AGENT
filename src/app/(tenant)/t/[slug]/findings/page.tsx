@@ -22,6 +22,14 @@ import {
   type MeasureKind,
   type MeasureWorkflowStatus,
 } from "@/domain/findings/types";
+import {
+  PageFrame,
+  PageHeader,
+  StatusChip,
+  EmptyState,
+  Field,
+  INPUT_CLASS,
+} from "@/components/ui";
 
 type Params = Promise<{ slug: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -37,18 +45,6 @@ function formatDate(d: Date): string {
     month: "2-digit",
     year: "numeric",
   });
-}
-
-function StatusBadge({ status }: { status: FindingStatus }) {
-  const tone = FINDING_STATUS_TONE[status];
-  return (
-    <span
-      className="inline-flex whitespace-nowrap rounded-[var(--radius-sm)] px-2 py-0.5 text-xs font-semibold"
-      style={{ background: tone.bg, color: tone.fg }}
-    >
-      {FINDING_STATUS_LABELS[status]}
-    </span>
-  );
 }
 
 function MeasureStatusCell({
@@ -139,57 +135,43 @@ export default async function FindingsListPage({
         : undefined;
 
   const findings = await listFindings(tenant.id, { q, type, status });
+  const filtersActive = Boolean(q || type || statusRaw);
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-[var(--color-ink-subtle)]">
-            {tenant.name}
-          </p>
-          <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl tracking-tight">
-            Hallazgos
-          </h1>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {canWrite ? (
+    <PageFrame width="6xl">
+      <PageHeader
+        eyebrow="ISO 9001 · 14001 · 45001 · §10.2"
+        title="Hallazgos"
+        purpose="Bandeja de no conformidades, incidentes y observaciones con seguimiento de medidas."
+        actions={
+          canWrite ? (
             <Link
               href={`/t/${slug}/findings/new`}
               className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white"
             >
               Crear hallazgo
             </Link>
-          ) : null}
-          <Link
-            href={`/t/${slug}`}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
-          >
-            Volver al portal
-          </Link>
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
       <section className="flex flex-col gap-4">
         <form
           method="get"
           className="grid gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4 sm:grid-cols-4"
         >
-          <label className="flex flex-col gap-1 text-xs text-[var(--color-ink-subtle)] sm:col-span-2">
-            Buscar
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder="Título, descripción o lugar…"
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-ink)]"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-[var(--color-ink-subtle)]">
-            Tipo
-            <select
-              name="type"
-              defaultValue={type ?? ""}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-ink)]"
-            >
+          <div className="sm:col-span-2">
+            <Field label="Buscar">
+              <input
+                name="q"
+                defaultValue={q}
+                placeholder="Título, descripción o lugar…"
+                className={INPUT_CLASS}
+              />
+            </Field>
+          </div>
+          <Field label="Tipo">
+            <select name="type" defaultValue={type ?? ""} className={INPUT_CLASS}>
               <option value="">Todos</option>
               {FINDING_TYPES.map((t) => (
                 <option key={t} value={t}>
@@ -197,13 +179,12 @@ export default async function FindingsListPage({
                 </option>
               ))}
             </select>
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-[var(--color-ink-subtle)]">
-            Estado
+          </Field>
+          <Field label="Estado">
             <select
               name="status"
               defaultValue={statusRaw || ""}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-ink)]"
+              className={INPUT_CLASS}
             >
               <option value="">Activos (sin anulados)</option>
               {(Object.keys(FINDING_STATUS_LABELS) as FindingStatus[]).map(
@@ -215,7 +196,7 @@ export default async function FindingsListPage({
               )}
               <option value="all">Todos</option>
             </select>
-          </label>
+          </Field>
           <div className="flex flex-wrap gap-2 sm:col-span-4">
             <button
               type="submit"
@@ -235,98 +216,117 @@ export default async function FindingsListPage({
           </div>
         </form>
 
-        <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]">
-          <table className="min-w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-[var(--color-line)] bg-[var(--color-surface)] text-xs uppercase tracking-wide text-[var(--color-ink-subtle)]">
-                <th className="px-3 py-3 font-medium">Título</th>
-                <th className="px-3 py-3 font-medium">Tipo</th>
-                <th className="px-3 py-3 font-medium">Detección</th>
-                <th className="px-3 py-3 font-medium">Lugar</th>
-                <th className="px-3 py-3 font-medium">Próx. venc.</th>
-                <th className="px-3 py-3 font-medium">Medidas</th>
-                <th className="px-3 py-3 font-medium">Estado</th>
-                <th className="px-3 py-3 font-medium"> </th>
-              </tr>
-            </thead>
-            <tbody>
-              {findings.map((finding) => {
-                const href =
-                  finding.status === "draft"
-                    ? `/t/${slug}/findings/${finding.id}/edit`
-                    : `/t/${slug}/findings/${finding.id}`;
-                // En verificación, lo que vence es la verificación de eficacia.
-                const inVerification = finding.status === "verification";
-                const nextDue = inVerification
-                  ? finding.verificationDueAt
-                  : nearestOpenMeasureDueAt(finding.measures);
-                const overdue =
-                  nextDue &&
-                  isPast(nextDue) &&
-                  finding.status !== "closed" &&
-                  finding.status !== "cancelled";
-                return (
-                  <tr
-                    key={finding.id}
-                    className="border-b border-[var(--color-line)] last:border-b-0"
-                  >
-                    <td className="max-w-[14rem] px-3 py-3 font-medium text-[var(--color-ink)]">
-                      <span className="line-clamp-2">{finding.title}</span>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-3 text-[var(--color-ink-muted)]">
-                      {FINDING_TYPE_LABELS[finding.type as FindingType]}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-3 text-[var(--color-ink-muted)]">
-                      {formatDate(finding.detectedAt)}
-                    </td>
-                    <td className="max-w-[10rem] px-3 py-3 text-[var(--color-ink-muted)]">
-                      <span className="line-clamp-2">
-                        {finding.location?.trim() || "—"}
-                      </span>
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-3 py-3 ${
-                        overdue
-                          ? "font-medium text-[var(--color-danger)]"
-                          : "text-[var(--color-ink-muted)]"
-                      }`}
-                    >
-                      {nextDue ? formatDate(nextDue) : "—"}
-                      {inVerification && nextDue ? (
-                        <span className="block text-xs">verificar eficacia</span>
-                      ) : null}
-                    </td>
-                    <td className="px-3 py-3">
-                      <MeasureStatusCell measures={finding.measures} />
-                    </td>
-                    <td className="px-3 py-3">
-                      <StatusBadge status={finding.status as FindingStatus} />
-                    </td>
-                    <td className="px-3 py-3 text-right">
-                      <Link
-                        href={href}
-                        className="text-sm font-medium text-[var(--color-accent)] underline-offset-2 hover:underline"
-                      >
-                        {finding.status === "draft" ? "Editar" : "Ver"}
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-              {findings.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="px-3 py-8 text-center text-[var(--color-ink-muted)]"
-                  >
-                    No hay hallazgos con estos filtros.
-                  </td>
+        {findings.length === 0 ? (
+          <EmptyState
+            what={
+              filtersActive
+                ? "No hay hallazgos con estos filtros."
+                : "Todavía no hay hallazgos registrados."
+            }
+            next={
+              filtersActive
+                ? "Probá limpiar los filtros o ampliar el criterio de búsqueda."
+                : canWrite
+                  ? "Creá el primero para documentar la no conformidad o el incidente y sus medidas."
+                  : "Pedile al administrador de la empresa que registre el primero."
+            }
+            action={
+              !filtersActive && canWrite
+                ? { href: `/t/${slug}/findings/new`, label: "Crear hallazgo" }
+                : undefined
+            }
+          />
+        ) : (
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]">
+            <table className="min-w-full border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-[var(--color-line)] bg-[var(--color-surface)] text-xs uppercase tracking-wide text-[var(--color-ink-subtle)]">
+                  <th className="px-3 py-3 font-medium">Título</th>
+                  <th className="px-3 py-3 font-medium">Tipo</th>
+                  <th className="px-3 py-3 font-medium">Detección</th>
+                  <th className="px-3 py-3 font-medium">Lugar</th>
+                  <th className="px-3 py-3 font-medium">Próx. venc.</th>
+                  <th className="px-3 py-3 font-medium">Medidas</th>
+                  <th className="px-3 py-3 font-medium">Estado</th>
+                  <th className="px-3 py-3 font-medium"> </th>
                 </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {findings.map((finding) => {
+                  const href =
+                    finding.status === "draft"
+                      ? `/t/${slug}/findings/${finding.id}/edit`
+                      : `/t/${slug}/findings/${finding.id}`;
+                  // En verificación, lo que vence es la verificación de eficacia.
+                  const inVerification = finding.status === "verification";
+                  const nextDue = inVerification
+                    ? finding.verificationDueAt
+                    : nearestOpenMeasureDueAt(finding.measures);
+                  const overdue =
+                    nextDue &&
+                    isPast(nextDue) &&
+                    finding.status !== "closed" &&
+                    finding.status !== "cancelled";
+                  return (
+                    <tr
+                      key={finding.id}
+                      className="border-b border-[var(--color-line)] last:border-b-0"
+                    >
+                      <td className="max-w-[14rem] px-3 py-3 font-medium text-[var(--color-ink)]">
+                        <span className="line-clamp-2">{finding.title}</span>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-3 text-[var(--color-ink-muted)]">
+                        {FINDING_TYPE_LABELS[finding.type as FindingType]}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-3 text-[var(--color-ink-muted)]">
+                        {formatDate(finding.detectedAt)}
+                      </td>
+                      <td className="max-w-[10rem] px-3 py-3 text-[var(--color-ink-muted)]">
+                        <span className="line-clamp-2">
+                          {finding.location?.trim() || "—"}
+                        </span>
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-3 py-3 ${
+                          overdue
+                            ? "font-medium text-[var(--color-danger)]"
+                            : "text-[var(--color-ink-muted)]"
+                        }`}
+                      >
+                        {nextDue ? formatDate(nextDue) : "—"}
+                        {inVerification && nextDue ? (
+                          <span className="block text-xs">verificar eficacia</span>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-3">
+                        <MeasureStatusCell measures={finding.measures} />
+                      </td>
+                      <td className="px-3 py-3">
+                        <StatusChip
+                          label={
+                            FINDING_STATUS_LABELS[finding.status as FindingStatus]
+                          }
+                          tone={
+                            FINDING_STATUS_TONE[finding.status as FindingStatus]
+                          }
+                        />
+                      </td>
+                      <td className="px-3 py-3 text-right">
+                        <Link
+                          href={href}
+                          className="text-sm font-medium text-[var(--color-accent)] underline-offset-2 hover:underline"
+                        >
+                          {finding.status === "draft" ? "Editar" : "Ver"}
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
-    </div>
+    </PageFrame>
   );
 }

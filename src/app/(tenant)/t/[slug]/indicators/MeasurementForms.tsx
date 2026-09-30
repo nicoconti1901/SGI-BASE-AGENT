@@ -10,12 +10,11 @@ import {
 } from "@/app/(tenant)/t/[slug]/indicators/actions";
 import {
   Feedback,
-  Field,
-  input,
   primary,
   saveChanges,
   secondary,
 } from "@/app/(tenant)/t/[slug]/indicators/ObjectiveForms";
+import { Field, INPUT_CLASS } from "@/components/ui";
 
 const initial: IndicatorActionState = {};
 
@@ -41,13 +40,13 @@ export function RecordMeasurementForm({
     <form {...form} className="flex flex-col gap-3">
       <h3 className="text-sm font-semibold">Cargar {periodLabel}</h3>
       <Field label={`Valor (${unit})`}>
-        <input name="value" inputMode="decimal" required className={input} />
+        <input name="value" inputMode="decimal" required className={INPUT_CLASS} />
       </Field>
       <Field
         label="Análisis del desvío"
         hint="Obligatorio si el valor queda fuera de meta: por qué pasó y qué se sabe de la causa."
       >
-        <textarea name="analysis" rows={3} className={input} />
+        <textarea name="analysis" rows={3} className={INPUT_CLASS} />
       </Field>
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={primary}>
@@ -82,13 +81,13 @@ export function CorrectMeasurementForm({
       <summary className="cursor-pointer font-medium text-[var(--color-accent)]">Corregir valor</summary>
       <form {...form} className="mt-3 flex flex-col gap-3">
         <Field label="Valor correcto">
-          <input name="value" inputMode="decimal" required defaultValue={currentValue} className={input} />
+          <input name="value" inputMode="decimal" required defaultValue={currentValue} className={INPUT_CLASS} />
         </Field>
         <Field label="Motivo de la corrección" hint="Queda registrado con el valor anterior.">
-          <input name="reason" required className={input} />
+          <input name="reason" required className={INPUT_CLASS} />
         </Field>
         <Field label="Análisis del desvío" hint="Obligatorio si el valor corregido queda fuera de meta.">
-          <textarea name="analysis" rows={2} defaultValue={currentAnalysis} className={input} />
+          <textarea name="analysis" rows={2} defaultValue={currentAnalysis} className={INPUT_CLASS} />
         </Field>
         <Feedback state={state} />
         <button type="submit" disabled={pending} className={saveChanges}>

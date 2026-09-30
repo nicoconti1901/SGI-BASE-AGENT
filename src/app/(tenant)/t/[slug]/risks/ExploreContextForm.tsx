@@ -12,6 +12,7 @@ import {
   SourceFields,
   type FindingOpt,
 } from "@/app/(tenant)/t/[slug]/risks/FormFields";
+import { FormError } from "@/components/ui";
 
 const initial: RoActionState = {};
 
@@ -29,11 +30,7 @@ export function ExploreContextForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
-      {state.error ? (
-        <p role="alert" className="rounded-md border border-[var(--color-danger)]/40 bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">
-          {state.error}
-        </p>
-      ) : null}
+      {state.error ? <FormError>{state.error}</FormError> : null}
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 font-medium">1. ¿De dónde partís?</legend>
@@ -54,13 +51,13 @@ export function ExploreContextForm({
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 font-medium">3. Describilo (podés completarlo después)</legend>
-        <details className="rounded-md border border-[var(--color-line)] p-4 open:bg-[var(--color-surface)]">
+        <details className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-4 open:bg-[var(--color-surface)]">
           <summary className="cursor-pointer font-medium">Describir el riesgo</summary>
           <div className="mt-3">
             <RiskStatementFields titleName="riskTitle" />
           </div>
         </details>
-        <details className="rounded-md border border-[var(--color-line)] p-4 open:bg-[var(--color-surface)]">
+        <details className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-4 open:bg-[var(--color-surface)]">
           <summary className="cursor-pointer font-medium">Describir la oportunidad</summary>
           <div className="mt-3">
             <OpportunityFields titleName="opportunityTitle" />
@@ -71,7 +68,7 @@ export function ExploreContextForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+        className="self-start rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
       >
         {pending ? "Guardando…" : "Registrar"}
       </button>

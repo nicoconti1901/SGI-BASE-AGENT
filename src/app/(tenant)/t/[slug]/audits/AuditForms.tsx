@@ -1,5 +1,7 @@
 "use client";
 
+import { Field, INPUT_CLASS } from "@/components/ui";
+
 import { useActionState, useState } from "react";
 import { useKeepInputs } from "@/lib/use-keep-inputs";
 import {
@@ -19,8 +21,6 @@ import {
 } from "@/domain/audits/types";
 
 const initial: AuditActionState = {};
-const input =
-  "rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm";
 const primary =
   "self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60";
 const secondary =
@@ -58,15 +58,6 @@ export function Feedback({ state }: { state: AuditActionState }) {
   return null;
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
-      {children}
-      {hint ? <span className="text-xs text-[var(--color-ink-muted)]">{hint}</span> : null}
-    </label>
-  );
-}
 
 // ─── Programa ───────────────────────────────────────────────────────────────
 
@@ -98,13 +89,13 @@ export function ProgramForm({
     <div className="flex flex-col gap-3">
       <form {...saveActionForm} className="flex flex-col gap-3">
         <Field label="Objetivos del programa" hint="Ej.: auditar todos los procesos del SGI al menos una vez en el año.">
-          <textarea name="objectives" rows={2} defaultValue={objectives} required className={input} />
+          <textarea name="objectives" rows={2} defaultValue={objectives} required className={INPUT_CLASS} />
         </Field>
         <Field
           label="Criterio de frecuencia"
           hint="Por qué algunos procesos se auditan más: importancia, cambios recientes, resultados de auditorías anteriores."
         >
-          <textarea name="frequencyRationale" rows={2} defaultValue={frequencyRationale} className={input} />
+          <textarea name="frequencyRationale" rows={2} defaultValue={frequencyRationale} className={INPUT_CLASS} />
         </Field>
         <Feedback state={saveState} />
         <button type="submit" disabled={saving} className={secondary}>
@@ -132,14 +123,14 @@ export function CreateAuditForm({ slug }: { slug: string }) {
     <form {...actionForm} className="flex flex-col gap-4">
       <Feedback state={state} />
       <Field label="Título" hint="Ej.: Proceso de compras y proveedores">
-        <input name="title" required className={input} />
+        <input name="title" required className={INPUT_CLASS} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Inicio">
-          <input type="date" name="plannedStart" required className={input} />
+          <input type="date" name="plannedStart" required className={INPUT_CLASS} />
         </Field>
         <Field label="Fin">
-          <input type="date" name="plannedEnd" required className={input} />
+          <input type="date" name="plannedEnd" required className={INPUT_CLASS} />
         </Field>
       </div>
       <button type="submit" disabled={pending} className={primary}>
@@ -196,16 +187,16 @@ export function AuditPlanForm({
   return (
     <form {...actionForm} className="flex flex-col gap-5">
       <Field label="Título">
-        <input name="title" required defaultValue={defaults.title} className={input} />
+        <input name="title" required defaultValue={defaults.title} className={INPUT_CLASS} />
       </Field>
       <Field
         label="Objetivo"
         hint="Qué querés comprobar, en una frase. Ej.: verificar que los cambios en despacho redujeron los errores de especificación."
       >
-        <textarea name="objective" rows={2} defaultValue={defaults.objective} className={input} />
+        <textarea name="objective" rows={2} defaultValue={defaults.objective} className={INPUT_CLASS} />
       </Field>
       <Field label="Alcance" hint="Procesos, áreas, sitios y período que se revisan.">
-        <textarea name="scope" rows={2} defaultValue={defaults.scope} className={input} />
+        <textarea name="scope" rows={2} defaultValue={defaults.scope} className={INPUT_CLASS} />
       </Field>
 
       <fieldset className="flex flex-col gap-2 text-sm">
@@ -222,13 +213,13 @@ export function AuditPlanForm({
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label="Inicio">
-          <input type="date" name="plannedStart" required defaultValue={defaults.plannedStart} className={input} />
+          <input type="date" name="plannedStart" required defaultValue={defaults.plannedStart} className={INPUT_CLASS} />
         </Field>
         <Field label="Fin">
-          <input type="date" name="plannedEnd" required defaultValue={defaults.plannedEnd} className={input} />
+          <input type="date" name="plannedEnd" required defaultValue={defaults.plannedEnd} className={INPUT_CLASS} />
         </Field>
         <Field label="Modalidad">
-          <select name="mode" defaultValue={defaults.mode} className={input}>
+          <select name="mode" defaultValue={defaults.mode} className={INPUT_CLASS}>
             {(Object.keys(AUDIT_MODE_LABELS) as AuditMode[]).map((m) => (
               <option key={m} value={m}>
                 {AUDIT_MODE_LABELS[m]}
@@ -241,7 +232,7 @@ export function AuditPlanForm({
       <fieldset className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-4">
         <legend className="mb-1 font-medium">Equipo auditor</legend>
         <Field label="Auditor líder">
-          <select name="leadUserId" value={lead} onChange={(e) => setLead(e.target.value)} className={input}>
+          <select name="leadUserId" value={lead} onChange={(e) => setLead(e.target.value)} className={INPUT_CLASS}>
             <option value="">— Elegir —</option>
             {members.map((m) => (
               <option key={m.id} value={m.id}>
@@ -287,7 +278,7 @@ export function AuditPlanForm({
               onChange={(e) =>
                 setAuditees((prev) => prev.map((x, j) => (j === i ? { ...x, area: e.target.value } : x)))
               }
-              className={input}
+              className={INPUT_CLASS}
             />
             <select
               name="auditeeUserId"
@@ -296,7 +287,7 @@ export function AuditPlanForm({
               onChange={(e) =>
                 setAuditees((prev) => prev.map((x, j) => (j === i ? { ...x, userId: e.target.value } : x)))
               }
-              className={input}
+              className={INPUT_CLASS}
             >
               <option value="">— Responsable (opcional) —</option>
               {members.map((m) => (
@@ -336,7 +327,7 @@ export function AuditPlanForm({
               rows={2}
               defaultValue={defaults.impartialityException}
               placeholder="Ej.: es la única persona formada como auditora en la empresa"
-              className={input}
+              className={INPUT_CLASS}
             />
           </Field>
         </div>
@@ -379,7 +370,7 @@ export function CancelAuditForm({ slug, auditId }: { slug: string; auditId: stri
       <summary className="cursor-pointer text-[var(--color-ink-muted)]">Cancelar auditoría</summary>
       <form {...actionForm} className="mt-2 flex flex-col gap-2">
         <Field label="Motivo">
-          <input name="reason" required className={input} />
+          <input name="reason" required className={INPUT_CLASS} />
         </Field>
         <Feedback state={state} />
         <button type="submit" disabled={pending} className={secondary}>

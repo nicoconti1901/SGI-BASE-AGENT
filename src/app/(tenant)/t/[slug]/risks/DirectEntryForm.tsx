@@ -12,6 +12,7 @@ import {
   SourceFields,
   type FindingOpt,
 } from "@/app/(tenant)/t/[slug]/risks/FormFields";
+import { FormError } from "@/components/ui";
 
 const initial: RoActionState = {};
 
@@ -33,11 +34,7 @@ export function DirectEntryForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
-      {state.error ? (
-        <p role="alert" className="rounded-md border border-[var(--color-danger)]/40 bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">
-          {state.error}
-        </p>
-      ) : null}
+      {state.error ? <FormError>{state.error}</FormError> : null}
 
       {kind === "risk" ? <RiskStatementFields titleRequired /> : <OpportunityFields titleRequired />}
 
@@ -49,7 +46,7 @@ export function DirectEntryForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+        className="self-start rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
       >
         {pending ? "Guardando…" : kind === "risk" ? "Registrar riesgo" : "Registrar oportunidad"}
       </button>

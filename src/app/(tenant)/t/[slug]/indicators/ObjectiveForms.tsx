@@ -1,5 +1,7 @@
 "use client";
 
+import { Field, INPUT_CLASS } from "@/components/ui";
+
 import { useActionState } from "react";
 import { useKeepInputs } from "@/lib/use-keep-inputs";
 import {
@@ -23,8 +25,6 @@ import {
 } from "@/domain/indicators/types";
 
 const initial: IndicatorActionState = {};
-export const input =
-  "rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm";
 export const primary =
   "self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60";
 export const saveChanges =
@@ -72,15 +72,6 @@ export function Feedback({ state }: { state: IndicatorActionState }) {
   return null;
 }
 
-export function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
-      {children}
-      {hint ? <span className="text-xs text-[var(--color-ink-muted)]">{hint}</span> : null}
-    </label>
-  );
-}
 
 function MemberSelect({
   name,
@@ -97,7 +88,7 @@ function MemberSelect({
 }) {
   return (
     <Field label={label} hint={hint}>
-      <select name={name} required defaultValue={defaultValue ?? ""} className={input}>
+      <select name={name} required defaultValue={defaultValue ?? ""} className={INPUT_CLASS}>
         <option value="" disabled>
           Elegí una persona
         </option>
@@ -126,7 +117,7 @@ function ObjectiveFields({ members, defaults }: { members: MemberOption[]; defau
   return (
     <>
       <Field label="Objetivo" hint="Ej.: Reducir los reclamos de clientes a menos del 2 % de los pedidos.">
-        <input name="title" required defaultValue={defaults?.title} className={input} />
+        <input name="title" required defaultValue={defaults?.title} className={INPUT_CLASS} />
       </Field>
       <fieldset className="flex flex-wrap gap-4 text-sm">
         <legend className="mb-1 font-medium">Normas</legend>
@@ -145,14 +136,14 @@ function ObjectiveFields({ members, defaults }: { members: MemberOption[]; defau
           defaultValue={defaults?.ownerUserId}
         />
         <Field label="Fecha de cumplimiento">
-          <input type="date" name="dueDate" required defaultValue={defaults?.dueDate} className={input} />
+          <input type="date" name="dueDate" required defaultValue={defaults?.dueDate} className={INPUT_CLASS} />
         </Field>
       </div>
       <Field label="Descripción" hint="Qué se quiere lograr y por qué importa.">
-        <textarea name="description" rows={2} defaultValue={defaults?.description} className={input} />
+        <textarea name="description" rows={2} defaultValue={defaults?.description} className={INPUT_CLASS} />
       </Field>
       <Field label="Plan" hint="Qué se va a hacer, con qué recursos y cómo se evalúan los resultados (§6.2.2).">
-        <textarea name="plan" rows={3} defaultValue={defaults?.plan} className={input} />
+        <textarea name="plan" rows={3} defaultValue={defaults?.plan} className={INPUT_CLASS} />
       </Field>
     </>
   );
@@ -210,14 +201,14 @@ export function CloseObjectiveForm({ slug, objectiveId }: { slug: string; object
       <summary className="cursor-pointer font-medium text-[var(--color-ink-muted)]">Cerrar objetivo</summary>
       <form {...form} className="mt-3 flex flex-col gap-3">
         <Field label="Resultado">
-          <select name="result" defaultValue="achieved" className={input}>
+          <select name="result" defaultValue="achieved" className={INPUT_CLASS}>
             <option value="achieved">Cumplido</option>
             <option value="not_achieved">No cumplido</option>
             <option value="cancelled">Cancelado</option>
           </select>
         </Field>
         <Field label="Comentario" hint="Qué pasó, o el motivo si se cancela.">
-          <textarea name="note" rows={2} required className={input} />
+          <textarea name="note" rows={2} required className={INPUT_CLASS} />
         </Field>
         <Feedback state={state} />
         <button type="submit" disabled={pending} className={secondary}>
@@ -246,17 +237,17 @@ function IndicatorFields({ members, defaults }: { members: MemberOption[]; defau
   return (
     <>
       <Field label="Indicador" hint="Ej.: Reclamos por cada 100 pedidos.">
-        <input name="name" required defaultValue={defaults?.name} className={input} />
+        <input name="name" required defaultValue={defaults?.name} className={INPUT_CLASS} />
       </Field>
       <Field label="Fórmula o método de cálculo" hint="Cómo se obtiene el valor y de qué registro sale.">
-        <textarea name="formula" rows={2} defaultValue={defaults?.formula} className={input} />
+        <textarea name="formula" rows={2} defaultValue={defaults?.formula} className={INPUT_CLASS} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label="Unidad" hint="%, casos, horas…">
-          <input name="unit" required defaultValue={defaults?.unit} className={input} />
+          <input name="unit" required defaultValue={defaults?.unit} className={INPUT_CLASS} />
         </Field>
         <Field label="Dirección">
-          <select name="direction" defaultValue={defaults?.direction ?? "higher_better"} className={input}>
+          <select name="direction" defaultValue={defaults?.direction ?? "higher_better"} className={INPUT_CLASS}>
             {(Object.keys(DIRECTION_LABELS) as IndicatorDirection[]).map((d) => (
               <option key={d} value={d}>
                 {DIRECTION_LABELS[d]}
@@ -265,7 +256,7 @@ function IndicatorFields({ members, defaults }: { members: MemberOption[]; defau
           </select>
         </Field>
         <Field label="Frecuencia">
-          <select name="frequency" defaultValue={defaults?.frequency ?? "monthly"} className={input}>
+          <select name="frequency" defaultValue={defaults?.frequency ?? "monthly"} className={INPUT_CLASS}>
             {(Object.keys(FREQUENCY_LABELS) as IndicatorFrequency[]).map((f) => (
               <option key={f} value={f}>
                 {FREQUENCY_LABELS[f]}
@@ -276,7 +267,7 @@ function IndicatorFields({ members, defaults }: { members: MemberOption[]; defau
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Meta">
-          <input name="target" inputMode="decimal" required defaultValue={defaults?.target} className={input} />
+          <input name="target" inputMode="decimal" required defaultValue={defaults?.target} className={INPUT_CLASS} />
         </Field>
         <Field
           label="Umbral de alerta (opcional)"
@@ -286,13 +277,13 @@ function IndicatorFields({ members, defaults }: { members: MemberOption[]; defau
             name="alertThreshold"
             inputMode="decimal"
             defaultValue={defaults?.alertThreshold}
-            className={input}
+            className={INPUT_CLASS}
           />
         </Field>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Tipo">
-          <select name="kind" defaultValue={defaults?.kind ?? "lagging"} className={input}>
+          <select name="kind" defaultValue={defaults?.kind ?? "lagging"} className={INPUT_CLASS}>
             {(Object.keys(KIND_LABELS) as IndicatorKind[]).map((k) => (
               <option key={k} value={k}>
                 {KIND_LABELS[k]} — {KIND_HINTS[k]}

@@ -12,6 +12,9 @@ Source of truth: `src/styles/tokens.css` (tokens), `src/app/globals.css` (Tailwi
 `src/app/layout.tsx` (fonts), `src/components/shell/*` (shell + persona theme).
 If this file and those disagree, the code wins — then update this file.
 
+Shared UI primitives in `src/components/ui/*`: P0 (PageFrame, PageHeader, StatTile/StatGrid, StatusChip, Field, EmptyState) and P1 (SectionBlock, EntityList/EntityRow, HintCallout, FormError). Prefer these over ad-hoc markup when adding or migrating pages.
+
+
 ## Hard rules
 
 1. **Only defined tokens.** Colors, spacing, radius, shadow and motion come from `tokens.css`

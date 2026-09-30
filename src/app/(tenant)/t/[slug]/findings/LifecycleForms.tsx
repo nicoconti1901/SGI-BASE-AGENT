@@ -1,5 +1,7 @@
 "use client";
 
+import { Field, INPUT_CLASS } from "@/components/ui";
+
 import { useActionState } from "react";
 import {
   addMeasureAction,
@@ -12,8 +14,6 @@ import {
 } from "@/app/(tenant)/t/[slug]/findings/lifecycle-actions";
 
 const initial: LifecycleActionState = {};
-const input =
-  "rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm";
 const primary =
   "self-start rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-60";
 const secondary =
@@ -49,15 +49,6 @@ export function Feedback({ state }: { state: LifecycleActionState }) {
   return null;
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
-      {children}
-      {hint ? <span className="text-xs text-[var(--color-ink-muted)]">{hint}</span> : null}
-    </label>
-  );
-}
 
 export function StartMeasureButton({
   slug,
@@ -123,7 +114,7 @@ export function VerifyForm({
           name="evidence"
           rows={3}
           placeholder="Ej.: se inspeccionaron 12 trabajos en altura de octubre; todos con permiso verificado en campo y línea de vida instalada."
-          className={input}
+          className={INPUT_CLASS}
         />
       </Field>
       {early ? (
@@ -131,7 +122,7 @@ export function VerifyForm({
           label="Motivo para verificar antes de lo programado"
           hint={dueLabel ? `La verificación está programada para el ${dueLabel}.` : undefined}
         >
-          <input name="earlyReason" placeholder="Ej.: el proceso tiene ciclo semanal y ya pasaron 4 ciclos" className={input} />
+          <input name="earlyReason" placeholder="Ej.: el proceso tiene ciclo semanal y ya pasaron 4 ciclos" className={INPUT_CLASS} />
         </Field>
       ) : null}
       {soleOwner ? (
@@ -139,7 +130,7 @@ export function VerifyForm({
           label="Sos responsable de todas las medidas: justificá por qué verificás vos"
           hint="Lo recomendable es que verifique otra persona."
         >
-          <input name="independenceException" placeholder="Ej.: única persona de SST en la planta" className={input} />
+          <input name="independenceException" placeholder="Ej.: única persona de SST en la planta" className={INPUT_CLASS} />
         </Field>
       ) : null}
       <Feedback state={state} />
@@ -168,7 +159,7 @@ export function RescheduleForm({
       <summary className="cursor-pointer text-[var(--color-ink-muted)]">Cambiar la fecha de verificación</summary>
       <form action={action} className="mt-2 flex flex-wrap items-end gap-2">
         <Field label="Nueva fecha">
-          <input type="date" name="dueAt" defaultValue={current} required className={input} />
+          <input type="date" name="dueAt" defaultValue={current} required className={INPUT_CLASS} />
         </Field>
         <button type="submit" disabled={pending} className={secondary}>
           Reprogramar
@@ -212,7 +203,7 @@ export function ReasonForm({
       <summary className="cursor-pointer text-[var(--color-ink-muted)]">{copy.summary}</summary>
       <form action={action} className="mt-2 flex flex-col gap-2">
         <Field label={copy.label}>
-          <input name="reason" required placeholder={copy.placeholder} className={input} />
+          <input name="reason" required placeholder={copy.placeholder} className={INPUT_CLASS} />
         </Field>
         <Feedback state={state} />
         <button type="submit" disabled={pending} className={secondary}>
@@ -241,13 +232,13 @@ export function AddMeasureForm({
       <summary className="cursor-pointer text-sm font-medium">Agregar medida</summary>
       <form action={action} className="mt-3 grid gap-3 sm:grid-cols-2">
         <Field label="Tipo">
-          <select name="kind" defaultValue="corrective" className={input}>
+          <select name="kind" defaultValue="corrective" className={INPUT_CLASS}>
             <option value="corrective">Correctiva</option>
             <option value="preventive">Preventiva</option>
           </select>
         </Field>
         <Field label="Responsable">
-          <select name="ownerUserId" required className={input}>
+          <select name="ownerUserId" required className={INPUT_CLASS}>
             {members.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.name}
@@ -257,11 +248,11 @@ export function AddMeasureForm({
         </Field>
         <div className="sm:col-span-2">
           <Field label="Qué se va a hacer">
-            <input name="title" required placeholder="Ej.: instalar línea de vida fija en nave 3" className={input} />
+            <input name="title" required placeholder="Ej.: instalar línea de vida fija en nave 3" className={INPUT_CLASS} />
           </Field>
         </div>
         <Field label="Vence" hint="Obligatorio para medidas correctivas.">
-          <input type="date" name="dueAt" className={input} />
+          <input type="date" name="dueAt" className={INPUT_CLASS} />
         </Field>
         <label className="flex items-center gap-2 self-end text-sm">
           <input type="checkbox" name="linkedRootCause" defaultChecked={highlight} />
