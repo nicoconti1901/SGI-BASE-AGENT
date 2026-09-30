@@ -23,8 +23,10 @@ export function PageHeader({
   return (
     <header className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
-        <p className="text-sm text-[var(--color-ink-muted)]">{eyebrow}</p>
-        <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl tracking-tight">
+        <p className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+          {eyebrow}
+        </p>
+        <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight">
           {title}
         </h1>
         {purpose ? (
@@ -34,7 +36,7 @@ export function PageHeader({
           <p className="mt-2">
             <Link
               href={guideHref}
-              className="text-sm text-[var(--color-accent)] hover:underline"
+              className="text-sm font-medium text-[var(--color-accent)] hover:underline"
             >
               {guideLabel}
             </Link>
