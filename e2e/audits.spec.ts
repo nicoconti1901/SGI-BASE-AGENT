@@ -9,7 +9,7 @@ async function quickLogin(page: Page, account: RegExp) {
 
 async function createAudit(page: Page, title: string) {
   await page.goto("/t/tisico/audits");
-  await page.getByRole("link", { name: "Planificar auditoría" }).click();
+  await page.getByRole("link", { name: "Planificar auditoría", exact: true }).click();
   await page.getByLabel("Título").fill(title);
   await page.getByLabel("Inicio").fill("2099-03-10");
   await page.getByLabel("Fin").fill("2099-03-11");
@@ -52,7 +52,7 @@ test("consulta ve el programa pero no puede planificar", async ({ page }) => {
   await quickLogin(page, /Elena Consulta/);
   await page.goto("/t/tisico/audits");
   await expect(page.getByRole("heading", { name: "Auditorías internas" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Planificar auditoría" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Planificar auditoría", exact: true })).toHaveCount(0);
   await page.goto("/t/tisico/audits/new");
   await expect(page).toHaveURL(/\/t\/tisico\/audits$/);
 });

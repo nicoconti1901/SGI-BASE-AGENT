@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   aggregateStatus,
   correctionIssues,
+  dashboardCounts,
   indicatorDefinitionIssues,
   measurementDueAt,
   measurementIssues,
   measurementStatus,
   nextPendingPeriod,
   objectiveCode,
+  pendingLoad,
   periodOf,
   previousPeriod,
 } from "@/domain/indicators/rules";
@@ -117,5 +119,37 @@ describe("loading rules", () => {
 
   it("formats objective codes", () => {
     expect(objectiveCode(2026, 4)).toBe("OBJ-2026-04");
+  });
+});
+
+describe("dashboard rules", () => {
+  it("marks a load overdue only after the 10-day grace period", () => {
+    const base = { frequency: "monthly" as const, lastLoadedStart: null, createdAt: new Date("2026-08-15T00:00:00Z") };
+    // Período pendiente: agosto → vence el 11 de septiembre.
+    expect(pendingLoad({ ...base, now: new Date("2026-09-11T00:00:00Z") }).overdue).toBe(false);
+    const late = pendingLoad({ ...base, now: new Date("2026-09-12T00:00:00Z") });
+    expect(late.overdue).toBe(true);
+    expect(late.period.key).toBe("2026-08");
+  });
+
+  it("moves to the following period after a load", () => {
+    const load = pendingLoad({
+      frequency: "monthly",
+      lastLoadedStart: new Date("2026-08-01T00:00:00Z"),
+      createdAt: new Date("2026-01-01T00:00:00Z"),
+      now: new Date("2026-09-05T00:00:00Z"),
+    });
+    expect(load.period.key).toBe("2026-09");
+    expect(load.overdue).toBe(false);
+  });
+
+  it("counts active objectives by their worst indicator and sums overdue loads", () => {
+    const counts = dashboardCounts([
+      { status: "active", indicatorStatuses: ["on_target", "alert"], overdueLoads: 1 },
+      { status: "active", indicatorStatuses: ["off_target", "on_target"], overdueLoads: 0 },
+      { status: "active", indicatorStatuses: [], overdueLoads: 2 },
+      { status: "achieved", indicatorStatuses: ["off_target"], overdueLoads: 5 },
+    ]);
+    expect(counts).toEqual({ on_target: 0, alert: 1, off_target: 1, no_data: 1, overdueLoads: 3 });
   });
 });
