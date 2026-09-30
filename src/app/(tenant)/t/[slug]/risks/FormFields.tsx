@@ -38,11 +38,13 @@ export function Field({
 export function SourceFields({
   findings,
   sourceRequired = true,
+  initial,
 }: {
   findings: FindingOpt[];
   sourceRequired?: boolean;
+  initial?: { kind?: SourceKind; label?: string; findingId?: string };
 }) {
-  const [kind, setKind] = useState<SourceKind>("process");
+  const [kind, setKind] = useState<SourceKind>(initial?.kind ?? "process");
   const guidance = SOURCE_GUIDANCE[kind];
 
   return (
@@ -67,6 +69,7 @@ export function SourceFields({
       <Field label="¿Cuál?" hint={FIELD_HINTS.sourceLabel}>
         <input
           name="sourceLabel"
+          defaultValue={initial?.label}
           required={sourceRequired}
           placeholder={`Ej.: ${guidance.example}`}
           className={inputClass}
@@ -74,7 +77,7 @@ export function SourceFields({
       </Field>
       {findings.length > 0 ? (
         <Field label="Hallazgo relacionado (opcional)">
-          <select name="findingId" defaultValue="" className={inputClass}>
+          <select name="findingId" defaultValue={initial?.findingId ?? ""} className={inputClass}>
             <option value="">— Ninguno —</option>
             {findings.map((f) => (
               <option key={f.id} value={f.id}>

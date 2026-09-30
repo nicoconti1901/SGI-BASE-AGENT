@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useKeepInputs } from "@/lib/use-keep-inputs";
 import {
   executorTransitionAction,
   saveAuditReportAction,
@@ -33,8 +34,9 @@ export function TransitionButton({
     executorTransitionAction.bind(null, slug, auditId, to),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   return (
-    <form action={action} className="flex flex-col gap-2">
+    <form {...actionForm} className="flex flex-col gap-2">
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={primaryStyle ? primary : secondary}>
         {label}
@@ -64,8 +66,9 @@ export function AuditReportForm({
     saveAuditReportAction.bind(null, slug, auditId),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form {...actionForm} className="flex flex-col gap-4">
       <p className="rounded-[var(--radius-md)] bg-[var(--color-accent-soft)] px-3 py-2 text-sm text-[var(--color-accent-ink)]">
         El objetivo era: <strong>{objective}</strong>. ¿Qué respondés con la evidencia reunida?
       </p>

@@ -5,6 +5,7 @@ import {
   exploreContextAction,
   type RoActionState,
 } from "@/app/(tenant)/t/[slug]/risks/actions";
+import type { SourceKind } from "@/domain/risks/types";
 import {
   OpportunityFields,
   RiskStatementFields,
@@ -17,9 +18,11 @@ const initial: RoActionState = {};
 export function ExploreContextForm({
   slug,
   findings,
+  initialSource,
 }: {
   slug: string;
   findings: FindingOpt[];
+  initialSource?: { kind?: SourceKind; label?: string; findingId?: string };
 }) {
   const action = exploreContextAction.bind(null, slug);
   const [state, formAction, pending] = useActionState(action, initial);
@@ -34,7 +37,7 @@ export function ExploreContextForm({
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 font-medium">1. ¿De dónde partís?</legend>
-        <SourceFields findings={findings} />
+        <SourceFields findings={findings} initial={initialSource} />
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">

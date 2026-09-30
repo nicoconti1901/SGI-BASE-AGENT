@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useKeepInputs } from "@/lib/use-keep-inputs";
 import {
   addCustomQuestionAction,
   recordItemResultAction,
@@ -53,6 +54,7 @@ export function ChecklistBuilder({
     setRequirementItemsAction.bind(null, slug, auditId),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   const [selected, setSelected] = useState(new Set(selectedIds));
   const standards = [...new Set(candidates.map((c) => c.standard))];
 
@@ -66,7 +68,7 @@ export function ChecklistBuilder({
 
   return (
     <div className="flex flex-col gap-6">
-      <form action={action} className="flex flex-col gap-3">
+      <form {...actionForm} className="flex flex-col gap-3">
         <p className="rounded-[var(--radius-md)] bg-[var(--color-accent-soft)] px-3 py-2 text-sm text-[var(--color-accent-ink)]">
           ¿Qué requisitos cubre el alcance de esta auditoría? No hace falta auditar todo en cada
           auditoría: el programa del año es el que cubre el sistema completo.
@@ -131,6 +133,7 @@ function CustomQuestions({
     addCustomQuestionAction.bind(null, slug, auditId),
     initial,
   );
+  const actionForm = useKeepInputs(action, state, { resetOnSuccess: true });
   return (
     <div className="flex flex-col gap-2">
       <h3 className="text-sm font-semibold">Preguntas propias</h3>
@@ -148,7 +151,7 @@ function CustomQuestions({
           ))}
         </ul>
       ) : null}
-      <form action={action} className="flex flex-col gap-2 sm:flex-row">
+      <form {...actionForm} className="flex flex-col gap-2 sm:flex-row">
         <input
           name="question"
           aria-label="Nueva pregunta"
@@ -176,8 +179,9 @@ export function StartAuditForm({
   early: boolean;
 }) {
   const [state, action, pending] = useActionState(startAuditAction.bind(null, slug, auditId), initial);
+  const actionForm = useKeepInputs(action, state);
   return (
-    <form action={action} className="flex flex-col gap-2">
+    <form {...actionForm} className="flex flex-col gap-2">
       {early ? (
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium">Motivo para adelantar el inicio</span>
@@ -248,6 +252,7 @@ export function ChecklistItemCard({
     recordItemResultAction.bind(null, slug, auditId, item.id),
     initial,
   );
+  const actionForm = useKeepInputs(action, state);
   const [result, setResult] = useState<AuditItemResult>(item.result);
   const findingPublished =
     Boolean(item.findingId) && item.findingStatus !== "draft" && item.findingStatus !== "cancelled";
@@ -289,7 +294,7 @@ export function ChecklistItemCard({
           <p className="text-sm text-[var(--color-ink-muted)]">Evidencia: {item.evidence}</p>
         ) : null
       ) : (
-        <form action={action} className="flex flex-col gap-2">
+        <form {...actionForm} className="flex flex-col gap-2">
           <fieldset className="flex flex-wrap gap-2">
             <legend className="sr-only">Resultado</legend>
             {RESULT_OPTIONS.map((r) => (
@@ -352,6 +357,7 @@ function EvidenceFiles({
     uploadAuditEvidenceAction.bind(null, slug, auditId, item.id),
     initial,
   );
+  const actionForm = useKeepInputs(action, state, { resetOnSuccess: true });
   if (!canUpload && item.attachments.length === 0) return null;
   return (
     <div className="flex flex-col gap-2 text-sm">
@@ -370,7 +376,7 @@ function EvidenceFiles({
         </ul>
       ) : null}
       {canUpload ? (
-        <form action={action} className="flex flex-wrap items-center gap-2">
+        <form {...actionForm} className="flex flex-wrap items-center gap-2">
           <input type="file" name="file" aria-label="Archivo de evidencia" className="text-xs" />
           <button type="submit" disabled={pending} className={secondary}>
             {pending ? "Subiendo…" : "Adjuntar evidencia"}
