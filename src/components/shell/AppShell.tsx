@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { NavLinks } from "@/components/shell/NavLinks";
 import { SignOutButton } from "@/components/shell/SignOutButton";
+import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { PERSONA_THEME, type NavItem } from "@/components/shell/nav-config";
+import { StatusChip } from "@/components/ui";
 import { PERSONA_LABELS, type Persona } from "@/domain/identity/persona";
 
 export type ShellIdentity = {
@@ -39,7 +41,7 @@ export function AppShell({
       >
         <div className={`h-1.5 ${theme.accent}`} aria-hidden />
         <div className="border-b border-white/10 px-5 py-6">
-          <Link href="/portal" className="font-[family-name:var(--font-display)] text-2xl tracking-tight">
+          <Link href="/portal" className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight">
             SGI Base
           </Link>
           <p className="mt-1 truncate text-sm font-semibold opacity-90" title={contextLabel}>
@@ -67,7 +69,7 @@ export function AppShell({
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] bg-[var(--color-surface)] px-6 py-3">
           <div className="flex min-w-0 flex-wrap items-center gap-3">
             <span
-              className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-white ${theme.accent}`}
+              className={`rounded-[var(--radius-sm)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-on-solid)] ${theme.accent}`}
             >
               {PERSONA_LABELS[identity.persona]}
             </span>
@@ -77,18 +79,17 @@ export function AppShell({
                 {identity.email} · {identity.roleLabel}
               </p>
             </div>
-            <span
-              title={identity.capabilities.items.join(" · ")}
-              className={`rounded-[var(--radius-sm)] px-2 py-1 text-xs font-semibold ${
-                identity.capabilities.canEdit
-                  ? "bg-[var(--color-success-soft)] text-[var(--color-success)]"
-                  : "bg-[var(--color-warning-soft)] text-[var(--color-warning)]"
-              }`}
-            >
-              {identity.capabilities.canEdit ? "Puede editar" : "Solo lectura"}
+            <span title={identity.capabilities.items.join(" · ")}>
+              <StatusChip
+                status={identity.capabilities.canEdit ? "ok" : "warning"}
+                label={identity.capabilities.canEdit ? "Puede editar" : "Solo lectura"}
+              />
             </span>
           </div>
-          <SignOutButton />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <SignOutButton />
+          </div>
         </header>
         <main id="contenido-principal" className="flex-1 px-6 py-8">
           {children}

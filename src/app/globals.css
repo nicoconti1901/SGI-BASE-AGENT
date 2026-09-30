@@ -20,7 +20,39 @@ body {
 }
 
 a:focus-visible,
-button:focus-visible {
+button:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* Entrada suave de bloques (opacity + 6px, 220ms). */
+@keyframes sgi-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.sgi-enter {
+  animation: sgi-enter var(--duration-med) var(--ease-out) both;
+  animation-delay: calc(var(--sgi-i, 0) * 30ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sgi-enter {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: var(--duration-instant) !important;
+  }
 }

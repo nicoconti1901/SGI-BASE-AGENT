@@ -4,7 +4,7 @@ import { signOutAction } from "@/app/auth-actions";
 export function SignOutButton({ tone = "light" }: { tone?: "light" | "dark" }) {
   const toneClass =
     tone === "dark"
-      ? "border-white/30 text-white hover:bg-white/10"
+      ? "border-white/30 text-[var(--color-platform-rail-ink)] hover:bg-white/10"
       : "border-[var(--color-line-strong)] text-[var(--color-ink)] hover:border-[var(--color-danger)] hover:text-[var(--color-danger)]";
 
   return (
