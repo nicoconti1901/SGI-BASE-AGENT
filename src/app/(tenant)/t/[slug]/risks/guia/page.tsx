@@ -35,7 +35,7 @@ export default async function RisksGuidePage({
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="rounded-full border border-[var(--color-line)] px-3 py-1 hover:border-[var(--color-accent)]"
+              className="rounded-[var(--radius-sm)] border border-[var(--color-line)] px-3 py-1 hover:border-[var(--color-accent)]"
             >
               {s.title}
             </a>

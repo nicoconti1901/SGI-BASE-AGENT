@@ -73,7 +73,7 @@ export function FindingDocUploadForm({
           required
           onChange={onChange}
           accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt,image/png,image/jpeg,application/pdf"
-          className="block w-full text-sm file:mr-3 file:rounded-[var(--radius-md)] file:border-0 file:bg-[var(--color-accent)] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+          className="block w-full text-sm file:mr-3 file:rounded-[var(--radius-md)] file:border-0 file:bg-[var(--color-accent)] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[var(--color-on-solid)]"
         />
       </label>
       <SelectedFileHint file={file} />
@@ -98,7 +98,7 @@ export function FindingDocUploadForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-fit rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+        className="w-fit rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-on-solid)] disabled:opacity-60"
       >
         {pending ? "Subiendo…" : "Adjuntar documentación"}
       </button>
@@ -143,7 +143,7 @@ export function CloseMeasureWithEvidenceForm({
           required
           onChange={onChange}
           accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt,image/png,image/jpeg,application/pdf"
-          className="block w-full text-xs file:mr-2 file:rounded-[var(--radius-sm)] file:border-0 file:bg-[var(--color-accent)] file:px-2.5 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+          className="block w-full text-xs file:mr-2 file:rounded-[var(--radius-sm)] file:border-0 file:bg-[var(--color-accent)] file:px-2.5 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--color-on-solid)]"
         />
         <SelectedFileHint file={file} />
         <input
@@ -164,7 +164,7 @@ export function CloseMeasureWithEvidenceForm({
         <button
           type="submit"
           disabled={pending}
-          className="w-fit rounded-[var(--radius-md)] bg-[var(--color-success)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="w-fit rounded-[var(--radius-md)] bg-[var(--color-success)] px-4 py-2 text-sm font-semibold text-[var(--color-on-solid)] disabled:opacity-60"
         >
           {pending ? "Cerrando…" : "Confirmar cierre"}
         </button>

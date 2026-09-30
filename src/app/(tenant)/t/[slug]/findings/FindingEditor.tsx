@@ -427,7 +427,7 @@ export function FindingEditor({
           <button
             type="submit"
             disabled={publishPending || blockers.length > 0}
-            className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--color-on-solid)] disabled:opacity-60"
           >
             {publishPending ? "Publicando…" : "Publicar hallazgo"}
           </button>

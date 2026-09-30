@@ -68,7 +68,7 @@ export function ExploreContextForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+        className="self-start rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)] disabled:opacity-60"
       >
         {pending ? "Guardando…" : "Registrar"}
       </button>

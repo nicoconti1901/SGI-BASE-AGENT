@@ -144,7 +144,7 @@ export function UploadDocumentForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+        className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--color-on-solid)] disabled:opacity-60"
       >
         {pending ? "Subiendo…" : "Subir"}
       </button>

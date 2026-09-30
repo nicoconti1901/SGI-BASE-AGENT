@@ -71,7 +71,7 @@ export default async function RisksWorkspacePage({
               <Link
                 href={`/t/${slug}/risks/explore`}
                 title="Partí de un proceso, proveedor o cambio y anotá lo que surja"
-                className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white"
+                className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)]"
               >
                 Explorar una fuente
               </Link>

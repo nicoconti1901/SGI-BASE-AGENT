@@ -15,7 +15,7 @@ import {
 
 const initial: LifecycleActionState = {};
 const primary =
-  "self-start rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-60";
+  "self-start rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-on-solid)] hover:bg-[var(--color-accent-hover)] disabled:opacity-60";
 const secondary =
   "self-start rounded-[var(--radius-md)] border border-[var(--color-line-strong)] px-3 py-1.5 text-sm font-medium disabled:opacity-60";
 

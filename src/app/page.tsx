@@ -48,7 +48,7 @@ export default async function Home() {
         <div className="relative">
           <Link
             href="/login"
-            className="inline-block rounded-[var(--radius-md)] bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-white transition duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-[var(--color-accent-hover)]"
+            className="inline-block rounded-[var(--radius-md)] bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-[var(--color-on-solid)] transition duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-[var(--color-accent-hover)]"
           >
             Iniciar sesión
           </Link>
@@ -74,7 +74,7 @@ function CurrentSession({
     <div className="relative flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
       <div className="flex flex-wrap items-center gap-3">
         <span
-          className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-white ${theme.accent}`}
+          className={`rounded-[var(--radius-sm)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-on-solid)] ${theme.accent}`}
         >
           {PERSONA_LABELS[persona]}
         </span>
@@ -86,7 +86,7 @@ function CurrentSession({
       <div className="flex items-center gap-2">
         <Link
           href="/portal"
-          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--color-accent-hover)]"
+          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-on-solid)] hover:bg-[var(--color-accent-hover)]"
         >
           Continuar →
         </Link>

@@ -13,7 +13,7 @@ import { AUDIT_ITEM_RESULT_LABELS } from "@/domain/audits/types";
 const input =
   "rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm";
 const primary =
-  "self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60";
+  "self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)] disabled:opacity-60";
 const secondary =
   "self-start rounded-md border border-[var(--color-line)] px-4 py-2 text-sm font-medium disabled:opacity-60";
 

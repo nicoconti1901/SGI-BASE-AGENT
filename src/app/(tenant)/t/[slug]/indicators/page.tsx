@@ -92,7 +92,7 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
           canManage ? (
             <Link
               href={`/t/${slug}/indicators/new`}
-              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white"
+              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)]"
             >
               Nuevo objetivo
             </Link>

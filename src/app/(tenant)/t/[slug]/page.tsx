@@ -10,11 +10,16 @@ import type { DueTone } from "@/domain/dashboard/summary";
 import {
   PageFrame,
   PageHeader,
-  StatGrid,
   StatTile,
   StatusChip,
   EmptyState,
   SectionBlock,
+  DashboardStrip,
+  StripExtra,
+  StripKpis,
+  DueRail,
+  DueCard,
+  type ChipStatus,
 } from "@/components/ui";
 
 type Params = Promise<{ slug: string }>;
@@ -29,10 +34,17 @@ const COMPLIANCE_SEGMENTS: { status: RequirementStatus; color: string }[] = [
   { status: "not_applicable", color: "var(--color-line-strong)" },
 ];
 
-const DUE_TONE_CHIP: Record<DueTone, string> = {
-  overdue: "bg-[var(--color-danger-soft)] text-[var(--color-danger)]",
-  soon: "bg-[var(--color-warning-soft)] text-[var(--color-warning)]",
-  ok: "bg-[var(--color-success-soft)] text-[var(--color-success)]",
+/** "Pendiente" se distingue por patrón (rayado) además de color. */
+function segmentBackground(status: RequirementStatus, color: string): string {
+  return status === "pending"
+    ? `repeating-linear-gradient(135deg, ${color} 0 3px, transparent 3px 6px)`
+    : color;
+}
+
+const DUE_TONE_STATUS: Record<DueTone, ChipStatus> = {
+  overdue: "overdue",
+  soon: "warning",
+  ok: "ok",
 };
 
 function dueChipText(tone: DueTone, daysLeft: number): string {
@@ -113,136 +125,118 @@ export default async function TenantPortalBySlugPage({
 
   return (
     <PageFrame>
+      <DashboardStrip aria-label="Panel de control">
+        <div className="flex flex-col lg:flex-row">
+          <div className="min-w-0 lg:flex-1">
+            <StripKpis aria-label="Resumen">
+              <StatTile
+                label="Cumplimiento"
+                value={compliance.percent === null ? "—" : `${compliance.percent}%`}
+              />
+              <StatTile
+                label="Requisitos conformes"
+                value={`${compliance.conforming} de ${compliance.applicable}`}
+              />
+              <StatTile
+                label="Vencidos"
+                value={String(dueCounts.overdue)}
+                tone={dueCounts.overdue > 0 ? "danger" : "default"}
+              />
+              <StatTile
+                label="Próximos a vencer"
+                value={String(dueCounts.soon)}
+                tone={dueCounts.soon > 0 ? "warning" : "default"}
+              />
+            </StripKpis>
+          </div>
+          <StripExtra className="border-t border-[var(--color-line)] px-4 py-3 lg:w-80 lg:shrink-0 lg:border-l lg:border-t-0">
+            <h2 className="font-[family-name:var(--font-mono)] text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+              Cumplimiento de requisitos
+            </h2>
+            {compliance.total === 0 ? (
+              <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+                Todavía no hay requisitos ISO asignados.{" "}
+                <span className="font-medium text-[var(--color-ink)]">Qué hacer:</span> pedile al
+                administrador de plataforma que cargue el relevamiento inicial (gap).
+              </p>
+            ) : (
+              <>
+                <div
+                  className="mt-2 flex h-2 overflow-hidden rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface-sunken)]"
+                  role="img"
+                  aria-label={`Distribución de ${compliance.total} requisitos por estado`}
+                >
+                  {COMPLIANCE_SEGMENTS.filter((seg) => compliance.byStatus[seg.status] > 0).map((seg) => (
+                    <span
+                      key={seg.status}
+                      style={{
+                        width: `${(compliance.byStatus[seg.status] / compliance.total) * 100}%`,
+                        background: segmentBackground(seg.status, seg.color),
+                      }}
+                    />
+                  ))}
+                </div>
+                <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                  {COMPLIANCE_SEGMENTS.map((seg) => (
+                    <li key={seg.status} className="flex items-center gap-1.5">
+                      <span
+                        aria-hidden
+                        className="h-2 w-2 rounded-[2px]"
+                        style={{ background: segmentBackground(seg.status, seg.color) }}
+                      />
+                      <span className="text-[var(--color-ink-muted)]">{GAP_STATUS_LABELS[seg.status]}</span>
+                      <span className="font-semibold tabular-nums">{compliance.byStatus[seg.status]}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </StripExtra>
+        </div>
+        <StripExtra>
+          {dueItems.length === 0 ? (
+            <div className="border-t border-[var(--color-line)] p-4">
+              <EmptyState
+                what="No hay vencimientos abiertos."
+                next="Se generan solos al fijar fechas en hallazgos, acciones, riesgos, auditorías e indicadores."
+              />
+            </div>
+          ) : (
+            <DueRail
+              action={
+                <Link
+                  href={`${base}/automations`}
+                  className="text-sm font-medium text-[var(--color-accent)] hover:underline"
+                >
+                  Ver todos ({dueCounts.open}) →
+                </Link>
+              }
+            >
+              {dueItems.map((item) => (
+                <DueCard
+                  key={item.id}
+                  date={item.dueAt.toISOString().slice(0, 10)}
+                  kind={item.typeLabel}
+                  title={item.title}
+                  href={item.href}
+                  chip={
+                    <StatusChip
+                      status={DUE_TONE_STATUS[item.tone]}
+                      label={dueChipText(item.tone, item.daysLeft)}
+                    />
+                  }
+                />
+              ))}
+            </DueRail>
+          )}
+        </StripExtra>
+      </DashboardStrip>
+
       <PageHeader
         eyebrow={`${tenant.name} · ISO 9001 · 14001 · 45001`}
         title={`Hola, ${firstName}`}
         purpose="Estado del sistema de gestión: cuánto de lo exigido ya cumplen y qué vence primero."
       />
-
-      <StatGrid cols={4} aria-label="Resumen">
-        <StatTile
-          label="Cumplimiento"
-          value={compliance.percent === null ? "—" : `${compliance.percent}%`}
-        />
-        <StatTile
-          label="Requisitos conformes"
-          value={`${compliance.conforming} de ${compliance.applicable}`}
-        />
-        <StatTile
-          label="Vencidos"
-          value={String(dueCounts.overdue)}
-          tone={dueCounts.overdue > 0 ? "danger" : "default"}
-        />
-        <StatTile
-          label="Próximos a vencer"
-          value={String(dueCounts.soon)}
-          tone={dueCounts.soon > 0 ? "warning" : "default"}
-        />
-      </StatGrid>
-
-      <SectionBlock title="Cumplimiento de requisitos">
-        {compliance.total === 0 ? (
-          <EmptyState
-            what="Todavía no hay requisitos ISO asignados a la empresa."
-            next="Pedile al administrador de plataforma que cargue el relevamiento inicial (gap)."
-          />
-        ) : (
-          <>
-            <p className="text-sm text-[var(--color-ink-muted)]">
-              {compliance.total} requisitos en seguimiento.{" "}
-              <span className="font-medium text-[var(--color-ink)]">Qué hacer:</span> atendé
-              primero los faltantes y los parciales.
-            </p>
-            <div
-              className="mt-1 flex h-3 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--color-line)]"
-              role="img"
-              aria-label={`Distribución de ${compliance.total} requisitos por estado`}
-            >
-              {COMPLIANCE_SEGMENTS.filter((s) => compliance.byStatus[s.status] > 0).map((s) => (
-                <span
-                  key={s.status}
-                  style={{
-                    width: `${(compliance.byStatus[s.status] / compliance.total) * 100}%`,
-                    background: s.color,
-                  }}
-                />
-              ))}
-            </div>
-            <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
-              {COMPLIANCE_SEGMENTS.map((s) => (
-                <li key={s.status} className="flex items-center gap-2">
-                  <span
-                    aria-hidden
-                    className="h-2.5 w-2.5 rounded-[2px]"
-                    style={{ background: s.color }}
-                  />
-                  <span className="text-[var(--color-ink-muted)]">{GAP_STATUS_LABELS[s.status]}</span>
-                  <span className="font-semibold tabular-nums">{compliance.byStatus[s.status]}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </SectionBlock>
-
-      <SectionBlock title="Próximos vencimientos">
-        <p className="-mt-1">
-          <Link
-            href={`${base}/automations`}
-            className="text-sm font-medium text-[var(--color-accent)] hover:underline"
-          >
-            Ver todos ({dueCounts.open}) →
-          </Link>
-        </p>
-        {dueItems.length === 0 ? (
-          <EmptyState
-            what="No hay vencimientos abiertos."
-            next="Se generan solos al fijar fechas en hallazgos, acciones, riesgos, auditorías e indicadores."
-          />
-        ) : (
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)]">
-            {dueItems.map((item) => {
-              const content = (
-                <>
-                  <span className="min-w-0">
-                    <span className="block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-muted)]">
-                      {item.typeLabel}
-                    </span>
-                    <span className="block truncate text-sm font-medium">{item.title}</span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-3">
-                    <time
-                      dateTime={item.dueAt.toISOString()}
-                      className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]"
-                    >
-                      {item.dueAt.toISOString().slice(0, 10)}
-                    </time>
-                    <StatusChip
-                      label={dueChipText(item.tone, item.daysLeft)}
-                      className={DUE_TONE_CHIP[item.tone]}
-                    />
-                  </span>
-                </>
-              );
-              const rowClass = "flex items-center justify-between gap-4 px-4 py-3";
-              return (
-                <li key={item.id}>
-                  {item.href ? (
-                    <Link
-                      href={item.href}
-                      className={`${rowClass} transition duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-[var(--color-accent-soft)]`}
-                    >
-                      {content}
-                    </Link>
-                  ) : (
-                    <div className={rowClass}>{content}</div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </SectionBlock>
 
       <SectionBlock title="Accesos">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -250,7 +244,7 @@ export default async function TenantPortalBySlugPage({
             <Link
               key={m.href}
               href={m.href}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4 transition duration-[var(--duration-med)] ease-[var(--ease-out)] hover:border-[var(--color-accent)]"
+              className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4 transition-[border-color,transform] duration-[var(--duration-med)] ease-[var(--ease-out)] hover:border-[var(--color-accent)] motion-safe:hover:-translate-y-0.5"
             >
               <h3 className="text-sm font-semibold">{m.title}</h3>
               <p className="mt-1 text-sm text-[var(--color-ink-muted)]">{m.body}</p>

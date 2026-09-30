@@ -30,7 +30,7 @@ export default async function LoginPage({
           <div className="flex items-center gap-2">
             <Link
               href="/portal"
-              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-2 font-semibold text-white"
+              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-2 font-semibold text-[var(--color-on-solid)]"
             >
               Continuar
             </Link>

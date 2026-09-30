@@ -173,7 +173,7 @@ export function LinkedActionsPanel({
           <button
             type="submit"
             disabled={createPending}
-            className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white disabled:opacity-60"
+            className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-[var(--color-on-solid)] disabled:opacity-60"
           >
             Agregar acción
           </button>
@@ -271,7 +271,7 @@ function EffectivenessForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-md bg-[var(--color-accent)] px-2 py-1 text-xs text-white"
+        className="self-start rounded-md bg-[var(--color-accent)] px-2 py-1 text-xs text-[var(--color-on-solid)]"
       >
         Guardar efectividad
       </button>
