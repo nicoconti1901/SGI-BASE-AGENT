@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { inviteTenantMember } from "../src/lib/identity";
 import { prisma } from "../src/lib/db";
+import { createTenantWithTemplate } from "../src/lib/tenant-provisioning";
 import type { TenantRole } from "@prisma/client";
 
 const USERS: Array<{
@@ -48,10 +49,9 @@ const USERS: Array<{
 ];
 
 async function main() {
-  const tenant = await prisma.tenant.findUnique({ where: { slug: "tisico" } });
-  if (!tenant) {
-    throw new Error('No existe el tenant con slug "tisico"');
-  }
+  const tenant =
+    (await prisma.tenant.findUnique({ where: { slug: "tisico" } })) ??
+    (await createTenantWithTemplate({ name: "Tisico", slug: "tisico", size: "small", activity: "servicios" }));
 
   console.log(`Tenant: ${tenant.name} (${tenant.slug})`);
 
