@@ -9,6 +9,17 @@ import {
 } from "@/domain/audits/types";
 import { ProgramForm } from "@/app/(tenant)/t/[slug]/audits/AuditForms";
 import { formatDate, loadAuditsAccess } from "@/app/(tenant)/t/[slug]/audits/access";
+import {
+  PageFrame,
+  PageHeader,
+  StatGrid,
+  StatTile,
+  StatusChip,
+  EmptyState,
+  SectionBlock,
+  EntityList,
+  EntityRow,
+} from "@/components/ui";
 
 const STATUS_TONE: Record<AuditStatus, string> = {
   planned: "bg-[var(--color-surface)] text-[var(--color-ink-muted)]",
@@ -43,30 +54,24 @@ export default async function AuditsPage({
   const showProgram = programa === "1";
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm text-[var(--color-ink-muted)]">ISO 9001 · 14001 · 45001 · §9.2</p>
-          <h1 className="font-[family-name:var(--font-display)] text-3xl tracking-tight">
-            Auditorías internas
-          </h1>
-          <Link
-            href={`/t/${slug}/audits/guia`}
-            className="mt-1 inline-block text-sm font-medium text-[var(--color-accent)] hover:underline"
-          >
-            Guía de auditoría interna →
-          </Link>
-        </div>
-        <nav aria-label="Año" className="flex items-center gap-3 text-sm">
-          <Link href={`/t/${slug}/audits?anio=${year - 1}`} className="text-[var(--color-accent)]">
-            ← {year - 1}
-          </Link>
-          <span className="font-semibold">{year}</span>
-          <Link href={`/t/${slug}/audits?anio=${year + 1}`} className="text-[var(--color-accent)]">
-            {year + 1} →
-          </Link>
-        </nav>
-      </header>
+    <PageFrame>
+      <PageHeader
+        eyebrow="ISO 9001 · 14001 · 45001 · §9.2"
+        title="Auditorías internas"
+        guideHref={`/t/${slug}/audits/guia`}
+        guideLabel="Guía de auditoría interna →"
+        actions={
+          <nav aria-label="Año" className="flex items-center gap-3 text-sm">
+            <Link href={`/t/${slug}/audits?anio=${year - 1}`} className="text-[var(--color-accent)]">
+              ← {year - 1}
+            </Link>
+            <span className="font-semibold">{year}</span>
+            <Link href={`/t/${slug}/audits?anio=${year + 1}`} className="text-[var(--color-accent)]">
+              {year + 1} →
+            </Link>
+          </nav>
+        }
+      />
 
       <section
         aria-label={`Programa ${year}`}
@@ -75,15 +80,14 @@ export default async function AuditsPage({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="font-[family-name:var(--font-display)] text-lg">Programa {year}</h2>
-            <span
-              className={`rounded px-2 py-0.5 text-xs font-semibold ${
+            <StatusChip
+              label={AUDIT_PROGRAM_STATUS_LABELS[status]}
+              className={
                 programApproved
                   ? "bg-[var(--color-success-soft)] text-[var(--color-success)]"
                   : "bg-[var(--color-warning-soft)] text-[var(--color-warning)]"
-              }`}
-            >
-              {AUDIT_PROGRAM_STATUS_LABELS[status]}
-            </span>
+              }
+            />
             {program?.approvedAt ? (
               <span className="text-xs text-[var(--color-ink-muted)]">
                 aprobado el {formatDate(program.approvedAt)}
@@ -129,172 +133,140 @@ export default async function AuditsPage({
               ) : null}
             </dl>
           ) : (
-            <p className="text-sm text-[var(--color-ink-muted)]">
-              El administrador de la empresa todavía no definió el programa de este año.
-            </p>
+            <EmptyState what="El administrador de la empresa todavía no definió el programa de este año." />
           )
         ) : null}
       </section>
 
       {coverage.length > 0 ? (
-        <section className="flex flex-col gap-3" aria-labelledby="cobertura">
-          <div>
-            <h2 id="cobertura" className="font-[family-name:var(--font-display)] text-xl">
-              Cobertura {year}
-            </h2>
-            <p className="text-sm text-[var(--color-ink-muted)]">
-              Requisitos de la empresa revisados en auditorías internas cerradas del año. El programa
-              debería cubrir el sistema completo en su ciclo.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+        <SectionBlock
+          id="cobertura"
+          title={`Cobertura ${year}`}
+          what="Requisitos de la empresa revisados en auditorías internas cerradas del año. El programa debería cubrir el sistema completo en su ciclo."
+        >
+          <StatGrid cols={3} aria-label={`Cobertura ${year}`}>
             {coverage.map((row) => {
               const pct = row.total ? Math.round((row.covered / row.total) * 100) : 0;
               return (
-                <div key={row.standard} className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-sm font-semibold">{AUDIT_STANDARD_LABELS[row.standard]}</span>
-                    <span className="text-2xl font-semibold tabular-nums">{pct}%</span>
-                  </div>
-                  <div
-                    className="mt-2 h-1.5 rounded-[var(--radius-sm)] bg-[var(--color-surface)]"
-                    role="progressbar"
-                    aria-valuenow={pct}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={`Cobertura ${AUDIT_STANDARD_LABELS[row.standard]}`}
-                  >
-                    <div
-                      className="h-full rounded-[var(--radius-sm)] bg-[var(--color-accent)]"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className="mt-1 text-xs tabular-nums text-[var(--color-ink-muted)]">
-                    {row.covered} de {row.total} requisitos
-                  </p>
-                </div>
+                <StatTile
+                  key={row.standard}
+                  label={`${AUDIT_STANDARD_LABELS[row.standard]} · ${row.covered} de ${row.total} requisitos`}
+                  value={`${pct}%`}
+                />
               );
             })}
-          </div>
-        </section>
+          </StatGrid>
+        </SectionBlock>
       ) : null}
 
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-[family-name:var(--font-display)] text-xl">Auditorías planificadas</h2>
-          {canPlan ? (
+      <SectionBlock title="Auditorías planificadas">
+        {canPlan ? (
+          <p>
             <Link
               href={`/t/${slug}/audits/new`}
-              className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white"
+              className="inline-block rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white"
             >
               Planificar auditoría
             </Link>
-          ) : null}
-        </div>
-        {audits.length === 0 ? (
-          <p className="text-sm text-[var(--color-ink-muted)]">
-            No hay auditorías planificadas para {year}.
           </p>
+        ) : null}
+        {audits.length === 0 ? (
+          <EmptyState what={`No hay auditorías planificadas para ${year}.`} />
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] rounded-md border border-[var(--color-line)]">
-            {audits.map((a) => (
-              <li key={a.id}>
-                <Link
+          <EntityList aria-label="Auditorías planificadas">
+            {audits.map((a) => {
+              const dateRange =
+                formatDate(a.plannedStart) +
+                (a.plannedEnd.getTime() !== a.plannedStart.getTime()
+                  ? ` – ${formatDate(a.plannedEnd)}`
+                  : "");
+              const standards = a.standards.length
+                ? a.standards.map((s) => AUDIT_STANDARD_LABELS[s]).join(", ")
+                : "Sin normas";
+              const meta = [
+                dateRange,
+                standards,
+                `Líder: ${nameOf(a.team[0]?.userId)}`,
+                a._count.findings ? `${a._count.findings} hallazgos` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ");
+              return (
+                <EntityRow
+                  key={a.id}
                   href={`/t/${slug}/audits/${a.id}`}
-                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 hover:bg-[var(--color-surface)]"
-                >
-                  <div className="min-w-0">
-                    <p>
-                      <span className="mr-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
-                        {a.code}
-                      </span>
-                      <span className="font-medium">{a.title}</span>
-                    </p>
-                    <p className="text-xs text-[var(--color-ink-muted)]">
-                      {formatDate(a.plannedStart)}
-                      {a.plannedEnd.getTime() !== a.plannedStart.getTime()
-                        ? ` – ${formatDate(a.plannedEnd)}`
-                        : ""}
-                      {" · "}
-                      {a.standards.length
-                        ? a.standards.map((s) => AUDIT_STANDARD_LABELS[s]).join(", ")
-                        : "Sin normas"}
-                      {" · Líder: "}
-                      {nameOf(a.team[0]?.userId)}
-                      {a._count.findings ? ` · ${a._count.findings} hallazgos` : ""}
-                    </p>
-                  </div>
-                  <span className={`rounded px-2 py-0.5 text-xs font-semibold ${STATUS_TONE[a.status]}`}>
-                    {AUDIT_STATUS_LABELS[a.status]}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                  kind={a.code}
+                  title={a.title}
+                  meta={meta}
+                  chip={
+                    <StatusChip
+                      label={AUDIT_STATUS_LABELS[a.status]}
+                      className={STATUS_TONE[a.status]}
+                    />
+                  }
+                />
+              );
+            })}
+          </EntityList>
         )}
-      </section>
+      </SectionBlock>
 
-      <section className="flex flex-col gap-3" aria-labelledby="externas">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 id="externas" className="font-[family-name:var(--font-display)] text-xl">
-              Auditorías externas
-            </h2>
-            <p className="text-sm text-[var(--color-ink-muted)]">
-              Certificadoras, clientes o autoridades. No forman parte del programa ni de la cobertura;
-              sus hallazgos se gestionan en Hallazgos.
-            </p>
-          </div>
-          {canPlan ? (
+      <SectionBlock
+        id="externas"
+        title="Auditorías externas"
+        what="Certificadoras, clientes o autoridades. No forman parte del programa ni de la cobertura; sus hallazgos se gestionan en Hallazgos."
+      >
+        {canPlan ? (
+          <p>
             <Link
               href={`/t/${slug}/audits/externas/new`}
-              className="rounded-md border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+              className="inline-block rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
             >
               Planificar auditoría externa
             </Link>
-          ) : null}
-        </div>
-        {externalAudits.length === 0 ? (
-          <p className="text-sm text-[var(--color-ink-muted)]">
-            No hay auditorías externas planificadas para {year}.
           </p>
+        ) : null}
+        {externalAudits.length === 0 ? (
+          <EmptyState what={`No hay auditorías externas planificadas para ${year}.`} />
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] rounded-md border border-[var(--color-line)]">
-            {externalAudits.map((a) => (
-              <li key={a.id}>
-                <Link
+          <EntityList aria-label="Auditorías externas">
+            {externalAudits.map((a) => {
+              const dateRange =
+                formatDate(a.plannedStart) +
+                (a.plannedEnd.getTime() !== a.plannedStart.getTime()
+                  ? ` – ${formatDate(a.plannedEnd)}`
+                  : "");
+              const meta = [
+                a.externalBody,
+                dateRange,
+                a.standards.length
+                  ? a.standards.map((s) => AUDIT_STANDARD_LABELS[s]).join(", ")
+                  : null,
+                a._count.findings ? `${a._count.findings} hallazgos` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ");
+              return (
+                <EntityRow
+                  key={a.id}
                   href={`/t/${slug}/audits/${a.id}`}
-                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 hover:bg-[var(--color-surface)]"
-                >
-                  <div className="min-w-0">
-                    <p>
-                      <span className="mr-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
-                        {a.code}
-                      </span>
-                      <span className="font-medium">{a.title}</span>
-                    </p>
-                    <p className="text-xs text-[var(--color-ink-muted)]">
-                      {a.externalBody}
-                      {" · "}
-                      {formatDate(a.plannedStart)}
-                      {a.plannedEnd.getTime() !== a.plannedStart.getTime()
-                        ? ` – ${formatDate(a.plannedEnd)}`
-                        : ""}
-                      {a.standards.length
-                        ? ` · ${a.standards.map((s) => AUDIT_STANDARD_LABELS[s]).join(", ")}`
-                        : ""}
-                      {a._count.findings ? ` · ${a._count.findings} hallazgos` : ""}
-                    </p>
-                  </div>
-                  <span className={`rounded px-2 py-0.5 text-xs font-semibold ${STATUS_TONE[a.status]}`}>
-                    {a.status === "closed" ? "Realizada" : AUDIT_STATUS_LABELS[a.status]}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                  kind={a.code}
+                  title={a.title}
+                  meta={meta}
+                  chip={
+                    <StatusChip
+                      label={
+                        a.status === "closed" ? "Realizada" : AUDIT_STATUS_LABELS[a.status]
+                      }
+                      className={STATUS_TONE[a.status]}
+                    />
+                  }
+                />
+              );
+            })}
+          </EntityList>
         )}
-      </section>
-    </div>
+      </SectionBlock>
+    </PageFrame>
   );
 }

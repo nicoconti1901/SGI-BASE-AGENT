@@ -11,6 +11,16 @@ import {
 import { AUDIT_STANDARD_LABELS, type AuditStandard } from "@/domain/audits/types";
 import { Sparkline } from "@/app/(tenant)/t/[slug]/indicators/Sparkline";
 import { formatDate, loadIndicatorsAccess } from "@/app/(tenant)/t/[slug]/indicators/access";
+import {
+  PageFrame,
+  PageHeader,
+  StatTile,
+  StatusChip,
+  EmptyState,
+  SectionBlock,
+  EntityList,
+  EntityRow,
+} from "@/components/ui";
 
 const STANDARD_ORDER: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
 
@@ -72,47 +82,49 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
   ];
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm text-[var(--color-ink-muted)]">ISO 9001 · 14001 · 45001 · §6.2 · §9.1</p>
-          <h1 className="font-[family-name:var(--font-display)] text-3xl tracking-tight">
-            Objetivos e indicadores
-          </h1>
-          <Link
-            href={`/t/${slug}/indicators/guia`}
-            className="mt-1 inline-block text-sm font-medium text-[var(--color-accent)] hover:underline"
-          >
-            Guía de objetivos e indicadores →
-          </Link>
-        </div>
-        {canManage ? (
-          <Link
-            href={`/t/${slug}/indicators/new`}
-            className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white"
-          >
-            Nuevo objetivo
-          </Link>
-        ) : null}
-      </header>
+    <PageFrame>
+      <PageHeader
+        eyebrow="ISO 9001 · 14001 · 45001 · §6.2 · §9.1"
+        title="Objetivos e indicadores"
+        guideHref={`/t/${slug}/indicators/guia`}
+        guideLabel="Guía de objetivos e indicadores →"
+        actions={
+          canManage ? (
+            <Link
+              href={`/t/${slug}/indicators/new`}
+              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white"
+            >
+              Nuevo objetivo
+            </Link>
+          ) : undefined
+        }
+      />
 
       {objectives.length === 0 ? (
-        <p className="text-sm text-[var(--color-ink-muted)]">
-          Todavía no hay objetivos.{" "}
-          {canManage
-            ? "Creá el primero y agregale los indicadores con los que vas a medirlo."
-            : "El administrador de la empresa todavía no los definió."}
-        </p>
+        <EmptyState
+          what="Todavía no hay objetivos."
+          next={
+            canManage
+              ? "Creá el primero y agregale los indicadores con los que vas a medirlo."
+              : "Pedile al administrador de la empresa que los defina."
+          }
+          action={
+            canManage
+              ? { href: `/t/${slug}/indicators/new`, label: "Nuevo objetivo" }
+              : undefined
+          }
+        />
       ) : (
         <>
-          <section aria-label="Resumen" className="grid gap-3 sm:grid-cols-5">
+          {/* StatGrid solo llega a 4 cols; el resumen de indicadores son 5 métricas. */}
+          <section aria-label="Resumen" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {metrics.map((m) => (
-              <div key={m.label} className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3">
-                <div className="text-2xl font-semibold tabular-nums">{m.value}</div>
-                <span className={`mt-1 inline-block rounded px-2 py-0.5 text-xs font-semibold ${m.tone}`}>
-                  {m.label}
-                </span>
-              </div>
+              <StatTile
+                key={m.label}
+                label={m.label}
+                value={m.value}
+                chip={<StatusChip label={m.label} className={m.tone} />}
+              />
             ))}
           </section>
           <p className="-mt-4 text-xs text-[var(--color-ink-muted)]">
@@ -120,10 +132,11 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
           </p>
 
           {groups.map((g) => (
-            <section key={g.standard} className="flex flex-col gap-3" aria-labelledby={`norma-${g.standard}`}>
-              <h2 id={`norma-${g.standard}`} className="font-[family-name:var(--font-display)] text-xl">
-                {AUDIT_STANDARD_LABELS[g.standard]}
-              </h2>
+            <SectionBlock
+              key={g.standard}
+              id={`norma-${g.standard}`}
+              title={AUDIT_STANDARD_LABELS[g.standard]}
+            >
               <ul className="flex flex-col gap-4">
                 {g.rows.map((r) => (
                   <li
@@ -144,21 +157,24 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
                           </Link>
                         </p>
                         <p className="text-xs text-[var(--color-ink-muted)]">
-                          Responsable: {nameOf(r.objective.ownerUserId)} · Hasta {formatDate(r.objective.dueDate)}
+                          Responsable: {nameOf(r.objective.ownerUserId)} · Hasta{" "}
+                          {formatDate(r.objective.dueDate)}
                         </p>
                       </div>
-                      <span
-                        className={`rounded px-2 py-0.5 text-xs font-semibold ${MEASUREMENT_STATUS_TONE[r.status]}`}
-                      >
-                        {MEASUREMENT_STATUS_LABELS[r.status]}
-                      </span>
+                      <StatusChip
+                        label={MEASUREMENT_STATUS_LABELS[r.status]}
+                        className={MEASUREMENT_STATUS_TONE[r.status]}
+                      />
                     </div>
                     {r.indicators.length === 0 ? (
-                      <p className="text-sm text-[var(--color-ink-muted)]">Sin indicadores todavía.</p>
+                      <EmptyState what="Sin indicadores todavía." />
                     ) : (
                       <ul className="divide-y divide-[var(--color-line)]">
                         {r.indicators.map(({ indicator: i, last, status, trend, load }) => (
-                          <li key={i.id} className="flex flex-wrap items-center justify-between gap-3 py-2">
+                          <li
+                            key={i.id}
+                            className="flex flex-wrap items-center justify-between gap-3 py-2"
+                          >
                             <div className="min-w-0">
                               <Link
                                 href={`/t/${slug}/indicators/${r.objective.id}/${i.id}`}
@@ -167,11 +183,14 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
                                 {i.name}
                               </Link>
                               <p className="text-xs tabular-nums text-[var(--color-ink-muted)]">
-                                {last ? `${last.value} ${i.unit}` : "—"} · Meta {i.target} {i.unit}
+                                {last ? `${last.value} ${i.unit}` : "—"} · Meta {i.target}{" "}
+                                {i.unit}
                                 {" · Próxima carga: "}
                                 {load.period.label}
                                 {load.overdue ? (
-                                  <span className="ml-1 font-semibold text-[var(--color-danger)]">(vencida)</span>
+                                  <span className="ml-1 font-semibold text-[var(--color-danger)]">
+                                    (vencida)
+                                  </span>
                                 ) : (
                                   ` (hasta ${formatDate(load.dueAt)})`
                                 )}
@@ -183,11 +202,10 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
                                 target={i.target}
                                 label={`Últimos ${trend.length} períodos de ${i.name}`}
                               />
-                              <span
-                                className={`rounded px-2 py-0.5 text-xs font-semibold ${MEASUREMENT_STATUS_TONE[status]}`}
-                              >
-                                {MEASUREMENT_STATUS_LABELS[status]}
-                              </span>
+                              <StatusChip
+                                label={MEASUREMENT_STATUS_LABELS[status]}
+                                className={MEASUREMENT_STATUS_TONE[status]}
+                              />
                             </div>
                           </li>
                         ))}
@@ -196,38 +214,31 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
                   </li>
                 ))}
               </ul>
-            </section>
+            </SectionBlock>
           ))}
 
           {closed.length > 0 ? (
-            <section className="flex flex-col gap-3" aria-labelledby="cerrados">
-              <h2 id="cerrados" className="font-[family-name:var(--font-display)] text-xl">
-                Cerrados
-              </h2>
-              <ul className="divide-y divide-[var(--color-line)] rounded-md border border-[var(--color-line)]">
+            <SectionBlock id="cerrados" title="Cerrados">
+              <EntityList aria-label="Objetivos cerrados">
                 {closed.map((r) => (
-                  <li key={r.objective.id}>
-                    <Link
-                      href={`/t/${slug}/indicators/${r.objective.id}`}
-                      className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 hover:bg-[var(--color-surface)]"
-                    >
-                      <span>
-                        <span className="mr-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
-                          {r.objective.code}
-                        </span>
-                        <span className="font-medium">{r.objective.title}</span>
-                      </span>
-                      <span className="rounded bg-[var(--color-surface)] px-2 py-0.5 text-xs font-semibold text-[var(--color-ink-muted)]">
-                        {OBJECTIVE_STATUS_LABELS[r.objective.status]}
-                      </span>
-                    </Link>
-                  </li>
+                  <EntityRow
+                    key={r.objective.id}
+                    href={`/t/${slug}/indicators/${r.objective.id}`}
+                    kind={r.objective.code}
+                    title={r.objective.title}
+                    chip={
+                      <StatusChip
+                        label={OBJECTIVE_STATUS_LABELS[r.objective.status]}
+                        className="bg-[var(--color-surface)] text-[var(--color-ink-muted)]"
+                      />
+                    }
+                  />
                 ))}
-              </ul>
-            </section>
+              </EntityList>
+            </SectionBlock>
           ) : null}
         </>
       )}
-    </div>
+    </PageFrame>
   );
 }

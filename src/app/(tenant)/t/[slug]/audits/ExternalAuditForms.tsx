@@ -1,5 +1,7 @@
 "use client";
 
+import { Field, INPUT_CLASS } from "@/components/ui";
+
 import { useActionState } from "react";
 import { useKeepInputs } from "@/lib/use-keep-inputs";
 import {
@@ -22,8 +24,6 @@ import {
 } from "@/domain/audits/types";
 
 const initial: AuditActionState = {};
-const input =
-  "rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm";
 const primary =
   "self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60";
 const secondary =
@@ -37,15 +37,6 @@ const complete =
 const STANDARDS: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
 const FINDING_RESULTS: AuditItemResult[] = ["nc_major", "nc_minor", "observation", "improvement"];
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
-      {children}
-      {hint ? <span className="text-xs text-[var(--color-ink-muted)]">{hint}</span> : null}
-    </label>
-  );
-}
 
 export type ExternalDefaults = {
   title: string;
@@ -64,14 +55,14 @@ function ExternalFields({ defaults }: { defaults?: ExternalDefaults }) {
   return (
     <>
       <Field label="Título" hint="Ej.: Auditoría de recertificación ISO 9001">
-        <input name="title" required defaultValue={defaults?.title} className={input} />
+        <input name="title" required defaultValue={defaults?.title} className={INPUT_CLASS} />
       </Field>
       <Field label="Entidad que audita" hint="Certificadora, cliente o autoridad.">
-        <input name="externalBody" required defaultValue={defaults?.externalBody} className={input} />
+        <input name="externalBody" required defaultValue={defaults?.externalBody} className={INPUT_CLASS} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Tipo de auditoría">
-          <select name="externalType" required defaultValue={defaults?.externalType ?? ""} className={input}>
+          <select name="externalType" required defaultValue={defaults?.externalType ?? ""} className={INPUT_CLASS}>
             <option value="" disabled>
               Elegí un tipo
             </option>
@@ -83,15 +74,15 @@ function ExternalFields({ defaults }: { defaults?: ExternalDefaults }) {
           </select>
         </Field>
         <Field label="Auditor líder (opcional)">
-          <input name="externalAuditor" defaultValue={defaults?.externalAuditor} className={input} />
+          <input name="externalAuditor" defaultValue={defaults?.externalAuditor} className={INPUT_CLASS} />
         </Field>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Inicio">
-          <input type="date" name="plannedStart" required defaultValue={defaults?.plannedStart} className={input} />
+          <input type="date" name="plannedStart" required defaultValue={defaults?.plannedStart} className={INPUT_CLASS} />
         </Field>
         <Field label="Fin">
-          <input type="date" name="plannedEnd" required defaultValue={defaults?.plannedEnd} className={input} />
+          <input type="date" name="plannedEnd" required defaultValue={defaults?.plannedEnd} className={INPUT_CLASS} />
         </Field>
       </div>
       <fieldset className="flex flex-wrap gap-4 text-sm">
@@ -109,14 +100,14 @@ function ExternalFields({ defaults }: { defaults?: ExternalDefaults }) {
         ))}
       </fieldset>
       <Field label="Alcance" hint="Sitios, procesos o requisitos que va a cubrir la auditoría.">
-        <textarea name="scope" rows={2} defaultValue={defaults?.scope} className={input} />
+        <textarea name="scope" rows={2} defaultValue={defaults?.scope} className={INPUT_CLASS} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Resultado o recomendación" hint="Tal como figura en el informe del organismo.">
-          <input name="externalResult" defaultValue={defaults?.externalResult} className={input} />
+          <input name="externalResult" defaultValue={defaults?.externalResult} className={INPUT_CLASS} />
         </Field>
         <Field label="Plazo para responder las NC" hint="Genera un vencimiento.">
-          <input type="date" name="responseDueAt" defaultValue={defaults?.responseDueAt} className={input} />
+          <input type="date" name="responseDueAt" defaultValue={defaults?.responseDueAt} className={INPUT_CLASS} />
         </Field>
       </div>
     </>
@@ -172,7 +163,7 @@ export function ExternalFindingForm({ slug, auditId }: { slug: string; auditId: 
     <form {...actionForm} className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Tipo de hallazgo">
-          <select name="result" required defaultValue="nc_minor" className={input}>
+          <select name="result" required defaultValue="nc_minor" className={INPUT_CLASS}>
             {FINDING_RESULTS.map((r) => (
               <option key={r} value={r}>
                 {AUDIT_ITEM_RESULT_LABELS[r]}
@@ -186,15 +177,15 @@ export function ExternalFindingForm({ slug, auditId }: { slug: string; auditId: 
             name="detectedAt"
             required
             defaultValue={new Date().toISOString().slice(0, 10)}
-            className={input}
+            className={INPUT_CLASS}
           />
         </Field>
       </div>
       <Field label="Título">
-        <input name="title" required className={input} />
+        <input name="title" required className={INPUT_CLASS} />
       </Field>
       <Field label="Descripción y evidencia" hint="Lo que consta en el informe de la entidad auditora.">
-        <textarea name="description" rows={3} required className={input} />
+        <textarea name="description" rows={3} required className={INPUT_CLASS} />
       </Field>
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={secondary}>
@@ -231,7 +222,7 @@ export function CancelExternalAuditForm({ slug, auditId }: { slug: string; audit
       <summary className="cursor-pointer text-[var(--color-ink-muted)]">Cancelar auditoría</summary>
       <form {...actionForm} className="mt-2 flex flex-col gap-2">
         <Field label="Motivo">
-          <input name="reason" required className={input} />
+          <input name="reason" required className={INPUT_CLASS} />
         </Field>
         <Feedback state={state} />
         <button type="submit" disabled={pending} className={secondary}>
