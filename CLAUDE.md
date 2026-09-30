@@ -42,7 +42,7 @@ Each kind of task has exactly one owner. Never run two skills/agents that cover 
 | Queries / N+1 | query-discipline, `/hunt-n-plus-one`, `/explain-this-query` |
 | Web performance | `/webperf` (`web-performance-auditor`) |
 | Backend perf/scaling | performance-optimization |
-| Frontend look, feel, UX copy (project identity) | sgi-frontend-identity — overrides generic UI skills on visuals/language; frontend-ui-engineering only for mechanics (a11y, state) |
+| Frontend look, feel, UX copy, restyle, identity | `/ui` (sgi-frontend-identity owner; frontend-ui-engineering only for mechanics a11y/state) |
 | React/Next.js code perf (waterfalls, bundle, re-renders) | vercel-react-best-practices |
 | Component API design (props, compound components) | vercel-composition-patterns (build with frontend-ui-engineering) |
 | Better Auth / sessions / plugins / email-password | better-auth-best-practices. Tenant scope & permissions → auth-and-authorization |
@@ -63,7 +63,7 @@ Each kind of task has exactly one owner. Never run two skills/agents that cover 
 | "qué puede fallar / failure modes" | `incident-thinker` |
 | "webperf / LCP / Core Web Vitals" | `/webperf` |
 | "auth / Better Auth / login / password reset" | better-auth-best-practices (+ auth-and-authorization for tenant/permissions) |
-| "UI / copy / look & feel SGI" | sgi-frontend-identity |
+| "UI / copy / look & feel / restyle / identity" | `/ui` |
 | "publicá / commit / push / merge" | `/publicar-cambios` |
 | "riesgos / oportunidades / ISO 9001 6.1" | riesgos-oportunidades |
 
@@ -80,7 +80,7 @@ Do **not** rely on Auto model selection. Prefer an explicit model. Default the m
 | `/review`, `/ship`, most subagents | Sonnet | All agents in `.claude/agents` are pinned to `model: sonnet` |
 | Dedicated security pass on auth/payments/secrets | Sonnet; Opus if still unsure after one pass | `security-reviewer` |
 | Live prod incident (subtle, multi-layer) | Sonnet first; Opus if stuck | `incident-investigator` |
-| `/webperf`, UI identity, Vercel rule lookups | Sonnet | Load 1–3 rule files only |
+| `/webperf`, `/ui`, Vercel rule lookups | Sonnet | Load 1–3 rule files only |
 | `/publicar-cambios`, renames, changelog, "dónde está X" | Haiku | Switch session to Haiku for that task if available |
 
 **Subagent models:** keep pinned in each agent's frontmatter (`model: sonnet`). Do not spawn Opus subagents by default — escalate the main session instead when the table says Opus.

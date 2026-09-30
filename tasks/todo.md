@@ -368,13 +368,13 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Description:** Modern tenant home: requirement compliance summary, upcoming due items, shortcuts to docs/ops; polish platform nav.
 
 **Acceptance criteria:**
-- [ ] Dashboard shows compliance counts + due list
-- [ ] Nav covers documents, NC, risks, audits, indicators, automations
-- [ ] Visual polish matches design tokens (non-generic)
+- [x] Dashboard shows compliance counts + due list
+- [x] Nav covers documents, NC (Hallazgos), risks, audits, indicators, automations
+- [x] Visual polish matches design tokens (non-generic)
 
 **Verification:**
-- [ ] Manual UI review
-- [ ] Basic a11y check (keyboard to main nav)
+- [x] Manual UI review
+- [x] Basic a11y check (keyboard to main nav) — e2e personas.spec.ts
 
 **Dependencies:** Checkpoint C  
 **Files likely touched:** `src/app/(tenant)/page.tsx`, dashboard components  
@@ -386,9 +386,11 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 **Description:** Playwright covers: superuser login → create tenant → load gap → upload doc → create NC with due → see due on dashboard (tenant user).
 
+**Hecho:** `e2e/critical-path.spec.ts` — superusuario crea empresa, carga gap, sube documento, invita usuario; publica NC (hallazgo) con medida correctiva vencida y el usuario ve el vencimiento en su panel y navega al hallazgo. El NC de hoy es un Hallazgo (/operations redirige a /findings).
+
 **Acceptance criteria:**
-- [ ] E2E suite green in CI/local
-- [ ] Uses test DB / isolated tenant slugs
+- [ ] E2E suite green in CI/local (18/19 con --workers=1; falla audits.spec por el progressbar de cobertura tras la migración a ui/*)
+- [x] Uses test DB / isolated tenant slugs (`e2e-crit-<timestamp>`)
 
 **Verification:**
 - [ ] `npm run test:e2e` passes
