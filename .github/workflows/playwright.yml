@@ -8,15 +8,45 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sgi
+          POSTGRES_PASSWORD: sgi
+          POSTGRES_DB: sgi_base
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sgi -d sgi_base"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://sgi:sgi@localhost:5432/sgi_base?schema=public
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_SECRET: ci-only-secret-not-used-outside-github-actions
+      SEED_SUPERUSER_EMAIL: admin@sgi.local
+      SEED_SUPERUSER_PASSWORD: CambiarYa!123
+      SEED_SUPERUSER_NAME: Superusuario SGI
+      DEV_MEMBER_PASSWORD: Tisico123!
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+        cache: npm
     - name: Install dependencies
       run: npm ci
+    - name: Prepare database
+      run: |
+        npx prisma generate
+        npx prisma migrate deploy
+        npm run db:seed
+        npm run db:seed:demo
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install --with-deps chromium
     - name: Run Playwright tests
       run: npx playwright test
     - uses: actions/upload-artifact@v4
