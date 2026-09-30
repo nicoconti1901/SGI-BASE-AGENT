@@ -22,7 +22,7 @@ export function StatusScreen({
           {action ? (
             <Link
               href={action.href}
-              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--color-accent-hover)]"
+              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-on-solid)] hover:bg-[var(--color-accent-hover)]"
             >
               {action.label}
             </Link>

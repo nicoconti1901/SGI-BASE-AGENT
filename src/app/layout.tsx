@@ -1,22 +1,30 @@
 import type { Metadata } from "next";
-import { Fraunces, Source_Sans_3, IBM_Plex_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Sans, Sora } from "next/font/google";
 import "./globals.css";
 
-const display = Fraunces({
-  variable: "--font-sgi-display",
+// Light A: Instrument Sans (display) · Dark A: Sora (display). Sans/mono comparten Geist.
+const displayLight = Instrument_Sans({
+  variable: "--font-sgi-display-light",
   subsets: ["latin"],
 });
 
-const sans = Source_Sans_3({
+const displayDark = Sora({
+  variable: "--font-sgi-display-dark",
+  subsets: ["latin"],
+});
+
+const sans = Geist({
   variable: "--font-sgi-sans",
   subsets: ["latin"],
 });
 
-const mono = IBM_Plex_Mono({
+const mono = Geist_Mono({
   variable: "--font-sgi-mono",
   subsets: ["latin"],
-  weight: ["400", "500"],
 });
+
+/** Aplica el tema antes del primer render (evita parpadeo). Sin preferencia guardada, sigue al sistema. */
+const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("sgi-theme");if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}})();`;
 
 export const metadata: Metadata = {
   title: "SGI Base",
@@ -28,8 +36,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${displayLight.variable} ${displayDark.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col font-[family-name:var(--font-sans)]">
         {children}
       </body>

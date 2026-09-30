@@ -142,7 +142,7 @@ export default async function TenantDocumentsPlatformPage({
                   {doc.currentVersion ? (
                     <a
                       href={`/api/documents/${doc.id}/download`}
-                      className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-1.5 text-sm font-semibold text-white"
+                      className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-3 py-1.5 text-sm font-semibold text-[var(--color-on-solid)]"
                     >
                       Descargar actual
                     </a>

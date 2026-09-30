@@ -481,7 +481,7 @@ export function FiveWhysLab({
             {warnings.map((w) => (
               <li
                 key={w}
-                className="rounded-full bg-[var(--color-warning-soft)] px-2 py-0.5 text-xs text-[var(--color-warning)]"
+                className="rounded-[var(--radius-sm)] bg-[var(--color-warning-soft)] px-2 py-0.5 text-xs text-[var(--color-warning)]"
               >
                 {WARNING_LABELS[w] ?? w}
               </li>
@@ -526,7 +526,7 @@ export function FiveWhysLab({
       <button
         type="button"
         onClick={handleConfirm}
-        className="w-fit rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white"
+        className="w-fit rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--color-on-solid)]"
       >
         Confirmar causa(s) raíz
       </button>

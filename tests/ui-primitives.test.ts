@@ -49,8 +49,9 @@ describe("ui P0 primitives", () => {
 
   it("INPUT_CLASS only uses existing design tokens", () => {
     expect(INPUT_CLASS).toContain("var(--radius-md)");
-    expect(INPUT_CLASS).toContain("var(--color-line)");
-    expect(INPUT_CLASS).toContain("var(--color-surface)");
+    expect(INPUT_CLASS).toContain("var(--color-line-strong)");
+    expect(INPUT_CLASS).toContain("var(--color-field-fill)");
+    expect(INPUT_CLASS).toContain("var(--color-accent-ring)");
   });
 });
 
@@ -192,7 +193,10 @@ describe("tenant panel adopts ui primitives", () => {
     for (const symbol of [
       "PageFrame",
       "PageHeader",
-      "StatGrid",
+      "DashboardStrip",
+      "StripKpis",
+      "DueRail",
+      "DueCard",
       "StatTile",
       "StatusChip",
       "EmptyState",

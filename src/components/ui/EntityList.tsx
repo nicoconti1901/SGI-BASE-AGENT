@@ -6,7 +6,7 @@ type EntityListProps = {
   "aria-label"?: string;
 };
 
-/** Bordered divide-y list for entity rows (risks, findings, etc.). */
+/** Lista con marco y divisores para filas de entidad (riesgos, hallazgos, etc.). */
 export function EntityList({
   children,
   "aria-label": ariaLabel,
@@ -14,7 +14,7 @@ export function EntityList({
   return (
     <ul
       aria-label={ariaLabel}
-      className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]"
+      className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]"
     >
       {children}
     </ul>
@@ -32,16 +32,16 @@ type EntityRowProps = {
   chip?: React.ReactNode;
 };
 
-/** List row: kind + title + meta + chip, whole row is a link. */
+/** Fila: kind + título + meta + chip; toda la fila es un link con tick de acento en hover/focus. */
 export function EntityRow({ href, kind, title, meta, chip }: EntityRowProps) {
   return (
     <li>
       <Link
         href={href}
-        className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 hover:bg-[var(--color-surface)]"
+        className="relative flex min-h-12 flex-wrap items-center justify-between gap-2 px-4 py-3 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-[var(--color-accent)] before:opacity-0 hover:bg-[var(--color-accent-soft)] hover:before:opacity-100 focus-visible:before:opacity-100 focus-visible:outline-offset-[-2px]"
       >
-        <div>
-          <span className="mr-2 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
+        <div className="min-w-0">
+          <span className="mr-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
             {kind}
           </span>
           <span className="font-medium">{title}</span>

@@ -27,6 +27,32 @@ describe("design tokens", () => {
     }
   });
 
+  it("ships Light A and Dark A with the same token structure", () => {
+    const darkStart = tokens.indexOf('[data-theme="dark"]');
+    const lightStart = tokens.indexOf('[data-theme="light"]');
+    expect(lightStart).toBeGreaterThan(-1);
+    expect(darkStart).toBeGreaterThan(lightStart);
+    const light = tokens.slice(lightStart, darkStart);
+    const dark = tokens.slice(darkStart);
+    const names = (block: string) => new Set(block.match(/--color-[a-z0-9-]+(?=s*:)/g) ?? []);
+    // Todo color de Light A tiene par en Dark A, salvo los que no cambian entre temas.
+    const sameInBothThemes = new Set(["--color-member-rail-ink", "--color-platform-rail-ink", "--color-tenant-rail-ink"]);
+    const missingInDark = [...names(light)].filter((n) => !names(dark).has(n) && !sameInBothThemes.has(n));
+    expect(missingInDark).toEqual([]);
+    for (const token of [
+      "--color-surface-sunken",
+      "--color-field-fill",
+      "--color-accent-ring",
+      "--color-on-solid",
+      "--color-info",
+      "--color-pending",
+      "--shadow-card",
+    ]) {
+      expect(light).toContain(token);
+      expect(dark).toContain(token);
+    }
+  });
+
   it("does not lean on generic purple SaaS accent", () => {
     expect(tokens.toLowerCase()).not.toMatch(/#7c3aed|#8b5cf6|#a855f7/);
   });

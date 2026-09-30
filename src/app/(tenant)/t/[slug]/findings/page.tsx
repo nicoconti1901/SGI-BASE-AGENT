@@ -147,7 +147,7 @@ export default async function FindingsListPage({
           canWrite ? (
             <Link
               href={`/t/${slug}/findings/new`}
-              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white"
+              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--color-on-solid)]"
             >
               Crear hallazgo
             </Link>
@@ -200,7 +200,7 @@ export default async function FindingsListPage({
           <div className="flex flex-wrap gap-2 sm:col-span-4">
             <button
               type="submit"
-              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white"
+              className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-on-solid)]"
             >
               Filtrar
             </button>

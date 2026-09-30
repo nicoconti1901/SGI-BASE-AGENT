@@ -25,14 +25,14 @@ import {
 
 const initial: AuditActionState = {};
 const primary =
-  "self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60";
+  "self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)] disabled:opacity-60";
 const secondary =
   "self-start rounded-md border border-[var(--color-line)] px-4 py-2 text-sm font-medium disabled:opacity-60";
 
 const saveChanges =
   "self-start rounded-md border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-4 py-2 text-sm font-medium text-[var(--color-accent)] disabled:opacity-60";
 const complete =
-  "self-start rounded-md bg-[var(--color-success)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60";
+  "self-start rounded-md bg-[var(--color-success)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)] disabled:opacity-60";
 
 const STANDARDS: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
 const FINDING_RESULTS: AuditItemResult[] = ["nc_major", "nc_minor", "observation", "improvement"];

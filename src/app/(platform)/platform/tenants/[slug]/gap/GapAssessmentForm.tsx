@@ -64,7 +64,7 @@ export function GapAssessmentForm({
         <button
           type="submit"
           disabled={pending || rows.length === 0}
-          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-[var(--color-on-solid)] disabled:opacity-60"
         >
           {pending ? "Guardando…" : "Guardar gap"}
         </button>
@@ -166,7 +166,7 @@ export function GapAssessmentForm({
         <button
           type="submit"
           disabled={pending || rows.length === 0}
-          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-[var(--color-on-solid)] disabled:opacity-60"
         >
           {pending ? "Guardando…" : "Guardar gap"}
         </button>

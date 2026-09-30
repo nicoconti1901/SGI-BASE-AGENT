@@ -105,7 +105,7 @@ export default async function PlatformCatalogPage({
                 href={href}
                 className={`rounded-[var(--radius-md)] px-3 py-1.5 text-sm font-medium transition ${
                   active
-                    ? "bg-[var(--color-accent)] text-white"
+                    ? "bg-[var(--color-accent)] text-[var(--color-on-solid)]"
                     : "border border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-accent)]"
                 }`}
               >
@@ -133,7 +133,7 @@ export default async function PlatformCatalogPage({
             href={catalogHref({ standard, essentialOnly: true })}
             className={`rounded-[var(--radius-md)] px-3 py-1.5 text-sm font-medium ${
               essentialOnly
-                ? "bg-[var(--color-accent)] text-white"
+                ? "bg-[var(--color-accent)] text-[var(--color-on-solid)]"
                 : "border border-[var(--color-line)] text-[var(--color-ink-muted)]"
             }`}
           >

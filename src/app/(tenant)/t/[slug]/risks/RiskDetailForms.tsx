@@ -129,7 +129,7 @@ export function RiskDetailForms({
           <button
             type="submit"
             disabled={canvasPending}
-            className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white"
+            className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-[var(--color-on-solid)]"
           >
             Guardar descripción
           </button>
@@ -191,7 +191,7 @@ export function RiskDetailForms({
             <button
               type="submit"
               disabled={assessPending}
-              className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white"
+              className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-[var(--color-on-solid)]"
             >
               Nueva evaluación
             </button>
@@ -275,7 +275,7 @@ export function RiskDetailForms({
             <button
               type="submit"
               disabled={decisionPending}
-              className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white"
+              className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-[var(--color-on-solid)]"
             >
               Guardar decisión
             </button>

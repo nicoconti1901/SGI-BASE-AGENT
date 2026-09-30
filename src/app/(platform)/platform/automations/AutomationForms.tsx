@@ -43,7 +43,7 @@ export function RunDueScanForm({ defaultSlug = "" }: { defaultSlug?: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="w-fit rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+        className="w-fit rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--color-on-solid)] disabled:opacity-60"
       >
         {pending ? "Ejecutando…" : "Correr scan"}
       </button>
@@ -149,7 +149,7 @@ export function CreateDueItemForm({ slug }: { slug: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="w-fit rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+        className="w-fit rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--color-on-solid)] disabled:opacity-60"
       >
         {pending ? "Creando…" : "Crear"}
       </button>

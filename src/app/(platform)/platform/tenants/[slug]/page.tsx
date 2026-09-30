@@ -56,7 +56,7 @@ export default async function TenantDetailPage({ params }: { params: Params }) {
       <div className="flex flex-wrap gap-3">
         <Link
           href={`/platform/tenants/${tenant.slug}/gap`}
-          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white"
+          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-on-solid)]"
         >
           Cargar gap / assessment
         </Link>

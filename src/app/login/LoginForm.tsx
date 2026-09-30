@@ -78,7 +78,7 @@ export function LoginForm({ defaultEmail = "" }: { defaultEmail?: string }) {
       <button
         type="submit"
         disabled={loading}
-        className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
+        className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--color-on-solid)] hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
       >
         {loading ? "Ingresando…" : "Entrar"}
       </button>
