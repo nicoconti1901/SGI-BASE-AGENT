@@ -54,6 +54,7 @@ model User {
   memberships   Membership[]
   gapAudits     GapAssessmentAudit[]
   notifications InAppNotification[]
+  people        Person[]
 
   @@unique([email])
   @@map("user")
@@ -136,6 +137,11 @@ model Tenant {
   auditReportFiles   AuditReportAttachment[]
   objectives         Objective[]
   indicators         Indicator[]
+  sites              Site[]
+  jobPositions       JobPosition[]
+  jobTasks           JobTask[]
+  people             Person[]
+  masterDataAudits   MasterDataAudit[]
 
   @@map("tenant")
 }
@@ -895,10 +901,10 @@ model AuditProgram {
 }
 
 model Audit {
-  id                    String               @id @default(cuid())
+  id                    String                  @id @default(cuid())
   tenantId              String
   programId             String?
-  kind                  AuditKind            @default(internal)
+  kind                  AuditKind               @default(internal)
   /// Entidad que audita (solo kind = external): certificadora, cliente, autoridad.
   externalBody          String?
   externalType          ExternalAuditType?
@@ -909,26 +915,26 @@ model Audit {
   responseDueAt         DateTime?
   code                  String
   title                 String
-  objective             String               @default("")
-  scope                 String               @default("")
+  objective             String                  @default("")
+  scope                 String                  @default("")
   standards             IsoStandard[]
   plannedStart          DateTime
   plannedEnd            DateTime
-  mode                  AuditMode            @default(onsite)
-  status                AuditStatus          @default(planned)
+  mode                  AuditMode               @default(onsite)
+  status                AuditStatus             @default(planned)
   impartialityException String?
   cancelReason          String?
   startedAt             DateTime?
   reportConclusion      String?
   reportStrengths       String?
-  workersCommunicated   Boolean              @default(false)
+  workersCommunicated   Boolean                 @default(false)
   reportIssuedAt        DateTime?
   closedAt              DateTime?
   createdByUserId       String?
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
-  tenant                Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  program               AuditProgram?        @relation(fields: [programId], references: [id], onDelete: SetNull)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  tenant                Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  program               AuditProgram?           @relation(fields: [programId], references: [id], onDelete: SetNull)
   team                  AuditTeamMember[]
   auditees              AuditAuditee[]
   items                 AuditChecklistItem[]
@@ -1143,4 +1149,154 @@ model MeasurementCorrection {
 
   @@index([measurementId])
   @@map("measurement_correction")
+}
+
+// ─── Datos maestros (Task 14): sedes, puestos, tareas y personas ───────────
+
+enum SiteKind {
+  office
+  base
+  worksite
+  field
+  camp
+  plant
+}
+
+enum PersonEmployer {
+  own
+  contractor
+}
+
+enum PersonStatus {
+  active
+  inactive
+}
+
+/// Dónde: oficina, base, obrador, yacimiento, campamento o planta.
+model Site {
+  id         String       @id @default(cuid())
+  tenantId   String
+  name       String
+  kind       SiteKind     @default(office)
+  address    String?
+  active     Boolean      @default(true)
+  inactiveAt DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  basePeople Person[]     @relation("PersonBaseSite")
+  people     PersonSite[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, active])
+  @@map("site")
+}
+
+model JobPosition {
+  id         String    @id @default(cuid())
+  tenantId   String
+  name       String
+  active     Boolean   @default(true)
+  inactiveAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  people     Person[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, active])
+  @@map("job_position")
+}
+
+/// Qué hace: una tarea puede ser crítica (altura, izaje, conducción, espacio confinado…).
+model JobTask {
+  id         String          @id @default(cuid())
+  tenantId   String
+  name       String
+  critical   Boolean         @default(false)
+  active     Boolean         @default(true)
+  inactiveAt DateTime?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  tenant     Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  people     PersonJobTask[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, active])
+  @@map("job_task")
+}
+
+/// Quién: nómina propia y de contratistas. No necesariamente usa el sistema (`userId` opcional).
+/// Sin datos de salud. La baja es lógica: nunca se borra el historial.
+model Person {
+  id             String          @id @default(cuid())
+  tenantId       String
+  employeeCode   String
+  name           String
+  documentId     String?
+  userId         String?
+  employer       PersonEmployer  @default(own)
+  contractorName String?
+  siteId         String
+  positionId     String
+  hiredAt        DateTime?
+  status         PersonStatus    @default(active)
+  inactiveAt     DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site           Site            @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
+  position       JobPosition     @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  extraSites     PersonSite[]
+  jobTasks       PersonJobTask[]
+
+  @@unique([tenantId, employeeCode])
+  @@unique([tenantId, userId])
+  @@index([tenantId, status])
+  @@index([siteId])
+  @@index([positionId])
+  @@map("person")
+}
+
+/// Sedes adicionales donde rota una persona (además de su sede base).
+model PersonSite {
+  personId String
+  siteId   String
+  tenantId String
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  site     Site   @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@id([personId, siteId])
+  @@index([tenantId, siteId])
+  @@map("person_site")
+}
+
+model PersonJobTask {
+  personId  String
+  jobTaskId String
+  tenantId  String
+  person    Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+  jobTask   JobTask @relation(fields: [jobTaskId], references: [id], onDelete: Cascade)
+
+  @@id([personId, jobTaskId])
+  @@index([tenantId, jobTaskId])
+  @@map("person_job_task")
+}
+
+/// Registro de quién cambió qué en los datos maestros.
+model MasterDataAudit {
+  id          String   @id @default(cuid())
+  tenantId    String
+  entityType  String
+  entityId    String
+  action      String
+  actorUserId String?
+  summary     String
+  createdAt   DateTime @default(now())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, entityType, entityId])
+  @@map("master_data_audit")
 }
