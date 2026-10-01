@@ -157,7 +157,7 @@ test("se publica una NC con medida correctiva y el usuario ve el vencimiento en 
   await expect(dueList.getByText(measureTitle)).toBeVisible();
   await expect(dueList.getByText("Medida de hallazgo")).toBeVisible();
   await expect(dueList.getByText(due)).toBeVisible();
-  await expect(page.getByRole("region", { name: "Resumen" }).getByText("Próximos a vencer")).toBeVisible();
+  await expect(page.getByRole("group", { name: "Resumen" }).getByText("Próximos a vencer")).toBeVisible();
 
   // Sigue el enlace al detalle del hallazgo.
   await dueList.getByRole("link", { name: new RegExp(measureTitle) }).click();

@@ -120,10 +120,7 @@ test("arma la lista desde el catálogo, inicia y registra resultados", async ({ 
   // La cobertura del programa 2099 ya suma los requisitos auditados.
   await page.goto("/t/tisico/audits?anio=2099");
   await expect(page.getByRole("heading", { name: "Cobertura 2099" })).toBeVisible();
-  await expect(page.getByRole("progressbar", { name: "Cobertura ISO 9001" })).not.toHaveAttribute(
-    "aria-valuenow",
-    "0",
-  );
+  await expect(page.getByText(/ISO 9001 · [1-9]\d* de \d+ requisitos/)).toBeVisible();
 });
 
 test("la guía de auditoría está accesible desde la sección", async ({ page }) => {

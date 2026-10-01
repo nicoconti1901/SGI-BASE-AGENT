@@ -3,7 +3,10 @@ import { PrismaClient } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
 import { uploadTenantDocument, readDocumentFile } from "@/lib/documents";
 import { MemoryObjectStorage } from "@/lib/storage/types";
-import { DocumentKeepProtectedError } from "@/domain/documents/versioning";
+import {
+  DOCUMENT_VALIDITY_ENTITY_TYPE,
+  DocumentKeepProtectedError,
+} from "@/domain/documents/versioning";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
@@ -41,6 +44,7 @@ describe.skipIf(!hasDatabase)("document control integration", () => {
   });
 
   afterAll(async () => {
+    await db.dueItem.deleteMany({ where: { tenantId } });
     await db.document.updateMany({
       where: { tenantId },
       data: { currentVersionId: null },
@@ -130,5 +134,48 @@ describe.skipIf(!hasDatabase)("document control integration", () => {
 
     expect(updated.currentVersion?.versionNumber).toBe(2);
     expect(updated.versions).toHaveLength(2);
+  });
+
+  it("crea el vencimiento al cargar vigencia y lo renueva al subir una versión nueva", async () => {
+    const first = new Date("2099-03-01T00:00:00.000Z");
+    const renewed = new Date("2100-03-01T00:00:00.000Z");
+    const doc = await uploadTenantDocument(
+      {
+        tenantId,
+        title: "Habilitación municipal",
+        fileName: "hab.pdf",
+        contentType: "application/pdf",
+        body: Buffer.from("%PDF-1.4 hab"),
+        uploadedById: userId,
+        validUntil: first,
+        isPlatformSuperuser: true,
+      },
+      { db, storage },
+    );
+    const items = await db.dueItem.findMany({
+      where: { tenantId, entityType: DOCUMENT_VALIDITY_ENTITY_TYPE, entityId: doc.id },
+    });
+    expect(items).toHaveLength(1);
+    expect(items[0].dueAt.toISOString()).toBe(first.toISOString());
+
+    await uploadTenantDocument(
+      {
+        tenantId,
+        documentId: doc.id,
+        title: "Habilitación municipal",
+        fileName: "hab-v2.pdf",
+        contentType: "application/pdf",
+        body: Buffer.from("%PDF-1.4 hab2"),
+        uploadedById: userId,
+        validUntil: renewed,
+        isPlatformSuperuser: true,
+      },
+      { db, storage },
+    );
+    const after = await db.dueItem.findMany({
+      where: { tenantId, entityType: DOCUMENT_VALIDITY_ENTITY_TYPE, entityId: doc.id, status: "open" },
+    });
+    expect(after).toHaveLength(1);
+    expect(after[0].dueAt.toISOString()).toBe(renewed.toISOString());
   });
 });
