@@ -47,6 +47,11 @@ export async function uploadDocumentAction(
   const tenantRequirementId = String(formData.get("tenantRequirementId") ?? "");
   const notes = String(formData.get("notes") ?? "");
   const documentId = String(formData.get("documentId") ?? "");
+  const validUntilRaw = String(formData.get("validUntil") ?? "");
+  const validUntil = validUntilRaw ? new Date(`${validUntilRaw}T00:00:00.000Z`) : undefined;
+  if (validUntil && Number.isNaN(validUntil.getTime())) {
+    return { error: "Fecha de vigencia inválida" };
+  }
   const forceOverwriteKeep = formData.get("forceOverwriteKeep") === "on";
   const file = formData.get("file");
 
@@ -68,6 +73,7 @@ export async function uploadDocumentAction(
       body: buffer,
       uploadedById: session.user.id,
       notes,
+      validUntil,
       isPlatformSuperuser,
       forceOverwriteKeep,
       documentId: documentId || undefined,
