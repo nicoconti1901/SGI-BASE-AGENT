@@ -20,6 +20,7 @@ export function tenantNavItems(slug: string): NavItem[] {
     { href: `${base}/audits`, label: "Auditorías" },
     { href: `${base}/indicators`, label: "Objetivos" },
     { href: `${base}/automations`, label: "Automatizaciones" },
+    { href: `${base}/master-data`, label: "Datos maestros" },
     { href: `${base}/users`, label: "Usuarios" },
   ];
 }

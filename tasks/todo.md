@@ -358,7 +358,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 ## Checkpoint C: After Tasks 9–11
 
 - [x] Tests pass; build succeeds (post Task 11 risks/opportunities)
-- [ ] Due reminders work for at least docs/actions/indicators
+- [x] Due reminders work for at least docs/actions/indicators (docs: `validUntil` → `DueItem` `document_validity`, agregado 2026-10-01)
 - [ ] Human review before portal polish
 
 ---
@@ -389,11 +389,11 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 **Hecho:** `e2e/critical-path.spec.ts` — superusuario crea empresa, carga gap, sube documento, invita usuario; publica NC (hallazgo) con medida correctiva vencida y el usuario ve el vencimiento en su panel y navega al hallazgo. El NC de hoy es un Hallazgo (/operations redirige a /findings).
 
 **Acceptance criteria:**
-- [ ] E2E suite green in CI/local (18/19 con --workers=1; falla audits.spec por el progressbar de cobertura tras la migración a ui/*)
+- [x] E2E suite green in CI/local (18 passed + 2 demos omitidos con --workers=1; selectores de audits.spec y critical-path.spec actualizados tras la migración a ui/*, 2026-10-01)
 - [x] Uses test DB / isolated tenant slugs (`e2e-crit-<timestamp>`)
 
 **Verification:**
-- [ ] `npm run test:e2e` passes
+- [x] `npm run test:e2e` passes
 
 **Dependencies:** Task 12  
 **Files likely touched:** `e2e/*.spec.ts`  
@@ -432,21 +432,21 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
 - Modelo `JobTask` (no `Task`) para no chocar con el vocabulario del plan.
 
 **Sub-tareas:**
-- [ ] 14.0 SPEC corto `SPEC-master-data.md` (campos, unicidades, permisos, privacidad) aprobado por el PO
-- [ ] 14.1 Prisma + dominio: `Site` (nombre, tipo oficina/base/obrador/yacimiento/campamento/planta, dirección, activa), `JobPosition`, `JobTask` (flag `critical`), `Person` (legajo único por tenant, nombre, DNI?, empresa, sede, puesto, fecha de ingreso, estado), `PersonJobTask`; índices por `tenantId`; tests de aislamiento entre tenants y de unicidad
-- [ ] 14.2 UI de alta, baja y modificación de sedes, puestos y tareas (`/t/[slug]/master-data/**`); no se puede dar de baja si hay dependientes activos
-- [ ] 14.3 Personas: alta, edición y baja; asignación de puesto, sede y tareas; **importación CSV de la nómina** con validación por fila, vista previa y reporte de errores; idempotente por legajo (reimportar actualiza, no duplica)
-- [ ] 14.4 Componentes reutilizables `SitePicker` y `PersonPicker` (búsqueda por nombre o legajo, filtro por sede) + política de permisos (el admin gestiona; process_owner lee y asigna tareas; viewer ve nombres sin DNI)
+- [x] 14.0 SPEC `SPEC-master-data.md` aprobado por el PO 2026-10-01 (rotación entre sedes · DNI visible · el CSV puede crear sedes/puestos con confirmación)
+- [x] 14.1 (hecho 2026-10-01: migración `add_master_data`, `src/domain/masterdata/`, `src/lib/masterdata.ts`, permisos `manage_master_data` / `assign_job_tasks`, tests `masterdata*.test.ts`) Prisma + dominio: `Site` (nombre, tipo oficina/base/obrador/yacimiento/campamento/planta, dirección, activa), `JobPosition`, `JobTask` (flag `critical`), `Person` (legajo único por tenant, nombre, DNI?, empresa, sede, puesto, fecha de ingreso, estado), `PersonJobTask`; índices por `tenantId`; tests de aislamiento entre tenants y de unicidad
+- [x] 14.2 (hecho 2026-10-01: `/t/[slug]/master-data/{sites,positions,tasks}`, menú "Datos maestros", `e2e/master-data.spec.ts`) UI de alta, baja y modificación de sedes, puestos y tareas (`/t/[slug]/master-data/**`); no se puede dar de baja si hay dependientes activos
+- [x] 14.3 (hecho 2026-10-01: `/t/[slug]/master-data/people` lista con filtros · alta · ficha con edición/tareas/baja/historial · `people/import` con vista previa y confirmación de lo que se crea; e2e en `master-data.spec.ts`) Personas: alta, edición y baja; asignación de puesto, sede y tareas; **importación CSV de la nómina** con validación por fila, vista previa y reporte de errores; idempotente por legajo (reimportar actualiza, no duplica)
+- [x] 14.4 (hecho 2026-10-01: `src/components/pickers/{SitePicker,PersonPicker,picker-actions}`, permisos en `authz.ts`, README) Componentes reutilizables `SitePicker` y `PersonPicker` (búsqueda por nombre o legajo, filtro por sede) + política de permisos (el admin gestiona; process_owner lee y asigna tareas; el resto solo lee; el DNI es visible para todos por decisión del PO)
 
 **Acceptance criteria:**
-- [ ] Sedes, puestos, tareas y personas con alta, baja y modificación, acotadas al tenant
-- [ ] Importar 500 personas en una sola operación, sin duplicar al reimportar
-- [ ] Una persona dada de baja no aparece en los selectores, pero conserva su historial
+- [x] Sedes, puestos, tareas y personas con alta, baja y modificación, acotadas al tenant
+- [x] Importar 500 personas en una sola operación, sin duplicar al reimportar
+- [x] Una persona dada de baja no aparece en los selectores, pero conserva su historial
 
 **Verification:**
-- [ ] Unit: unicidad del legajo, validación del CSV, baja con dependientes
-- [ ] Integration: dos tenants no ven las personas ni las sedes del otro
-- [ ] Manual: importar una nómina de ejemplo y asignar tareas
+- [x] Unit: unicidad del legajo, validación del CSV, baja con dependientes
+- [x] Integration: dos tenants no ven las personas ni las sedes del otro
+- [x] Manual: importar una nómina de ejemplo y asignar tareas
 
 **Dependencies:** base actual (Tasks 1–11)
 **Files likely touched:** `prisma/schema.prisma`, `src/domain/masterdata/`, `src/lib/masterdata.ts`, `src/app/(tenant)/t/[slug]/master-data/**`, pickers en `src/components/`

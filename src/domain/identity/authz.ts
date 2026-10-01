@@ -10,7 +10,9 @@ export type AuthzAction =
   | "approve_audit_program"
   | "verify_findings"
   | "cancel_findings"
-  | "manage_objectives";
+  | "manage_objectives"
+  | "manage_master_data"
+  | "assign_job_tasks";
 
 /**
  * Política documentada (Task 6):
@@ -22,6 +24,8 @@ export type AuthzAction =
  * - Hallazgos (SPEC-findings-lifecycle): verifica eficacia admin o responsable de proceso; anula y reabre solo el admin
  * - Objetivos e indicadores (SPEC-indicators): crean y editan admin y responsable de proceso;
  *   cargan valores además el responsable de cada indicador (se controla en la acción)
+ * - Datos maestros (SPEC-master-data): sedes, puestos, personas e importación solo el admin;
+ *   asignar tareas a personas también el responsable de proceso
  * - Auditorías (SPEC-audits): planifica admin o responsable de proceso; aprueba el programa solo el admin
  */
 const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
@@ -34,6 +38,7 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "plan_audits",
     "verify_findings",
     "manage_objectives",
+    "assign_job_tasks",
   ],
   tenant_admin: [
     "read",
@@ -46,6 +51,8 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "verify_findings",
     "cancel_findings",
     "manage_objectives",
+    "manage_master_data",
+    "assign_job_tasks",
   ],
 };
 

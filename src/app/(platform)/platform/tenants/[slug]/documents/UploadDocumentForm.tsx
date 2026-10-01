@@ -115,6 +115,15 @@ export function UploadDocumentForm({
       </label>
 
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
+        Vigente hasta (opcional, genera un aviso de vencimiento)
+        <input
+          name="validUntil"
+          type="date"
+          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+        />
+      </label>
+
+      <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
         Notas de versión
         <textarea
           name="notes"

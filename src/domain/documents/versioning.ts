@@ -1,5 +1,8 @@
 export type DocumentFateForControl = "keep" | "replace" | "create" | "undecided";
 
+/** `DueItem.entityType` del vencimiento de vigencia de un documento. */
+export const DOCUMENT_VALIDITY_ENTITY_TYPE = "document_validity";
+
 export class DocumentKeepProtectedError extends Error {
   constructor(message = "Documento marcado como Conservar") {
     super(message);

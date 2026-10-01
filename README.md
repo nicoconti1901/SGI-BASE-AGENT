@@ -99,11 +99,30 @@ Ciclo de auditoría interna para **ISO 9001:2026, ISO 14001:2015 e ISO 45001:201
 
 Rutas: `/t/[slug]/audits` (programa y listado), `/audits/new` (planificación), `/audits/[id]` (ejecución e informe), `/audits/guia` (guía). La evidencia se descarga por `/api/audits/evidence/[id]/download`, con control de acceso por empresa.
 
+### Datos maestros — sedes, personas, puestos y tareas ✅ (Task 14)
+
+Base común de las inspecciones, capacitaciones y estadísticas de la Fase 5. Rutas: `/t/[slug]/master-data/{people,sites,positions,tasks}` y `/people/import`. Spec: [`SPEC-master-data.md`](./SPEC-master-data.md).
+
+- **Persona ≠ usuario.** La nómina propia y de contratistas no necesita cuenta; `userId` es opcional. Cada persona tiene un puesto, una **sede base**, **sedes adicionales** (si rota) y tareas. Sin datos de salud. El DNI es visible para todos los roles de la empresa.
+- **Baja lógica.** Una sede, puesto o tarea no se da de baja si tiene personas activas (el mensaje las nombra). Una persona de baja no aparece en los selectores pero conserva su historial.
+- **Importación CSV** (`legajo, nombre, dni, sede, sedes_adicionales, puesto, empresa, contratista, ingreso, tareas`; varios valores separados por `|`): vista previa con errores por línea, y las sedes, puestos o tareas que no existen se crean **solo si el administrador lo confirma**. Reimportar actualiza por legajo, no duplica; una persona de baja no se reactiva por CSV.
+- **Cada cambio queda registrado** (`MasterDataAudit`): quién, cuándo y qué.
+- **Selectores reutilizables:** `SitePicker` y `PersonPicker` en `src/components/pickers/`. Los demás módulos eligen sedes y personas desde ahí (solo activas; `PersonPicker` busca por nombre o legajo y puede filtrar por sede).
+
+| Rol | Sedes, puestos, tareas | Personas |
+|---|---|---|
+| Administrador de la organización | alta, edición, baja | alta, edición, baja, importación |
+| Responsable de proceso | lectura | lectura + asignar tareas |
+| Colaborador / Consulta | lectura | lectura |
+
+Los permisos son `manage_master_data` y `assign_job_tasks` en `src/domain/identity/authz.ts`.
+
 ### Qué sigue
 
 - **Task 11c** — hecha: objetivos e indicadores con carga por período, análisis de desvío, tablero con tendencias y guía (`/t/[slug]/indicators`).  
 - **Task 11d** — hecha: auditorías externas con informe PDF adjunto, hallazgos manuales y extracción con IA con revisión humana (ver `SPEC-external-audits.md`; requiere `ANTHROPIC_API_KEY`).  
-- **Task 12+** — portal cliente / dashboards / E2E.
+- **Task 12+** — portal cliente / dashboards / E2E.  
+- **Fase 5** — operación SST, proveedores y competencia (Tasks 14–20, ver `tasks/todo.md`). Task 14 (datos maestros) hecha; sigue 15 (inspecciones).
 
 ---
 
@@ -291,6 +310,7 @@ La cabecera muestra siempre la persona, el rol, si puede editar y **Cerrar sesi�
 - [`SPEC-findings.md`](./SPEC-findings.md) — hallazgos, 5 Porqués, medidas, adjuntos, bandeja  
 - [`SPEC-risks-opportunities.md`](./SPEC-risks-opportunities.md) — riesgos y oportunidades ISO 9001:2026  
 - [`RESEARCH-risks-opportunities.md`](./RESEARCH-risks-opportunities.md) — ledger de investigación normativa  
+- [`SPEC-master-data.md`](./SPEC-master-data.md) — sedes, personas, puestos y tareas (base de la Fase 5)  
 - [`SPEC-audits.md`](./SPEC-audits.md) — auditorías internas integradas 9001 / 14001 / 45001  
 - [`RESEARCH-audits.md`](./RESEARCH-audits.md) — investigación normativa de auditorías (ISO 19011)  
 

@@ -2,8 +2,10 @@ import type { DocumentFate, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getObjectStorage } from "@/lib/storage";
 import type { ObjectStorage } from "@/lib/storage/types";
+import { upsertOpenDueItemForEntity } from "@/lib/automation";
 import {
   assertCanAddDocumentVersion,
+  DOCUMENT_VALIDITY_ENTITY_TYPE,
   buildDocumentStorageKey,
   isAllowedUploadContentType,
   nextVersionNumber,
@@ -28,6 +30,23 @@ export type UploadDocumentInput = {
   /** When set, adds a version to an existing document instead of creating one. */
   documentId?: string;
 };
+
+async function syncValidityDueItem(
+  db: PrismaClient,
+  document: { id: string; tenantId: string; title: string; validUntil: Date | null },
+) {
+  if (!document.validUntil) return;
+  await upsertOpenDueItemForEntity(
+    {
+      tenantId: document.tenantId,
+      entityType: DOCUMENT_VALIDITY_ENTITY_TYPE,
+      entityId: document.id,
+      title: `Vigencia del documento: ${document.title}`,
+      dueAt: document.validUntil,
+    },
+    db,
+  );
+}
 
 function storageOrDefault(storage?: ObjectStorage): ObjectStorage {
   return storage ?? getObjectStorage();
@@ -150,7 +169,7 @@ export async function uploadTenantDocument(
     },
   });
 
-  return db.document.update({
+  const created = await db.document.update({
     where: { id: document.id },
     data: { currentVersionId: version.id },
     include: {
@@ -158,6 +177,8 @@ export async function uploadTenantDocument(
       versions: { orderBy: { versionNumber: "desc" } },
     },
   });
+  await syncValidityDueItem(db, created);
+  return created;
 }
 
 async function addVersionToDocument(
@@ -210,10 +231,12 @@ async function addVersionToDocument(
     },
   });
 
-  return db.document.update({
+  const updated = await db.document.update({
     where: { id: document.id },
     data: {
       currentVersionId: version.id,
+      ...(input.validFrom !== undefined ? { validFrom: input.validFrom } : {}),
+      ...(input.validUntil !== undefined ? { validUntil: input.validUntil } : {}),
       ...(input.fate ? { fate: input.fate } : {}),
       ...(input.title?.trim() ? { title: input.title.trim() } : {}),
       ...(input.tenantRequirementId !== undefined
@@ -225,6 +248,8 @@ async function addVersionToDocument(
       versions: { orderBy: { versionNumber: "desc" } },
     },
   });
+  await syncValidityDueItem(db, updated);
+  return updated;
 }
 
 export async function readDocumentFile(
