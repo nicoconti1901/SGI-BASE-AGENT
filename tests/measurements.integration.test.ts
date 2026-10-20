@@ -152,6 +152,7 @@ describe.skipIf(!hasDatabase)("measurements (integration)", () => {
     expect(finding).toMatchObject({ type: "nonconformity", status: "draft", tenantId });
     expect(finding.description).toContain("Análisis del desvío: Falló el transportista");
     expect((await db.measurement.findUniqueOrThrow({ where: { id: offTarget.id } })).findingId).toBe(finding.id);
+    expect(finding.origin).toBe("indicator");
 
     await expect(
       createFindingFromMeasurement({ tenantId, measurementId: offTarget.id, userId }, db),

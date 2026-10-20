@@ -195,6 +195,7 @@ export async function recordItemResult(
             status: "draft",
             detectedAt: new Date(),
             source: `Auditoría interna ${item.audit.code}`,
+            origin: "internal_audit",
             createdByUserId: input.userId,
             auditId: input.auditId,
           },

@@ -379,6 +379,17 @@ enum WorkflowStatus {
   closed
 }
 
+/// De dónde nace el hallazgo. inspection, incident y supplier quedan reservados para la Fase 5.
+enum FindingOrigin {
+  manual
+  internal_audit
+  external_audit
+  indicator
+  inspection
+  incident
+  supplier
+}
+
 enum FindingType {
   nonconformity
   observation
@@ -419,6 +430,7 @@ model Finding {
   description       String
   detectedAt        DateTime
   source            String?
+  origin            FindingOrigin            @default(manual)
   location          String?
   severity          String?
   createdByUserId   String?
@@ -451,6 +463,7 @@ model Finding {
 
   @@index([tenantId, status])
   @@index([tenantId, type])
+  @@index([tenantId, origin])
   @@index([auditId])
   @@map("finding")
 }

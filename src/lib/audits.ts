@@ -589,6 +589,7 @@ export async function createExternalFinding(
       status: "draft",
       detectedAt: input.detectedAt,
       source: `Auditoría externa ${audit.code} · ${audit.externalBody ?? ""}`,
+      origin: "external_audit",
       createdByUserId: input.userId,
     },
   });
