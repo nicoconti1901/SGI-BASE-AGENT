@@ -226,6 +226,7 @@ Abrí [http://localhost:3000](http://localhost:3000). En desarrollo, el home mue
 | `npm run db:seed:demo` | Integrantes de prueba de Tisico (idempotente) |
 | `npm run db:recalc-findings` | Recalcula el estado de los hallazgos existentes según sus medidas (`-- --dry-run` para solo mostrar cambios) |
 | `npm run db:studio` | Prisma Studio |
+| `npm run wt:setup -- <nombre>` | Prepara un git worktree para un agente: `npm ci`, base `sgi_wt_<nombre>`, `.env` con puerto propio, migraciones y seeds (`--drop` borra la base) |
 
 ---
 
