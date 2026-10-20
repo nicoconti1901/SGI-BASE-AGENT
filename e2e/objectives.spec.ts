@@ -1,7 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
 
 // El tablero (segundo test) necesita al menos un objetivo vigente de ISO 9001, que crea el primero.
-test.describe.configure({ mode: "serial" });
+// El primer test recorre seis pantallas: con el servidor de desarrollo en frío no entra en 30 s.
+test.describe.configure({ mode: "serial", timeout: 90_000 });
 
 /** Requiere `npm run db:seed` y `npm run db:seed:demo`. */
 async function quickLogin(page: Page, account: RegExp) {
