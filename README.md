@@ -226,6 +226,7 @@ Abrí [http://localhost:3000](http://localhost:3000). En desarrollo, el home mue
 | `npm run db:seed:demo` | Integrantes de prueba de Tisico (idempotente) |
 | `npm run db:recalc-findings` | Recalcula el estado de los hallazgos existentes según sus medidas (`-- --dry-run` para solo mostrar cambios) |
 | `npm run db:studio` | Prisma Studio |
+| `npm run wt:setup -- <nombre>` | Prepara un git worktree para un agente: `npm ci`, base `sgi_wt_<nombre>`, `.env` con puerto propio, migraciones y seeds (`--drop` borra la base) |
 
 ---
 
@@ -286,7 +287,7 @@ La cabecera muestra siempre la persona, el rol, si puede editar y **Cerrar sesi�
 │   └── lib/                # auth, db, persistence helpers
 ├── tests/                  # Vitest
 ├── e2e/                    # Playwright
-└── .cursor/                # Skills, commands y agents
+└── .claude/                # Agentes, comandos y skills de Claude Code
 ```
 
 ---
@@ -318,7 +319,7 @@ La cabecera muestra siempre la persona, el rol, si puede editar y **Cerrar sesi�
 
 El trabajo se organiza por slices verticales: especificar → planear → implementar → probar → revisar → documentar → ship.
 
-En Cursor, los comandos bajo `.cursor/commands/` y las skills bajo `.cursor/skills/` guían ese flujo. No inventar arquitectura: alinear siempre con `SPEC.md` y el capability map.
+En Claude Code, los comandos de `.claude/commands/` (`/spec`, `/plan`, `/build`, `/test`, `/review`, `/ship`) y las skills de `.claude/skills/` guían ese flujo; qué agente y qué modelo usar para cada tarea está en `CLAUDE.md`. No inventar arquitectura: alinear siempre con `SPEC.md` y el capability map.
 
 ### Git (convención del equipo)
 
