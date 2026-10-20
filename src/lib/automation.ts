@@ -4,9 +4,11 @@ import {
   classifyDueWindow,
   DUE_REMINDERS_OFFER_CODE,
   NATIVE_OFFER_CATALOG,
+  reminderStartsAt,
   shouldEmitReminder,
   type ReminderKind,
 } from "@/domain/automation/due";
+import { buildReminderDigests, type DigestItem, type DigestMember } from "@/domain/automation/digest";
 import { getEmailSender, type EmailSender } from "@/lib/mail";
 
 export type CreateDueItemInput = {
@@ -16,6 +18,10 @@ export type CreateDueItemInput = {
   entityId?: string | null;
   dueAt: Date;
   leadDays?: number;
+  /** Responsable: recibe el vencimiento en su resumen diario. */
+  ownerUserId?: string | null;
+  siteId?: string | null;
+  personId?: string | null;
 };
 
 export async function ensureNativeOffersSeeded(db: PrismaClient = prisma) {
@@ -92,21 +98,6 @@ export async function setOfferActivation(input: {
   });
 }
 
-export async function isOfferActiveForTenant(
-  tenantId: string,
-  offerCode: string,
-  db: PrismaClient = prisma,
-): Promise<boolean> {
-  const offer = await db.automationOffer.findUnique({
-    where: { code: offerCode },
-    include: {
-      activations: { where: { tenantId, active: true }, take: 1 },
-    },
-  });
-  if (!offer?.enabledGlobal) return false;
-  return offer.activations.length > 0;
-}
-
 export async function createDueItem(
   input: CreateDueItemInput,
   db: PrismaClient = prisma,
@@ -119,6 +110,7 @@ export async function createDueItem(
     throw new Error("Fecha de vencimiento inválida");
   }
 
+  const leadDays = input.leadDays ?? 7;
   return db.dueItem.create({
     data: {
       tenantId: input.tenantId,
@@ -126,7 +118,11 @@ export async function createDueItem(
       entityType: input.entityType,
       entityId: input.entityId ?? null,
       dueAt: input.dueAt,
-      leadDays: input.leadDays ?? 7,
+      leadDays,
+      remindAt: reminderStartsAt(input.dueAt, leadDays),
+      ownerUserId: input.ownerUserId ?? null,
+      siteId: input.siteId ?? null,
+      personId: input.personId ?? null,
       status: "open",
     },
   });
@@ -148,12 +144,17 @@ export async function upsertOpenDueItemForEntity(
   });
 
   if (existing) {
+    const leadDays = input.leadDays ?? existing.leadDays;
     return db.dueItem.update({
       where: { id: existing.id },
       data: {
         title: input.title.trim(),
         dueAt: input.dueAt,
-        leadDays: input.leadDays ?? existing.leadDays,
+        leadDays,
+        remindAt: reminderStartsAt(input.dueAt, leadDays),
+        ...(input.ownerUserId !== undefined ? { ownerUserId: input.ownerUserId } : {}),
+        ...(input.siteId !== undefined ? { siteId: input.siteId } : {}),
+        ...(input.personId !== undefined ? { personId: input.personId } : {}),
         lastReminderKind: null,
         lastRemindedAt: null,
       },
@@ -221,8 +222,14 @@ export type ScanDueRemindersResult = {
   reminded: number;
   skippedInactiveOffer: number;
   tenantsTouched: string[];
+  emailsSent: number;
 };
 
+/**
+ * Recorre los vencimientos que entraron en ventana (remindAt ≤ ahora) y avisa una vez por
+ * transición (próximo → vencido). En la app: una notificación por vencimiento, al responsable
+ * o a la empresa. Por mail: un resumen por persona (ver buildReminderDigests).
+ */
 export async function scanDueReminders(options?: {
   db?: PrismaClient;
   mail?: EmailSender;
@@ -244,126 +251,111 @@ export async function scanDueReminders(options?: {
   });
 
   try {
-    const openItems = await db.dueItem.findMany({
-      where: {
-        status: "open",
-        ...(options?.tenantId ? { tenantId: options.tenantId } : {}),
-      },
-      include: {
-        tenant: {
-          include: {
-            memberships: {
-              where: {
-                role: { in: ["tenant_admin", "process_owner"] },
-              },
-              include: { user: { select: { id: true, email: true, name: true } } },
-            },
-          },
-        },
-      },
+    const offer = await db.automationOffer.findUnique({
+      where: { code: DUE_REMINDERS_OFFER_CODE },
+      include: { activations: { where: { active: true }, select: { tenantId: true } } },
     });
+    const activeTenants = offer?.enabledGlobal ? offer.activations.map((a) => a.tenantId) : [];
+    const inWindow = {
+      status: "open" as const,
+      remindAt: { lte: now },
+      ...(options?.tenantId ? { tenantId: options.tenantId } : {}),
+    };
 
-    let reminded = 0;
-    let skippedInactiveOffer = 0;
-    const tenantsTouched = new Set<string>();
+    const [openItems, skippedInactiveOffer] = await Promise.all([
+      db.dueItem.findMany({
+        where: { ...inWindow, AND: [{ tenantId: { in: activeTenants } }] },
+        select: {
+          id: true,
+          tenantId: true,
+          title: true,
+          entityType: true,
+          dueAt: true,
+          leadDays: true,
+          ownerUserId: true,
+          lastReminderKind: true,
+          tenant: { select: { name: true } },
+          site: { select: { name: true } },
+        },
+        orderBy: { dueAt: "asc" },
+      }),
+      db.dueItem.count({ where: { ...inWindow, AND: [{ tenantId: { notIn: activeTenants } }] } }),
+    ]);
 
+    const claimed: DigestItem[] = [];
     for (const item of openItems) {
-      const active = await isOfferActiveForTenant(
-        item.tenantId,
-        DUE_REMINDERS_OFFER_CODE,
-        db,
-      );
-      if (!active) {
-        skippedInactiveOffer += 1;
-        continue;
-      }
-
-      const classification = classifyDueWindow({
-        dueAt: item.dueAt,
-        now,
-        leadDays: item.leadDays,
-      });
-
-      if (
-        !shouldEmitReminder({
-          classification,
-          lastReminderKind: item.lastReminderKind,
-        })
-      ) {
-        continue;
-      }
-
+      const classification = classifyDueWindow({ dueAt: item.dueAt, now, leadDays: item.leadDays });
+      if (!shouldEmitReminder({ classification, lastReminderKind: item.lastReminderKind })) continue;
       const kind = classification as Exclude<ReminderKind, "none">;
 
-      // Claim atómico: solo el scan que cambia lastReminderKind notifica.
+      // Claim atómico: solo el scan que cambia lastReminderKind avisa.
       // Evita duplicados si n8n reintenta o dos scans corren a la vez.
       const claim = await db.dueItem.updateMany({
-        where: {
-          id: item.id,
-          status: "open",
-          lastReminderKind: item.lastReminderKind,
-        },
-        data: {
-          lastRemindedAt: now,
-          lastReminderKind: kind,
-        },
+        where: { id: item.id, status: "open", lastReminderKind: item.lastReminderKind },
+        data: { lastRemindedAt: now, lastReminderKind: kind },
       });
       if (claim.count === 0) continue;
 
-      const title =
-        kind === "overdue"
-          ? `Vencido: ${item.title}`
-          : `Próximo a vencer: ${item.title}`;
-      const body = `El ítem "${item.title}" (${item.entityType}) vence el ${item.dueAt.toISOString().slice(0, 10)}.`;
+      claimed.push({
+        id: item.id,
+        tenantId: item.tenantId,
+        tenantName: item.tenant.name,
+        title: item.title,
+        kind,
+        dueAt: item.dueAt,
+        ownerUserId: item.ownerUserId,
+        siteName: item.site?.name ?? null,
+      });
+    }
 
-      const recipients = item.tenant.memberships;
-      if (recipients.length === 0) {
-        await db.inAppNotification.create({
-          data: {
-            tenantId: item.tenantId,
-            userId: null,
-            title,
-            body,
-            dueItemId: item.id,
+    const tenantIds = [...new Set(claimed.map((i) => i.tenantId))];
+    const ownerIds = [...new Set(claimed.flatMap((i) => (i.ownerUserId ? [i.ownerUserId] : [])))];
+    const memberships = tenantIds.length
+      ? await db.membership.findMany({
+          where: {
+            tenantId: { in: tenantIds },
+            OR: [{ role: "tenant_admin" }, { userId: { in: ownerIds } }],
           },
-        });
-      } else {
-        for (const membership of recipients) {
-          await db.inAppNotification.create({
-            data: {
-              tenantId: item.tenantId,
-              userId: membership.userId,
-              title,
-              body,
-              dueItemId: item.id,
-            },
-          });
-          await mail.send({
-            to: membership.user.email,
-            subject: `[SGI] ${title}`,
-            body,
-          });
-        }
-      }
+          select: { tenantId: true, userId: true, role: true, user: { select: { email: true } } },
+        })
+      : [];
+    const members: DigestMember[] = memberships.map((m) => ({
+      tenantId: m.tenantId,
+      userId: m.userId,
+      email: m.user.email,
+      role: m.role,
+    }));
+    const isMember = (tenantId: string, userId: string | null) =>
+      userId !== null && members.some((m) => m.tenantId === tenantId && m.userId === userId);
 
-      reminded += 1;
-      tenantsTouched.add(item.tenantId);
+    if (claimed.length > 0) {
+      await db.inAppNotification.createMany({
+        data: claimed.map((item) => ({
+          tenantId: item.tenantId,
+          userId: isMember(item.tenantId, item.ownerUserId) ? item.ownerUserId : null,
+          title: item.kind === "overdue" ? `Vencido: ${item.title}` : `Próximo a vencer: ${item.title}`,
+          body: `"${item.title}" vence el ${item.dueAt.toISOString().slice(0, 10)}.`,
+          dueItemId: item.id,
+        })),
+      });
+    }
+
+    const digests = buildReminderDigests(claimed, members);
+    for (const digest of digests) {
+      await mail.send({ to: digest.to, subject: digest.subject, body: digest.body });
     }
 
     const summary = {
       scanned: openItems.length,
-      reminded,
+      reminded: claimed.length,
       skippedInactiveOffer,
-      tenantsTouched: [...tenantsTouched],
+      tenantsTouched: tenantIds,
+      emailsSent: digests.length,
     };
 
     await db.automationRun.update({
       where: { id: run.id },
-      data: {
-        status: "succeeded",
-        finishedAt: new Date(),
-        summary,
-      },
+      data: { status: "succeeded", finishedAt: new Date(), summary },
     });
 
     return { runId: run.id, ...summary };

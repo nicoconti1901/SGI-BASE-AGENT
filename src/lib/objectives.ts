@@ -92,6 +92,7 @@ export async function syncIndicatorDue(indicatorId: string, db: Db = prisma) {
       title: `Cargar indicador ${indicator.name}: ${period.label}`,
       dueAt: measurementDueAt(period),
       leadDays: 3,
+      ownerUserId: indicator.ownerUserId,
     },
     db,
   );

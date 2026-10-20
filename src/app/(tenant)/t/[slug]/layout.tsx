@@ -1,11 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import { AppShell } from "@/components/shell/AppShell";
 import { buildShellIdentity } from "@/components/shell/identity";
-import { tenantNavItems } from "@/components/shell/nav-config";
 import { StatusScreen } from "@/components/shell/StatusScreen";
 import { getAppSessionContext } from "@/lib/session";
 import { getMembership, setActiveTenantForSession } from "@/lib/identity";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
+import { getEnabledModulesCached } from "@/lib/modules";
+import { tenantNavSections } from "@/domain/modules/catalog";
 
 export default async function TenantLayout({
   children,
@@ -47,7 +48,7 @@ export default async function TenantLayout({
     <AppShell
       identity={buildShellIdentity(ctx, membership?.role)}
       contextLabel={tenant.name}
-      navItems={tenantNavItems(slug)}
+      navSections={tenantNavSections(slug, await getEnabledModulesCached(tenant.id))}
       backLink={
         ctx.isPlatformSuperuser
           ? { href: "/platform/tenants", label: "Volver a plataforma" }

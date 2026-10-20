@@ -1,8 +1,10 @@
 import { PageFrame, PageHeader } from "@/components/ui";
 import { MasterDataTabs } from "@/app/(tenant)/t/[slug]/master-data/MasterDataTabs";
+import { requireModuleForSlug } from "@/lib/modules";
 
 export default async function MasterDataLayout({ children, params }: LayoutProps<"/t/[slug]/master-data">) {
   const { slug } = await params;
+  await requireModuleForSlug(slug, "master_data");
   const base = `/t/${slug}/master-data`;
   return (
     <PageFrame>

@@ -67,7 +67,8 @@ const lintFiles = changed
   .filter(({ file, code }) => LINTABLE.test(file) && !code.includes("D") && existsSync(path.join(cwd, file)))
   .map(({ file }) => `"${file}"`);
 const results = await Promise.all([
-  check("tsc", "npx tsc --noEmit"),
+  // Los tipos de rutas de Next (LayoutProps, validator) se regeneran: si no, borrar o agregar una ruta da falsos errores.
+  check("tsc", "npx next typegen && npx tsc --noEmit"),
   lintFiles.length ? check("eslint", `npx eslint ${lintFiles.join(" ")}`) : { name: "eslint", ok: true, out: "" },
   check("vitest", "npx vitest run"),
 ]);

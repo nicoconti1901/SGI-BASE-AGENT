@@ -7,6 +7,11 @@ export type DueWindowInput = {
   leadDays: number;
 };
 
+/** Momento desde el que un vencimiento pasa a "próximo": dueAt − leadDays días (leadDays < 0 cuenta como 0). */
+export function reminderStartsAt(dueAt: Date, leadDays: number): Date {
+  return new Date(dueAt.getTime() - Math.max(0, leadDays) * 24 * 60 * 60 * 1000);
+}
+
 /** Clasifica un ítem según la ventana de vencimiento. */
 export function classifyDueWindow(input: DueWindowInput): ReminderKind {
   const leadDays = Math.max(0, input.leadDays);

@@ -94,7 +94,7 @@ Run several agents at once only with `isolation: "worktree"`, one module per wor
 
 1. First command inside the worktree: `npm run wt:setup -- <nombre>`. It runs `npm ci`, creates the database `sgi_wt_<nombre>`, writes a `.env` with that database and its own `PORT`, and applies migrations and seeds. Never point a worktree at `sgi_base`.
 2. Dev server: `npm run dev -- -p $PORT` (Next does not read `PORT` from `.env`). Playwright already uses the `.env` port.
-3. Migrations in a module branch touch only that module's tables. Changes to shared models (`Finding`, `DueItem`, `Tenant`, `authz.ts`, `nav-config.ts`) go in a serial "foundation" PR first.
+3. Migrations in a module branch touch only that module's tables. Changes to shared models (`Finding`, `DueItem`, `Tenant`, `authz.ts`) go in a serial "foundation" PR first. Each Fase 5 module only edits its own entry in `src/domain/modules/catalog.ts` (`status: "planned"` → `"available"`), links findings from its own tables (`Finding.origin` + FK on the module side) and uses `Action` for follow-ups (see `SPEC-fase5-fundacion.md`).
 4. Integrate one PR at a time: rebase on `main`, `npx prisma migrate dev` to check for drift, full suite, review, publish.
 5. When done: `npm run wt:setup -- <nombre> --drop` deletes the database.
 

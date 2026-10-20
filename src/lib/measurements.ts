@@ -210,6 +210,7 @@ export async function createFindingFromMeasurement(
         ].join("\n\n"),
         detectedAt: new Date(),
         source: `Indicador ${indicator.name}`,
+        origin: "indicator",
         createdByUserId: input.userId,
       },
     });

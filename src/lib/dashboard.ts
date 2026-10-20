@@ -24,17 +24,22 @@ export async function getTenantDashboard(
   slug: string,
   db: PrismaClient = prisma,
 ): Promise<TenantDashboard> {
-  const [requirements, open] = await Promise.all([
+  // Los conteos salen de la base: con la Fase 5 una empresa puede tener miles de vencimientos abiertos.
+  // "Por vencer" ⇔ remindAt ≤ ahora ≤ dueAt, igual que classifyDueWindow.
+  const open = { tenantId, status: "open" as const };
+  const [requirements, shown, overdue, soon, openCount] = await Promise.all([
     db.tenantRequirement.findMany({ where: { tenantId }, select: { status: true } }),
     db.dueItem.findMany({
-      where: { tenantId, status: "open" },
+      where: open,
       orderBy: { dueAt: "asc" },
+      take: DUE_LIST_SIZE,
       select: { id: true, title: true, entityType: true, entityId: true, dueAt: true, leadDays: true },
     }),
+    db.dueItem.count({ where: { ...open, dueAt: { lt: now } } }),
+    db.dueItem.count({ where: { ...open, dueAt: { gte: now }, remindAt: { lte: now } } }),
+    db.dueItem.count({ where: open }),
   ]);
 
-  // Solo para los que se muestran: los conteos no necesitan el enlace.
-  const shown = open.slice(0, DUE_LIST_SIZE);
   const idsOf = (type: string) =>
     shown.flatMap((i) => (i.entityType === type && i.entityId ? [i.entityId] : []));
   const [indicators, measures] = await Promise.all([
@@ -50,14 +55,13 @@ export async function getTenantDashboard(
   const objectiveByIndicator = new Map(indicators.map((i) => [i.id, i.objectiveId]));
   const findingByMeasure = new Map(measures.map((m) => [m.id, m.findingId]));
 
-  const views = open.map((item, index) => {
-    const parent =
-      index >= DUE_LIST_SIZE || !item.entityId
-        ? {}
-        : {
-            objectiveId: objectiveByIndicator.get(item.entityId),
-            findingId: findingByMeasure.get(item.entityId),
-          };
+  const views = shown.map((item) => {
+    const parent = item.entityId
+      ? {
+          objectiveId: objectiveByIndicator.get(item.entityId),
+          findingId: findingByMeasure.get(item.entityId),
+        }
+      : {};
     return {
       id: item.id,
       title: item.title,
@@ -68,12 +72,8 @@ export async function getTenantDashboard(
 
   return {
     compliance: summarizeCompliance(requirements.map((r) => r.status as RequirementStatus)),
-    dueItems: views.slice(0, DUE_LIST_SIZE),
-    dueCounts: {
-      overdue: views.filter((v) => v.tone === "overdue").length,
-      soon: views.filter((v) => v.tone === "soon").length,
-      open: views.length,
-    },
+    dueItems: views,
+    dueCounts: { overdue, soon, open: openCount },
   };
 }
 

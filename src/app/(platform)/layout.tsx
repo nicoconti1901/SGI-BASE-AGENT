@@ -18,7 +18,7 @@ export default async function PlatformLayout({
     <AppShell
       identity={buildShellIdentity(ctx, null)}
       contextLabel="Plataforma"
-      navItems={platformNavItems}
+      navSections={[{ label: null, items: [...platformNavItems] }]}
     >
       {children}
     </AppShell>

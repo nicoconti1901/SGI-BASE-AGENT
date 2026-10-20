@@ -241,6 +241,7 @@ describe.skipIf(!hasDatabase)("audits program and planning (integration)", () =>
     const stored = await db.finding.findUniqueOrThrow({ where: { id: finding!.id } });
     expect(stored.auditId).toBe(audit.id);
     expect(stored.source).toMatch(/^Auditoría interna AI-2031-/);
+    expect(stored.origin).toBe("internal_audit");
     expect(stored.description).toBe("2 OC sin proveedor evaluado");
 
     await transitionAudit({ tenantId, auditId: audit.id, to: "reporting" }, db);
@@ -364,6 +365,7 @@ describe.skipIf(!hasDatabase)("audits program and planning (integration)", () =>
     );
     expect(finding).toMatchObject({ type: "nonconformity", severity: "minor", status: "draft", auditId: audit.id });
     expect(finding.source).toContain("AE-2033-01");
+    expect(finding.origin).toBe("external_audit");
 
     // Cuenta en el seguimiento general de hallazgos de la empresa.
     const tracked = await listFindings(tenantId, {}, db);

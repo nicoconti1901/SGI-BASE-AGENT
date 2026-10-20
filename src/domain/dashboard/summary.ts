@@ -66,11 +66,6 @@ const DUE_ROUTES: Record<string, DueRoute> = {
     label: "Medida de hallazgo",
     path: (_id, p) => (p.findingId ? `findings/${p.findingId}` : "findings"),
   },
-  nonconformity: {
-    label: "No conformidad",
-    path: (id) => (id ? `operations/${id}` : "operations"),
-  },
-  corrective_action: { label: "Acción correctiva", path: () => "operations" },
   operational_action: { label: "Acción", path: () => "risks" },
   audit_start: {
     label: "Inicio de auditoría",
