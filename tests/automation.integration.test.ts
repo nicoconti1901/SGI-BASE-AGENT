@@ -60,13 +60,15 @@ describe.skipIf(!hasDatabase)("automation due reminders integration", () => {
   });
 
   it("skips reminders when offer is inactive, then emits when activated", async () => {
-    const now = new Date("2026-09-26T12:00:00.000Z");
+    // Fechas lejanas: el test del webhook corre en paralelo un scan global con la fecha real
+    // y no debe alcanzar (ni reclamar) los vencimientos de este test.
+    const now = new Date("2030-09-26T12:00:00.000Z");
     await createDueItem(
       {
         tenantId,
         title: "Revisión documental",
         entityType: "document",
-        dueAt: new Date("2026-09-28T12:00:00.000Z"),
+        dueAt: new Date("2030-09-28T12:00:00.000Z"),
         leadDays: 7,
       },
       db,
@@ -107,7 +109,7 @@ describe.skipIf(!hasDatabase)("automation due reminders integration", () => {
   });
 
   it("manda un resumen por persona y una notificación por vencimiento, sin duplicar al reintentar", async () => {
-    const now = new Date("2027-03-10T12:00:00.000Z");
+    const now = new Date("2031-03-10T12:00:00.000Z");
     const day = 24 * 60 * 60 * 1000;
     const owner = await db.user.create({ data: { name: "Responsable", email: `owner@${slug}.test`, emailVerified: true } });
     extraUsers.push(owner.id);
