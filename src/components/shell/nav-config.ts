@@ -9,22 +9,6 @@ export const platformNavItems: readonly NavItem[] = [
   { href: "/platform/automations", label: "Automatizaciones" },
 ];
 
-/** Navegación de una empresa; los links llevan el slug, sin pasos intermedios. */
-export function tenantNavItems(slug: string): NavItem[] {
-  const base = `/t/${slug}`;
-  return [
-    { href: base, label: "Panel" },
-    { href: `${base}/documents`, label: "Documentos" },
-    { href: `${base}/findings`, label: "Hallazgos" },
-    { href: `${base}/risks`, label: "Riesgos y oportunidades" },
-    { href: `${base}/audits`, label: "Auditorías" },
-    { href: `${base}/indicators`, label: "Objetivos" },
-    { href: `${base}/automations`, label: "Automatizaciones" },
-    { href: `${base}/master-data`, label: "Datos maestros" },
-    { href: `${base}/users`, label: "Usuarios" },
-  ];
-}
-
 export type ShellKind = "platform" | "tenant";
 
 export function shellTitle(kind: ShellKind): string {

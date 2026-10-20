@@ -1,11 +1,8 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import {
-  platformNavItems,
-  shellTitle,
-  tenantNavItems,
-} from "@/components/shell/nav-config";
+import { platformNavItems, shellTitle } from "@/components/shell/nav-config";
+import { enabledModuleKeys, tenantNavSections } from "@/domain/modules/catalog";
 
 describe("design tokens", () => {
   const tokens = readFileSync(
@@ -61,7 +58,8 @@ describe("design tokens", () => {
 describe("shell navigation landmarks", () => {
   it("exposes platform and tenant nav links for accessible shells", () => {
     expect(platformNavItems.length).toBeGreaterThan(0);
-    expect(tenantNavItems("acme").map((i) => i.href)).toContain("/t/acme/risks");
+    const hrefs = tenantNavSections("acme", enabledModuleKeys([])).flatMap((s) => s.items.map((i) => i.href));
+    expect(hrefs).toContain("/t/acme/risks");
     expect(shellTitle("platform")).toBe("Plataforma");
     expect(shellTitle("tenant")).toBe("Portal del cliente");
   });

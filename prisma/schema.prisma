@@ -140,6 +140,7 @@ model Tenant {
   jobTasks           JobTask[]
   people             Person[]
   masterDataAudits   MasterDataAudit[]
+  moduleActivations  TenantModuleActivation[]
 
   @@map("tenant")
 }
@@ -318,6 +319,21 @@ model TenantOfferActivation {
 }
 
 /// Ítem genérico con vencimiento (doc, NC, indicador, etc.).
+/// Módulos que usa cada empresa. Sin fila vale el defaultEnabled del catálogo (src/domain/modules/catalog.ts).
+model TenantModuleActivation {
+  id              String   @id @default(cuid())
+  tenantId        String
+  moduleKey       String
+  enabled         Boolean
+  updatedByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, moduleKey])
+  @@map("tenant_module_activation")
+}
+
 model DueItem {
   id               String              @id @default(cuid())
   tenantId         String

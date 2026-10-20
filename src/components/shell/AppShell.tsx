@@ -3,6 +3,7 @@ import { NavLinks } from "@/components/shell/NavLinks";
 import { SignOutButton } from "@/components/shell/SignOutButton";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { PERSONA_THEME, type NavItem } from "@/components/shell/nav-config";
+import type { NavSection } from "@/domain/modules/catalog";
 import { StatusChip } from "@/components/ui";
 import { PERSONA_LABELS, type Persona } from "@/domain/identity/persona";
 
@@ -18,7 +19,7 @@ type AppShellProps = {
   identity: ShellIdentity;
   /** Dónde está parado el usuario: "Plataforma" o el nombre de la empresa. */
   contextLabel: string;
-  navItems: readonly NavItem[];
+  navSections: readonly NavSection[];
   /** Salida a un nivel superior (ej. superusuario dentro de una empresa). */
   backLink?: NavItem;
   children: React.ReactNode;
@@ -27,7 +28,7 @@ type AppShellProps = {
 export function AppShell({
   identity,
   contextLabel,
-  navItems,
+  navSections,
   backLink,
   children,
 }: AppShellProps) {
@@ -57,7 +58,7 @@ export function AppShell({
               ← {backLink.label}
             </Link>
           ) : null}
-          <NavLinks items={navItems} />
+          <NavLinks sections={navSections} />
         </nav>
         <div className="border-t border-white/10 px-5 py-4 text-xs opacity-60">
           ISO 9001 · 14001 · 45001
