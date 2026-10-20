@@ -286,7 +286,7 @@ La cabecera muestra siempre la persona, el rol, si puede editar y **Cerrar sesi�
 │   └── lib/                # auth, db, persistence helpers
 ├── tests/                  # Vitest
 ├── e2e/                    # Playwright
-└── .cursor/                # Skills, commands y agents
+└── .claude/                # Agentes, comandos y skills de Claude Code
 ```
 
 ---
@@ -318,7 +318,7 @@ La cabecera muestra siempre la persona, el rol, si puede editar y **Cerrar sesi�
 
 El trabajo se organiza por slices verticales: especificar → planear → implementar → probar → revisar → documentar → ship.
 
-En Cursor, los comandos bajo `.cursor/commands/` y las skills bajo `.cursor/skills/` guían ese flujo. No inventar arquitectura: alinear siempre con `SPEC.md` y el capability map.
+En Claude Code, los comandos de `.claude/commands/` (`/spec`, `/plan`, `/build`, `/test`, `/review`, `/ship`) y las skills de `.claude/skills/` guían ese flujo; qué agente y qué modelo usar para cada tarea está en `CLAUDE.md`. No inventar arquitectura: alinear siempre con `SPEC.md` y el capability map.
 
 ### Git (convención del equipo)
 
