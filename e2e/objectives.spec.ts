@@ -1,5 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
 
+// El tablero (segundo test) necesita al menos un objetivo vigente de ISO 9001, que crea el primero.
+test.describe.configure({ mode: "serial" });
+
 /** Requiere `npm run db:seed` y `npm run db:seed:demo`. */
 async function quickLogin(page: Page, account: RegExp) {
   await page.goto("/");
@@ -12,7 +15,8 @@ test("el administrador crea un objetivo, le agrega un indicador y edita ambos", 
   const title = `Reducir reclamos e2e ${Date.now()}`;
 
   await page.goto("/t/tisico/indicators");
-  await page.getByRole("link", { name: "Nuevo objetivo" }).click();
+  // Con la base vacía también aparece el link del estado vacío: se usa el del encabezado.
+  await page.getByRole("link", { name: "Nuevo objetivo" }).first().click();
   await page.getByLabel(/^Objetivo/).fill(title);
   await page.getByLabel("ISO 9001").check();
   await page.getByLabel("Responsable").selectOption({ index: 1 });
