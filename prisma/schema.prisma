@@ -326,15 +326,27 @@ model DueItem {
   entityId         String?
   dueAt            DateTime
   leadDays         Int                 @default(7)
+  /// dueAt − leadDays: desde cuándo está "por vencer". Lo mantiene src/lib/automation.ts.
+  remindAt         DateTime
+  /// Quién lo resuelve: recibe el aviso en su resumen diario. Sin FK, como los demás ownerUserId; el scan valida la membresía.
+  ownerUserId      String?
+  /// Para agrupar los avisos por sede o persona (módulos de la Fase 5).
+  siteId           String?
+  personId         String?
   status           DueItemStatus       @default(open)
   lastRemindedAt   DateTime?
   lastReminderKind String?
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   tenant           Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site             Site?               @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  person           Person?             @relation(fields: [personId], references: [id], onDelete: SetNull)
   notifications    InAppNotification[]
 
   @@index([tenantId, status, dueAt])
+  @@index([tenantId, status, remindAt])
+  @@index([status, remindAt])
+  @@index([ownerUserId])
   @@index([tenantId, entityType, entityId])
   @@map("due_item")
 }
@@ -1160,6 +1172,7 @@ model Site {
   tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   basePeople Person[]     @relation("PersonBaseSite")
   people     PersonSite[]
+  dueItems   DueItem[]
 
   @@unique([tenantId, name])
   @@index([tenantId, active])
@@ -1224,6 +1237,7 @@ model Person {
   user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   extraSites     PersonSite[]
   jobTasks       PersonJobTask[]
+  dueItems       DueItem[]
 
   @@unique([tenantId, employeeCode])
   @@unique([tenantId, userId])

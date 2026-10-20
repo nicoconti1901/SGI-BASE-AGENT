@@ -262,6 +262,7 @@ export async function publishFinding(input: {
           entityType: FINDING_MEASURE_ENTITY_TYPE,
           entityId: measure.id,
           dueAt: measure.dueAt,
+          ownerUserId: measure.ownerUserId,
         },
         db,
       );

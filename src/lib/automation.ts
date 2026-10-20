@@ -4,6 +4,7 @@ import {
   classifyDueWindow,
   DUE_REMINDERS_OFFER_CODE,
   NATIVE_OFFER_CATALOG,
+  reminderStartsAt,
   shouldEmitReminder,
   type ReminderKind,
 } from "@/domain/automation/due";
@@ -16,6 +17,10 @@ export type CreateDueItemInput = {
   entityId?: string | null;
   dueAt: Date;
   leadDays?: number;
+  /** Responsable: recibe el vencimiento en su resumen diario. */
+  ownerUserId?: string | null;
+  siteId?: string | null;
+  personId?: string | null;
 };
 
 export async function ensureNativeOffersSeeded(db: PrismaClient = prisma) {
@@ -119,6 +124,7 @@ export async function createDueItem(
     throw new Error("Fecha de vencimiento inválida");
   }
 
+  const leadDays = input.leadDays ?? 7;
   return db.dueItem.create({
     data: {
       tenantId: input.tenantId,
@@ -126,7 +132,11 @@ export async function createDueItem(
       entityType: input.entityType,
       entityId: input.entityId ?? null,
       dueAt: input.dueAt,
-      leadDays: input.leadDays ?? 7,
+      leadDays,
+      remindAt: reminderStartsAt(input.dueAt, leadDays),
+      ownerUserId: input.ownerUserId ?? null,
+      siteId: input.siteId ?? null,
+      personId: input.personId ?? null,
       status: "open",
     },
   });
@@ -148,12 +158,17 @@ export async function upsertOpenDueItemForEntity(
   });
 
   if (existing) {
+    const leadDays = input.leadDays ?? existing.leadDays;
     return db.dueItem.update({
       where: { id: existing.id },
       data: {
         title: input.title.trim(),
         dueAt: input.dueAt,
-        leadDays: input.leadDays ?? existing.leadDays,
+        leadDays,
+        remindAt: reminderStartsAt(input.dueAt, leadDays),
+        ...(input.ownerUserId !== undefined ? { ownerUserId: input.ownerUserId } : {}),
+        ...(input.siteId !== undefined ? { siteId: input.siteId } : {}),
+        ...(input.personId !== undefined ? { personId: input.personId } : {}),
         lastReminderKind: null,
         lastRemindedAt: null,
       },

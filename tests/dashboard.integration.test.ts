@@ -35,6 +35,8 @@ describe.skipIf(!hasDatabase)("tenant dashboard integration", () => {
 
     await createDueItem({ tenantId, title: "Vencido", entityType: "risk", entityId: "r1", dueAt: new Date(now.getTime() - 2 * day) }, db);
     await createDueItem({ tenantId, title: "Próximo", entityType: "audit_report", entityId: "a1", dueAt: new Date(now.getTime() + 3 * day) }, db);
+    // Con 30 días de anticipación ya está "por vencer" aunque falten 20.
+    await createDueItem({ tenantId, title: "Próximo largo", entityType: "risk", entityId: "r2", dueAt: new Date(now.getTime() + 20 * day), leadDays: 30 }, db);
     const objective = await db.objective.create({
       data: { tenantId, code: "OBJ-1", title: "Objetivo dash", standards: ["ISO9001"], ownerUserId: "owner-dash", dueDate: new Date(now.getTime() + 90 * day) },
     });
@@ -62,10 +64,12 @@ describe.skipIf(!hasDatabase)("tenant dashboard integration", () => {
 
   it("lista solo vencimientos abiertos de la empresa, ordenados por fecha, con conteos", async () => {
     const d = await getTenantDashboard(tenantId, now, `dash-${stamp}`, db);
-    expect(d.dueItems.map((i) => i.title)).toEqual(["Vencido", "Próximo", "Lejano"]);
-    expect(d.dueCounts).toEqual({ overdue: 1, soon: 1, open: 3 });
+    expect(d.dueItems.map((i) => i.title)).toEqual(["Vencido", "Próximo", "Próximo largo", "Lejano"]);
+    expect(d.dueCounts).toEqual({ overdue: 1, soon: 2, open: 4 });
+    const largo = await db.dueItem.findFirstOrThrow({ where: { tenantId, title: "Próximo largo" } });
+    expect(largo.remindAt.toISOString()).toBe(new Date(now.getTime() - 10 * day).toISOString());
     expect(d.dueItems[0].href).toBe(`/t/dash-${stamp}/risks/r1`);
-    expect(d.dueItems[2].href).toBe(`/t/dash-${stamp}/indicators/${objectiveId}/${indicatorId}`);
+    expect(d.dueItems[3].href).toBe(`/t/dash-${stamp}/indicators/${objectiveId}/${indicatorId}`);
   });
 
   it("resume el cumplimiento de los requisitos de la empresa", async () => {

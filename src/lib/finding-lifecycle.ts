@@ -248,6 +248,7 @@ export async function addFindingMeasure(
         entityType: FINDING_MEASURE_ENTITY_TYPE,
         entityId: created.id,
         dueAt: created.dueAt,
+        ownerUserId: created.ownerUserId,
       },
       db,
     );

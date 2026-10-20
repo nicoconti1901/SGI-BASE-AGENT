@@ -58,6 +58,7 @@ export async function createAction(
         entityType: ACTION_ENTITY_TYPE,
         entityId: action.id,
         dueAt: draft.dueAt,
+        ownerUserId: action.ownerUserId,
       },
       db,
     );

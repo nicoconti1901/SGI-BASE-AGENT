@@ -3,6 +3,7 @@ import {
   classifyDueWindow,
   DUE_REMINDERS_OFFER_CODE,
   NATIVE_OFFER_CATALOG,
+  reminderStartsAt,
   shouldEmitReminder,
 } from "@/domain/automation/due";
 
@@ -83,5 +84,31 @@ describe("native offer catalog", () => {
     expect(NATIVE_OFFER_CATALOG.some((o) => o.code === DUE_REMINDERS_OFFER_CODE)).toBe(
       true,
     );
+  });
+});
+
+describe("reminderStartsAt", () => {
+  const day = 24 * 60 * 60 * 1000;
+  const now = new Date("2026-10-20T12:00:00.000Z");
+
+  it("es dueAt menos leadDays días (leadDays negativo cuenta como 0)", () => {
+    const dueAt = new Date("2026-10-30T12:00:00.000Z");
+    expect(reminderStartsAt(dueAt, 7).toISOString()).toBe("2026-10-23T12:00:00.000Z");
+    expect(reminderStartsAt(dueAt, -3).toISOString()).toBe(dueAt.toISOString());
+  });
+
+  it("coincide con classifyDueWindow: upcoming ⇔ remindAt ≤ ahora ≤ dueAt; overdue ⇔ dueAt < ahora", () => {
+    for (const leadDays of [0, 1, 3, 7, 30]) {
+      for (const offsetDays of [-10, -1, -0.5, 0, 0.5, 1, 2.9, 3, 3.1, 7, 29.9, 30, 30.1, 60]) {
+        const dueAt = new Date(now.getTime() + offsetDays * day);
+        const remindAt = reminderStartsAt(dueAt, leadDays);
+        const kind = classifyDueWindow({ dueAt, now, leadDays });
+        const overdue = dueAt < now;
+        const upcoming = !overdue && remindAt <= now;
+        expect(kind, `lead=${leadDays} offset=${offsetDays}`).toBe(
+          overdue ? "overdue" : upcoming ? "upcoming" : "none",
+        );
+      }
+    }
   });
 });
