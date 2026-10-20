@@ -81,11 +81,28 @@ Do **not** rely on Auto model selection. Prefer an explicit model. Default the m
 | Dedicated security pass on auth/payments/secrets | Sonnet; Opus if still unsure after one pass | `security-reviewer` |
 | Live prod incident (subtle, multi-layer) | Sonnet first; Opus if stuck | `incident-investigator` |
 | `/webperf`, `/ui`, Vercel rule lookups | Sonnet | Load 1–3 rule files only |
-| `/publicar-cambios`, renames, changelog, "dónde está X" | Haiku | Switch session to Haiku for that task if available |
+| `/publicar-cambios` | Sonnet | Haiku only for small, single-topic changes; the skill's rules (read each diff, never discard changes) still apply |
+| Renames, changelog, "dónde está X" | Haiku | Switch session to Haiku for that task if available |
 
 **Subagent models:** keep pinned in each agent's frontmatter (`model: sonnet`). Do not spawn Opus subagents by default — escalate the main session instead when the table says Opus.
 
 **Quality rule:** better routing + skills beats a more expensive model. If Sonnet fails once with full relevant context, then switch that task to Opus.
+
+## Parallel agents (worktrees)
+
+Run several agents at once only with `isolation: "worktree"`, one module per worktree. Each worktree is isolated:
+
+1. First command inside the worktree: `npm run wt:setup -- <nombre>`. It runs `npm ci`, creates the database `sgi_wt_<nombre>`, writes a `.env` with that database and its own `PORT`, and applies migrations and seeds. Never point a worktree at `sgi_base`.
+2. Dev server: `npm run dev -- -p $PORT` (Next does not read `PORT` from `.env`). Playwright already uses the `.env` port.
+3. Migrations in a module branch touch only that module's tables. Changes to shared models (`Finding`, `DueItem`, `Tenant`, `authz.ts`, `nav-config.ts`) go in a serial "foundation" PR first.
+4. Integrate one PR at a time: rebase on `main`, `npx prisma migrate dev` to check for drift, full suite, review, publish.
+5. When done: `npm run wt:setup -- <nombre> --drop` deletes the database.
+
+New worktrees branch from `origin/main`, so they only get these scripts and hooks once they are merged.
+
+**Hooks (`.claude/settings.json`):**
+- `guard-git`: destructive git or Prisma commands (`checkout --`, `restore`, `reset --hard`, `clean -f`, `push --force`, `branch -D`, `migrate reset`…) require user confirmation.
+- `verify-on-stop`: when an agent or subagent stops with uncommitted code changes, it runs `tsc`, `eslint` on the changed files and `vitest`; if any fails, the agent must fix it before finishing (up to 3 attempts). If Postgres is down it only warns.
 
 ## Archived Claude skills (token savings)
 
