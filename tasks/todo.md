@@ -454,6 +454,21 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
 
 ---
 
+## Task 14b: base común de la Fase 5 (hecha 2026-10-20)
+
+**Description:** Resolver en serie lo que comparten los módulos 15–20 antes de construirlos en paralelo. SPEC: `SPEC-fase5-fundacion.md` (decisiones del PO 2026-10-20).
+
+- [x] Módulo viejo de NC eliminado (código, tests, tablas `nonconformity` / `corrective_action`)
+- [x] `Finding.origin` (`manual`, `internal_audit`, `external_audit`, `indicator`; reservados `inspection`, `incident`, `supplier`) con backfill
+- [x] `DueItem.remindAt` + `ownerUserId` / `siteId` / `personId`; el Panel cuenta en la base y trae 8
+- [x] Scan con resumen diario por persona (responsable: lo suyo; tenant_admin: todo, por sede) y una notificación por vencimiento
+- [x] Catálogo de módulos con cláusulas ISO (contrato), activación por empresa (`TenantModuleActivation`), menú agrupado, 404 de módulos inactivos, gestión desde la ficha de la empresa
+- [x] Regla para la Fase 5: los seguimientos usan `Action`; el vínculo con `Finding` va del lado del módulo; cada módulo edita solo su entrada del catálogo (`status: "planned"` → `"available"`)
+
+**Verification:** `tests/automation-digest.test.ts`, `tests/automation-due.test.ts` (remindAt ⇔ classifyDueWindow), `tests/modules*.test.ts`, `tests/automation.integration.test.ts`, `tests/dashboard.integration.test.ts`, `e2e/modules.spec.ts`.
+
+---
+
 ## Task 15: inspecciones — motor genérico + lista y registro por tipo
 
 **Description:** Registro y listado de inspecciones de seguridad sobre **activos** (extintores, equipos y vehículos pesados, vehículos livianos, arneses y cabos de vida) y sobre **áreas o actividades** (zona de obradores, auditoría de seguridad en campo). Un solo motor para todos los tipos: plantillas de checklist versionadas por tipo; cada inspección guarda una copia fija de la versión que usó; el resultado se calcula; una NC genera una acción o un hallazgo; el activo no apto queda fuera de servicio; la próxima inspección genera un `DueItem`. Los equipos de medición y sus calibraciones van en la Task 16 (tienen su propio ciclo metrológico), pero reutilizan el registro de activos.

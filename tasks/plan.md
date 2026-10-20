@@ -212,6 +212,20 @@ Task 14 datos maestros (sedes, personas, puestos, tareas)
 | 14 | Capacitaciones | Por vencer: 30 días o menos; plazo de gracia de 30 días; eficacia a los 90 días, solo si el curso lo pide |
 | 15 | Carga sin conexión | No en esta fase |
 
+### Base común (Task 14b, 2026-10-20)
+
+Decisiones del PO y reglas para construir los módulos en paralelo (`SPEC-fase5-fundacion.md`):
+
+| Decisión | Elección |
+|---|---|
+| Avisos de vencimientos | Resumen diario por persona: el responsable recibe lo suyo y el tenant_admin todo, agrupado por sede. `DueItem` lleva `ownerUserId`, `siteId`, `personId` y `remindAt` |
+| Menú | Agrupado por secciones; el superusuario activa los módulos de cada empresa (`TenantModuleActivation`). Un módulo inactivo no aparece y sus páginas dan 404 |
+| Vista por requisito ISO | Solo el contrato: cada módulo declara sus cláusulas en `src/domain/modules/catalog.ts` |
+| Origen del hallazgo | `Finding.origin`; el registro de origen se vincula del lado del módulo (`IncidentRecord.findingId`, etc.) |
+| Seguimientos | Todos con `Action`; no se crean modelos de acción nuevos |
+
+Cada módulo de la Fase 5 trabaja en su worktree (`npm run wt:setup`), agrega sus tablas en su propia migración y solo cambia su entrada del catálogo de módulos.
+
 ### Fuera de alcance (Fase 5)
 
 - Integración con monitoreo satelital o GPS.

@@ -292,16 +292,19 @@ La cabecera muestra siempre la persona, el rol, si puede editar y **Cerrar sesi�
 
 ---
 
-## Módulos (orden de construcción)
+## Módulos
 
-1. `ims-catalog` — catálogo de requisitos ISO  
-2. `tenant-provisioning` — alta de empresa y plantilla inicial  
-3. `identity-access` — usuarios, roles y sesiones  
-4. `assessment-gap` — carga de gap por superusuario ✅  
-5. `document-control` — procedimientos, registros y versiones ✅  
-6. `automation-offers` — motor de vencimientos + ofertas ✅  
-7. `operations-core` — hallazgos unificados ✅ · **riesgos y oportunidades Nivel 2** ✅ · auditorías internas (Task 11b, en curso) · luego indicadores (Task 11c)  
-8. `client-portal` — UI para operar el SGI configurado  
+El menú de cada empresa se agrupa por secciones y muestra solo los módulos activos. El superusuario los activa o desactiva desde la ficha de la empresa (`/platform/tenants/[slug]`); un módulo inactivo no aparece y sus páginas responden 404, sin perder datos. El catálogo, con las cláusulas ISO que cubre cada módulo, está en `src/domain/modules/catalog.ts`.
+
+| Sección | Módulos | Cláusulas |
+|---|---|---|
+| Cumplimiento | Documentos · Auditorías internas y externas | §7.5 · §9.2 |
+| Mejora | Hallazgos · Riesgos y oportunidades · Objetivos e indicadores | §10.2 · §6.1 · §6.2 y §9.1 |
+| Operación SST | Inspecciones, equipos de medición, accidentabilidad y seguridad vial (Fase 5, planificados) | 45001 §8.1 y §9.1.1 · 9001 §7.1.5.2 · 45001 §10.2 |
+| Personas y terceros | Datos maestros · Capacitaciones y proveedores (Fase 5, planificados) | §7.2–7.3 · 9001 §8.4 |
+| Administración | Automatizaciones · Usuarios | — |
+
+Los vencimientos de todos los módulos se avisan con un resumen diario por persona: cada responsable recibe los suyos y el administrador de la empresa todos, agrupados por sede.  
 
 ---
 
