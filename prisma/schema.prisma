@@ -108,49 +108,57 @@ model Verification {
 }
 
 model Tenant {
-  id                 String                     @id @default(cuid())
-  name               String
-  slug               String                     @unique
-  size               String?
-  activity           String?
-  createdAt          DateTime                   @default(now())
-  updatedAt          DateTime                   @updatedAt
-  memberships        Membership[]
-  documents          Document[]
-  requirements       TenantRequirement[]
-  dueItems           DueItem[]
-  offerActivations   TenantOfferActivation[]
-  notifications      InAppNotification[]
-  automationRuns     AutomationRun[]
-  findings           Finding[]
-  findingAttachments FindingAttachment[]
-  risks              Risk[]
-  opportunities      Opportunity[]
-  operationalActions Action[]
-  actionAttachments  ActionAttachment[]
-  auditPrograms      AuditProgram[]
-  audits             Audit[]
-  auditItems         AuditChecklistItem[]
-  auditEvidence      AuditEvidenceAttachment[]
-  auditReportFiles   AuditReportAttachment[]
-  objectives         Objective[]
-  indicators         Indicator[]
-  incidentRecords    IncidentRecord[]
-  incidentHealths    IncidentHealth[]
-  incidentFollowUps  IncidentFollowUp[]
-  exposurePeriods    ExposurePeriod[]
-  exposureRevisions  ExposureRevision[]
-  safetySettings     SafetyStatsSettings?
-  sites              Site[]
-  jobPositions       JobPosition[]
-  jobTasks           JobTask[]
-  people             Person[]
-  masterDataAudits   MasterDataAudit[]
-  moduleActivations  TenantModuleActivation[]
-  suppliers          Supplier[]
-  supplierSettings   SupplierSettings?
-  supplierTemplates  SupplierCriteriaTemplate[]
-  supplierDocTypes   SupplierDocumentType[]
+  id                    String                     @id @default(cuid())
+  name                  String
+  slug                  String                     @unique
+  size                  String?
+  activity              String?
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+  memberships           Membership[]
+  documents             Document[]
+  requirements          TenantRequirement[]
+  dueItems              DueItem[]
+  offerActivations      TenantOfferActivation[]
+  notifications         InAppNotification[]
+  automationRuns        AutomationRun[]
+  findings              Finding[]
+  findingAttachments    FindingAttachment[]
+  risks                 Risk[]
+  opportunities         Opportunity[]
+  operationalActions    Action[]
+  actionAttachments     ActionAttachment[]
+  auditPrograms         AuditProgram[]
+  audits                Audit[]
+  auditItems            AuditChecklistItem[]
+  auditEvidence         AuditEvidenceAttachment[]
+  auditReportFiles      AuditReportAttachment[]
+  objectives            Objective[]
+  indicators            Indicator[]
+  incidentRecords       IncidentRecord[]
+  incidentHealths       IncidentHealth[]
+  incidentFollowUps     IncidentFollowUp[]
+  exposurePeriods       ExposurePeriod[]
+  exposureRevisions     ExposureRevision[]
+  safetySettings        SafetyStatsSettings?
+  sites                 Site[]
+  jobPositions          JobPosition[]
+  jobTasks              JobTask[]
+  people                Person[]
+  masterDataAudits      MasterDataAudit[]
+  moduleActivations     TenantModuleActivation[]
+  suppliers             Supplier[]
+  supplierSettings      SupplierSettings?
+  supplierTemplates     SupplierCriteriaTemplate[]
+  supplierDocTypes      SupplierDocumentType[]
+  trainingCourses       Course[]
+  trainingRequirements  TrainingRequirement[]
+  trainingSessions      TrainingSession[]
+  trainingRecords       TrainingRecord[]
+  trainingEffectiveness TrainingEffectiveness[]
+  trainingAttachments   TrainingAttachment[]
+  trainingSettings      TrainingSettings?
+  trainingAudits        TrainingAudit[]
 
   @@map("tenant")
 }
@@ -793,23 +801,24 @@ model OpportunityAssessment {
 }
 
 model Action {
-  id                  String              @id @default(cuid())
-  tenantId            String
-  title               String
-  description         String?
-  status              ActionStatus        @default(open)
-  ownerUserId         String
-  dueAt               DateTime?
-  effectivenessStatus EffectivenessStatus @default(pending)
-  effectivenessNote   String?
-  effectivenessAt     DateTime?
-  createdByUserId     String?
-  completedAt         DateTime?
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  links               ActionLink[]
-  attachments         ActionAttachment[]
+  id                    String                  @id @default(cuid())
+  tenantId              String
+  title                 String
+  description           String?
+  status                ActionStatus            @default(open)
+  ownerUserId           String
+  dueAt                 DateTime?
+  effectivenessStatus   EffectivenessStatus     @default(pending)
+  effectivenessNote     String?
+  effectivenessAt       DateTime?
+  createdByUserId       String?
+  completedAt           DateTime?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  tenant                Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  links                 ActionLink[]
+  attachments           ActionAttachment[]
+  trainingEffectiveness TrainingEffectiveness[]
 
   @@index([tenantId, status])
   @@index([ownerUserId])
@@ -1191,22 +1200,23 @@ enum PersonStatus {
 
 /// Dónde: oficina, base, obrador, yacimiento, campamento o planta.
 model Site {
-  id         String           @id @default(cuid())
-  tenantId   String
-  name       String
-  kind       SiteKind         @default(office)
-  address    String?
-  active     Boolean          @default(true)
-  inactiveAt DateTime?
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  basePeople Person[]         @relation("PersonBaseSite")
-  incidents  IncidentRecord[]
-  exposures  ExposurePeriod[]
-  people     PersonSite[]
-  dueItems   DueItem[]
-  suppliers  SupplierSite[]
+  id               String            @id @default(cuid())
+  tenantId         String
+  name             String
+  kind             SiteKind          @default(office)
+  address          String?
+  active           Boolean           @default(true)
+  inactiveAt       DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  basePeople       Person[]          @relation("PersonBaseSite")
+  incidents        IncidentRecord[]
+  exposures        ExposurePeriod[]
+  people           PersonSite[]
+  dueItems         DueItem[]
+  suppliers        SupplierSite[]
+  trainingSessions TrainingSession[]
 
   @@unique([tenantId, name])
   @@index([tenantId, active])
@@ -1214,15 +1224,16 @@ model Site {
 }
 
 model JobPosition {
-  id         String    @id @default(cuid())
-  tenantId   String
-  name       String
-  active     Boolean   @default(true)
-  inactiveAt DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  people     Person[]
+  id                   String                @id @default(cuid())
+  tenantId             String
+  name                 String
+  active               Boolean               @default(true)
+  inactiveAt           DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  people               Person[]
+  trainingRequirements TrainingRequirement[]
 
   @@unique([tenantId, name])
   @@index([tenantId, active])
@@ -1231,16 +1242,17 @@ model JobPosition {
 
 /// Qué hace: una tarea puede ser crítica (altura, izaje, conducción, espacio confinado…).
 model JobTask {
-  id         String          @id @default(cuid())
-  tenantId   String
-  name       String
-  critical   Boolean         @default(false)
-  active     Boolean         @default(true)
-  inactiveAt DateTime?
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  tenant     Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  people     PersonJobTask[]
+  id                   String                @id @default(cuid())
+  tenantId             String
+  name                 String
+  critical             Boolean               @default(false)
+  active               Boolean               @default(true)
+  inactiveAt           DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  people               PersonJobTask[]
+  trainingRequirements TrainingRequirement[]
 
   @@unique([tenantId, name])
   @@index([tenantId, active])
@@ -1278,6 +1290,7 @@ model Person {
   extraSites      PersonSite[]
   jobTasks        PersonJobTask[]
   dueItems        DueItem[]
+  trainingRecords TrainingRecord[]
 
   @@unique([tenantId, employeeCode])
   @@unique([tenantId, userId])
@@ -1852,4 +1865,286 @@ model SupplierCommunication {
 
   @@index([tenantId, supplierId, sentAt])
   @@map("supplier_communication")
+}
+
+// ─── Capacitaciones (Task 20) — SPEC-training.md ───────────────────────────
+// El estado de cada persona en cada curso no se guarda: se calcula al leer (src/domain/training,
+// src/lib/training.ts). Las invariantes que Prisma no expresa (CHECK, únicos parciales, índices
+// parciales) están en la migración `training_matrix`.
+
+enum CourseCategory {
+  induction
+  awareness
+  safety
+  environment
+  quality
+  driving
+  other
+}
+
+enum CourseModality {
+  in_person
+  online
+  on_the_job
+  external
+}
+
+enum TrainingTargetKind {
+  position
+  task
+  all
+}
+
+enum TrainingSessionStatus {
+  planned
+  held
+  cancelled
+}
+
+enum TrainingLevel {
+  senior
+  middle
+  operational
+}
+
+enum InstructorKind {
+  internal
+  external
+}
+
+enum TrainingResult {
+  passed
+  failed
+}
+
+enum TrainingValiditySource {
+  computed
+  certificate
+}
+
+enum TrainingRecordSource {
+  session
+  individual
+  import
+}
+
+enum TrainingEffectivenessMethod {
+  observation
+  practical_test
+  written_test
+  indicator
+  supervisor_review
+}
+
+/// Catálogo de cursos de la empresa. Baja lógica; se bloquea si tiene requisitos.
+model Course {
+  id                    String                @id @default(cuid())
+  tenantId              String
+  name                  String
+  code                  String?
+  category              CourseCategory        @default(other)
+  /// Qué normas ayuda a cumplir.
+  standards             IsoStandard[]
+  modality              CourseModality        @default(in_person)
+  defaultHours          Decimal?              @db.Decimal(5, 2)
+  /// Meses de vigencia (1–120). NULL = no vence.
+  validityMonths        Int?
+  /// Días de aviso previo al vencimiento (15–90).
+  reminderDays          Int                   @default(30)
+  requiresEffectiveness Boolean               @default(false)
+  /// Plazo para evaluar la eficacia (30–180).
+  effectivenessDays     Int                   @default(90)
+  legalBasis            String?
+  defaultProvider       String?
+  /// Clave de la plantilla del catálogo sugerido de la que se importó (evita importarla dos veces).
+  suggestedKey          String?
+  active                Boolean               @default(true)
+  inactiveAt            DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  tenant                Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  requirements          TrainingRequirement[]
+  sessions              TrainingSession[]
+  records               TrainingRecord[]
+
+  @@unique([tenantId, name])
+  @@unique([tenantId, suggestedKey])
+  @@index([tenantId, active])
+  @@map("training_course")
+}
+
+/// La matriz: qué curso se le exige a un puesto, a una tarea o a todo el personal.
+model TrainingRequirement {
+  id            String             @id @default(cuid())
+  tenantId      String
+  courseId      String
+  targetKind    TrainingTargetKind
+  positionId    String?
+  jobTaskId     String?
+  mandatory     Boolean            @default(true)
+  /// Días de plazo desde el más tardío entre ingreso, asignación y vigencia (0–365).
+  graceDays     Int                @default(30)
+  effectiveFrom DateTime           @default(now()) @db.Date
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  course        Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  position      JobPosition?       @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  jobTask       JobTask?           @relation(fields: [jobTaskId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, targetKind])
+  @@index([tenantId, positionId])
+  @@index([tenantId, jobTaskId])
+  @@index([tenantId, courseId])
+  @@map("training_requirement")
+}
+
+/// Una instancia de capacitación (realizada, planificada o cancelada). Se anula con motivo, nunca se borra.
+model TrainingSession {
+  id              String                @id @default(cuid())
+  tenantId        String
+  courseId        String
+  status          TrainingSessionStatus @default(held)
+  /// Fecha en que se dictó o en que está planificada.
+  heldAt          DateTime              @db.Date
+  siteId          String?
+  level           TrainingLevel?
+  instructorKind  InstructorKind        @default(internal)
+  instructorName  String                @default("")
+  providerName    String?
+  hours           Decimal?              @db.Decimal(5, 2)
+  evaluatorUserId String?
+  notes           String?
+  voidedAt        DateTime?
+  voidedByUserId  String?
+  voidReason      String?
+  createdByUserId String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  tenant          Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  course          Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  site            Site?                 @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  records         TrainingRecord[]
+  attachments     TrainingAttachment[]
+
+  @@index([tenantId, heldAt])
+  @@index([tenantId, courseId])
+  @@index([tenantId, siteId, heldAt])
+  @@map("training_session")
+}
+
+/// Lo que se hizo: una persona hizo un curso un día. El vencimiento es una foto del momento.
+model TrainingRecord {
+  id                String                 @id @default(cuid())
+  tenantId          String
+  personId          String
+  courseId          String
+  sessionId         String?
+  completedAt       DateTime               @db.Date
+  result            TrainingResult
+  /// 0–100. Informativa: no aprueba ni reprueba sola.
+  score             Int?
+  /// Vencimiento guardado en el registro. NULL = no vence.
+  validUntil        DateTime?              @db.Date
+  validUntilSource  TrainingValiditySource @default(computed)
+  source            TrainingRecordSource   @default(individual)
+  certificateNumber String?
+  providerName      String?
+  notes             String?
+  recordedByUserId  String?
+  voidedAt          DateTime?
+  voidedByUserId    String?
+  voidReason        String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  person            Person                 @relation(fields: [personId], references: [id], onDelete: Cascade)
+  course            Course                 @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  session           TrainingSession?       @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  effectiveness     TrainingEffectiveness?
+  attachments       TrainingAttachment[]
+
+  @@index([tenantId, personId, courseId, completedAt])
+  @@index([tenantId, sessionId])
+  @@map("training_record")
+}
+
+/// Eficacia de un registro aprobado de un curso que la exige (ISO 7.2 d).
+model TrainingEffectiveness {
+  id              String                       @id @default(cuid())
+  tenantId        String
+  recordId        String                       @unique
+  dueAt           DateTime                     @db.Date
+  evaluatorUserId String?
+  status          EffectivenessStatus          @default(pending)
+  method          TrainingEffectivenessMethod?
+  note            String?
+  evaluatedAt     DateTime?
+  /// Acción de seguimiento si no fue eficaz (`Action`, sin modelo nuevo).
+  actionId        String?
+  rescheduledTo   DateTime?                    @db.Date
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
+  tenant          Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  record          TrainingRecord               @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  action          Action?                      @relation(fields: [actionId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, dueAt])
+  @@index([actionId])
+  @@map("training_effectiveness")
+}
+
+/// Evidencia de una sesión (planilla firmada) o de un registro (certificado). Mismo almacenamiento que ActionAttachment.
+model TrainingAttachment {
+  id           String           @id @default(cuid())
+  tenantId     String
+  sessionId    String?
+  recordId     String?
+  storageKey   String
+  fileName     String
+  contentType  String
+  sizeBytes    Int
+  uploadedById String?
+  createdAt    DateTime         @default(now())
+  tenant       Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  session      TrainingSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  record       TrainingRecord?  @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, recordId])
+  @@index([tenantId, sessionId])
+  @@map("training_attachment")
+}
+
+/// Ajustes del módulo por empresa (una fila): responsable de avisos y sello de revisión de la matriz.
+model TrainingSettings {
+  id                     String    @id @default(cuid())
+  tenantId               String    @unique
+  ownerUserId            String?
+  matrixReviewedAt       DateTime?
+  matrixReviewedByUserId String?
+  /// Quiénes participaron o fueron consultados (ISO 45001 §5.4).
+  matrixReviewNote       String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  tenant                 Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("training_settings")
+}
+
+/// Quién cambió qué en cursos, requisitos, anulaciones e importaciones.
+model TrainingAudit {
+  id          String   @id @default(cuid())
+  tenantId    String
+  entityType  String
+  entityId    String
+  action      String
+  actorUserId String?
+  summary     String
+  reason      String?
+  createdAt   DateTime @default(now())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, entityType, entityId])
+  @@map("training_audit")
 }
