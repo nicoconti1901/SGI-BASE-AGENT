@@ -1,0 +1,188 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { findNextPendingAsset, getInspectionView } from "@/lib/inspections";
+import { loadInspectionsAccess } from "@/app/(tenant)/t/[slug]/inspections/access";
+import { InspectionCapture, type CaptureItem } from "@/app/(tenant)/t/[slug]/inspections/[inspectionId]/InspectionCapture";
+import { startInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
+import { getAssetType } from "@/domain/inspections/asset-types";
+import { explainResult, itemOutcome } from "@/domain/inspections/result";
+import { formatDateEs, isoFromDate } from "@/domain/inspections/dates";
+import { CRITICALITY_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
+import { Button, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+
+const RESULT_CHIP: Record<InspectionResult, "ok" | "warning" | "danger"> = { fit: "ok", fit_with_observations: "warning", unfit: "danger" };
+
+export default async function InspectionPage({ params }: { params: Promise<{ slug: string; inspectionId: string }> }) {
+  const { slug, inspectionId } = await params;
+  const { tenant, ctx, canWrite, canRelease } = await loadInspectionsAccess(slug);
+  const view = await getInspectionView(tenant.id, inspectionId);
+  if (!view) notFound();
+  const { inspection } = view;
+  const asset = inspection.asset;
+  const type = asset ? getAssetType(asset.typeKey) : null;
+  const summary = asset && type ? `${type.label} · ${type.summarize(asset.attributes as Record<string, unknown>)}` : inspection.template.name;
+  const back = (
+    <p>
+      <Link href={`/t/${slug}/inspections`} className="text-sm font-medium text-[var(--color-accent)] hover:underline">
+        ← Volver a inspecciones
+      </Link>
+    </p>
+  );
+
+  if (inspection.status === "draft") {
+    const mine = inspection.inspectorUserId === ctx.userId;
+    if (!canWrite || (!mine && !canRelease)) {
+      return (
+        <div className="flex flex-col gap-4">
+          {back}
+          <SectionBlock title={`Borrador sobre ${asset?.code ?? "el área"}`} what={`Lo está completando ${view.inspectorName}. Cuando lo cierre vas a ver el resultado acá.`} />
+        </div>
+      );
+    }
+    const items: CaptureItem[] = view.items.map(({ answer, item, evalItem, autoDueAt }) => ({
+      itemId: item.id,
+      code: item.code,
+      section: item.section,
+      text: item.text,
+      help: item.help,
+      unit: item.unit,
+      evalItem,
+      auto: evalItem.autoSource ? { dueAt: autoDueAt, conform: evalItem.autoConform === true } : null,
+      value: answer.value,
+      numberValue: answer.numberValue,
+      textValue: answer.textValue,
+      comment: answer.comment,
+      photos: answer.attachments,
+    }));
+    return (
+      <div className="flex flex-col gap-4">
+        {back}
+        <InspectionCapture
+          slug={slug}
+          inspectionId={inspection.id}
+          assetCode={asset?.code ?? inspection.template.name}
+          assetSummary={summary}
+          siteName={inspection.site.name}
+          inspectorName={view.inspectorName}
+          inspectedAt={isoFromDate(inspection.inspectedAt)}
+          notes={inspection.notes}
+          performedBy={inspection.performedBy ? { id: inspection.performedBy.id, name: inspection.performedBy.name, employeeCode: inspection.performedBy.employeeCode, siteName: inspection.performedBy.site.name } : null}
+          items={items}
+        />
+      </div>
+    );
+  }
+
+  // Cerrada: resultado y respuestas, solo lectura.
+  const result = inspection.result!;
+  const next = canWrite
+    ? await findNextPendingAsset({ tenantId: tenant.id, siteId: inspection.siteId, excludeAssetId: inspection.assetId, actorUserId: ctx.userId })
+    : null;
+  const nonconforming = view.items.filter(({ item, evalItem, answer }) => {
+    if (item.kind !== "check" && item.kind !== "number") return false;
+    return itemOutcome(evalItem, { itemId: item.id, value: evalItem.autoSource ? undefined : answer.value, numberValue: answer.numberValue }) === "nonconform";
+  });
+
+  return (
+    <div className="flex flex-col gap-6">
+      {back}
+      <SectionBlock
+        title={asset ? `${asset.code} · ${inspection.template.name}` : inspection.template.name}
+        eyebrow={`Inspección del ${formatDateEs(isoFromDate(inspection.inspectedAt))} · ${inspection.site.name}`}
+        what={summary}
+        actions={
+          <>
+            <StatusChip status={RESULT_CHIP[result]} label={RESULT_LABELS[result]} />
+            {asset ? (
+              <Link href={`/t/${slug}/assets/${asset.id}`} className={buttonClass("secondary")}>
+                Ver el activo
+              </Link>
+            ) : null}
+          </>
+        }
+      >
+        <p>{explainResult({ result, nonconformByCriticality: countByCriticality(nonconforming.map((n) => n.item.criticality)) })}</p>
+        <dl className="grid gap-4 sm:grid-cols-4">
+          <Stat label="Puntaje" value={`${String(inspection.scorePct ?? 0).replace(".", ",")} %`} />
+          <Stat label="Conformes" value={`${inspection.conformCount} de ${inspection.applicableCount}`} />
+          <Stat label="Inspector" value={view.inspectorName} />
+          <Stat label="Firmada" value={inspection.closedAt ? inspection.closedAt.toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" }) : "—"} />
+        </dl>
+        {inspection.notes ? <p className="text-sm text-[var(--color-ink-muted)]">Observaciones: {inspection.notes}</p> : null}
+        {next ? (
+          <form action={startInspectionAction.bind(null, slug, next.id)}>
+            <Button type="submit" className="min-h-12">
+              Siguiente activo pendiente: {next.code}
+            </Button>
+          </form>
+        ) : null}
+      </SectionBlock>
+
+      {nonconforming.length > 0 ? (
+        <SectionBlock title="No conformidades" what="Lo que no cumplió, con lo que escribió el inspector.">
+          <ul className="flex flex-col gap-3">
+            {nonconforming.map(({ item, answer }) => (
+              <li key={item.id} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-danger)] p-4 text-sm">
+                <p className="font-semibold">
+                  {item.text} <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{CRITICALITY_LABELS[item.criticality]}</span>
+                </p>
+                {answer.comment ? <p>{answer.comment}</p> : null}
+                {answer.attachments.length > 0 ? (
+                  <ul className="flex flex-wrap gap-2">
+                    {answer.attachments.map((p) => (
+                      <li key={p.id}>
+                        <a href={`/api/inspections/attachments/${p.id}/download`} target="_blank" rel="noreferrer">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={`/api/inspections/attachments/${p.id}/download`} alt={`Foto: ${p.fileName}`} className="h-24 w-24 rounded-[var(--radius-md)] border border-[var(--color-line-strong)] object-cover" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </SectionBlock>
+      ) : null}
+
+      <SectionBlock title="Respuestas" what="El listado tal como estaba la plantilla cuando se hizo la inspección.">
+        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+          {view.items.map(({ item, answer }) => (
+            <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
+              <span>
+                <span className="block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{item.section}</span>
+                {item.text}
+              </span>
+              <span className="font-semibold">
+                {item.kind === "number" || item.kind === "reading"
+                  ? `${answer.numberValue ?? "—"}${item.unit ? ` ${item.unit}` : ""}`
+                  : item.kind === "text"
+                    ? answer.textValue || "—"
+                    : answer.value === "conform"
+                      ? "Conforme"
+                      : answer.value === "nonconform"
+                        ? "No conforme"
+                        : answer.value === "na"
+                          ? "No aplica"
+                          : "—"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </SectionBlock>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{label}</dt>
+      <dd className="mt-0.5 text-sm font-semibold">{value}</dd>
+    </div>
+  );
+}
+
+function countByCriticality(list: ("critical" | "major" | "minor")[]) {
+  return { critical: list.filter((c) => c === "critical").length, major: list.filter((c) => c === "major").length, minor: list.filter((c) => c === "minor").length };
+}

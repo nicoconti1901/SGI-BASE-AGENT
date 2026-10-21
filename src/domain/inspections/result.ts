@@ -53,8 +53,8 @@ export type DerivedResult = {
 
 const SCORING = new Set(["check", "number"]);
 
-/** Valor efectivo de un ítem puntuable: "conform", "nonconform", "na" o null (sin responder). */
-function effectiveValue(item: EvalItem, answer: EvalAnswer | undefined): "conform" | "nonconform" | "na" | null {
+/** Valor efectivo de un ítem puntuable: "conform", "nonconform", "na" o null (sin responder). Lo usa también la pantalla. */
+export function itemOutcome(item: EvalItem, answer: EvalAnswer | undefined): "conform" | "nonconform" | "na" | null {
   if (item.autoSource) return item.autoConform === true ? "conform" : "nonconform";
   if (!answer) return null;
   if (answer.value === "na") return "na";
@@ -102,7 +102,7 @@ export function deriveInspectionResult(items: readonly EvalItem[], answers: read
       if (!filled) missingItemIds.push(item.id);
       continue;
     }
-    const value = effectiveValue(item, answer);
+    const value = itemOutcome(item, answer);
     if (value === null) {
       missingItemIds.push(item.id);
       continue;

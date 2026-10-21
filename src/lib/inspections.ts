@@ -137,7 +137,7 @@ export async function getInspectionView(tenantId: string, inspectionId: string, 
       templateVersion: { select: { version: true } },
       asset: { include: { dueDates: { select: { kind: true, dueAt: true } } } },
       site: { select: { name: true } },
-      performedBy: { select: { id: true, name: true, employeeCode: true } },
+      performedBy: { select: { id: true, name: true, employeeCode: true, site: { select: { name: true } } } },
       answers: {
         orderBy: { item: { sortOrder: "asc" } },
         include: { item: true, attachments: { select: { id: true, fileName: true }, orderBy: { createdAt: "asc" } } },
