@@ -9,7 +9,7 @@ export type EffectivenessStatus =
   | "not_effective"
   | "not_applicable";
 
-export type ActionLinkTarget = "risk" | "opportunity" | "finding";
+export type ActionLinkTarget = "risk" | "opportunity" | "finding" | "supplier_evaluation";
 
 export const ACTION_STATUSES: ActionStatus[] = [
   "open",

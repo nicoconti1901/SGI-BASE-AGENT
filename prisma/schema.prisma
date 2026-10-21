@@ -416,6 +416,7 @@ enum FindingOrigin {
   inspection
   incident
   supplier
+  calibration
 }
 
 enum FindingType {
@@ -672,6 +673,7 @@ enum ActionLinkTarget {
   risk
   opportunity
   finding
+  supplier_evaluation
 }
 
 model Risk {
@@ -1243,6 +1245,8 @@ model Person {
   siteId         String
   positionId     String
   hiredAt        DateTime?
+  /// Desde cuándo está en el puesto actual. NULL = desde el ingreso. Solo cambia al cambiar de puesto.
+  positionSince  DateTime?
   status         PersonStatus    @default(active)
   inactiveAt     DateTime?
   createdAt      DateTime        @default(now())
@@ -1277,11 +1281,13 @@ model PersonSite {
 }
 
 model PersonJobTask {
-  personId  String
-  jobTaskId String
-  tenantId  String
-  person    Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
-  jobTask   JobTask @relation(fields: [jobTaskId], references: [id], onDelete: Cascade)
+  personId   String
+  jobTaskId  String
+  tenantId   String
+  /// Desde cuándo tiene la tarea: arranca el plazo de gracia de sus capacitaciones (SPEC-training).
+  assignedAt DateTime @default(now())
+  person     Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  jobTask    JobTask  @relation(fields: [jobTaskId], references: [id], onDelete: Cascade)
 
   @@id([personId, jobTaskId])
   @@index([tenantId, jobTaskId])

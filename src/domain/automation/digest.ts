@@ -26,6 +26,9 @@ export type ReminderDigest = {
 
 const NO_SITE = "Sin sede";
 
+/** Cuántos vencimientos se listan por empresa en un mail; el resto se resume en una línea. */
+export const MAX_LISTED_PER_TENANT = 10;
+
 function formatDate(date: Date): string {
   const d = String(date.getUTCDate()).padStart(2, "0");
   const m = String(date.getUTCMonth() + 1).padStart(2, "0");
@@ -51,19 +54,22 @@ function byUrgency(a: DigestItem, b: DigestItem): number {
   return a.dueAt.getTime() - b.dueAt.getTime();
 }
 
-function tenantSection(items: DigestItem[]): string {
+function tenantSection(allItems: DigestItem[]): string {
+  const urgent = [...allItems].sort(byUrgency);
+  const items = urgent.slice(0, MAX_LISTED_PER_TENANT);
+  const hidden = urgent.length - items.length;
   const sites = [...new Set(items.map((i) => i.siteName ?? NO_SITE))].sort((a, b) =>
     a === NO_SITE ? 1 : b === NO_SITE ? -1 : a.localeCompare(b, "es"),
   );
-  return sites
+  const listed = sites
     .map((site) => {
       const lines = items
         .filter((i) => (i.siteName ?? NO_SITE) === site)
-        .sort(byUrgency)
         .map((i) => `- ${i.kind === "overdue" ? "Vencido" : "Por vencer"} · ${formatDate(i.dueAt)} · ${i.title}`);
       return [site, ...lines].join("\n");
     })
     .join("\n\n");
+  return hidden > 0 ? `${listed}\n\n… y ${hidden} más. Entrá al Panel para verlos todos.` : listed;
 }
 
 /**
