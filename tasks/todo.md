@@ -487,7 +487,7 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
 - Frecuencias configurables por tenant y por tipo (defaults abajo).
 
 **Sub-tareas — motor:**
-- [ ] 15.0 Research + SPEC `RESEARCH-inspections.md` / `SPEC-inspections.md` (normativa de referencia por tipo, frecuencias, ítems, reglas de resultado) aprobado por el PO
+- [x] 15.0 (hecho 2026-10-21: `RESEARCH-inspections.md` y `SPEC-inspections.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `RESEARCH-inspections.md` / `SPEC-inspections.md` (normativa de referencia por tipo, frecuencias, ítems, reglas de resultado) aprobado por el PO
 - [ ] 15.1 Dominio + Prisma:
   - `Asset`: tipo, código interno, sede, estado `in_service` / `out_of_service` / `retired`, atributos propios del tipo en JSON validado con zod, persona asignada.
   - `AssetDueDate`: vencimientos documentales por activo (carga, PH, VTV, seguro, certificación…).
@@ -589,7 +589,7 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 - **Fuera de tolerancia:** obliga a evaluar si siguen siendo válidas las mediciones hechas desde la última calibración apta, y a registrar la acción (un hallazgo si corresponde).
 
 **Sub-tareas:**
-- [ ] 16.0 Research + SPEC `SPEC-calibration.md` (magnitudes, intervalos, regla de decisión, estados, etiqueta de estado) aprobado por el PO
+- [x] 16.0 (hecho 2026-10-21: `RESEARCH-calibration.md` y `SPEC-calibration.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `SPEC-calibration.md` (magnitudes, intervalos, regla de decisión, estados, etiqueta de estado) aprobado por el PO
 - [ ] 16.1 Dominio + Prisma:
   - `Asset` de tipo `measuring_equipment`, con atributos: magnitud, rango, resolución, EMP, uso crítico, si requiere calibración y/o verificación, e intervalos.
   - `CalibrationRecord`: tipo (calibración o verificación), fecha, laboratorio, n.° de certificado, acreditación; puntos con valor nominal, medido, error y U; resultado; certificado en PDF.
@@ -637,7 +637,7 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 - La ficha tiene datos de salud, que son **datos sensibles**: solo el tenant_admin y los process_owner con permiso de SST ven la persona y la lesión; el resto ve solo totales, sin nombres.
 
 **Sub-tareas:**
-- [ ] 17.0 Research + SPEC `RESEARCH-accident-stats.md` / `SPEC-accident-stats.md` (definiciones, índices, clasificación por forma del accidente, agente, naturaleza de la lesión y parte del cuerpo; privacidad) aprobado por el PO
+- [x] 17.0 (hecho 2026-10-21: `RESEARCH-accident-stats.md` y `SPEC-accident-stats.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `RESEARCH-accident-stats.md` / `SPEC-accident-stats.md` (definiciones, índices, clasificación por forma del accidente, agente, naturaleza de la lesión y parte del cuerpo; privacidad) aprobado por el PO
 - [ ] 17.1 Dominio + Prisma:
   - `IncidentRecord` 1:1 con `Finding`: clasificación, fecha y hora, sede, persona afectada, propio o contratista, in itinere, vial, forma del accidente, agente material, naturaleza de la lesión, parte del cuerpo, días perdidos, fecha del alta, n.° de denuncia a la ART.
   - `ExposurePeriod`: sede × mes × propio/contratista, con HHT y dotación promedio.
@@ -735,7 +735,7 @@ Abarca a los contratistas (45001 §8.1.4.2) y a los proveedores con impacto ambi
 - Los criterios tienen versiones; cada evaluación guarda una copia fija de los que usó.
 
 **Sub-tareas:**
-- [ ] 19.0 Research + SPEC `SPEC-suppliers.md` aprobado por el PO
+- [x] 19.0 (hecho 2026-10-21: `RESEARCH-suppliers.md` y `SPEC-suppliers.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `SPEC-suppliers.md` aprobado por el PO
 - [ ] 19.1 Dominio + Prisma:
   - `Supplier`: razón social, CUIT único por tenant, categoría o rubro, tipo (producto, servicio o contratista), criticidad, sedes a las que atiende, contacto, estado (`potential` / `approved` / `conditional` / `not_approved` / `inactive`).
   - `SupplierCriteriaTemplate` con versiones.
@@ -791,7 +791,7 @@ El estado se calcula a partir de la matriz y de los registros; nunca se marca a 
 - Si falta o venció un curso obligatorio de una tarea crítica, la persona queda **no habilitada** para esa tarea. Lo usan 15.9, 15.11 y 18.4.
 
 **Sub-tareas:**
-- [ ] 20.0 Research + SPEC `SPEC-training.md` aprobado por el PO
+- [x] 20.0 (hecho 2026-10-21: `RESEARCH-training.md` y `SPEC-training.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `SPEC-training.md` aprobado por el PO
 - [ ] 20.1 Dominio + Prisma:
   - `Course`: nombre, tema, normas, modalidad, duración en horas, vigencia en meses, si requiere evaluar eficacia, instructor o proveedor.
   - `TrainingRequirement`: puesto **o** tarea × curso, obligatorio o no, días de gracia.
