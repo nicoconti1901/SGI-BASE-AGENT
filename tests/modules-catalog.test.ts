@@ -33,6 +33,13 @@ describe("catálogo de módulos", () => {
     expect(enabled.has("inspections")).toBe(false);
   });
 
+  it("accidentabilidad está disponible pero apagada por defecto; se activa por empresa", () => {
+    expect(enabledModuleKeys([]).has("safety_stats")).toBe(false);
+    expect(enabledModuleKeys([{ moduleKey: "safety_stats", enabled: true }]).has("safety_stats")).toBe(true);
+    const sst = tenantNavSections("acme", enabledModuleKeys([{ moduleKey: "safety_stats", enabled: true }])).find((s) => s.label === "Operación SST");
+    expect(sst?.items).toEqual([{ href: "/t/acme/safety", label: "Accidentabilidad" }]);
+  });
+
   it("una activación pisa el valor por defecto, pero un planificado nunca se activa", () => {
     const enabled = enabledModuleKeys([
       { moduleKey: "risks", enabled: false },

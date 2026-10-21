@@ -64,6 +64,12 @@ describe("describeDueItem", () => {
     expect(audit.href).toBe("/t/acme/audits/abc");
   });
 
+  it("el seguimiento de un accidente lleva al hallazgo", () => {
+    const due = describeDueItem({ ...base, entityType: "incident_followup", dueAt: inDays(1) }, "acme", now);
+    expect(due.typeLabel).toBe("Seguimiento de accidente");
+    expect(due.href).toBe("/t/acme/findings/abc");
+  });
+
   it("cae al listado del módulo cuando el id no tiene ruta propia", () => {
     const ind = describeDueItem(
       { ...base, entityType: "indicator_measurement", dueAt: inDays(1) },

@@ -6,6 +6,7 @@ import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
 import { getFinding, listTenantMemberOptions } from "@/lib/findings";
+import { IncidentFichaCard } from "@/app/(tenant)/t/[slug]/safety/IncidentFichaCard";
 import {
   VERIFICATION_RESULT_LABELS,
   canApplyFindingAction,
@@ -80,13 +81,14 @@ export default async function FindingDetailPage({
 
   const finding = await getFinding(tenant.id, findingId);
   if (!finding) notFound();
-  if (finding.status === "draft") {
-    redirect(`/t/${slug}/findings/${findingId}/edit`);
-  }
-
   const canWrite = canTenantRole(membership?.role, "write", {
     isPlatformSuperuser: ctx.isPlatformSuperuser,
   });
+  // Un borrador se completa en el editor. Quien no puede editar solo ve el de un incidente: cuenta
+  // en los índices desde que se guarda la ficha (D4) y todos los roles leen la ficha (D10).
+  if (finding.status === "draft" && (canWrite || finding.type !== "incident")) {
+    redirect(`/t/${slug}/findings/${findingId}/edit`);
+  }
   const rca = finding.rcaJson as RootCauseAnalysis | null;
   const docs = finding.attachments.filter((a) => a.kind === "finding_doc");
   const findingStatus = finding.status as FindingStatus;
@@ -162,6 +164,16 @@ export default async function FindingDetailPage({
           Bandeja
         </Link>
       </div>
+
+      {finding.type === "incident" ? (
+        <IncidentFichaCard
+          slug={slug}
+          tenantId={tenant.id}
+          findingId={finding.id}
+          findingType={finding.type}
+          actor={{ userId: ctx.userId, role: membership?.role, isPlatformSuperuser: ctx.isPlatformSuperuser }}
+        />
+      ) : null}
 
       {findingStatus === "cancelled" ? (
         <p className="rounded-[var(--radius-md)] border border-[var(--color-danger)]/40 bg-[var(--color-danger-soft)] px-4 py-3 text-sm text-[var(--color-danger)]">

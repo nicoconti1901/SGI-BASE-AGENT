@@ -90,7 +90,7 @@ Separada para que un `select` descuidado del registro no filtre datos de salud.
 - `aggregateWindow({ exposure, eventAggregates, months, segments, settings })` → `{ status: ok | partial | no_data, monthsUsed, monthsExcluded: [{ month, segment, reason }], totals, indices, provisionalMonths }`. Recibe filas ya agregadas por la base, no eventos.
 - `computeIndices(totals, settings)` → valores o `null`.
 - `daysSinceLastLostTime(lastLostTimeOnBySite, asOf)`.
-- `canViewHealthData({ role, hasSafetyAccess, isPlatformSuperuser })` y `redactFindingView(...)`.
+- `canViewHealthData({ role, isPlatformSuperuser })`: todo integrante de la empresa, nunca el personal de plataforma (D10, D13). No hay ocultamiento por rol.
 
 ### Fórmulas (todas sobre la ventana, sumando antes de dividir)
 
@@ -295,7 +295,7 @@ e2e (Playwright):
 ## Plan vertical (Task 17)
 
 1. **17.1 Dominio + Prisma.** Enums y listas (clasificación, forma, agente, naturaleza, parte del cuerpo), funciones puras y su unit test sobre el dataset (AT-01 a AT-14), migración propia con `IncidentRecord`, `IncidentHealth`, `IncidentFollowUp`, `ExposurePeriod`, `ExposureRevision`, `SafetyStatsSettings`; acción de authz nueva; test de aislamiento a nivel repositorio (AT-16, AT-18). Sin UI. Verde cuando el dataset da los 15 resultados.
-2. **17.2 Registro.** Paso "Ficha de accidente" en el alta de hallazgo (solo si el módulo está activo), título generado, seguimientos de días perdidos y reclasificación, `DueItem` de seguimiento, auditoría. AT-15, AT-19, AT-20, AT-21, AT-24.
+2. **17.2 Registro.** Paso "Ficha de accidente" en el alta de hallazgo (solo si el módulo está activo), seguimientos de días perdidos y reclasificación, `DueItem` de seguimiento, auditoría. AT-15, AT-19, AT-20, AT-21, AT-24.
 3. **17.3 Exposición.** Grilla mensual por sede, importación CSV con vista previa, plausibilidad, `ExposureRevision`, `DueItem` mensual idempotente (coordinar con el automatizador existente). AT-22, AT-23, AT-25.
 4. **17.4 Tablero `/safety/stats`.** Ventanas, filtros, tarjetas con "sin datos" y "parcial", tendencia, pirámide, distribuciones, días sin accidentes, in itinere, pestaña Casos, meta de un Indicador. AT-17, AT-12, AT-13.
 5. **17.5 Cierre.** Export CSV y resumen imprimible, guía, menú, entrada del catálogo `safety_stats` de `planned` a `available` (cláusulas ISO 45001 9.1.1, 10.2 y 9.3, todas presentes en el catálogo sembrado), e2e (AT-26 a AT-29), README.

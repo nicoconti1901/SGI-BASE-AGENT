@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { NewIncidentFields, type SiteOption } from "@/app/(tenant)/t/[slug]/safety/IncidentFields";
 import {
   startFindingAction,
   type FindingActionState,
@@ -12,9 +13,20 @@ import {
 
 const initial: FindingActionState = {};
 
-export function StartFindingForm({ slug }: { slug: string }) {
+export function StartFindingForm({
+  slug,
+  defaultType = "nonconformity",
+  incident,
+}: {
+  slug: string;
+  defaultType?: FindingType;
+  /** Presente solo si el módulo de accidentabilidad está activo: habilita el paso «Ficha de accidente». */
+  incident?: { sites: SiteOption[]; canManageHealth: boolean };
+}) {
   const action = startFindingAction.bind(null, slug);
   const [state, formAction, pending] = useActionState(action, initial);
+  const [type, setType] = useState<FindingType>(defaultType);
+  const showFicha = type === "incident" && Boolean(incident);
 
   return (
     <form
@@ -32,7 +44,8 @@ export function StartFindingForm({ slug }: { slug: string }) {
         Tipo
         <select
           name="type"
-          defaultValue="nonconformity"
+          value={type}
+          onChange={(e) => setType(e.target.value as FindingType)}
           className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         >
           {(Object.keys(FINDING_TYPE_LABELS) as FindingType[]).map((t) => (
@@ -59,6 +72,9 @@ export function StartFindingForm({ slug }: { slug: string }) {
           className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
+      {showFicha && incident ? (
+        <NewIncidentFields slug={slug} sites={incident.sites} canManageHealth={incident.canManageHealth} />
+      ) : null}
       {state.error ? (
         <p className="text-sm text-[var(--color-danger)]">{state.error}</p>
       ) : null}

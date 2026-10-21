@@ -15,6 +15,9 @@ import {
 import { uploadFindingAttachment } from "@/lib/finding-attachments";
 import { isFindingType, type FindingDraft, type MeasureKind, type RootCauseAnalysis } from "@/domain/findings/types";
 import { createInitialWhyStep } from "@/domain/findings/five-whys";
+import { getEnabledModulesCached } from "@/lib/modules";
+import { createIncidentWithFinding, hasIncidentRecord } from "@/lib/safety-stats";
+import { parseFactForm, parseHealthForm } from "@/app/(tenant)/t/[slug]/safety/form";
 
 export type FindingActionState = {
   error?: string;
@@ -111,6 +114,26 @@ export async function startFindingAction(
   if (!isFindingType(typeRaw)) return { error: "Tipo inválido" };
 
   try {
+    // Paso «Ficha de accidente»: solo con el módulo activo; el Hallazgo y la ficha nacen juntos.
+    if (typeRaw === "incident" && formData.get("fact_siteId") !== null) {
+      if (!(await getEnabledModulesCached(auth.tenant.id)).has("safety_stats")) {
+        return { error: "El módulo de accidentabilidad no está activo" };
+      }
+      const membership = await getMembership(auth.ctx.userId, auth.tenant.id);
+      const health = parseHealthForm(formData);
+      const hasHealth = Object.values(health).some(Boolean);
+      const { finding } = await createIncidentWithFinding({
+        tenantId: auth.tenant.id,
+        actor: { userId: auth.ctx.userId, role: membership?.role, isPlatformSuperuser: auth.ctx.isPlatformSuperuser },
+        title: String(formData.get("title") ?? ""),
+        description: String(formData.get("description") ?? ""),
+        fact: parseFactForm(formData),
+        health: hasHealth ? health : null,
+      });
+      revalidatePath(`/t/${slug}/findings`);
+      revalidatePath(`/t/${slug}/safety`);
+      redirect(`/t/${slug}/findings/${finding.id}/edit`);
+    }
     const finding = await createFindingDraft({
       tenantId: auth.tenant.id,
       type: typeRaw,
@@ -152,6 +175,9 @@ export async function saveOrPublishFindingAction(
 
   try {
     const draft = parseDraft(formData);
+    if (draft.type !== "incident" && (await hasIncidentRecord(auth.tenant.id, findingId))) {
+      return { error: "Este hallazgo tiene ficha de accidente: no puede cambiar de tipo" };
+    }
     if (mode === "save") {
       await saveFindingDraft({
         tenantId: auth.tenant.id,

@@ -90,7 +90,7 @@ export const MODULE_CATALOG: readonly ModuleDefinition[] = [
       { standard: "ISO45001", clause: "9.1.1" },
       { standard: "ISO45001", clause: "10.2" },
     ],
-    status: "planned",
+    status: "available",
     defaultEnabled: false,
   },
   {

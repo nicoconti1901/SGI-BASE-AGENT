@@ -5,14 +5,25 @@ import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
 import { StartFindingForm } from "@/app/(tenant)/t/[slug]/findings/StartFindingForm";
+import { getEnabledModulesCached } from "@/lib/modules";
+import { listSites } from "@/lib/masterdata";
+import { canManageHealthData } from "@/domain/safety-stats/access";
+import { isFindingType } from "@/domain/findings/types";
 
 type Params = Promise<{ slug: string }>;
 
-export default async function NewFindingPage({ params }: { params: Params }) {
+export default async function NewFindingPage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: Promise<{ type?: string }>;
+}) {
   const ctx = await getAppSessionContext();
   if (!ctx) redirect("/login");
 
   const { slug } = await params;
+  const { type } = await searchParams;
   const tenant = await getTenantBySlug(slug);
   if (!tenant) notFound();
 
@@ -37,6 +48,11 @@ export default async function NewFindingPage({ params }: { params: Params }) {
     );
   }
 
+  // Paso «Ficha de accidente»: solo si el módulo está activo para la empresa.
+  const incidentEnabled = (await getEnabledModulesCached(tenant.id)).has("safety_stats");
+  const sites = incidentEnabled ? (await listSites(tenant.id)).map((s) => ({ id: s.id, name: s.name })) : [];
+  const canManageHealth = canManageHealthData({ role: membership?.role, isPlatformSuperuser: ctx.isPlatformSuperuser });
+
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">
       <div>
@@ -53,7 +69,11 @@ export default async function NewFindingPage({ params }: { params: Params }) {
           ← Volver al seguimiento
         </Link>
       </div>
-      <StartFindingForm slug={slug} />
+      <StartFindingForm
+        slug={slug}
+        defaultType={type && isFindingType(type) ? type : undefined}
+        incident={incidentEnabled ? { sites, canManageHealth } : undefined}
+      />
     </div>
   );
 }

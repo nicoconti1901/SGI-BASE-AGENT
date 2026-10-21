@@ -79,6 +79,10 @@ const DUE_ROUTES: Record<string, DueRoute> = {
     label: "Respuesta a auditoría externa",
     path: (id) => (id ? `audits/${id}` : "audits"),
   },
+  incident_followup: {
+    label: "Seguimiento de accidente",
+    path: (id) => (id ? `findings/${id}` : "safety"),
+  },
   document_validity: {
     label: "Vigencia de documento",
     path: () => "documents",

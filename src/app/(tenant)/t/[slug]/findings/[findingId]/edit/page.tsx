@@ -12,6 +12,8 @@ import {
   AttachmentEmptyState,
 } from "@/app/(tenant)/t/[slug]/findings/FindingPresence";
 import type { FindingType, RootCauseAnalysis } from "@/domain/findings/types";
+import { hasIncidentRecord } from "@/lib/safety-stats";
+import { IncidentFichaCard } from "@/app/(tenant)/t/[slug]/safety/IncidentFichaCard";
 
 type Params = Promise<{ slug: string; findingId: string }>;
 
@@ -51,6 +53,7 @@ export default async function EditFindingPage({
   }
 
   const rca = (finding.rcaJson as RootCauseAnalysis | null) ?? null;
+  const typeLocked = await hasIncidentRecord(tenant.id, finding.id);
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
@@ -82,6 +85,16 @@ export default async function EditFindingPage({
         </Link>
       </div>
 
+      {finding.type === "incident" || typeLocked ? (
+        <IncidentFichaCard
+          slug={slug}
+          tenantId={tenant.id}
+          findingId={finding.id}
+          findingType={finding.type}
+          actor={{ userId: ctx.userId, role: membership?.role, isPlatformSuperuser: ctx.isPlatformSuperuser }}
+        />
+      ) : null}
+
       {members.length === 0 ? (
         <p className="text-sm text-[var(--color-warning)]">
           No hay usuarios en el tenant. Invitá miembros antes de asignar
@@ -93,6 +106,7 @@ export default async function EditFindingPage({
           findingId={finding.id}
           userId={ctx.userId}
           members={members}
+          typeLocked={typeLocked}
           initialValues={{
             type: finding.type as FindingType,
             title: finding.title,
