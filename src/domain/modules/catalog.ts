@@ -114,7 +114,7 @@ export const MODULE_CATALOG: readonly ModuleDefinition[] = [
       { standard: "ISO14001", clause: "8.1" },
       { standard: "ISO45001", clause: "8.1.4" },
     ],
-    status: "planned",
+    status: "available",
     defaultEnabled: false,
   },
   { key: "automations", label: "Automatizaciones", section: "admin", path: "automations", clauses: [], status: "available", defaultEnabled: true },
