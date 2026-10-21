@@ -5,6 +5,7 @@ import {
   PLATFORM_ROLE_LABEL,
   TENANT_ROLE_LABELS,
 } from "@/domain/identity/authz";
+import { canManageHealthData, canReportIncident, canViewHealthData } from "@/domain/safety-stats/access";
 
 describe("tenant authz policy", () => {
   it("viewer cannot mutate", () => {
@@ -57,6 +58,33 @@ describe("finding lifecycle permissions", () => {
     expect(canTenantRole("contributor", "verify_findings")).toBe(false);
     expect(canTenantRole("tenant_admin", "cancel_findings")).toBe(true);
     expect(canTenantRole("process_owner", "cancel_findings")).toBe(false);
+  });
+});
+
+describe("safety stats permissions", () => {
+  it("manage_safety_stats es del administrador y del responsable de proceso", () => {
+    expect(canTenantRole("tenant_admin", "manage_safety_stats")).toBe(true);
+    expect(canTenantRole("process_owner", "manage_safety_stats")).toBe(true);
+    expect(canTenantRole("contributor", "manage_safety_stats")).toBe(false);
+    expect(canTenantRole("viewer", "manage_safety_stats")).toBe(false);
+  });
+
+  it("todos los roles ven la ficha; solo contributor y superiores dan de alta; solo admin y responsable editan; la plataforma no ve", () => {
+    for (const role of ["tenant_admin", "process_owner", "contributor", "viewer"] as const) {
+      expect(canViewHealthData({ role })).toBe(true);
+    }
+    expect(canViewHealthData({ role: null })).toBe(false);
+    expect(canViewHealthData({ role: "tenant_admin", isPlatformSuperuser: true })).toBe(false);
+    expect(canViewHealthData({ role: null, isPlatformSuperuser: true })).toBe(false);
+
+    expect(canReportIncident({ role: "viewer" })).toBe(false);
+    expect(canReportIncident({ role: "contributor" })).toBe(true);
+
+    expect(canManageHealthData({ role: "contributor" })).toBe(false);
+    expect(canManageHealthData({ role: "viewer" })).toBe(false);
+    expect(canManageHealthData({ role: "process_owner" })).toBe(true);
+    expect(canManageHealthData({ role: "tenant_admin" })).toBe(true);
+    expect(canManageHealthData({ role: null, isPlatformSuperuser: true })).toBe(false);
   });
 });
 

@@ -12,7 +12,8 @@ export type AuthzAction =
   | "cancel_findings"
   | "manage_objectives"
   | "manage_master_data"
-  | "assign_job_tasks";
+  | "assign_job_tasks"
+  | "manage_safety_stats";
 
 /**
  * Política documentada (Task 6):
@@ -27,6 +28,9 @@ export type AuthzAction =
  * - Datos maestros (SPEC-master-data): sedes, puestos, personas e importación solo el admin;
  *   asignar tareas a personas también el responsable de proceso
  * - Auditorías (SPEC-audits): planifica admin o responsable de proceso; aprueba el programa solo el admin
+ * - Accidentabilidad (SPEC-accident-stats): completa la ficha de salud, reclasifica y carga exposición
+ *   el admin y el responsable de proceso. Dar de alta el hecho es `write`; leer la ficha la puede todo
+ *   integrante de la empresa (decisión del PO, D10), pero no el superusuario de plataforma (D13)
  */
 const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
   viewer: ["read"],
@@ -39,6 +43,7 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "verify_findings",
     "manage_objectives",
     "assign_job_tasks",
+    "manage_safety_stats",
   ],
   tenant_admin: [
     "read",
@@ -53,6 +58,7 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "manage_objectives",
     "manage_master_data",
     "assign_job_tasks",
+    "manage_safety_stats",
   ],
 };
 
