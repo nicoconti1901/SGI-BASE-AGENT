@@ -95,6 +95,13 @@ export function localDay(instant: Date, timeZone: string = SAFETY_TIME_ZONE): Is
   return deriveEventPeriod(instant, timeZone).occurredOn;
 }
 
+/** Instante → "AAAA-MM-DDTHH:mm" en hora local, para un `<input type="datetime-local">`. */
+export function instantToLocalInput(instant: Date, timeZone: string = SAFETY_TIME_ZONE): string {
+  const p = zonedParts(instant, timeZone);
+  const two = (n: number) => String(n).padStart(2, "0");
+  return `${p.year}-${two(p.month)}-${two(p.day)}T${two(p.hour)}:${two(p.minute)}`;
+}
+
 /** "AAAA-MM-DDTHH:mm" (hora de pared en `timeZone`) → instante. */
 export function localDateTimeToInstant(local: string, timeZone: string = SAFETY_TIME_ZONE): Date | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(local);

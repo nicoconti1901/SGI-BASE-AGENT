@@ -38,10 +38,13 @@ export function FindingEditor({
   userId,
   members,
   initialValues,
+  typeLocked = false,
 }: {
   slug: string;
   findingId: string;
   userId: string;
+  /** Un incidente con ficha de accidente no cambia de tipo. */
+  typeLocked?: boolean;
   members: MemberOption[];
   initialValues: {
     type: FindingType;
@@ -186,6 +189,8 @@ export function FindingEditor({
           Tipo
           <select
             value={type}
+            disabled={typeLocked}
+            title={typeLocked ? "Tiene ficha de accidente: no puede cambiar de tipo" : undefined}
             onChange={(e) => setType(e.target.value as FindingType)}
             className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
           >

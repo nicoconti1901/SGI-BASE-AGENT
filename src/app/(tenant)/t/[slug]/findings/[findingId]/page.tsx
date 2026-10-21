@@ -6,6 +6,7 @@ import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
 import { getFinding, listTenantMemberOptions } from "@/lib/findings";
+import { IncidentFichaCard } from "@/app/(tenant)/t/[slug]/safety/IncidentFichaCard";
 import {
   VERIFICATION_RESULT_LABELS,
   canApplyFindingAction,
@@ -162,6 +163,16 @@ export default async function FindingDetailPage({
           Bandeja
         </Link>
       </div>
+
+      {finding.type === "incident" ? (
+        <IncidentFichaCard
+          slug={slug}
+          tenantId={tenant.id}
+          findingId={finding.id}
+          findingType={finding.type}
+          actor={{ userId: ctx.userId, role: membership?.role, isPlatformSuperuser: ctx.isPlatformSuperuser }}
+        />
+      ) : null}
 
       {findingStatus === "cancelled" ? (
         <p className="rounded-[var(--radius-md)] border border-[var(--color-danger)]/40 bg-[var(--color-danger-soft)] px-4 py-3 text-sm text-[var(--color-danger)]">

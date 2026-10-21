@@ -13,6 +13,7 @@ import {
 import {
   computeLostDays,
   deriveEventPeriod,
+  instantToLocalInput,
   localDateTimeToInstant,
   monthsBetween,
 } from "@/domain/safety-stats/period";
@@ -338,6 +339,10 @@ describe("AT-09 y AT-10: días perdidos y período del hecho", () => {
     const at = localDateTimeToInstant("2026-01-31T23:30")!;
     expect(at.toISOString()).toBe("2026-02-01T02:30:00.000Z");
     expect(deriveEventPeriod(at)).toEqual({ occurredOn: "2026-01-31", periodMonth: "2026-01-01", weekday: 6, hourOfDay: 23 });
+  });
+  it("el campo de fecha y hora ida y vuelta conserva la hora local", () => {
+    expect(instantToLocalInput(localDateTimeToInstant("2026-01-31T23:30")!)).toBe("2026-01-31T23:30");
+    expect(localDateTimeToInstant("no es una fecha")).toBeNull();
   });
 });
 
