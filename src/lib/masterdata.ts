@@ -1,5 +1,6 @@
 import { Prisma, type PersonEmployer, type PrismaClient, type SiteKind } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { nextPositionSince, withAssignmentDates } from "@/domain/masterdata/assignments";
 import { canDeactivate, isValidDocumentId } from "@/domain/masterdata/rules";
 import {
   cleanName,
@@ -322,6 +323,7 @@ export async function updatePerson(
   input: PersonInput & { tenantId: string; actorUserId: string; id: string },
   db: Db = prisma,
 ) {
+  const now = new Date();
   const current = await db.person.findFirst({ where: { id: input.id, tenantId: input.tenantId } });
   if (!current) throw new MasterDataError("Persona no encontrada");
   if (!cleanName(input.employeeCode)) throw new MasterDataError("El legajo es obligatorio");
@@ -329,14 +331,17 @@ export async function updatePerson(
   const extra = [...new Set(input.extraSiteIds ?? [])].filter((id) => id !== input.siteId);
   try {
     const person = await db.$transaction(async (tx) => {
+      const previous = await tx.personJobTask.findMany({ where: { personId: current.id }, select: { jobTaskId: true, assignedAt: true } });
       await tx.personSite.deleteMany({ where: { personId: current.id } });
       await tx.personJobTask.deleteMany({ where: { personId: current.id } });
+      const wanted = [...new Set(input.jobTaskIds ?? [])].map((jobTaskId) => ({ jobTaskId, tenantId: input.tenantId }));
       return tx.person.update({
         where: { id: current.id },
         data: {
           ...personData(input),
+          positionSince: nextPositionSince(current, input.positionId, now),
           extraSites: { create: extra.map((siteId) => ({ siteId, tenantId: input.tenantId })) },
-          jobTasks: { create: [...new Set(input.jobTaskIds ?? [])].map((jobTaskId) => ({ jobTaskId, tenantId: input.tenantId })) },
+          jobTasks: { create: withAssignmentDates(wanted, previous, now) },
         },
         include: personInclude,
       });
@@ -358,9 +363,11 @@ export async function setPersonJobTasks(
   const taskIds = [...new Set(input.jobTaskIds)];
   const tasks = await db.jobTask.count({ where: { tenantId: input.tenantId, active: true, id: { in: taskIds } } });
   if (tasks !== taskIds.length) throw new MasterDataError("Alguna tarea no existe o está dada de baja");
+  const previous = await db.personJobTask.findMany({ where: { personId: person.id }, select: { jobTaskId: true, assignedAt: true } });
+  const rows = withAssignmentDates(taskIds.map((jobTaskId) => ({ personId: person.id, jobTaskId, tenantId: input.tenantId })), previous, new Date());
   await db.$transaction([
     db.personJobTask.deleteMany({ where: { personId: person.id } }),
-    db.personJobTask.createMany({ data: taskIds.map((jobTaskId) => ({ personId: person.id, jobTaskId, tenantId: input.tenantId })) }),
+    db.personJobTask.createMany({ data: rows }),
   ]);
   await audit(db, { tenantId: input.tenantId, entityType: "person", entityId: person.id, action: "update", actorUserId: input.actorUserId, summary: `Tareas de ${person.name}: ${taskIds.length} asignada(s)` });
 }
@@ -514,12 +521,14 @@ export async function applyRosterImport(
         tx.site.findMany({ where: { tenantId } }),
         tx.jobPosition.findMany({ where: { tenantId } }),
         tx.jobTask.findMany({ where: { tenantId } }),
-        tx.person.findMany({ where: { tenantId }, select: { id: true, employeeCode: true } }),
+        tx.person.findMany({ where: { tenantId }, select: { id: true, employeeCode: true, positionId: true, positionSince: true } }),
       ]);
+      const now = new Date();
       const siteId = new Map(sites.map((s) => [normalizeKey(s.name), s.id]));
       const positionId = new Map(positions.map((p) => [normalizeKey(p.name), p.id]));
       const taskId = new Map(tasks.map((t) => [normalizeKey(t.name), t.id]));
       const personId = new Map(people.map((p) => [normalizeKey(p.employeeCode), p.id]));
+      const currentByCode = new Map(people.map((p) => [normalizeKey(p.employeeCode), p]));
       const ids = (map: Map<string, string>, names: string[]) => names.map((n) => map.get(normalizeKey(n))!);
 
       const creates = plan.items.filter((i) => i.action === "create");
@@ -554,9 +563,11 @@ export async function applyRosterImport(
       const updates = plan.items.filter((i) => i.action === "update");
       for (const { row } of updates) {
         const id = personId.get(normalizeKey(row.employeeCode))!;
+        const nextPositionId = positionId.get(normalizeKey(row.positionName))!;
         await tx.person.update({
           where: { id },
           data: {
+            positionSince: nextPositionSince(currentByCode.get(normalizeKey(row.employeeCode))!, nextPositionId, now),
             name: row.name,
             documentId: row.documentId,
             employer: row.employer,
@@ -569,10 +580,15 @@ export async function applyRosterImport(
       }
       const updRel = relations(updates, (code) => personId.get(normalizeKey(code))!);
       const updatedIds = updates.map(({ row }) => personId.get(normalizeKey(row.employeeCode))!);
+      const previousTasks = await tx.personJobTask.findMany({ where: { personId: { in: updatedIds } }, select: { personId: true, jobTaskId: true, assignedAt: true } });
+      const previousByPerson = Map.groupBy(previousTasks, (t) => t.personId);
+      const updTasks = Array.from(Map.groupBy(updRel.tasks, (t) => t.personId)).flatMap(([pid, rows]) =>
+        withAssignmentDates(rows, previousByPerson.get(pid) ?? [], now),
+      );
       await tx.personSite.deleteMany({ where: { personId: { in: updatedIds } } });
       await tx.personJobTask.deleteMany({ where: { personId: { in: updatedIds } } });
       await tx.personSite.createMany({ data: updRel.sites });
-      await tx.personJobTask.createMany({ data: updRel.tasks });
+      await tx.personJobTask.createMany({ data: updTasks });
 
       await audit(tx, {
         tenantId,

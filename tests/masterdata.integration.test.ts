@@ -15,6 +15,7 @@ import {
   previewRosterImport,
   searchPeople,
   setPersonJobTasks,
+  updatePerson,
 } from "@/lib/masterdata";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -157,4 +158,83 @@ describe.skipIf(!hasDatabase)("master data integration", () => {
     // El tenant B no recibió nada.
     expect(await db.person.count({ where: { tenantId: b, employeeCode: { startsWith: "E" } } })).toBe(0);
   }, 120_000);
+
+  describe("fechas del plazo de gracia (assignedAt y positionSince)", () => {
+    const old = new Date("2026-01-10T12:00:00.000Z");
+    const recent = (d: Date | null | undefined) => Boolean(d) && Date.now() - d!.getTime() < 60_000;
+
+    async function setup(code: string) {
+      const site = await createSite({ tenantId: a, actorUserId: actor, name: `Sede ${code} ${stamp}`, kind: "base" });
+      const p1 = await createJobPosition({ tenantId: a, actorUserId: actor, name: `Puesto 1 ${code} ${stamp}` });
+      const p2 = await createJobPosition({ tenantId: a, actorUserId: actor, name: `Puesto 2 ${code} ${stamp}` });
+      const altura = await createJobTask({ tenantId: a, actorUserId: actor, name: `Altura ${code} ${stamp}` });
+      const izaje = await createJobTask({ tenantId: a, actorUserId: actor, name: `Izaje ${code} ${stamp}` });
+      const person = await createPerson({ tenantId: a, actorUserId: actor, employeeCode: `${code}-${stamp}`, name: `Persona ${code}`, siteId: site.id, positionId: p1.id, jobTaskIds: [altura.id] });
+      await db.personJobTask.updateMany({ where: { personId: person.id }, data: { assignedAt: old } });
+      await db.person.update({ where: { id: person.id }, data: { positionSince: old } });
+      const base = { tenantId: a, actorUserId: actor, id: person.id, employeeCode: person.employeeCode, name: person.name, siteId: site.id };
+      const dates = async () => Object.fromEntries((await db.personJobTask.findMany({ where: { personId: person.id } })).map((r) => [r.jobTaskId, r.assignedAt]));
+      return { site, p1, p2, altura, izaje, person, base, dates };
+    }
+
+    it("alta: sin puesto anterior, positionSince queda nulo (desde el ingreso) y la tarea lleva la fecha de hoy", async () => {
+      const site = await createSite({ tenantId: a, actorUserId: actor, name: `Sede alta ${stamp}`, kind: "base" });
+      const pos = await createJobPosition({ tenantId: a, actorUserId: actor, name: `Puesto alta ${stamp}` });
+      const task = await createJobTask({ tenantId: a, actorUserId: actor, name: `Tarea alta ${stamp}` });
+      const person = await createPerson({ tenantId: a, actorUserId: actor, employeeCode: `ALTA-${stamp}`, name: "Alta", siteId: site.id, positionId: pos.id, jobTaskIds: [task.id] });
+      expect(person.positionSince).toBeNull();
+      const rows = await db.personJobTask.findMany({ where: { personId: person.id } });
+      expect(recent(rows[0].assignedAt)).toBe(true);
+    });
+
+    it("editar la persona conserva la fecha de las tareas que siguen y del puesto sin cambios; la tarea nueva lleva hoy", async () => {
+      const c = await setup("EDIT");
+      await updatePerson({ ...c.base, positionId: c.p1.id, jobTaskIds: [c.altura.id, c.izaje.id] });
+      const d = await c.dates();
+      expect(d[c.altura.id]).toEqual(old);
+      expect(recent(d[c.izaje.id])).toBe(true);
+      expect((await db.person.findUniqueOrThrow({ where: { id: c.person.id } })).positionSince).toEqual(old);
+    });
+
+    it("cambiar de puesto reinicia positionSince y no toca las fechas de las tareas", async () => {
+      const c = await setup("PUES");
+      await updatePerson({ ...c.base, positionId: c.p2.id, jobTaskIds: [c.altura.id] });
+      const after = await db.person.findUniqueOrThrow({ where: { id: c.person.id } });
+      expect(recent(after.positionSince)).toBe(true);
+      expect((await c.dates())[c.altura.id]).toEqual(old);
+    });
+
+    it("el responsable de proceso conserva las fechas al cambiar tareas, y una tarea quitada y vuelta a poner empieza de nuevo", async () => {
+      const c = await setup("ASIG");
+      await setPersonJobTasks({ tenantId: a, actorUserId: actor, personId: c.person.id, jobTaskIds: [c.altura.id, c.izaje.id] });
+      let d = await c.dates();
+      expect(d[c.altura.id]).toEqual(old);
+      expect(recent(d[c.izaje.id])).toBe(true);
+      await setPersonJobTasks({ tenantId: a, actorUserId: actor, personId: c.person.id, jobTaskIds: [c.izaje.id] });
+      await setPersonJobTasks({ tenantId: a, actorUserId: actor, personId: c.person.id, jobTaskIds: [c.altura.id, c.izaje.id] });
+      d = await c.dates();
+      expect(recent(d[c.altura.id])).toBe(true);
+    });
+
+    it("reimportar la nómina conserva las fechas; el cambio de puesto por CSV reinicia positionSince", async () => {
+      const header = "legajo,nombre,dni,sede,sedes_adicionales,puesto,empresa,contratista,ingreso,tareas";
+      const row = (puesto: string, tareas: string) => `IMPF-${stamp},Imp Fechas,,Sede imp ${stamp},,${puesto},,,2024-03-01,${tareas}`;
+      await applyRosterImport({ tenantId: a, actorUserId: actor, csv: [header, row("Puesto I1", "Tarea I1")].join("\n"), allowCreateCatalog: true });
+      const person = await db.person.findFirstOrThrow({ where: { tenantId: a, employeeCode: `IMPF-${stamp}` } });
+      expect(person.positionSince).toBeNull();
+      await db.personJobTask.updateMany({ where: { personId: person.id }, data: { assignedAt: old } });
+      await db.person.update({ where: { id: person.id }, data: { positionSince: old } });
+
+      await applyRosterImport({ tenantId: a, actorUserId: actor, csv: [header, row("Puesto I1", "Tarea I1|Tarea I2")].join("\n"), allowCreateCatalog: true });
+      let tasks = await db.personJobTask.findMany({ where: { personId: person.id }, include: { jobTask: true } });
+      expect(tasks.find((t) => t.jobTask.name === "Tarea I1")?.assignedAt).toEqual(old);
+      expect(recent(tasks.find((t) => t.jobTask.name === "Tarea I2")?.assignedAt)).toBe(true);
+      expect((await db.person.findUniqueOrThrow({ where: { id: person.id } })).positionSince).toEqual(old);
+
+      await applyRosterImport({ tenantId: a, actorUserId: actor, csv: [header, row("Puesto I2", "Tarea I1|Tarea I2")].join("\n"), allowCreateCatalog: true });
+      tasks = await db.personJobTask.findMany({ where: { personId: person.id }, include: { jobTask: true } });
+      expect(tasks.find((t) => t.jobTask.name === "Tarea I1")?.assignedAt).toEqual(old);
+      expect(recent((await db.person.findUniqueOrThrow({ where: { id: person.id } })).positionSince)).toBe(true);
+    }, 60_000);
+  });
 });
