@@ -311,6 +311,7 @@ export async function applyRequirementChanges(
   const today = input.today ?? trainingToday();
 
   for (const c of changes) {
+    if (!["position", "task", "all"].includes(c.targetKind)) throw new TrainingError("Destino inválido");
     if (c.targetKind === "all" ? c.targetId !== null : !c.targetId) throw new TrainingError("Destino inválido");
     if (!Number.isInteger(c.graceDays) || c.graceDays < 0 || c.graceDays > 365) throw new TrainingError("El plazo de gracia va de 0 a 365 días");
     if (!["none", "mandatory", "recommended"].includes(c.state)) throw new TrainingError("Estado inválido");
@@ -415,6 +416,16 @@ export async function applyRequirementChanges(
 
 export async function getTrainingSettings(tenantId: string, db: Db = prisma) {
   return db.trainingSettings.findUnique({ where: { tenantId } });
+}
+
+/** Último sello de revisión de la matriz, con el nombre de quien lo registró. */
+export async function getMatrixReview(tenantId: string, db: Db = prisma) {
+  const settings = await getTrainingSettings(tenantId, db);
+  if (!settings?.matrixReviewedAt) return null;
+  const reviewer = settings.matrixReviewedByUserId
+    ? await db.user.findUnique({ where: { id: settings.matrixReviewedByUserId }, select: { name: true } })
+    : null;
+  return { reviewedAt: settings.matrixReviewedAt, reviewerName: reviewer?.name ?? null, note: settings.matrixReviewNote ?? "" };
 }
 
 /** ISO 45001 §5.4: fecha, quién revisó y quiénes participaron o fueron consultados. */
