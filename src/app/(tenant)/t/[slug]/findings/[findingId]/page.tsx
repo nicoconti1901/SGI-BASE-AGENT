@@ -81,13 +81,14 @@ export default async function FindingDetailPage({
 
   const finding = await getFinding(tenant.id, findingId);
   if (!finding) notFound();
-  if (finding.status === "draft") {
-    redirect(`/t/${slug}/findings/${findingId}/edit`);
-  }
-
   const canWrite = canTenantRole(membership?.role, "write", {
     isPlatformSuperuser: ctx.isPlatformSuperuser,
   });
+  // Un borrador se completa en el editor. Quien no puede editar solo ve el de un incidente: cuenta
+  // en los índices desde que se guarda la ficha (D4) y todos los roles leen la ficha (D10).
+  if (finding.status === "draft" && (canWrite || finding.type !== "incident")) {
+    redirect(`/t/${slug}/findings/${findingId}/edit`);
+  }
   const rca = finding.rcaJson as RootCauseAnalysis | null;
   const docs = finding.attachments.filter((a) => a.kind === "finding_doc");
   const findingStatus = finding.status as FindingStatus;
