@@ -1,6 +1,6 @@
 # Spec: `training` — Capacitaciones: matriz por puesto y tarea, seguimiento por persona y sede (Task 20)
 
-Estado: **borrador, pendiente de aprobación del PO**. Base normativa y fuentes: `RESEARCH-training.md`. Depende de la Task 14 (hecha) y de la base común de la Fase 5 (`SPEC-fase5-fundacion.md`, hecha).
+Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador). Base normativa y fuentes: `RESEARCH-training.md`. Depende de la Task 14 (hecha) y de la base común de la Fase 5 (`SPEC-fase5-fundacion.md`, hecha).
 
 ## Objective
 
@@ -238,9 +238,9 @@ Cada paso termina con pruebas y es revisable por separado.
 
 ## Decisiones del PO
 
-Pendiente. Las cinco que más condicionan el trabajo: (2) gracia y habilitación, (5) alcance y consecuencia de la eficacia, (1) y (7) destino "todo el personal" y contratistas, (8) y (9) avisos, responsable y alta silenciosa, (11) catálogo sugerido con vigencias a validar.
+Aprobadas el 2026-10-21 con las recomendaciones del borrador. Las cinco que más condicionan el trabajo: (2) gracia y habilitación, (5) alcance y consecuencia de la eficacia, (1) y (7) destino "todo el personal" y contratistas, (8) y (9) avisos, responsable y alta silenciosa, (11) catálogo sugerido con vigencias a validar.
 
 ## Aprobación
 
-- [ ] Aprobado por el PO (pendiente)
+- [x] Aprobado por el PO el 2026-10-21, con las recomendaciones del borrador
 - [ ] Vigencias del catálogo sugerido validadas por un profesional de Higiene y Seguridad (pendiente; ver `RESEARCH-training.md` §10)

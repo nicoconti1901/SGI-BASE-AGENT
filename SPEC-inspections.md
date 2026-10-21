@@ -1,6 +1,6 @@
 # Spec: `inspections` — Motor de inspecciones y registro de activos (Task 15)
 
-Estado: **borrador para aprobación del PO** (2026-10-21). Depende de la Task 14 (datos maestros) y de la base común de la Fase 5 (`SPEC-fase5-fundacion.md`). Investigación normativa en `RESEARCH-inspections.md`; las marcas [A] / [B] / [C] de este documento remiten a su sección 0.
+Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador). Depende de la Task 14 (datos maestros) y de la base común de la Fase 5 (`SPEC-fase5-fundacion.md`). Investigación normativa en `RESEARCH-inspections.md`; las marcas [A] / [B] / [C] de este documento remiten a su sección 0.
 
 ## Objective
 
@@ -472,5 +472,5 @@ No apto: cualquier ítem crítico no conforme. Consecuencia: **baja definitiva**
 
 ## Aprobación
 
-- [ ] Aprobado por el PO (pendiente)
+- [x] Aprobado por el PO el 2026-10-21, con las recomendaciones del borrador
 - [ ] Anexo de plantillas revisado por un profesional de Higiene y Seguridad (requisito para activar el módulo en producción)

@@ -209,7 +209,7 @@ Principios que salen de la Ley 25.326 (§2.3) aplicados al producto:
 1. **Minimización (art. 4):** estructura cerrada (clasificación, naturaleza de la lesión, parte del cuerpo, días perdidos); sin diagnóstico ni historia clínica; los adjuntos médicos no se piden.
 2. **Disociación para estadísticas (arts. 2 y 7.2):** el tablero y los export agregados no incluyen nombres.
 3. **Seguridad y detección (art. 9):** permisos por rol, aislamiento por tenant, registro de altas, ediciones y consultas de la ficha, y personal de plataforma sin acceso a la ficha de salud por defecto.
-4. **Texto libre = riesgo:** el título, la descripción, los 5 Porqués y los adjuntos del Hallazgo pueden contener nombres y diagnósticos. Como el Hallazgo lo ven todos los roles, el SPEC define título genérico y ocultamiento de descripción y adjuntos para quienes no tienen acceso SST.
+4. **Texto libre = riesgo:** el título, la descripción, los 5 Porqués y los adjuntos del Hallazgo pueden contener nombres y diagnósticos. El PO decidió (2026-10-21) que todos los roles de la empresa ven las fichas y el Hallazgo completos, por lo que el SPEC no oculta nada por rol: el riesgo queda asumido y pendiente de revisión legal; la mitigación es el registro de cada consulta y el aviso de no escribir diagnósticos.
 5. **Re-identificación:** con sedes chicas, un total por sede identifica a la persona. Se documenta como riesgo; el umbral de supresión queda fuera de alcance (**C**).
 6. **Retención (art. 4.7):** plazo legal de conservación **C**; la baja de una Persona no borra el historial (decisión ya tomada en Task 14); se prevé exportar la ficha de una persona (arts. 14–16).
 

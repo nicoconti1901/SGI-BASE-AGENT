@@ -1,6 +1,6 @@
 # Spec: `safety-stats` — Estadísticas de accidentabilidad (Task 17)
 
-Estado: **borrador, pendiente de aprobación del PO**. Investigación y fuentes en `RESEARCH-accident-stats.md` (las referencias "R§" apuntan a esa sección). Se apoya en `SPEC-master-data.md` (sedes, personas), `SPEC-findings-lifecycle.md` (el accidente es un Hallazgo) y `SPEC-fase5-fundacion.md` (módulo activable, `DueItem`, `Action`). Base de la Task 18 (seguridad vial).
+Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador; D10 y D12 cambiados, ver "Decisiones del PO"). Investigación y fuentes en `RESEARCH-accident-stats.md` (las referencias "R§" apuntan a esa sección). Se apoya en `SPEC-master-data.md` (sedes, personas), `SPEC-findings-lifecycle.md` (el accidente es un Hallazgo) y `SPEC-fase5-fundacion.md` (módulo activable, `DueItem`, `Action`). Base de la Task 18 (seguridad vial).
 
 ## Objective
 
@@ -11,7 +11,7 @@ Que la empresa registre cada accidente una sola vez, como un Hallazgo de tipo in
 - IF, IG, II e ID por mes, año acumulado y 12 meses móviles, por sede y por propio/contratista/total, coinciden con el cálculo manual del conjunto de referencia (§ Dataset).
 - Sin exposición cargada, el índice dice "sin datos". Nunca 0.
 - Los accidentes in itinere se ven aparte y no entran en los índices.
-- Quien no tiene acceso SST no ve personas ni lesiones, ni en la ficha ni en el texto del Hallazgo, ni en los export.
+- Todos los roles de la empresa ven las fichas (decisión del PO, D10); cada consulta de una ficha de salud deja registro (quién, cuándo).
 - Las agregaciones se hacen en la base (group by sede/mes); el tablero no trae eventos a memoria.
 - Dos tenants nunca ven los datos del otro.
 - Cargar la exposición de un mes toma menos de 2 minutos para una empresa con 5 sedes.
@@ -29,9 +29,9 @@ Que la empresa registre cada accidente una sola vez, como un Hallazgo de tipo in
 | D7 | Fatales | Cuentan en IF (y en LTIF) y llevan el cargo en IG. **No** entran en ID | Evita que 6.000 días arruinen el promedio (R§5) |
 | D8 | Meses sin exposición y totales | El mes sin exposición sale del numerador y del denominador y la ventana se marca "parcial (falta marzo)". El total propio + contratista solo usa meses con los dos grupos cargados | Anti-patrones (R§5) |
 | D9 | HHT estimada | **No se estima** desde la dotación. Se valida la plausibilidad (horas por persona) | Falsa precisión (R§5) |
-| D10 | Quién ve datos de salud | `tenant_admin` siempre; `process_owner` **solo si el admin le dio acceso SST** (lista propia del módulo). `contributor` y `viewer`, no | Pedido del `todo.md`; `Membership` es un modelo compartido y no se toca |
-| D11 | Alta por colaboradores | El `contributor` puede dar de alta **el hecho** (fecha, sede, clasificación, propio/contratista, forma, agente) sin identificar a la persona. El resto de la ficha la completa SST | La gente de campo reporta; la identidad y la lesión quedan protegidas |
-| D12 | Texto del Hallazgo | Título generado ("Accidente con baja · Planta Norte · 05/02/2026"). A quien no tiene acceso SST se le oculta la descripción, el texto de los 5 Porqués y los adjuntos del Hallazgo `incident`; ve estado, sede, fecha, clasificación y medidas | El texto libre trae nombres y diagnósticos (R§6) |
+| D10 | Quién ve datos de salud | **Todos los roles de la empresa** (`tenant_admin`, `process_owner`, `contributor`, `viewer`) ven las fichas en lectura. Editan la ficha de salud el `tenant_admin` y el `process_owner`. Cada consulta deja registro. No existe permiso ni lista aparte | **Decisión del PO (2026-10-21)**, que reemplaza la recomendación de restringir. Los datos de salud son sensibles (Ley 25.326): el riesgo queda asumido por el PO y pendiente de revisión por un abogado (R§6). Un cliente que no quiera exponerlos puede desactivar el módulo |
+| D11 | Alta por colaboradores | El `contributor` puede dar de alta el hecho (fecha, sede, clasificación, propio/contratista, forma, agente). La ficha de salud (persona, lesión, días) la completan el `tenant_admin` y el `process_owner` | La gente de campo reporta; SST completa la ficha |
+| D12 | Texto del Hallazgo | El Hallazgo del incidente se ve completo para todos los roles: título, descripción, 5 Porqués y adjuntos. El alta avisa que conviene no escribir diagnósticos | Decisión del PO (D10). El título generado y el ocultamiento por rol se descartan |
 | D13 | Personal de plataforma | El superusuario **no** ve fichas de salud por defecto | Confidencialidad (Ley 25.326 art. 10) |
 | D14 | Índices opcionales | LTIF se muestra como alias del IF. TRIR y DART detrás de "Más indicadores" (apagado por defecto). FAR no se muestra | Números chicos (R§5) |
 | D15 | Meta | El tablero lee la meta de un Indicador de la Task 11c; **no escribe** mediciones | Los índices son calculados; la medición de 11c es manual |
@@ -61,7 +61,7 @@ Separada para que un `select` descuidado del registro no filtre datos de salud.
 ### IncidentFollowUp (historial, solo se agrega)
 - `incidentRecordId`, `at`, `authorUserId`, `classification`, `lostDays`, `returnToWorkDate?`, `chargePct`, `note?`.
 - Cada cambio de clasificación (p. ej. de sin baja a con baja o a fatal) o de días perdidos crea una fila. El registro vigente es el último; la clasificación nueva reubica el caso en el **mes del accidente** (D5).
-- Lo lee solo quien tiene acceso SST.
+- Lo leen todos los roles de la empresa; lo escriben el `tenant_admin` y el `process_owner`.
 - Mientras el caso está abierto se crea un `DueItem` "Actualizar días perdidos de …" (15 días, con `siteId`, `ownerUserId` = quien lo dio de alta o el admin) que se renueva en cada seguimiento y se cierra con la fecha de reintegro.
 
 ### ExposurePeriod
@@ -71,9 +71,6 @@ Separada para que un `select` descuidado del registro no filtre datos de salud.
 
 ### SafetyStatsSettings (uno por tenant)
 `fatalChargeDays` (6000), `severityBase` (1.000 o 1.000.000), `lostDaysCap` (365), `exposureDueDay` (10), `exposureOwnerUserId?`, `showOptionalIndices` (false).
-
-### SafetyDataAccess
-`tenantId` × `userId` (único), `grantedByUserId`, `grantedAt`. Solo la gestiona el `tenant_admin`. Tiene efecto para `process_owner`.
 
 ### SafetyIndicatorLink (slice 17.4, opcional)
 `metric` (`if` / `ig` / `ii` / `id`) × `indicatorId`, para leer la meta.
@@ -207,22 +204,21 @@ Con IG ×1.000.000: #1 = 1.500,00; #2 = 333.333,33.
 
 ## Permisos por rol
 
-Acciones nuevas en `src/domain/identity/authz.ts` (hoy no existe ninguna de SST): `view_health_data` y `manage_safety_stats`. La primera se resuelve con `SafetyDataAccess` además del rol.
+Acción nueva en `src/domain/identity/authz.ts` (hoy no existe ninguna de SST): `manage_safety_stats`. Ver las fichas de salud no necesita permiso propio: lo pueden todos los roles de la empresa (D10).
 
 | Acción | tenant_admin | process_owner | contributor | viewer |
 |---|---|---|---|---|
 | Ver el tablero y los totales (sin nombres) | sí | sí | sí | sí |
 | Ver el Hallazgo del incidente (estado, sede, fecha, clasificación, medidas) | sí | sí | sí | sí |
-| Ver descripción, causas (5 Porqués) y adjuntos del Hallazgo del incidente | sí | solo con acceso SST | no | no |
-| Ver persona afectada, naturaleza de la lesión, parte del cuerpo, días perdidos por caso, n.° de ART, seguimientos | sí | solo con acceso SST | no | no |
+| Ver descripción, causas (5 Porqués) y adjuntos del Hallazgo del incidente | sí | sí | sí | sí |
+| Ver persona afectada, naturaleza de la lesión, parte del cuerpo, días perdidos por caso, n.° de ART, seguimientos (con registro de la consulta) | sí | sí | sí | sí |
 | Dar de alta el hecho (fecha, sede, clasificación, propio/contratista, forma, agente) | sí | sí | sí | no |
-| Completar la ficha de salud, actualizar días, reclasificar | sí | solo con acceso SST | no | no |
+| Completar la ficha de salud, actualizar días, reclasificar | sí | sí | no | no |
 | Cargar y corregir exposición, importar CSV, ajustes | sí | sí | no | no |
-| Dar o quitar acceso SST | sí | no | no | no |
 | Exportar totales (CSV agregado, resumen imprimible) | sí | sí | sí | sí |
-| Exportar casos con nombres | sí | solo con acceso SST | no | no |
+| Exportar casos con nombres | sí | sí | sí | sí |
 
-- El `viewer` y el `contributor` ven en la bandeja de Hallazgos el incidente con título genérico, sin descripción ni adjuntos (D12).
+- El `viewer` y el `contributor` ven la ficha de salud en solo lectura: sin botones de edición.
 - El superusuario de plataforma no ve fichas de salud por defecto (D13).
 - Cada alta, edición, reclasificación, consulta de la ficha de salud, carga o corrección de exposición, cambio de acceso y export de casos deja registro (quién, cuándo, qué), con el mecanismo de auditoría de datos maestros.
 - Los eventos de `Finding` (publicar, cerrar, anular) siguen las reglas de `SPEC-findings-lifecycle.md` sin cambios.
@@ -233,17 +229,17 @@ Tres pantallas y un paso. Copy sin jerga, según la identidad SGI (skill `sgi-fr
 
 1. **Alta de accidente (un paso más del alta de hallazgo).** Al elegir el tipo "Incidente", aparece "Ficha de accidente" con tres bloques cortos:
    - "¿Qué pasó?": fecha y hora, sede, "¿Hubo lesión?" y, si hubo, "¿Cuánto se perdió?" (casi accidente · primeros auxilios · sin baja · con baja · fatal · enfermedad profesional); "¿Fue en el trayecto de ida o vuelta al trabajo?"; "¿Fue un hecho de tránsito?"; "¿Es personal propio o de un contratista?"; forma del accidente y agente.
-   - "¿A quién?" y "¿Qué lesión?": solo para quien tiene acceso SST; para el resto el bloque dice que lo completa Seguridad e Higiene.
+   - "¿A quién?" y "¿Qué lesión?": los completa el `tenant_admin` o el `process_owner`; para el resto el bloque queda en solo lectura.
    - "¿Cuántos días de baja?": fecha de reintegro o "sigue de baja" (el sistema cuenta los días).
-   El título del Hallazgo se genera solo. Se avisa que la descripción no debe incluir nombres ni diagnósticos.
+   Se avisa que la descripción no debería incluir diagnósticos.
 2. **Exposición del mes** (`/safety/exposure`): una grilla de sedes × (personal propio, contratista) con horas trabajadas y dotación promedio. "Sin personal contratista este mes" guarda 0/0. Importación CSV con vista previa (`sede, mes, empresa, horas, dotacion`; una sede inexistente es error, no se crea). Aviso mensual por `DueItem`.
 3. **Tablero** (`/safety/stats`):
    - Selector: mes · año acumulado · 12 meses móviles; filtros por sede y por propio / contratista / total.
    - Tarjetas IF, IG, II e ID con flecha de tendencia y la etiqueta de su base. Una tarjeta "sin datos" explica qué falta y lleva a cargarlo ("Falta cargar las horas de marzo en Obra Sur").
    - Pirámide de eventos, distribución por forma del accidente, agente, parte del cuerpo, día de la semana y hora (todos agregados, sin nombres), días sin accidentes con baja por sede, tarjeta aparte de in itinere y de enfermedades profesionales, meta del Indicador vinculado.
-   - Pestaña "Casos" solo para quien tiene acceso SST: lista, fichas incompletas, casos abiertos.
-   - "Ajustes" (solo admin): cargo por fatal, base del IG, quién carga la exposición, quién tiene acceso SST.
-4. Exportación: CSV agregado por sede y mes con numeradores, denominadores y estado; CSV de casos (con acceso SST); resumen imprimible para la revisión por la dirección (ISO 45001 §9.3).
+   - Pestaña "Casos": lista, fichas incompletas, casos abiertos.
+   - "Ajustes" (solo admin): cargo por fatal, base del IG, quién carga la exposición.
+4. Exportación: CSV agregado por sede y mes con numeradores, denominadores y estado; CSV de casos; resumen imprimible para la revisión por la dirección (ISO 45001 §9.3).
 
 ## Acceptance tests (ejemplos)
 
@@ -268,19 +264,19 @@ Integration (base de datos):
 - AT-16: un `IncidentRecord` no puede apuntar a un Hallazgo que no sea `incident`, ni de otro tenant; dos fichas para el mismo Hallazgo fallan por la unicidad.
 - AT-17: las agregaciones salen de `groupBy` en la base: con 50.000 eventos y 5 sedes el tablero hace un número acotado de consultas y no carga eventos.
 - AT-18: tenant A no ve ni modifica fichas, exposición ni ajustes de tenant B; el group by siempre filtra `tenantId`.
-- AT-19: `viewer` y `contributor` no reciben persona, naturaleza de la lesión, parte del cuerpo, días por caso, n.° de ART ni seguimientos en ninguna respuesta (API, acciones de servidor, export); el Hallazgo del incidente llega sin descripción, causas ni adjuntos.
-- AT-20: `process_owner` sin `SafetyDataAccess` se comporta como `contributor` para la salud; con acceso, ve la ficha; `tenant_admin` siempre.
+- AT-19: el `viewer` y el `contributor` ven la ficha de salud y el Hallazgo completos, pero ningún control de edición ni acción de servidor de escritura les responde; cada consulta de una ficha deja registro.
+- AT-20: el `process_owner` y el `tenant_admin` completan la ficha de salud; el `contributor` da de alta el hecho pero no puede completarla.
 - AT-21: el superusuario de plataforma no recibe la ficha de salud.
 - AT-22: corregir la exposición de un mes pasado exige motivo y deja `ExposureRevision`; el tablero refleja el valor nuevo.
 - AT-23: el `DueItem` de exposición se crea una vez por sede y mes (idempotente), vence el día 10 del mes siguiente, lleva `siteId` y se cierra al guardar los grupos; reintentar no duplica.
-- AT-24: el cambio de clasificación de un caso crea seguimiento y mueve el conteo; el historial queda legible solo con acceso SST.
+- AT-24: el cambio de clasificación de un caso crea seguimiento y mueve el conteo; el historial queda legible para todos los roles de la empresa.
 - AT-25: CSV de exposición: reimportar el mismo archivo no cambia nada; una sede desconocida es un error por fila.
 - AT-26: si el módulo `safety_stats` está desactivado, las páginas dan 404 y la ficha no se pide en el alta del Hallazgo.
 
 e2e (Playwright):
 - AT-27: registrar un accidente con baja con fecha de reintegro, cargar las horas del mes, ver el IF del mes en el tablero.
 - AT-28: sin horas cargadas, el tablero muestra "sin datos" y el enlace para cargarlas.
-- AT-29: como `viewer`, el tablero muestra totales y ninguna persona ni lesión en ninguna pantalla.
+- AT-29: como `viewer`, el tablero muestra totales y la pestaña Casos en solo lectura, sin controles de edición.
 
 ## Fuera de alcance
 
@@ -298,18 +294,18 @@ e2e (Playwright):
 
 ## Plan vertical (Task 17)
 
-1. **17.1 Dominio + Prisma.** Enums y listas (clasificación, forma, agente, naturaleza, parte del cuerpo), funciones puras y su unit test sobre el dataset (AT-01 a AT-14), migración propia con `IncidentRecord`, `IncidentHealth`, `IncidentFollowUp`, `ExposurePeriod`, `ExposureRevision`, `SafetyStatsSettings`, `SafetyDataAccess`; acciones de authz nuevas; test de aislamiento a nivel repositorio (AT-16, AT-18). Sin UI. Verde cuando el dataset da los 15 resultados.
-2. **17.2 Registro.** Paso "Ficha de accidente" en el alta de hallazgo (solo si el módulo está activo), título generado, redacción del Hallazgo según permisos, seguimientos de días perdidos y reclasificación, `DueItem` de seguimiento, `SafetyDataAccess` en Ajustes, auditoría. AT-15, AT-19, AT-20, AT-21, AT-24.
+1. **17.1 Dominio + Prisma.** Enums y listas (clasificación, forma, agente, naturaleza, parte del cuerpo), funciones puras y su unit test sobre el dataset (AT-01 a AT-14), migración propia con `IncidentRecord`, `IncidentHealth`, `IncidentFollowUp`, `ExposurePeriod`, `ExposureRevision`, `SafetyStatsSettings`; acción de authz nueva; test de aislamiento a nivel repositorio (AT-16, AT-18). Sin UI. Verde cuando el dataset da los 15 resultados.
+2. **17.2 Registro.** Paso "Ficha de accidente" en el alta de hallazgo (solo si el módulo está activo), título generado, seguimientos de días perdidos y reclasificación, `DueItem` de seguimiento, auditoría. AT-15, AT-19, AT-20, AT-21, AT-24.
 3. **17.3 Exposición.** Grilla mensual por sede, importación CSV con vista previa, plausibilidad, `ExposureRevision`, `DueItem` mensual idempotente (coordinar con el automatizador existente). AT-22, AT-23, AT-25.
 4. **17.4 Tablero `/safety/stats`.** Ventanas, filtros, tarjetas con "sin datos" y "parcial", tendencia, pirámide, distribuciones, días sin accidentes, in itinere, pestaña Casos, meta de un Indicador. AT-17, AT-12, AT-13.
 5. **17.5 Cierre.** Export CSV y resumen imprimible, guía, menú, entrada del catálogo `safety_stats` de `planned` a `available` (cláusulas ISO 45001 9.1.1, 10.2 y 9.3, todas presentes en el catálogo sembrado), e2e (AT-26 a AT-29), README.
 
-Cada paso se publica por separado; la 17.1 puede revisarse sin UI. Los pasos 17.2 y 17.3 no dependen entre sí y pueden construirse en paralelo después de la 17.1. Cambios en modelos compartidos (`Finding`, `DueItem`, `Tenant`, `authz.ts`): solo las dos acciones nuevas de `authz.ts`, que van en la 17.1.
+Cada paso se publica por separado; la 17.1 puede revisarse sin UI. Los pasos 17.2 y 17.3 no dependen entre sí y pueden construirse en paralelo después de la 17.1. Cambios en modelos compartidos (`Finding`, `DueItem`, `Tenant`, `authz.ts`): solo la acción nueva de `authz.ts`, que va en la 17.1.
 
 ## Decisiones del PO
 
-Pendientes. Las que más cambian el resultado: D4 (desde cuándo cuenta un accidente), D1 y D2 (bases y cargo de días), D10 y D12 (quién ve qué, y el texto del Hallazgo), D8 (ventanas parciales y totales) y D6 (enfermedad profesional fuera de los índices).
+Aprobadas el 2026-10-21 con las recomendaciones del borrador, salvo D10 y D12: el PO decidió que los datos de salud los ven todos los roles de la empresa (ver D10, D12 y la sección Permisos por rol). Queda pendiente la revisión legal de ese punto (Ley 25.326).
 
 ## Aprobación
 
-- [ ] Aprobado por el PO (pendiente)
+- [x] Aprobado por el PO el 2026-10-21

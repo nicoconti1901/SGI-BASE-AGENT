@@ -1,6 +1,6 @@
 # Spec: `suppliers` — Evaluación de proveedores (Task 19)
 
-Estado: **borrador, pendiente de aprobación del PO**. Investigación: `RESEARCH-suppliers.md` (cada afirmación lleva su marca de confianza (a)/(b)/(c)).
+Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador). Investigación: `RESEARCH-suppliers.md` (cada afirmación lleva su marca de confianza (a)/(b)/(c)).
 Normas: ISO 9001 §8.4 (8.4.1, 8.4.2, 8.4.3) · ISO 14001 §8.1 · ISO 45001 §8.1.4 (8.1.4.2 contratistas, 8.1.4.3 tercerización).
 Depende de: Task 14 (Sede, Persona), Task 14b (`DueItem` con dueño/sede/persona, `Finding.origin = supplier` reservado, catálogo de módulos), Task 10 (Finding), Task 11 (Action).
 
@@ -332,4 +332,4 @@ Verificación general por slice: `tsc`, `eslint`, `vitest` (unit e integración)
 
 ## Aprobación
 
-- [ ] Pendiente del PO (decisiones 1 a 17)
+- [x] Aprobado por el PO el 2026-10-21 (decisiones 1 a 17, con las recomendaciones del borrador)
