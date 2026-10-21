@@ -56,4 +56,25 @@ describe("buildReminderDigests", () => {
   it("sin vencimientos no hay mails", () => {
     expect(buildReminderDigests([], members)).toEqual([]);
   });
+
+  it("con muchos vencimientos lista solo los más urgentes y dice cuántos quedan afuera", () => {
+    const many: DigestItem[] = Array.from({ length: 25 }, (_, i) => ({
+      id: String(i),
+      tenantId: "t1",
+      tenantName: "Acme",
+      title: `Vencimiento ${i}`,
+      kind: i < 5 ? "overdue" : "upcoming",
+      dueAt: dueAt(i < 5 ? `2026-10-${10 + i}` : `2026-11-${String(i - 4).padStart(2, "0")}`),
+      ownerUserId: null,
+      siteName: i % 2 === 0 ? "Base Neuquén" : "Obra Sur",
+    }));
+    const admin = buildReminderDigests(many, members).find((d) => d.userId === "admin")!;
+
+    expect(admin.subject).toBe("[SGI] Acme: 5 vencidos y 20 por vencer");
+    expect(admin.body.split("\n").filter((l) => l.startsWith("- "))).toHaveLength(10);
+    expect(admin.body).toContain("y 15 más");
+    for (let i = 0; i < 5; i++) expect(admin.body).toContain(`Vencimiento ${i}`);
+    expect(admin.body).not.toContain("Vencimiento 24");
+    expect(admin.itemIds).toHaveLength(25);
+  });
 });
