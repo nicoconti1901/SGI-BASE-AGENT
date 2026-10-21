@@ -135,6 +135,12 @@ model Tenant {
   auditReportFiles   AuditReportAttachment[]
   objectives         Objective[]
   indicators         Indicator[]
+  incidentRecords    IncidentRecord[]
+  incidentHealths    IncidentHealth[]
+  incidentFollowUps  IncidentFollowUp[]
+  exposurePeriods    ExposurePeriod[]
+  exposureRevisions  ExposureRevision[]
+  safetySettings     SafetyStatsSettings?
   sites              Site[]
   jobPositions       JobPosition[]
   jobTasks           JobTask[]
@@ -479,6 +485,8 @@ model Finding {
   auditId           String?
   audit             Audit?                   @relation(fields: [auditId], references: [id], onDelete: SetNull)
   auditItem         AuditChecklistItem?      @relation("AuditItemFinding")
+  /// Ficha de accidente (Task 17): el vínculo vive en IncidentRecord, no hay columna acá.
+  incidentRecord    IncidentRecord?
   /// Ciclo de vida (Task 10d) — SPEC-findings-lifecycle.md
   verificationDueAt DateTime?
   closedAt          DateTime?
@@ -1189,6 +1197,8 @@ model Site {
   updatedAt  DateTime     @updatedAt
   tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   basePeople Person[]     @relation("PersonBaseSite")
+  incidents  IncidentRecord[]
+  exposures  ExposurePeriod[]
   people     PersonSite[]
   dueItems   DueItem[]
 
@@ -1253,6 +1263,7 @@ model Person {
   updatedAt      DateTime        @updatedAt
   tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   site           Site            @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
+  incidentHealths IncidentHealth[]
   position       JobPosition     @relation(fields: [positionId], references: [id], onDelete: Restrict)
   user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   extraSites     PersonSite[]
@@ -1309,4 +1320,162 @@ model MasterDataAudit {
   @@index([tenantId, createdAt])
   @@index([tenantId, entityType, entityId])
   @@map("master_data_audit")
+}
+
+// ─── Accidentabilidad (Task 17): SPEC-accident-stats.md ────────────────────
+// Cada accidente es un Hallazgo `incident` con su ficha 1:1 (IncidentRecord). El vínculo vive acá,
+// no en Finding. Los datos de salud van en IncidentHealth, aparte, para que un select descuidado
+// del registro no los filtre. Todo lleva tenantId.
+
+enum IncidentClassification {
+  near_miss
+  first_aid
+  no_lost_time
+  lost_time
+  fatal
+  occupational_disease
+}
+
+/// El hecho: visible para quien ve el Hallazgo. Las columnas derivadas (occurredOn, periodMonth,
+/// weekday, hourOfDay) las calcula `deriveEventPeriod` al guardar; nunca se tipean.
+model IncidentRecord {
+  id               String                 @id @default(cuid())
+  tenantId         String
+  findingId        String                 @unique
+  siteId           String
+  occurredAt       DateTime
+  occurredOn       DateTime               @db.Date
+  periodMonth      DateTime               @db.Date
+  weekday          Int                    @db.SmallInt
+  hourOfDay        Int                    @db.SmallInt
+  classification   IncidentClassification
+  inItinere        Boolean                @default(false)
+  isRoad           Boolean                @default(false)
+  employerKind     PersonEmployer
+  /// Solo para `no_lost_time`: tareas restringidas.
+  restrictedWork   Boolean                @default(false)
+  /// Claves de las listas en código (src/domain/safety-stats/types.ts).
+  accidentForm     String
+  materialAgent    String
+  /// Días reales perdidos (sin cargos). Un fatal guarda 0.
+  lostDays         Int                    @default(0)
+  /// Un `lost_time` sin fecha de reintegro está abierto.
+  returnToWorkDate DateTime?              @db.Date
+  /// 100 si es fatal; % de incapacidad permanente si lo hay; 0 si no.
+  chargePct        Decimal                @default(0) @db.Decimal(5, 2)
+  createdByUserId  String?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  tenant           Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  finding          Finding                @relation(fields: [findingId], references: [id], onDelete: Restrict)
+  site             Site                   @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  health           IncidentHealth?
+  followUps        IncidentFollowUp[]
+
+  @@index([tenantId, periodMonth, siteId])
+  @@index([tenantId, classification])
+  @@index([siteId, occurredOn])
+  @@map("incident_record")
+}
+
+/// Datos de salud de la persona afectada. Sin diagnóstico libre ni adjuntos médicos.
+model IncidentHealth {
+  id               String         @id @default(cuid())
+  tenantId         String
+  incidentRecordId String         @unique
+  /// Obligatoria salvo en un casi accidente (se valida en el dominio).
+  affectedPersonId String?
+  natureOfInjury   String?
+  bodyPart         String?
+  /// N.° de denuncia a la ART.
+  artClaimNumber   String?
+  deathDate        DateTime?      @db.Date
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  tenant           Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  incidentRecord   IncidentRecord @relation(fields: [incidentRecordId], references: [id], onDelete: Cascade)
+  affectedPerson   Person?        @relation(fields: [affectedPersonId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, affectedPersonId])
+  @@map("incident_health")
+}
+
+/// Historial, solo se agrega: el vigente es el último. Cada cambio de clasificación o de días crea una fila.
+model IncidentFollowUp {
+  id               String                 @id @default(cuid())
+  tenantId         String
+  incidentRecordId String
+  at               DateTime               @default(now())
+  authorUserId     String?
+  classification   IncidentClassification
+  lostDays         Int
+  returnToWorkDate DateTime?              @db.Date
+  chargePct        Decimal                @default(0) @db.Decimal(5, 2)
+  note             String?
+  tenant           Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  incidentRecord   IncidentRecord         @relation(fields: [incidentRecordId], references: [id], onDelete: Cascade)
+
+  @@index([incidentRecordId, at])
+  @@index([tenantId, at])
+  @@map("incident_follow_up")
+}
+
+/// Horas trabajadas y dotación por sede, mes y grupo. 0 / 0 = «sin actividad», distinto de no haber cargado la fila.
+model ExposurePeriod {
+  id               String             @id @default(cuid())
+  tenantId         String
+  siteId           String
+  periodMonth      DateTime           @db.Date
+  employerKind     PersonEmployer
+  hours            Int
+  headcountAvg     Decimal            @db.Decimal(8, 2)
+  recordedByUserId String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  tenant           Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site             Site               @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  revisions        ExposureRevision[]
+
+  @@unique([siteId, periodMonth, employerKind])
+  @@index([tenantId, periodMonth])
+  @@map("exposure_period")
+}
+
+/// Solo se agrega: toda corrección de un mes pasado deja valores anteriores, nuevos y motivo.
+model ExposureRevision {
+  id                   String         @id @default(cuid())
+  tenantId             String
+  exposurePeriodId     String
+  previousHours        Int
+  previousHeadcountAvg Decimal        @db.Decimal(8, 2)
+  newHours             Int
+  newHeadcountAvg      Decimal        @db.Decimal(8, 2)
+  reason               String
+  actorUserId          String?
+  createdAt            DateTime       @default(now())
+  tenant               Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  exposurePeriod       ExposurePeriod @relation(fields: [exposurePeriodId], references: [id], onDelete: Cascade)
+
+  @@index([exposurePeriodId, createdAt])
+  @@index([tenantId, createdAt])
+  @@map("exposure_revision")
+}
+
+/// Ajustes de la empresa (uno por tenant). Sin fila valen los valores por defecto del dominio.
+model SafetyStatsSettings {
+  id                  String   @id @default(cuid())
+  tenantId            String   @unique
+  /// Días que se cargan por un fatal (D2).
+  fatalChargeDays     Int      @default(6000)
+  /// 1000 o 1000000 (D1).
+  severityBase        Int      @default(1000)
+  lostDaysCap         Int      @default(365)
+  exposureDueDay      Int      @default(10)
+  exposureOwnerUserId String?
+  showOptionalIndices Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("safety_stats_settings")
 }
