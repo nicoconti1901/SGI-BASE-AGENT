@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { canTenantRole } from "@/domain/identity/authz";
 import { ASSET_TYPES, getAssetType, isAssetTypeKey } from "@/domain/inspections/asset-types";
 import { extinguisherAttributes } from "@/domain/inspections/asset-types/extinguisher";
 import { normalizeAssetCode, resolveDueDates } from "@/domain/inspections/asset-types/resolve";
@@ -187,5 +188,24 @@ describe("CSV de extintores", () => {
   it("rechaza más de 1.000 filas", () => {
     const body = Array.from({ length: 1001 }, (_, i) => `E${i},d,S,abc,5,2022-01-01,2026-01-01`).join("\n");
     expect(parseAssetCsv(type, `${header}\n${body}`).errors[0].message).toContain("1000");
+  });
+});
+
+describe("permisos de Inspecciones (SPEC)", () => {
+  type Role = "viewer" | "contributor" | "process_owner" | "tenant_admin";
+  const can = (role: Role, action: Parameters<typeof canTenantRole>[1]) => canTenantRole(role, action);
+  const admin = ["manage_assets", "import_assets", "manage_inspection_templates", "release_assets"] as const;
+
+  it("viewer no crea; contributor registra pero no gestiona activos ni libera", () => {
+    expect(can("viewer", "write")).toBe(false);
+    expect(can("contributor", "write")).toBe(true);
+    for (const action of admin) expect(can("contributor", action)).toBe(false);
+  });
+  it("process_owner gestiona y libera, pero no importa ni edita plantillas; el admin hace todo", () => {
+    expect(can("process_owner", "manage_assets")).toBe(true);
+    expect(can("process_owner", "release_assets")).toBe(true);
+    expect(can("process_owner", "import_assets")).toBe(false);
+    expect(can("process_owner", "manage_inspection_templates")).toBe(false);
+    for (const action of admin) expect(can("tenant_admin", action)).toBe(true);
   });
 });
