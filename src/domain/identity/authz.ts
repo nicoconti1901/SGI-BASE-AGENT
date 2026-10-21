@@ -17,7 +17,9 @@ export type AuthzAction =
   | "manage_suppliers"
   | "evaluate_suppliers"
   | "manage_supplier_criteria"
-  | "upload_supplier_documents";
+  | "upload_supplier_documents"
+  | "manage_training"
+  | "record_training";
 
 /**
  * Política documentada (Task 6):
@@ -37,10 +39,12 @@ export type AuthzAction =
  *   integrante de la empresa (decisión del PO, D10), pero no el superusuario de plataforma (D13)
  * - Proveedores (SPEC-suppliers): alta, edición y evaluación admin y responsable de proceso; criterios y tipos
  *   de documento solo el admin; cargar documentos también el colaborador
+ * - Capacitaciones (SPEC-training): cursos, matriz y anulaciones (`manage_training`) admin y responsable de
+ *   proceso; registrar sesiones y registros (`record_training`) además el colaborador
  */
 const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
   viewer: ["read"],
-  contributor: ["read", "write", "upload_supplier_documents"],
+  contributor: ["read", "write", "upload_supplier_documents", "record_training"],
   process_owner: [
     "read",
     "write",
@@ -53,6 +57,8 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "manage_suppliers",
     "evaluate_suppliers",
     "upload_supplier_documents",
+    "manage_training",
+    "record_training",
   ],
   tenant_admin: [
     "read",
@@ -72,6 +78,8 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "evaluate_suppliers",
     "manage_supplier_criteria",
     "upload_supplier_documents",
+    "manage_training",
+    "record_training",
   ],
 };
 
