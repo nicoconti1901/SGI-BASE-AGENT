@@ -129,6 +129,7 @@ export const EXTINGUISHER_TYPE = {
   schemaVersion: 1,
   attributesSchema: extinguisherAttributes as unknown as AssetTypeDef["attributesSchema"],
   dueKinds,
+  dueKindLabels: { maintenance: "Mantenimiento", hydrostatic_test: "Prueba hidráulica", hose_test: "Prueba de manguera" },
   periodicTemplateKey: "extinguisher_periodic",
   summarize: (raw) => {
     const a = raw as Partial<ExtinguisherAttributes>;

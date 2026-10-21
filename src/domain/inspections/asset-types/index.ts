@@ -34,6 +34,8 @@ export type AssetTypeDef = {
   schemaVersion: number;
   attributesSchema: z.ZodType<Record<string, unknown>>;
   dueKinds: (attributes: Record<string, unknown>) => DueKindSpec[];
+  /** Todos los vencimientos que el tipo puede llevar, para armar el formulario de alta. */
+  dueKindLabels: Record<string, string>;
   /** Plantilla de inspección periódica con calendario: la que genera el programa del activo. */
   periodicTemplateKey: string;
   /** Resumen de una línea para listas ("Polvo ABC · 5 kg"). */

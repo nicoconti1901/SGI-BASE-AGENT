@@ -424,7 +424,7 @@ export async function getAsset(tenantId: string, assetId: string, db: Db = prism
     where: { id: assetId, tenantId },
     include: {
       site: { select: { id: true, name: true } },
-      assignedPerson: { select: { id: true, name: true, employeeCode: true } },
+      assignedPerson: { select: { id: true, name: true, employeeCode: true, site: { select: { name: true } } } },
       dueDates: { orderBy: { dueAt: "asc" } },
       plans: { include: { template: { select: { key: true, name: true, intervalUnit: true, intervalValue: true } } } },
       statusEvents: { orderBy: { createdAt: "desc" }, take: 20 },
