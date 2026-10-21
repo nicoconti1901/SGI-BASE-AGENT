@@ -35,9 +35,9 @@ export function AppShell({
   const theme = PERSONA_THEME[identity.persona];
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-canvas)] text-[var(--color-ink)]">
+    <div className="flex min-h-screen flex-col bg-[var(--color-canvas)] text-[var(--color-ink)] lg:flex-row">
       <aside
-        className={`flex w-64 shrink-0 flex-col border-r border-black/10 ${theme.rail}`}
+        className={`hidden w-64 shrink-0 flex-col border-r border-black/10 lg:flex ${theme.rail}`}
         aria-label="Navegación"
       >
         <div className={`h-1.5 ${theme.accent}`} aria-hidden />
@@ -65,9 +65,30 @@ export function AppShell({
         </div>
       </aside>
 
+      {/* Celular: el menú lateral pasa a una barra con un desplegable, para que el contenido use todo el ancho. */}
+      <div className={`lg:hidden ${theme.rail}`}>
+        <div className={`h-1.5 ${theme.accent}`} aria-hidden />
+        <details>
+          <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 py-2 text-sm font-semibold">
+            <span className="min-w-0 truncate">
+              SGI Base · {contextLabel}
+            </span>
+            <span className="rounded-[var(--radius-sm)] border border-white/20 px-3 py-1.5 text-xs">Menú</span>
+          </summary>
+          <nav className="flex flex-col gap-1 p-3" aria-label="Menú principal">
+            {backLink ? (
+              <Link href={backLink.href} className="mb-2 rounded-[var(--radius-md)] border border-white/20 px-3 py-2 text-sm font-medium opacity-90 hover:bg-white/10">
+                ← {backLink.label}
+              </Link>
+            ) : null}
+            <NavLinks sections={navSections} />
+          </nav>
+        </details>
+      </div>
+
       <div className="flex min-w-0 flex-1 flex-col">
         <div className={`h-1.5 ${theme.accent}`} aria-hidden />
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] bg-[var(--color-surface)] px-6 py-3">
+        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 sm:px-6">
           <div className="flex min-w-0 flex-wrap items-center gap-3">
             <span
               className={`rounded-[var(--radius-sm)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-on-solid)] ${theme.accent}`}
@@ -92,7 +113,7 @@ export function AppShell({
             <SignOutButton />
           </div>
         </header>
-        <main id="contenido-principal" className="flex-1 px-6 py-8">
+        <main id="contenido-principal" className="flex-1 px-4 py-6 sm:px-6 sm:py-8">
           {children}
         </main>
       </div>
