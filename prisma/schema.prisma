@@ -108,13 +108,13 @@ model Verification {
 }
 
 model Tenant {
-  id                 String                    @id @default(cuid())
+  id                 String                     @id @default(cuid())
   name               String
-  slug               String                    @unique
+  slug               String                     @unique
   size               String?
   activity           String?
-  createdAt          DateTime                  @default(now())
-  updatedAt          DateTime                  @updatedAt
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
   memberships        Membership[]
   documents          Document[]
   requirements       TenantRequirement[]
@@ -147,6 +147,10 @@ model Tenant {
   people             Person[]
   masterDataAudits   MasterDataAudit[]
   moduleActivations  TenantModuleActivation[]
+  suppliers          Supplier[]
+  supplierSettings   SupplierSettings?
+  supplierTemplates  SupplierCriteriaTemplate[]
+  supplierDocTypes   SupplierDocumentType[]
 
   @@map("tenant")
 }
@@ -497,6 +501,7 @@ model Finding {
   reworkSince       DateTime?
   verifications     FindingVerification[]
   statusEvents      FindingStatusEvent[]
+  supplierLink      SupplierFinding?
 
   @@index([tenantId, status])
   @@index([tenantId, type])
@@ -1186,21 +1191,22 @@ enum PersonStatus {
 
 /// Dónde: oficina, base, obrador, yacimiento, campamento o planta.
 model Site {
-  id         String       @id @default(cuid())
+  id         String           @id @default(cuid())
   tenantId   String
   name       String
-  kind       SiteKind     @default(office)
+  kind       SiteKind         @default(office)
   address    String?
-  active     Boolean      @default(true)
+  active     Boolean          @default(true)
   inactiveAt DateTime?
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  basePeople Person[]     @relation("PersonBaseSite")
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  basePeople Person[]         @relation("PersonBaseSite")
   incidents  IncidentRecord[]
   exposures  ExposurePeriod[]
   people     PersonSite[]
   dueItems   DueItem[]
+  suppliers  SupplierSite[]
 
   @@unique([tenantId, name])
   @@index([tenantId, active])
@@ -1244,37 +1250,41 @@ model JobTask {
 /// Quién: nómina propia y de contratistas. No necesariamente usa el sistema (`userId` opcional).
 /// Sin datos de salud. La baja es lógica: nunca se borra el historial.
 model Person {
-  id             String          @id @default(cuid())
-  tenantId       String
-  employeeCode   String
-  name           String
-  documentId     String?
-  userId         String?
-  employer       PersonEmployer  @default(own)
-  contractorName String?
-  siteId         String
-  positionId     String
-  hiredAt        DateTime?
+  id              String           @id @default(cuid())
+  tenantId        String
+  employeeCode    String
+  name            String
+  documentId      String?
+  userId          String?
+  employer        PersonEmployer   @default(own)
+  contractorName  String?
+  siteId          String
+  positionId      String
+  hiredAt         DateTime?
   /// Desde cuándo está en el puesto actual. NULL = desde el ingreso. Solo cambia al cambiar de puesto.
-  positionSince  DateTime?
-  status         PersonStatus    @default(active)
-  inactiveAt     DateTime?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  site           Site            @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
+  positionSince   DateTime?
+  status          PersonStatus     @default(active)
+  inactiveAt      DateTime?
+  /// Contratista del que depende (módulo Proveedores). `contractorName` sigue siendo el texto libre.
+  supplierId      String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  supplier        Supplier?        @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site            Site             @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
   incidentHealths IncidentHealth[]
-  position       JobPosition     @relation(fields: [positionId], references: [id], onDelete: Restrict)
-  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  extraSites     PersonSite[]
-  jobTasks       PersonJobTask[]
-  dueItems       DueItem[]
+  position        JobPosition      @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  extraSites      PersonSite[]
+  jobTasks        PersonJobTask[]
+  dueItems        DueItem[]
 
   @@unique([tenantId, employeeCode])
   @@unique([tenantId, userId])
   @@index([tenantId, status])
   @@index([siteId])
   @@index([positionId])
+  @@index([tenantId, supplierId])
   @@map("person")
 }
 
@@ -1478,4 +1488,368 @@ model SafetyStatsSettings {
   tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@map("safety_stats_settings")
+}
+
+// ─── Proveedores (Task 19) — SPEC-suppliers.md ─────────────────────────────
+// Las fechas de calendario (@db.Date) viajan como medianoche UTC del día.
+// Los CHECK (peso > 0, nota 1 a 5, motivo de criticidad, CUIT de 11 dígitos, plantilla publicada
+// única por tipo) viven solo en el SQL de la migración: Prisma no los expresa.
+
+enum SupplierType {
+  product
+  service
+  contractor
+}
+
+enum SupplierCriticality {
+  critical
+  standard
+  low
+}
+
+/// Derivado de la última evaluación no anulada; solo `inactive` se marca a mano.
+enum SupplierStatus {
+  potential
+  approved
+  conditional
+  not_approved
+  inactive
+}
+
+enum SupplierTemplateStatus {
+  draft
+  published
+  retired
+}
+
+enum SupplierCriterionPhase {
+  selection
+  performance
+  both
+}
+
+enum SupplierEvaluationKind {
+  initial
+  periodic
+  event
+}
+
+enum SupplierEvaluationMode {
+  full
+  simplified
+  declared
+}
+
+enum SupplierEvaluationResult {
+  approved
+  conditional
+  not_approved
+}
+
+enum SupplierResultReason {
+  score
+  excluding_criterion
+  declared
+}
+
+enum SupplierDocumentRecurrence {
+  none
+  monthly
+}
+
+enum SupplierFindingKind {
+  quality
+  delivery
+  safety
+  environment
+  documentation
+  claim
+}
+
+enum SupplierCommunicationKind {
+  requirements
+  evaluation_result
+}
+
+enum SupplierCommunicationChannel {
+  email
+  letter
+  meeting
+  other
+}
+
+/// A quién le compra la empresa: producto, servicio o contratista.
+/// Las columnas de «resumen» las escribe solo `recomputeSupplierSummary` (src/lib/suppliers.ts).
+model Supplier {
+  id                   String                  @id @default(cuid())
+  tenantId             String
+  legalName            String
+  tradeName            String?
+  /// 11 dígitos normalizados. Opcional (proveedor extranjero); único por empresa cuando existe.
+  taxId                String?
+  type                 SupplierType
+  category             String?
+  criticality          SupplierCriticality     @default(standard)
+  criticalityReason    String?
+  /// Responsable interno (usuario de la empresa). Sin FK, como los demás ownerUserId.
+  ownerUserId          String?
+  contactName          String?
+  contactEmail         String?
+  contactPhone         String?
+  notes                String?
+  status               SupplierStatus          @default(potential)
+  inactiveAt           DateTime?
+  inactiveReason       String?
+  lastEvaluationId     String?
+  lastEvaluatedAt      DateTime?               @db.Date
+  lastScore            Decimal?                @db.Decimal(4, 1)
+  nextEvaluationDueAt  DateTime?               @db.Date
+  blockingDocExpiresAt DateTime?               @db.Date
+  missingRequiredDocs  Int                     @default(0)
+  missingBlockingDocs  Int                     @default(0)
+  /// Primer instante en que necesita atención (reevaluación o documento bloqueante). Ordena la lista.
+  attentionAt          DateTime?               @db.Date
+  createdByUserId      String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  tenant               Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sites                SupplierSite[]
+  evaluations          SupplierEvaluation[]
+  documents            SupplierDocument[]
+  findings             SupplierFinding[]
+  communications       SupplierCommunication[]
+  people               Person[]
+
+  @@unique([tenantId, taxId])
+  @@index([tenantId, status])
+  @@index([tenantId, criticality])
+  @@index([tenantId, attentionAt])
+  @@index([tenantId, legalName])
+  @@map("supplier")
+}
+
+/// Sedes a las que atiende un proveedor. Sin filas = todas.
+model SupplierSite {
+  supplierId String
+  siteId     String
+  tenantId   String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  site       Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@id([supplierId, siteId])
+  @@index([tenantId, siteId])
+  @@map("supplier_site")
+}
+
+/// Ajustes por empresa: periodicidad de la reevaluación (null = sin periodicidad) y avisos.
+model SupplierSettings {
+  id                      String   @id @default(cuid())
+  tenantId                String   @unique
+  reevalCriticalMonths    Int?     @default(12)
+  reevalStandardMonths    Int?     @default(24)
+  reevalConditionalMonths Int?     @default(6)
+  /// Días desde el alta para hacer la evaluación inicial.
+  initialEvalDays         Int      @default(30)
+  docWarnDays             Int      @default(30)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  tenant                  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("supplier_settings")
+}
+
+/// Plantilla de criterios con versiones. Una versión publicada no se edita (se clona en borrador).
+model SupplierCriteriaTemplate {
+  id                String                 @id @default(cuid())
+  tenantId          String
+  supplierType      SupplierType
+  version           Int
+  status            SupplierTemplateStatus @default(draft)
+  approvedMin       Int                    @default(80)
+  conditionalMin    Int                    @default(60)
+  changeNote        String?
+  publishedAt       DateTime?
+  publishedByUserId String?
+  createdByUserId   String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  criteria          SupplierCriterion[]
+  evaluations       SupplierEvaluation[]
+
+  @@unique([tenantId, supplierType, version])
+  @@index([tenantId, supplierType, status])
+  @@map("supplier_criteria_template")
+}
+
+model SupplierCriterion {
+  id          String                   @id @default(cuid())
+  tenantId    String
+  templateId  String
+  position    Int
+  name        String
+  description String                   @default("")
+  descriptor1 String                   @default("")
+  descriptor3 String                   @default("")
+  descriptor5 String                   @default("")
+  weight      Int
+  excluding   Boolean                  @default(false)
+  allowNA     Boolean                  @default(false)
+  phase       SupplierCriterionPhase   @default(both)
+  /// Entra en la evaluación simplificada.
+  basic       Boolean                  @default(false)
+  template    SupplierCriteriaTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, position])
+  @@index([tenantId, templateId])
+  @@map("supplier_criterion")
+}
+
+/// Inmutable: lo único que cambia es anularla (con motivo). Total y resultado los calcula el servidor.
+model SupplierEvaluation {
+  id                      String                    @id @default(cuid())
+  tenantId                String
+  supplierId              String
+  kind                    SupplierEvaluationKind
+  mode                    SupplierEvaluationMode
+  /// Copia fija de lo evaluado: plantilla, versión, umbrales y criticidad de ese momento.
+  templateId              String?
+  templateVersion         Int?
+  approvedMin             Int
+  conditionalMin          Int
+  criticalityAtEvaluation SupplierCriticality
+  periodFrom              DateTime?                 @db.Date
+  periodTo                DateTime?                 @db.Date
+  evaluatedAt             DateTime                  @db.Date
+  evaluatorUserId         String?
+  totalScore              Decimal?                  @db.Decimal(4, 1)
+  coverage                Decimal?                  @db.Decimal(4, 1)
+  result                  SupplierEvaluationResult
+  resultReason            SupplierResultReason
+  comment                 String                    @default("")
+  voidedAt                DateTime?
+  voidedByUserId          String?
+  voidReason              String?
+  createdAt               DateTime                  @default(now())
+  supplier                Supplier                  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  template                SupplierCriteriaTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  items                   SupplierEvaluationItem[]
+  findings                SupplierFinding[]
+  communications          SupplierCommunication[]
+
+  @@index([tenantId, supplierId, evaluatedAt])
+  @@index([tenantId, result])
+  @@map("supplier_evaluation")
+}
+
+/// Copia fija de cada criterio al momento de evaluar.
+model SupplierEvaluationItem {
+  id           String             @id @default(cuid())
+  tenantId     String
+  evaluationId String
+  /// Trazabilidad hacia el criterio de la plantilla; sin FK a propósito (la copia es la verdad).
+  criterionId  String?
+  position     Int
+  name         String
+  description  String             @default("")
+  weight       Int
+  excluding    Boolean            @default(false)
+  allowNA      Boolean            @default(false)
+  /// 1 a 5, o null si no aplica.
+  score        Int?
+  comment      String             @default("")
+  evaluation   SupplierEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, evaluationId])
+  @@map("supplier_evaluation_item")
+}
+
+model SupplierDocumentType {
+  id               String                     @id @default(cuid())
+  tenantId         String
+  key              String
+  name             String
+  appliesTo        SupplierType[]
+  required         Boolean                    @default(false)
+  blocksEnablement Boolean                    @default(false)
+  /// Sugerencia de vigencia al cargar el documento.
+  validityMonths   Int?
+  recurrence       SupplierDocumentRecurrence @default(none)
+  note             String                     @default("")
+  active           Boolean                    @default(true)
+  position         Int                        @default(0)
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  tenant           Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  documents        SupplierDocument[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId, active])
+  @@map("supplier_document_type")
+}
+
+/// El vigente de cada tipo es el último no anulado; se conserva el historial.
+model SupplierDocument {
+  id               String               @id @default(cuid())
+  tenantId         String
+  supplierId       String
+  typeId           String
+  issuedAt         DateTime?            @db.Date
+  expiresAt        DateTime?            @db.Date
+  storageKey       String
+  fileName         String
+  contentType      String
+  sizeBytes        Int
+  uploadedByUserId String?
+  supersededAt     DateTime?
+  voidedAt         DateTime?
+  voidReason       String?
+  createdAt        DateTime             @default(now())
+  supplier         Supplier             @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  type             SupplierDocumentType @relation(fields: [typeId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, supplierId, typeId])
+  @@index([tenantId, expiresAt])
+  @@map("supplier_document")
+}
+
+/// Hallazgo originado en un proveedor (`Finding.origin = supplier`). El vínculo vive de este lado.
+model SupplierFinding {
+  id           String              @id @default(cuid())
+  tenantId     String
+  supplierId   String
+  findingId    String              @unique
+  kind         SupplierFindingKind
+  evaluationId String?
+  createdAt    DateTime            @default(now())
+  supplier     Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  finding      Finding             @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  evaluation   SupplierEvaluation? @relation(fields: [evaluationId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, supplierId])
+  @@map("supplier_finding")
+}
+
+/// Registro de lo comunicado al proveedor (§8.4.3). Solo se registra: no envía mails.
+model SupplierCommunication {
+  id              String                       @id @default(cuid())
+  tenantId        String
+  supplierId      String
+  kind            SupplierCommunicationKind
+  evaluationId    String?
+  sentAt          DateTime                     @db.Date
+  channel         SupplierCommunicationChannel
+  recipientName   String?
+  summary         String
+  storageKey      String?
+  fileName        String?
+  contentType     String?
+  sizeBytes       Int?
+  createdByUserId String?
+  createdAt       DateTime                     @default(now())
+  supplier        Supplier                     @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  evaluation      SupplierEvaluation?          @relation(fields: [evaluationId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, supplierId, sentAt])
+  @@map("supplier_communication")
 }
