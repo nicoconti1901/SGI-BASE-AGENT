@@ -50,6 +50,8 @@ Each kind of task has exactly one owner. Never run two skills/agents that cover 
 | Simplify code | built-in `/simplify` |
 | ISO 9001 risks/opportunities | riesgos-oportunidades |
 | Branch + commits + README + push + merge | `/publicar-cambios` |
+| Build slices of a Fase 5 module (one session per module) | `/modulo <módulo> <slices>` — plan and table in `tasks/sesiones-fase-5.md` |
+| Integrate a module PR into main | `/integrar <PR>` |
 
 ### Intent → owner (examples)
 | User says (examples) | Take |
@@ -89,6 +91,8 @@ Do **not** rely on Auto model selection. Prefer an explicit model. Default the m
 **Quality rule:** better routing + skills beats a more expensive model. If Sonnet fails once with full relevant context, then switch that task to Opus.
 
 ## Parallel agents (worktrees)
+
+**Quota first.** Four module agents at once exhausted the session quota twice (≈350k tokens per two-slice stage each). Run **at most 2 module sessions at a time**, each in its own terminal and worktree (`claude --worktree <nombre> --model sonnet`, then `/modulo …`), and integrate PRs one by one with `/integrar`. Do not spawn module agents from the main session in bulk. The ordered backlog, windows and rules are in `tasks/sesiones-fase-5.md`.
 
 Run several agents at once only with `isolation: "worktree"`, one module per worktree. Each worktree is isolated:
 

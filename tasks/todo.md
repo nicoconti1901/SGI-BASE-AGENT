@@ -488,14 +488,14 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
 
 **Sub-tareas — motor:**
 - [x] 15.0 (hecho 2026-10-21: `RESEARCH-inspections.md` y `SPEC-inspections.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `RESEARCH-inspections.md` / `SPEC-inspections.md` (normativa de referencia por tipo, frecuencias, ítems, reglas de resultado) aprobado por el PO
-- [ ] 15.1 Dominio + Prisma:
+- [x] 15.1 (hecho 2026-10-22, PR #15) Dominio + Prisma:
   - `Asset`: tipo, código interno, sede, estado `in_service` / `out_of_service` / `retired`, atributos propios del tipo en JSON validado con zod, persona asignada.
   - `AssetDueDate`: vencimientos documentales por activo (carga, PH, VTV, seguro, certificación…).
   - `InspectionTemplate` + `InspectionTemplateVersion` + ítems.
   - `Inspection`: tipo, versión, activo **o** sede/área, inspector (usuario), fecha, estado `draft` / `closed`, resultado y puntaje. Más `InspectionAnswer`, `InspectionAttachment` e `InspectionCorrection`.
   - Funciones puras `deriveInspectionResult`, `nextInspectionDue` y `assetStatusAfter`, con tests.
-- [ ] 15.2 Registro de activos (común a todos los tipos): alta, edición y baja; importación CSV por tipo; ficha con el historial de inspecciones y los vencimientos; filtros por sede, tipo y estado
-- [ ] 15.3 Registro de inspección: elegir tipo → activo o área → checklist por secciones (botones grandes para tocar) → fotos a storage → lecturas numéricas (km, horómetro, presión) → guardar borrador → cerrar con la firma del inspector
+- [x] 15.2 (hecho 2026-10-22, PR #15) Registro de activos (común a todos los tipos): alta, edición y baja; importación CSV por tipo; ficha con el historial de inspecciones y los vencimientos; filtros por sede, tipo y estado
+- [x] 15.3 (hecho 2026-10-22, PR #15) Registro de inspección: elegir tipo → activo o área → checklist por secciones (botones grandes para tocar) → fotos a storage → lecturas numéricas (km, horómetro, presión) → guardar borrador → cerrar con la firma del inspector
 - [ ] 15.4 Lista de inspecciones: filtros por tipo, sede, activo, inspector, resultado y fechas; contadores rápidos (vencidas, no aptas, fuera de servicio); exportación CSV
 - [ ] 15.5 Consecuencias:
   - NC → corrección o hallazgo (`Finding` con origen inspección y vínculo en ambos sentidos).
@@ -638,11 +638,11 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 
 **Sub-tareas:**
 - [x] 17.0 (hecho 2026-10-21: `RESEARCH-accident-stats.md` y `SPEC-accident-stats.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `RESEARCH-accident-stats.md` / `SPEC-accident-stats.md` (definiciones, índices, clasificación por forma del accidente, agente, naturaleza de la lesión y parte del cuerpo; privacidad) aprobado por el PO
-- [ ] 17.1 Dominio + Prisma:
+- [x] 17.1 (hecho 2026-10-22, PR #13) Dominio + Prisma:
   - `IncidentRecord` 1:1 con `Finding`: clasificación, fecha y hora, sede, persona afectada, propio o contratista, in itinere, vial, forma del accidente, agente material, naturaleza de la lesión, parte del cuerpo, días perdidos, fecha del alta, n.° de denuncia a la ART.
   - `ExposurePeriod`: sede × mes × propio/contratista, con HHT y dotación promedio.
   - Funciones puras de índices y totales, con tests sobre un conjunto de datos de referencia cuyos valores se calculan a mano.
-- [ ] 17.2 Registro: el alta de un hallazgo de tipo incidente suma un paso "ficha de accidente"; los días perdidos se actualizan hasta el alta médica (con historial); permisos de datos sensibles
+- [x] 17.2 (hecho 2026-10-22, PR #13) Registro: el alta de un hallazgo de tipo incidente suma un paso "ficha de accidente"; los días perdidos se actualizan hasta el alta médica (con historial); permisos de datos sensibles
 - [ ] 17.3 Carga mensual de la exposición por sede (formulario + importación CSV), con un `DueItem` mensual de carga. Si falta la HHT de un período, el índice se muestra "sin datos", nunca 0.
 - [ ] 17.4 Tablero `/safety/stats`:
   - períodos: mes, acumulado del año y últimos 12 meses móviles; por sede y por propio/contratista;
@@ -736,13 +736,13 @@ Abarca a los contratistas (45001 §8.1.4.2) y a los proveedores con impacto ambi
 
 **Sub-tareas:**
 - [x] 19.0 (hecho 2026-10-21: `RESEARCH-suppliers.md` y `SPEC-suppliers.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `SPEC-suppliers.md` aprobado por el PO
-- [ ] 19.1 Dominio + Prisma:
+- [x] 19.1 (hecho 2026-10-22, PR #14) Dominio + Prisma:
   - `Supplier`: razón social, CUIT único por tenant, categoría o rubro, tipo (producto, servicio o contratista), criticidad, sedes a las que atiende, contacto, estado (`potential` / `approved` / `conditional` / `not_approved` / `inactive`).
   - `SupplierCriteriaTemplate` con versiones.
   - `SupplierEvaluation`: inicial o periódica, período, puntaje de cada criterio, total, resultado, evaluador, comentarios.
   - `SupplierDocument` con vencimiento (ART, seguros, habilitaciones).
   - Funciones `scoreEvaluation`, `resultFromScore` y `nextEvaluationDue`, y transiciones de estado, con tests.
-- [ ] 19.2 Registro y lista de proveedores con filtros (estado, criticidad, categoría, sede); ficha con el historial de evaluaciones, documentos y hallazgos; **lista de proveedores aprobados** exportable
+- [x] 19.2 (hecho 2026-10-22, PR #14) Registro y lista de proveedores con filtros (estado, criticidad, categoría, sede); ficha con el historial de evaluaciones, documentos y hallazgos; **lista de proveedores aprobados** exportable
 - [ ] 19.3 Evaluación inicial (selección) y aprobación. Los documentos requeridos según el tipo tienen vencimiento y generan un `DueItem`. Un contratista con la ART o el seguro vencidos aparece como no habilitado.
 - [ ] 19.4 Reevaluación periódica:
   - `DueItem` según la criticidad;
@@ -792,14 +792,14 @@ El estado se calcula a partir de la matriz y de los registros; nunca se marca a 
 
 **Sub-tareas:**
 - [x] 20.0 (hecho 2026-10-21: `RESEARCH-training.md` y `SPEC-training.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `SPEC-training.md` aprobado por el PO
-- [ ] 20.1 Dominio + Prisma:
+- [x] 20.1 (hecho 2026-10-22, PR #12) Dominio + Prisma:
   - `Course`: nombre, tema, normas, modalidad, duración en horas, vigencia en meses, si requiere evaluar eficacia, instructor o proveedor.
   - `TrainingRequirement`: puesto **o** tarea × curso, obligatorio o no, días de gracia.
   - `TrainingSession`: curso, fecha, instructor interno o externo, sede, evidencia.
   - `TrainingRecord`: persona × curso, con fecha, resultado (aprobado / no aprobado), nota, vencimiento calculado, evidencia y sesión (opcional).
   - `TrainingEffectiveness`.
   - Funciones puras `computeTrainingStatus(persona, requisitos, registros, hoy)` e `isQualifiedForTask`, con tests.
-- [ ] 20.2 Catálogo de cursos + **editor de la matriz**: grillas de puestos × cursos y de tareas × cursos, donde se marca si es obligatorio o recomendado y el plazo
+- [x] 20.2 (hecho 2026-10-22, PR #12) Catálogo de cursos + **editor de la matriz**: grillas de puestos × cursos y de tareas × cursos, donde se marca si es obligatorio o recomendado y el plazo
 - [ ] 20.3 Registro:
   - sesión con asistentes (selección múltiple por sede o puesto) y resultado de cada asistente;
   - planilla de asistencia o certificado subidos a storage;
