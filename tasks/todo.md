@@ -496,8 +496,8 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
   - Funciones puras `deriveInspectionResult`, `nextInspectionDue` y `assetStatusAfter`, con tests.
 - [x] 15.2 (hecho 2026-10-22, PR #15) Registro de activos (común a todos los tipos): alta, edición y baja; importación CSV por tipo; ficha con el historial de inspecciones y los vencimientos; filtros por sede, tipo y estado
 - [x] 15.3 (hecho 2026-10-22, PR #15) Registro de inspección: elegir tipo → activo o área → checklist por secciones (botones grandes para tocar) → fotos a storage → lecturas numéricas (km, horómetro, presión) → guardar borrador → cerrar con la firma del inspector
-- [ ] 15.4 Lista de inspecciones: filtros por tipo, sede, activo, inspector, resultado y fechas; contadores rápidos (vencidas, no aptas, fuera de servicio); exportación CSV
-- [ ] 15.5 Consecuencias:
+- [x] 15.4 (hecho 2026-10-22, sin commitear: `inspection-list.ts`, `/inspections` con filtros, 4 contadores que filtran, vista de programas vencidos/próximos y `/inspections/export`; tope 20.000 filas) Lista de inspecciones: filtros por tipo, sede, activo, inspector, resultado y fechas; contadores rápidos (vencidas, no aptas, fuera de servicio); exportación CSV
+- [x] 15.5 (hecho 2026-10-22, sin commitear: migración `inspections_consequences`, `inspection-consequences.ts`, corrección con motivo, responsable y plazo al cerrar, seguimiento en la ficha) Consecuencias:
   - NC → corrección o hallazgo (`Finding` con origen inspección y vínculo en ambos sentidos).
   - Activo fuera de servicio; solo vuelve a servicio con una reinspección apta.
   - `DueItem` para la próxima inspección y para cada `AssetDueDate`, con notificaciones agrupadas por sede para no saturar.
