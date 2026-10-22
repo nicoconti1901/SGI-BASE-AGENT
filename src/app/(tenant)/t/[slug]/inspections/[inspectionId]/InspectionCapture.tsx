@@ -15,6 +15,7 @@ import {
 import { deriveInspectionResult, explainResult, itemOutcome } from "@/domain/inspections/result";
 import { validateInspectionForClose, MAX_BACKDATED_DAYS, MAX_PHOTOS_PER_ANSWER } from "@/domain/inspections/close";
 import { addDays, formatDateEs, todayIso } from "@/domain/inspections/dates";
+import { followUpDueDate } from "@/domain/inspections/consequences";
 import { CRITICALITY_LABELS, RESULT_LABELS, type AnswerValue, type EvalAnswer, type EvalItem, type InspectionResult } from "@/domain/inspections/types";
 
 export type CaptureItem = {
@@ -47,6 +48,10 @@ export type CaptureProps = {
   notes: string | null;
   performedBy: { id: string; name: string; employeeCode: string; siteName: string } | null;
   items: CaptureItem[];
+  /** Quienes pueden quedar como responsables de la acción de seguimiento. */
+  members: { id: string; name: string }[];
+  /** Responsable propuesto: la persona a cargo del activo, o quien inspecciona. */
+  defaultOwnerUserId: string;
 };
 
 const RESULT_CHIP: Record<InspectionResult, "ok" | "warning" | "danger"> = { fit: "ok", fit_with_observations: "warning", unfit: "danger" };
@@ -80,6 +85,8 @@ export function InspectionCapture(props: CaptureProps) {
   const [closeError, setCloseError] = useState<string | null>(null);
   const [inspectedAt, setInspectedAt] = useState(props.inspectedAt);
   const [notes, setNotes] = useState(props.notes ?? "");
+  const [ownerUserId, setOwnerUserId] = useState(props.defaultOwnerUserId);
+  const [dueAt, setDueAt] = useState<string | null>(null); // nulo: se usa el plazo propuesto
   const [closing, startClosing] = useTransition();
   const queue = useRef<Record<string, Promise<unknown>>>({});
   const today = todayIso();
@@ -134,12 +141,14 @@ export function InspectionCapture(props: CaptureProps) {
     return [...map.entries()];
   }, [items]);
   const canClose = Boolean(derived?.complete && derived.result && blockers.length === 0);
+  const worst = derived?.nonconformByCriticality.critical ? "critical" : derived?.nonconformByCriticality.major ? "major" : derived?.nonconform ? "minor" : null;
+  const proposedDue = worst ? followUpDueDate(today, worst) : null;
 
   function close() {
     setCloseError(null);
     startClosing(async () => {
       await Promise.all(Object.values(queue.current)); // que no quede ningún guardado en camino
-      const result = await closeInspectionAction(slug, inspectionId);
+      const result = await closeInspectionAction(slug, inspectionId, worst ? { followUp: { ownerUserId, dueAt: dueAt ?? proposedDue } } : {});
       if (result.ok) router.push(`/t/${slug}/inspections/${inspectionId}`);
       else setCloseError(result.error);
     });
@@ -187,6 +196,32 @@ export function InspectionCapture(props: CaptureProps) {
               ))}
             </ul>
           </FormError>
+        ) : null}
+
+        {worst && proposedDue ? (
+          <section aria-label="Seguimiento" className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5">
+            <div>
+              <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">Qué se hace con lo que no cumplió</h3>
+              <p className="text-sm text-[var(--color-ink-muted)]">
+                Al cerrar se crea una acción de seguimiento con estas no conformidades. El plazo propuesto es de 48 h si hay una crítica, 7 días si la más grave es mayor y 30 días si es menor.
+                {derived?.result === "unfit" ? " El activo queda fuera de servicio hasta una reinspección apta." : ""}
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Responsable de la acción">
+                <select value={ownerUserId} onChange={(e) => setOwnerUserId(e.target.value)} className={`${INPUT_CLASS} min-h-12`}>
+                  {props.members.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Plazo" hint={`Propuesto: ${formatDateEs(proposedDue)}.`}>
+                <input type="date" value={dueAt ?? proposedDue} min={today} onChange={(e) => setDueAt(e.target.value || null)} className={`${INPUT_CLASS} min-h-12`} />
+              </Field>
+            </div>
+          </section>
         ) : null}
 
         <section className="grid gap-3 sm:grid-cols-2" aria-label="Datos de la inspección">
