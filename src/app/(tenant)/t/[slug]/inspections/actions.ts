@@ -10,13 +10,18 @@ import { canTenantRole } from "@/domain/identity/authz";
 import {
   addInspectionPhoto,
   closeInspection,
+  correctInspectionAnswer,
   deleteInspectionPhoto,
   saveAnswer,
   saveInspectionMeta,
   startInspection,
   type AnswerPatch,
+  type CorrectionPatch,
 } from "@/lib/inspections";
 import { InspectionError } from "@/lib/inspection-support";
+import { prisma } from "@/lib/db";
+import { completeAction } from "@/lib/actions";
+import { uploadActionAttachment } from "@/lib/action-attachments";
 
 export type CaptureResult<T = object> = ({ ok: true } & T) | { ok: false; error: string; blockers?: { code: string; message: string; itemId?: string }[]; missingItemIds?: string[] };
 
@@ -118,7 +123,11 @@ export async function deletePhotoAction(slug: string, inspectionId: string, atta
 }
 
 /** Cierra y firma. Devuelve el resultado o lo que falta; al cerrar, la pantalla navega a la ficha. */
-export async function closeInspectionAction(slug: string, inspectionId: string, options: { confirmLowerReadings?: boolean } = {}): Promise<CaptureResult> {
+export async function closeInspectionAction(
+  slug: string,
+  inspectionId: string,
+  options: { confirmLowerReadings?: boolean; followUp?: { ownerUserId?: string | null; dueAt?: string | null } } = {},
+): Promise<CaptureResult> {
   const access = await requireWriter(slug);
   if (!access.ok) return { ok: false, error: access.error };
   try {
@@ -128,10 +137,70 @@ export async function closeInspectionAction(slug: string, inspectionId: string, 
       canEditOthers: access.canEditOthers,
       inspectionId,
       confirmLowerReadings: options.confirmLowerReadings,
+      followUp: options.followUp,
     });
   } catch (error) {
     return failure(error);
   }
   revalidatePath(`/t/${slug}/inspections`);
+  return { ok: true };
+}
+
+/** Corrige una respuesta de una inspección cerrada (administrador o responsable de proceso), con motivo. */
+export async function correctAnswerAction(slug: string, inspectionId: string, answerId: string, patch: CorrectionPatch, reason: string): Promise<CaptureResult> {
+  const access = await requireWriter(slug);
+  if (!access.ok) return { ok: false, error: access.error };
+  if (!access.canEditOthers) return { ok: false, error: "Solo un administrador o un responsable de proceso puede corregir una inspección cerrada" };
+  try {
+    await correctInspectionAnswer({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, canRelease: access.canEditOthers, inspectionId, answerId, patch, reason });
+  } catch (error) {
+    return failure(error);
+  }
+  revalidatePath(`/t/${slug}/inspections/${inspectionId}`);
+  revalidatePath(`/t/${slug}/inspections`);
+  return { ok: true };
+}
+
+/** La acción de seguimiento tiene que ser la de esta inspección y de esta empresa. */
+async function requireFollowUp(tenantId: string, inspectionId: string) {
+  const inspection = await prisma.inspection.findFirst({ where: { id: inspectionId, tenantId }, select: { actionId: true } });
+  if (!inspection?.actionId) throw new InspectionError("Esta inspección no tiene una acción de seguimiento");
+  return inspection.actionId;
+}
+
+/** Adjunta evidencia a la acción de seguimiento de la inspección. */
+export async function uploadFollowUpEvidenceAction(slug: string, inspectionId: string, formData: FormData): Promise<CaptureResult> {
+  const access = await requireWriter(slug);
+  if (!access.ok) return { ok: false, error: access.error };
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Elegí un archivo" };
+  try {
+    const actionId = await requireFollowUp(access.tenant.id, inspectionId);
+    await uploadActionAttachment({
+      tenantId: access.tenant.id,
+      actionId,
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+      body: Buffer.from(await file.arrayBuffer()),
+      uploadedById: access.ctx.userId,
+    });
+  } catch (error) {
+    return error instanceof InspectionError ? failure(error) : { ok: false, error: error instanceof Error ? error.message : "No se pudo adjuntar" };
+  }
+  revalidatePath(`/t/${slug}/inspections/${inspectionId}`);
+  return { ok: true };
+}
+
+/** Completa la acción de seguimiento (pide al menos una evidencia, como el resto de las acciones). */
+export async function completeFollowUpAction(slug: string, inspectionId: string): Promise<CaptureResult> {
+  const access = await requireWriter(slug);
+  if (!access.ok) return { ok: false, error: access.error };
+  try {
+    const actionId = await requireFollowUp(access.tenant.id, inspectionId);
+    await completeAction({ tenantId: access.tenant.id, actionId });
+  } catch (error) {
+    return error instanceof InspectionError ? failure(error) : { ok: false, error: error instanceof Error ? error.message : "No se pudo completar" };
+  }
+  revalidatePath(`/t/${slug}/inspections/${inspectionId}`);
   return { ok: true };
 }

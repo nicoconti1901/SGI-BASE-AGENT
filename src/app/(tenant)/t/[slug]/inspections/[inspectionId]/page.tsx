@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findNextPendingAsset, getInspectionView } from "@/lib/inspections";
+import { prisma } from "@/lib/db";
+import { listTenantMembers } from "@/lib/identity";
+import { ownerOfPerson } from "@/lib/inspection-support";
+import { ACTION_STATUS_LABELS, type ActionStatus } from "@/domain/actions/types";
+import { FINDING_STATUS_LABELS } from "@/domain/findings/types";
 import { loadInspectionsAccess } from "@/app/(tenant)/t/[slug]/inspections/access";
 import { InspectionCapture, type CaptureItem } from "@/app/(tenant)/t/[slug]/inspections/[inspectionId]/InspectionCapture";
+import { CorrectAnswer, FollowUpControls, PrintButton } from "@/app/(tenant)/t/[slug]/inspections/[inspectionId]/InspectionFollowUp";
 import { startInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 import { getAssetType } from "@/domain/inspections/asset-types";
 import { explainResult, itemOutcome } from "@/domain/inspections/result";
-import { formatDateEs, isoFromDate } from "@/domain/inspections/dates";
+import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import { CRITICALITY_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
 import { Button, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
 
@@ -22,7 +28,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
   const type = asset ? getAssetType(asset.typeKey) : null;
   const summary = asset && type ? `${type.label} · ${type.summarize(asset.attributes as Record<string, unknown>)}` : inspection.template.name;
   const back = (
-    <p>
+    <p className="print:hidden">
       <Link href={`/t/${slug}/inspections`} className="text-sm font-medium text-[var(--color-accent)] hover:underline">
         ← Volver a inspecciones
       </Link>
@@ -54,6 +60,8 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
       comment: answer.comment,
       photos: answer.attachments,
     }));
+    const members = (await listTenantMembers(tenant.id)).map((m) => ({ id: m.user.id, name: m.user.name }));
+    const defaultOwnerUserId = (await ownerOfPerson(prisma, tenant.id, asset?.assignedPersonId ?? null)) ?? ctx.userId;
     return (
       <div className="flex flex-col gap-4">
         {back}
@@ -68,6 +76,8 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
           notes={inspection.notes}
           performedBy={inspection.performedBy ? { id: inspection.performedBy.id, name: inspection.performedBy.name, employeeCode: inspection.performedBy.employeeCode, siteName: inspection.performedBy.site.name } : null}
           items={items}
+          members={members.some((m) => m.id === defaultOwnerUserId) ? members : [...members, { id: defaultOwnerUserId, name: view.userName(defaultOwnerUserId) }]}
+          defaultOwnerUserId={defaultOwnerUserId}
         />
       </div>
     );
@@ -94,10 +104,11 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
           <>
             <StatusChip status={RESULT_CHIP[result]} label={RESULT_LABELS[result]} />
             {asset ? (
-              <Link href={`/t/${slug}/assets/${asset.id}`} className={buttonClass("secondary")}>
+              <Link href={`/t/${slug}/assets/${asset.id}`} className={buttonClass("secondary", "print:hidden")}>
                 Ver el activo
               </Link>
             ) : null}
+            <PrintButton />
           </>
         }
       >
@@ -110,7 +121,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
         </dl>
         {inspection.notes ? <p className="text-sm text-[var(--color-ink-muted)]">Observaciones: {inspection.notes}</p> : null}
         {next ? (
-          <form action={startInspectionAction.bind(null, slug, next.id)}>
+          <form action={startInspectionAction.bind(null, slug, next.id)} className="print:hidden">
             <Button type="submit" className="min-h-12">
               Siguiente activo pendiente: {next.code}
             </Button>
@@ -145,6 +156,43 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
         </SectionBlock>
       ) : null}
 
+      {inspection.action ? (
+        <SectionBlock title="Seguimiento" what="Lo que hay que resolver por lo que no cumplió. Se avisa al responsable antes del plazo.">
+          <div className="flex flex-col gap-2 text-sm">
+            <p className="font-semibold">{inspection.action.title}</p>
+            <p className="text-[var(--color-ink-muted)]">
+              {ACTION_STATUS_LABELS[inspection.action.status as ActionStatus]} · Responsable: {view.userName(inspection.action.ownerUserId)}
+              {inspection.action.dueAt ? ` · Plazo: ${formatDateEs(todayIso(inspection.action.dueAt))}` : ""}
+            </p>
+            {inspection.finding ? (
+              <p>
+                Hallazgo en borrador:{" "}
+                <Link href={`/t/${slug}/findings/${inspection.finding.id}`} className="font-medium text-[var(--color-accent)] hover:underline">
+                  {inspection.finding.title}
+                </Link>{" "}
+                <span className="text-[var(--color-ink-muted)]">({FINDING_STATUS_LABELS[inspection.finding.status]}: revisalo y publicalo cuando corresponda)</span>
+              </p>
+            ) : null}
+            {inspection.action.attachments.length > 0 ? (
+              <ul>
+                {inspection.action.attachments.map((att) => (
+                  <li key={att.id}>
+                    <a className="text-[var(--color-accent)] underline" href={`/api/actions/attachments/${att.id}/download`}>
+                      {att.fileName}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {canWrite && (inspection.action.status === "open" || inspection.action.status === "in_progress") ? (
+              <div className="print:hidden">
+                <FollowUpControls slug={slug} inspectionId={inspection.id} hasEvidence={inspection.action.attachments.length > 0} />
+              </div>
+            ) : null}
+          </div>
+        </SectionBlock>
+      ) : null}
+
       <SectionBlock title="Respuestas" what="El listado tal como estaba la plantilla cuando se hizo la inspección.">
         <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
           {view.items.map(({ item, answer }) => (
@@ -153,7 +201,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
                 <span className="block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{item.section}</span>
                 {item.text}
               </span>
-              <span className="font-semibold">
+              <span className="flex flex-wrap items-center gap-3 font-semibold">
                 {item.kind === "number" || item.kind === "reading"
                   ? `${answer.numberValue ?? "—"}${item.unit ? ` ${item.unit}` : ""}`
                   : item.kind === "text"
@@ -165,11 +213,37 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
                         : answer.value === "na"
                           ? "No aplica"
                           : "—"}
+                {canRelease && !item.autoSource && (item.kind === "check" || item.kind === "number") ? (
+                  <span className="print:hidden">
+                    <CorrectAnswer slug={slug} inspectionId={inspection.id} answerId={answer.id} kind={item.kind} unit={item.unit} naAllowed={item.naAllowed} value={answer.value} numberValue={answer.numberValue} />
+                  </span>
+                ) : null}
               </span>
             </li>
           ))}
         </ul>
       </SectionBlock>
+
+      {inspection.corrections.length > 0 ? (
+        <SectionBlock title="Correcciones" what="Cada cambio a una inspección cerrada queda con su motivo y quién lo hizo.">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+            {inspection.corrections.map((c) => {
+              const row = view.items.find((i) => i.answer.id === c.answerId);
+              return (
+                <li key={c.id} className="flex flex-col gap-1 px-4 py-3">
+                  <p className="font-semibold">{row?.item.text ?? "Ítem"}</p>
+                  <p>
+                    {c.previousValue ?? "—"} → {c.newValue ?? "—"} · resultado: {c.previousResult ? RESULT_LABELS[c.previousResult] : "—"} → {RESULT_LABELS[c.newResult]}
+                  </p>
+                  <p className="text-[var(--color-ink-muted)]">
+                    {c.reason} — {view.userName(c.byUserId)}, {formatDateEs(todayIso(c.createdAt))}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </SectionBlock>
+      ) : null}
     </div>
   );
 }

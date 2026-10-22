@@ -515,6 +515,8 @@ model Finding {
   verifications     FindingVerification[]
   statusEvents      FindingStatusEvent[]
   supplierLink      SupplierFinding?
+  /// Inspección que lo originó (Task 15): el vínculo vive en Inspection.findingId.
+  inspection        Inspection?
 
   @@index([tenantId, status])
   @@index([tenantId, type])
@@ -824,6 +826,8 @@ model Action {
   links                 ActionLink[]
   attachments           ActionAttachment[]
   trainingEffectiveness TrainingEffectiveness[]
+  /// Inspección que la originó (Task 15): el vínculo vive en Inspection.actionId.
+  inspection            Inspection?
 
   @@index([tenantId, status])
   @@index([ownerUserId])
@@ -2412,9 +2416,15 @@ model Inspection {
   readingKm           Int?
   readingHours        Float?
   notes               String?
+  /// Hallazgo borrador y acción de seguimiento que nacieron de las no conformidades (uno por inspección).
+  findingId           String?                   @unique
+  actionId            String?                   @unique
   createdAt           DateTime                  @default(now())
   updatedAt           DateTime                  @updatedAt
   tenant              Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  finding             Finding?                  @relation(fields: [findingId], references: [id], onDelete: SetNull)
+  action              Action?                   @relation(fields: [actionId], references: [id], onDelete: SetNull)
+  corrections         InspectionCorrection[]
   template            InspectionTemplate        @relation(fields: [templateId], references: [id], onDelete: NoAction)
   templateVersion     InspectionTemplateVersion @relation(fields: [versionId], references: [id], onDelete: NoAction)
   asset               Asset?                    @relation(fields: [assetId], references: [id], onDelete: NoAction)
@@ -2454,6 +2464,26 @@ model InspectionAnswer {
   @@unique([inspectionId, itemId])
   @@index([itemId])
   @@map("inspection_answer")
+}
+
+/// Corrección de una respuesta de una inspección cerrada (molde de MeasurementCorrection): nada se edita en silencio.
+model InspectionCorrection {
+  id             String            @id @default(cuid())
+  tenantId       String
+  inspectionId   String
+  answerId       String
+  /// Valor anterior y nuevo, legibles («conform», «nonconform», «na» o el número).
+  previousValue  String?
+  newValue       String?
+  previousResult InspectionResult?
+  newResult      InspectionResult
+  reason         String
+  byUserId       String
+  createdAt      DateTime          @default(now())
+  inspection     Inspection        @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, inspectionId, createdAt])
+  @@map("inspection_correction")
 }
 
 /// Fotos y evidencias (molde de FindingAttachment). Al menos una de `inspectionId` o `assetId` (CHECK en la migración).
