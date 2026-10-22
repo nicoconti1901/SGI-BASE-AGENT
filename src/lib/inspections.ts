@@ -3,7 +3,9 @@ import { prisma } from "@/lib/db";
 import { ensureDefaultTemplates, getTemplateByKey } from "@/lib/inspection-templates";
 import { InspectionError, writeAudit, type Db, type Tx } from "@/lib/inspection-support";
 import { getAssetType } from "@/domain/inspections/asset-types";
-import { applicableItems, deriveInspectionResult, resolveAutoConform } from "@/domain/inspections/result";
+import { applicableItems, deriveInspectionResult, itemOutcome, resolveAutoConform } from "@/domain/inspections/result";
+import { applyAssetStatus, createFollowUp, updatePlan, type FollowUpChoice } from "@/lib/inspection-consequences";
+import type { NonconformingItem } from "@/domain/inspections/consequences";
 import { validateInspectionForClose, MAX_PHOTOS_PER_ANSWER, MAX_PHOTOS_PER_INSPECTION } from "@/domain/inspections/close";
 import { dateFromIso, isIsoDate, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import {
@@ -16,7 +18,7 @@ import {
 import { getObjectStorage } from "@/lib/storage";
 import type { ObjectStorage } from "@/lib/storage/types";
 
-export const INSPECTIONS_PAGE_SIZE = 25;
+export { INSPECTIONS_PAGE_SIZE, listInspections, type InspectionListFilter } from "@/lib/inspection-list";
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
 const PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -39,6 +41,24 @@ function toEvalItem(item: ItemRow, autoConform?: boolean): EvalItem {
     autoSource: asJson<AutoSource>(item.autoSource),
     autoConform,
   };
+}
+
+/** Las no conformidades de las respuestas, con la criticidad y el comentario del inspector. */
+function nonconformingOf(
+  answers: { itemId: string; value: InspectionAnswerValue | null; numberValue: number | null; comment: string | null; item: ItemRow }[],
+  autoConform: Map<string, boolean>,
+): NonconformingItem[] {
+  const out: NonconformingItem[] = [];
+  for (const a of answers) {
+    if (a.item.kind !== "check" && a.item.kind !== "number") continue;
+    const outcome = itemOutcome(toEvalItem(a.item, autoConform.get(a.itemId)), {
+      itemId: a.itemId,
+      value: a.item.autoSource ? undefined : a.value,
+      numberValue: a.numberValue,
+    });
+    if (outcome === "nonconform") out.push({ code: a.item.code, text: a.item.text, criticality: a.item.criticality, comment: a.comment });
+  }
+  return out;
 }
 
 function dueDatesOf(rows: { kind: string; dueAt: Date }[]) {
@@ -138,6 +158,9 @@ export async function getInspectionView(tenantId: string, inspectionId: string, 
       asset: { include: { dueDates: { select: { kind: true, dueAt: true } } } },
       site: { select: { name: true } },
       performedBy: { select: { id: true, name: true, employeeCode: true, site: { select: { name: true } } } },
+      finding: { select: { id: true, title: true, status: true } },
+      action: { select: { id: true, title: true, status: true, ownerUserId: true, dueAt: true, attachments: { select: { id: true, fileName: true } } } },
+      corrections: { orderBy: { createdAt: "desc" } },
       answers: {
         orderBy: { item: { sortOrder: "asc" } },
         include: { item: true, attachments: { select: { id: true, fileName: true }, orderBy: { createdAt: "asc" } } },
@@ -145,13 +168,17 @@ export async function getInspectionView(tenantId: string, inspectionId: string, 
     },
   });
   if (!inspection) return null;
-  const inspector = await db.user.findUnique({ where: { id: inspection.inspectorUserId }, select: { name: true } });
+  const userIds = [...new Set([inspection.inspectorUserId, ...(inspection.action ? [inspection.action.ownerUserId] : []), ...inspection.corrections.map((c) => c.byUserId)])];
+  const users = await db.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true } });
+  const userName = new Map(users.map((u) => [u.id, u.name]));
+  const inspector = { name: userName.get(inspection.inspectorUserId) };
   const dueDates = dueDatesOf(inspection.asset?.dueDates ?? []);
   const referenceDate = isoFromDate(inspection.inspectedAt);
 
   return {
     inspection,
     inspectorName: inspector?.name ?? "Usuario",
+    userName: (id: string) => userName.get(id) ?? "Usuario",
     items: inspection.answers.map((a) => {
       const auto = asJson<AutoSource>(a.item.autoSource);
       const due = auto ? dueDates.find((d) => d.kind === auto.dueKind) : undefined;
@@ -167,38 +194,6 @@ export async function getInspectionView(tenantId: string, inspectionId: string, 
 
 export type InspectionView = NonNullable<Awaited<ReturnType<typeof getInspectionView>>>;
 
-export type InspectionListFilter = { status?: "draft" | "closed"; assetId?: string; inspectorUserId?: string; after?: string; take?: number };
-
-/** Última página por cursor `(fecha, id)`: la consulta no crece con el tamaño de la página. */
-export async function listInspections(tenantId: string, filter: InspectionListFilter = {}, db: Db = prisma) {
-  const take = Math.min(filter.take ?? INSPECTIONS_PAGE_SIZE, 100);
-  const [afterDate, afterId] = filter.after?.split("_") ?? [];
-  const cursor: Prisma.InspectionWhereInput =
-    afterDate && afterId && isIsoDate(afterDate)
-      ? { OR: [{ inspectedAt: { lt: dateFromIso(afterDate) } }, { inspectedAt: dateFromIso(afterDate), id: { lt: afterId } }] }
-      : {};
-  const rows = await db.inspection.findMany({
-    where: {
-      tenantId,
-      ...(filter.status ? { status: filter.status } : {}),
-      ...(filter.assetId ? { assetId: filter.assetId } : {}),
-      ...(filter.inspectorUserId ? { inspectorUserId: filter.inspectorUserId } : {}),
-      ...cursor,
-    },
-    orderBy: [{ inspectedAt: "desc" }, { id: "desc" }],
-    take: take + 1,
-    include: { asset: { select: { code: true, description: true } }, template: { select: { name: true } }, site: { select: { name: true } } },
-  });
-  const page = rows.slice(0, take);
-  const userIds = [...new Set(page.map((r) => r.inspectorUserId))];
-  const users = userIds.length ? await db.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true } }) : [];
-  const names = new Map(users.map((u) => [u.id, u.name]));
-  const last = page[page.length - 1];
-  return {
-    items: page.map((r) => ({ ...r, inspectorName: names.get(r.inspectorUserId) ?? "Usuario" })),
-    nextCursor: rows.length > take && last ? `${isoFromDate(last.inspectedAt)}_${last.id}` : null,
-  };
-}
 
 /** Siguiente activo de la misma sede con inspección pendiente (la «ronda»): el programa más atrasado que hoy no inspeccionó esta persona. */
 export async function findNextPendingAsset(
@@ -399,8 +394,10 @@ export type CloseOutcome = { id: string; alreadyClosed: boolean };
  * nadie lo carga a mano. Es idempotente: cerrar dos veces (doble toque, reintento de red o dos pedidos a la vez)
  * deja una sola inspección cerrada y devuelve la misma.
  *
- * Las consecuencias del resultado (estado del activo, acción, hallazgo, próximo vencimiento) son el slice S4 y
- * se enganchan en este punto, dentro de la misma transacción.
+ * Las consecuencias del resultado se aplican en la misma transacción: estado del activo, programa y próximo
+ * vencimiento, y la acción de seguimiento (con hallazgo en borrador si la plantilla lo pide y hay una crítica).
+ * `canEditOthers` es el permiso de liberar activos (administrador o responsable de proceso): también decide si una
+ * reinspección apta devuelve el activo a servicio.
  */
 export async function closeInspection(
   input: {
@@ -409,6 +406,8 @@ export async function closeInspection(
     canEditOthers: boolean;
     inspectionId: string;
     confirmLowerReadings?: boolean;
+    /** Responsable y plazo de la acción de seguimiento, si el inspector no acepta los propuestos. */
+    followUp?: FollowUpChoice;
   },
   db: Db = prisma,
 ): Promise<CloseOutcome> {
@@ -531,7 +530,192 @@ export async function closeInspection(
         actorUserId: input.actorUserId,
         summary: `Inspección cerrada y firmada: ${derived.result}, ${derived.nonconform} no conformidad(es) de ${derived.applicable}`,
       });
+
+      // Consecuencias: estado del activo → programa y vencimiento → acción y hallazgo.
+      const template = await tx.inspectionTemplate.findUniqueOrThrow({ where: { id: inspection.templateId } });
+      const asset = inspection.asset;
+      const statusChange = asset
+        ? await applyAssetStatus(tx, {
+            tenantId: input.tenantId,
+            actorUserId: input.actorUserId,
+            inspectionId: inspection.id,
+            asset,
+            result: derived.result,
+            template,
+            canRelease: input.canEditOthers,
+            origin: "close",
+          })
+        : null;
+      await updatePlan(tx, {
+        tenantId: input.tenantId,
+        template,
+        asset,
+        siteId: inspection.siteId,
+        inspectionId: inspection.id,
+        inspectedAt,
+        result: derived.result,
+        assetRetired: asset?.status === "retired" || statusChange?.to === "retired",
+      });
+      const nonconforming = nonconformingOf(inspection.answers, autoConform);
+      await createFollowUp(tx, {
+        tenantId: input.tenantId,
+        actorUserId: input.actorUserId,
+        inspection: { id: inspection.id, actionId: inspection.actionId, findingId: inspection.findingId, siteId: inspection.siteId },
+        template,
+        asset,
+        nonconforming,
+        statusChange,
+        choice: input.followUp,
+        detectedAt: inspectedAt,
+      });
       return { id: inspection.id, alreadyClosed: false };
+    },
+    { timeout: 30_000 },
+  );
+}
+
+// ─── Corrección de una inspección cerrada ──────────────────────────────────
+
+export type CorrectionPatch = { value?: "conform" | "nonconform" | "na"; numberValue?: number | null };
+
+const MIN_CORRECTION_REASON = 10;
+
+function describeAnswer(item: ItemRow, answer: { value: InspectionAnswerValue | null; numberValue: number | null }): string | null {
+  if (item.kind === "number") return answer.value === "na" ? "na" : answer.numberValue === null ? null : String(answer.numberValue);
+  return answer.value;
+}
+
+/**
+ * Corrige una respuesta de una inspección cerrada, con motivo: nada se edita en silencio. Recalcula el resultado
+ * y deja la corrección registrada. Una corrección que empeora la última inspección del activo a «no apto» lo saca
+ * de servicio; una que mejora no lo libera (liberar exige una reinspección). Si aparece una no conformidad y la
+ * inspección no tenía acción de seguimiento, se crea.
+ */
+export async function correctInspectionAnswer(
+  input: {
+    tenantId: string;
+    actorUserId: string;
+    /** Administrador o responsable de proceso. */
+    canRelease: boolean;
+    inspectionId: string;
+    answerId: string;
+    patch: CorrectionPatch;
+    reason: string;
+  },
+  db: Db = prisma,
+) {
+  if (!input.canRelease) throw new InspectionError("Solo un administrador o un responsable de proceso puede corregir una inspección cerrada");
+  const reason = input.reason.trim();
+  if (reason.length < MIN_CORRECTION_REASON) throw new InspectionError(`Contá el motivo de la corrección (al menos ${MIN_CORRECTION_REASON} caracteres)`);
+
+  return db.$transaction(
+    async (tx) => {
+      await tx.$queryRaw`SELECT id FROM inspection WHERE id = ${input.inspectionId} AND "tenantId" = ${input.tenantId} FOR UPDATE`;
+      const inspection = await tx.inspection.findFirst({
+        where: { id: input.inspectionId, tenantId: input.tenantId },
+        include: { asset: true, answers: { include: { item: true } } },
+      });
+      if (!inspection) throw new InspectionError("Inspección no encontrada");
+      if (inspection.status !== "closed" || !inspection.result) throw new InspectionError("Solo se corrigen inspecciones cerradas: el borrador se edita directamente");
+
+      const target = inspection.answers.find((a) => a.id === input.answerId);
+      if (!target) throw new InspectionError("Respuesta no encontrada");
+      if (target.item.autoSource) throw new InspectionError("Ese ítem lo calcula el sistema con los vencimientos del activo: no se corrige a mano");
+      if (target.item.kind !== "check" && target.item.kind !== "number") throw new InspectionError("Solo se corrigen ítems de conforme / no conforme o con un valor numérico");
+
+      const next = {
+        value: target.item.kind === "check" ? (input.patch.value ?? target.value) : input.patch.value === "na" ? ("na" as const) : null,
+        numberValue: target.item.kind === "number" && input.patch.value !== "na" ? (input.patch.numberValue ?? target.numberValue) : null,
+      };
+      if (target.item.kind === "check" && !next.value) throw new InspectionError("Indicá la respuesta correcta");
+      if (next.value === "na" && !target.item.naAllowed) throw new InspectionError("Ese ítem no admite «no aplica»");
+      if (target.item.kind === "number" && next.value !== "na" && (next.numberValue === null || !Number.isFinite(next.numberValue))) throw new InspectionError("Indicá el valor correcto");
+
+      const before = describeAnswer(target.item, target);
+      const after = describeAnswer(target.item, next);
+      if (before === after) throw new InspectionError("La corrección no cambia la respuesta");
+
+      const autoConform = new Map(inspection.answers.filter((a) => a.item.autoSource).map((a) => [a.itemId, a.value === "conform"]));
+      const corrected = inspection.answers.map((a) => (a.id === target.id ? { ...a, ...next } : a));
+      const items = corrected.map((a) => toEvalItem(a.item, autoConform.get(a.itemId)));
+      const answers: EvalAnswer[] = corrected.map((a) => ({ itemId: a.itemId, value: a.item.autoSource ? undefined : a.value, numberValue: a.numberValue, textValue: a.textValue, comment: a.comment }));
+      let derived;
+      try {
+        derived = deriveInspectionResult(items, answers);
+      } catch (error) {
+        if (error instanceof InspectionDomainError) throw new InspectionError(error.message, error.code);
+        throw error;
+      }
+      if (!derived.result) throw new InspectionError("No se pudo recalcular el resultado");
+
+      const previousResult = inspection.result;
+      await tx.inspectionAnswer.update({ where: { id: target.id }, data: { value: next.value, numberValue: next.numberValue, answeredAt: new Date() } });
+      await tx.inspection.update({
+        where: { id: inspection.id },
+        data: { result: derived.result, scorePct: derived.scorePct, applicableCount: derived.applicable, conformCount: derived.conform, nonconformCount: derived.nonconform },
+      });
+      await tx.inspectionCorrection.create({
+        data: { tenantId: input.tenantId, inspectionId: inspection.id, answerId: target.id, previousValue: before, newValue: after, previousResult, newResult: derived.result, reason, byUserId: input.actorUserId },
+      });
+      await writeAudit(tx, {
+        tenantId: input.tenantId,
+        entityType: "inspection",
+        entityId: inspection.id,
+        action: "correct",
+        actorUserId: input.actorUserId,
+        summary: `Corrección de «${target.item.text}»: ${before ?? "—"} → ${after ?? "—"} (${previousResult} → ${derived.result}). Motivo: ${reason}`,
+      });
+
+      const template = await tx.inspectionTemplate.findUniqueOrThrow({ where: { id: inspection.templateId } });
+      const asset = inspection.asset;
+      let statusChange = null;
+      if (asset && previousResult !== derived.result) {
+        const latest = await tx.inspection.findFirst({
+          where: { tenantId: input.tenantId, assetId: asset.id, status: "closed" },
+          orderBy: [{ inspectedAt: "desc" }, { closedAt: "desc" }, { id: "desc" }],
+          select: { id: true },
+        });
+        if (latest?.id === inspection.id) {
+          if (previousResult !== "unfit" && derived.result === "unfit") {
+            statusChange = await applyAssetStatus(tx, {
+              tenantId: input.tenantId,
+              actorUserId: input.actorUserId,
+              inspectionId: inspection.id,
+              asset,
+              result: derived.result,
+              template,
+              canRelease: input.canRelease,
+              origin: "correction",
+            });
+          }
+          const current = await tx.asset.findUniqueOrThrow({ where: { id: asset.id }, select: { status: true } });
+          await updatePlan(tx, {
+            tenantId: input.tenantId,
+            template,
+            asset,
+            siteId: inspection.siteId,
+            inspectionId: inspection.id,
+            inspectedAt: isoFromDate(inspection.inspectedAt),
+            result: derived.result,
+            assetRetired: current.status === "retired",
+          });
+        }
+      }
+
+      const nonconforming = nonconformingOf(corrected, autoConform);
+      if (nonconforming.length > 0 && !inspection.actionId) {
+        await createFollowUp(tx, {
+          tenantId: input.tenantId,
+          actorUserId: input.actorUserId,
+          inspection: { id: inspection.id, actionId: inspection.actionId, findingId: inspection.findingId, siteId: inspection.siteId },
+          template,
+          asset,
+          nonconforming,
+          statusChange,
+          detectedAt: isoFromDate(inspection.inspectedAt),
+        });
+      }
+      return { result: derived.result, previousResult, statusChange };
     },
     { timeout: 30_000 },
   );

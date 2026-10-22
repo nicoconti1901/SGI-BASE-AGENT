@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { reminderStartsAt } from "@/domain/automation/due";
+import type { ACTION_ENTITY_TYPE } from "@/domain/actions/types";
 
 export type Db = PrismaClient;
 export type Tx = Prisma.TransactionClient;
@@ -25,7 +26,7 @@ export async function writeAudit(
 
 export type DueItemSpec = {
   tenantId: string;
-  entityType: "inspection_plan" | "asset_due_date";
+  entityType: "inspection_plan" | "asset_due_date" | typeof ACTION_ENTITY_TYPE;
   entityId: string;
   title: string;
   dueAt: Date;
