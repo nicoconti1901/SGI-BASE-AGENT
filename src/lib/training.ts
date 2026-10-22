@@ -347,6 +347,8 @@ export type MatrixFilter = {
   jobTaskId?: string;
   /** Nombre o legajo. */
   q?: string;
+  /** Solo personas con al menos un curso obligatorio en este estado. */
+  status?: Exclude<TrainingStatus, "not_required">;
   /** Última persona de la página anterior. */
   after?: string;
   limit?: number;
@@ -382,21 +384,33 @@ async function listMatrixColumns(tenantId: string, f: Pick<MatrixFilter, "positi
   return { columns: courses.slice(0, MATRIX_MAX_COLUMNS), hasMore: courses.length > MATRIX_MAX_COLUMNS };
 }
 
+/** Ids de las personas con al menos un curso obligatorio en ese estado (una consulta, sin traer celdas). */
+async function personIdsWithStatus(tenantId: string, f: MatrixFilter, db: Db): Promise<string[]> {
+  const rows = await db.$queryRaw<{ id: string }[]>`
+    ${cellsCte(tenantId, { today: f.today, timeZone: f.timeZone, siteId: f.siteId, positionId: f.positionId, jobTaskId: f.jobTaskId })}
+    SELECT DISTINCT person_id AS id FROM cells WHERE mandatory AND status = ${f.status} LIMIT 5000`;
+  return rows.map((r) => r.id);
+}
+
+async function matrixPeopleWhere(tenantId: string, filter: MatrixFilter, db: Db): Promise<Prisma.PersonWhereInput> {
+  const q = filter.q?.trim();
+  const withStatus = filter.status ? await personIdsWithStatus(tenantId, filter, db) : null;
+  return {
+    tenantId,
+    status: "active",
+    ...(withStatus ? { id: { in: withStatus } } : {}),
+    ...(filter.siteId ? { OR: [{ siteId: filter.siteId }, { extraSites: { some: { siteId: filter.siteId } } }] } : {}),
+    ...(filter.positionId ? { positionId: filter.positionId } : {}),
+    ...(filter.jobTaskId ? { jobTasks: { some: { jobTaskId: filter.jobTaskId } } } : {}),
+    ...(q ? { AND: [{ OR: [{ name: { contains: q, mode: "insensitive" } }, { employeeCode: { contains: q, mode: "insensitive" } }] }] } : {}),
+  };
+}
+
 /** Una página de la matriz: 50 personas por nombre, y solo las celdas de esas personas y de esos cursos. */
 export async function getMatrixPage(tenantId: string, filter: MatrixFilter, db: Db = prisma): Promise<MatrixPage> {
   const limit = Math.min(filter.limit ?? MATRIX_PAGE_SIZE, MATRIX_PAGE_SIZE);
-  const q = filter.q?.trim();
   const people = await db.person.findMany({
-    where: {
-      tenantId,
-      status: "active",
-      ...(filter.siteId ? { OR: [{ siteId: filter.siteId }, { extraSites: { some: { siteId: filter.siteId } } }] } : {}),
-      ...(filter.positionId ? { positionId: filter.positionId } : {}),
-      ...(filter.jobTaskId ? { jobTasks: { some: { jobTaskId: filter.jobTaskId } } } : {}),
-      ...(q
-        ? { AND: [{ OR: [{ name: { contains: q, mode: "insensitive" } }, { employeeCode: { contains: q, mode: "insensitive" } }] }] }
-        : {}),
-    },
+    where: await matrixPeopleWhere(tenantId, filter, db),
     select: { id: true, name: true, employeeCode: true },
     orderBy: [{ name: "asc" }, { id: "asc" }],
     take: limit + 1,
@@ -420,4 +434,105 @@ export async function getMatrixPage(tenantId: string, filter: MatrixFilter, db: 
     cells,
     nextCursor: people.length > limit ? page[page.length - 1].id : null,
   };
+}
+
+// ─── Tablero: vencimientos próximos y cursos que más faltan ────────────────
+
+export type SiteExpiry = { siteId: string; in30: number; in60: number; in90: number };
+
+/** Cursos obligatorios que vencen en 30, 60 y 90 días (acumulado), por sede base. Un solo `GROUP BY`. */
+export async function getExpiryBuckets(
+  tenantId: string,
+  scope: Pick<ComplianceScope, "today" | "timeZone" | "siteId">,
+  db: Db = prisma,
+): Promise<SiteExpiry[]> {
+  const today = Prisma.sql`${scope.today}::date`;
+  return db.$queryRaw<SiteExpiry[]>`
+    ${cellsCte(tenantId, scope)}
+    SELECT site_id AS "siteId",
+           count(*) FILTER (WHERE valid_until <= ${today} + 30)::int AS "in30",
+           count(*) FILTER (WHERE valid_until <= ${today} + 60)::int AS "in60",
+           count(*)::int AS "in90"
+    FROM cells
+    WHERE mandatory AND has_record AND valid_until IS NOT NULL AND valid_until >= ${today} AND valid_until <= ${today} + 90
+    GROUP BY site_id`;
+}
+
+export type MissingCourse = { courseId: string; name: string; people: number };
+
+/** Los cursos obligatorios que más personas tienen faltantes o vencidos (top N). */
+export async function getTopMissingCourses(
+  tenantId: string,
+  scope: Pick<ComplianceScope, "today" | "timeZone" | "siteId">,
+  limit = 5,
+  db: Db = prisma,
+): Promise<MissingCourse[]> {
+  return db.$queryRaw<MissingCourse[]>`
+    ${cellsCte(tenantId, scope)}
+    SELECT cells."courseId" AS "courseId", c."name" AS name, count(*)::int AS people
+    FROM cells JOIN "training_course" c ON c."id" = cells."courseId"
+    WHERE cells.mandatory AND cells.status IN ('missing', 'expired')
+    GROUP BY cells."courseId", c."name"
+    ORDER BY people DESC, c."name"
+    LIMIT ${limit}`;
+}
+
+// ─── Exportación en formato largo ──────────────────────────────────────────
+
+export const EXPORT_BATCH = 500;
+export const EXPORT_MAX_PEOPLE = 20_000;
+
+export type ComplianceExportRow = {
+  employeeCode: string;
+  personName: string;
+  siteName: string;
+  positionName: string;
+  courseName: string;
+  mandatory: boolean;
+  status: Exclude<TrainingStatus, "not_required">;
+  validUntil: IsoDate | null;
+};
+
+/** Una fila por persona y curso exigido, en tandas de 500 personas por cursor. El filtro es el de la matriz. */
+export async function* exportComplianceBatches(
+  tenantId: string,
+  filter: MatrixFilter,
+  db: Db = prisma,
+): AsyncGenerator<ComplianceExportRow[]> {
+  const where = await matrixPeopleWhere(tenantId, filter, db);
+  const courses = new Map((await db.course.findMany({ where: { tenantId }, select: { id: true, name: true } })).map((c) => [c.id, c.name]));
+  let after: string | undefined;
+  let exported = 0;
+  while (exported < EXPORT_MAX_PEOPLE) {
+    const people = await db.person.findMany({
+      where,
+      select: { id: true, name: true, employeeCode: true, site: { select: { name: true } }, position: { select: { name: true } } },
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      take: EXPORT_BATCH,
+      ...(after ? { cursor: { id: after }, skip: 1 } : {}),
+    });
+    if (people.length === 0) return;
+    const cells = await queryComplianceCells(tenantId, { today: filter.today, timeZone: filter.timeZone, personIds: people.map((p) => p.id) }, db);
+    const byPerson = new Map<string, ComplianceCell[]>();
+    for (const c of cells) byPerson.set(c.personId, [...(byPerson.get(c.personId) ?? []), c]);
+    const rows: ComplianceExportRow[] = [];
+    for (const p of people) {
+      for (const c of byPerson.get(p.id) ?? []) {
+        rows.push({
+          employeeCode: p.employeeCode,
+          personName: p.name,
+          siteName: p.site.name,
+          positionName: p.position.name,
+          courseName: courses.get(c.courseId) ?? c.courseId,
+          mandatory: c.mandatory,
+          status: c.status,
+          validUntil: c.validUntil,
+        });
+      }
+    }
+    yield rows;
+    exported += people.length;
+    if (people.length < EXPORT_BATCH) return;
+    after = people[people.length - 1].id;
+  }
 }

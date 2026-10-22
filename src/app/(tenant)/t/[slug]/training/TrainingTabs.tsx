@@ -7,10 +7,14 @@ export type TrainingTab = { href: string; label: string };
 
 export function TrainingTabs({ tabs }: { tabs: readonly TrainingTab[] }) {
   const pathname = usePathname();
+  // Gana la pestaña más específica: «Resumen» (la raíz) no queda activa en las demás.
+  const current = tabs
+    .filter((t) => pathname === t.href || pathname.startsWith(`${t.href}/`))
+    .sort((x, y) => y.href.length - x.href.length)[0];
   return (
     <nav aria-label="Capacitaciones" className="flex flex-wrap gap-1 border-b border-[var(--color-line)]">
       {tabs.map((tab) => {
-        const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
+        const active = tab === current;
         return (
           <Link
             key={tab.href}

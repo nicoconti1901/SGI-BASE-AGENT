@@ -15,6 +15,9 @@ export default async function TrainingLayout({ children, params }: LayoutProps<"
       />
       <TrainingTabs
         tabs={[
+          { href: base, label: "Resumen" },
+          { href: `${base}/compliance`, label: "Cumplimiento" },
+          { href: `${base}/sessions`, label: "Sesiones" },
           { href: `${base}/courses`, label: "Cursos" },
           { href: `${base}/requirements`, label: "Requisitos" },
         ]}
