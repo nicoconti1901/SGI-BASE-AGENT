@@ -96,3 +96,19 @@ describe("objectives permissions", () => {
     expect(canTenantRole("viewer", "manage_objectives")).toBe(false);
   });
 });
+
+describe("training permissions", () => {
+  it("la matriz y las anulaciones: administrador y responsable de proceso", () => {
+    expect(canTenantRole("tenant_admin", "manage_training")).toBe(true);
+    expect(canTenantRole("process_owner", "manage_training")).toBe(true);
+    expect(canTenantRole("contributor", "manage_training")).toBe(false);
+    expect(canTenantRole("viewer", "manage_training")).toBe(false);
+  });
+
+  it("registrar capacitaciones: también el colaborador, nunca consulta", () => {
+    expect(canTenantRole("tenant_admin", "record_training")).toBe(true);
+    expect(canTenantRole("process_owner", "record_training")).toBe(true);
+    expect(canTenantRole("contributor", "record_training")).toBe(true);
+    expect(canTenantRole("viewer", "record_training")).toBe(false);
+  });
+});

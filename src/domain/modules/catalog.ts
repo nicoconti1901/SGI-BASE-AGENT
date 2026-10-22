@@ -103,7 +103,15 @@ export const MODULE_CATALOG: readonly ModuleDefinition[] = [
     defaultEnabled: false,
   },
   { key: "master_data", label: "Datos maestros", section: "people", path: "master-data", clauses: [], status: "available", defaultEnabled: true },
-  { key: "training", label: "Capacitaciones", section: "people", path: "training", clauses: all("7.2", "7.3"), status: "planned", defaultEnabled: false },
+  {
+    key: "training",
+    label: "Capacitaciones",
+    section: "people",
+    path: "training",
+    clauses: [...all("7.2", "7.3"), { standard: "ISO45001", clause: "5.4" }],
+    status: "available",
+    defaultEnabled: false,
+  },
   {
     key: "suppliers",
     label: "Proveedores",
