@@ -159,6 +159,11 @@ model Tenant {
   trainingAttachments   TrainingAttachment[]
   trainingSettings      TrainingSettings?
   trainingAudits        TrainingAudit[]
+  assets                Asset[]
+  inspectionTemplates   InspectionTemplate[]
+  inspections           Inspection[]
+  inspectionPlans       InspectionPlan[]
+  inspectionAudits      InspectionAudit[]
 
   @@map("tenant")
 }
@@ -1217,6 +1222,9 @@ model Site {
   dueItems         DueItem[]
   suppliers        SupplierSite[]
   trainingSessions TrainingSession[]
+  assets           Asset[]
+  inspections      Inspection[]
+  inspectionPlans  InspectionPlan[]
 
   @@unique([tenantId, name])
   @@index([tenantId, active])
@@ -1262,35 +1270,37 @@ model JobTask {
 /// Quién: nómina propia y de contratistas. No necesariamente usa el sistema (`userId` opcional).
 /// Sin datos de salud. La baja es lógica: nunca se borra el historial.
 model Person {
-  id              String           @id @default(cuid())
-  tenantId        String
-  employeeCode    String
-  name            String
-  documentId      String?
-  userId          String?
-  employer        PersonEmployer   @default(own)
-  contractorName  String?
-  siteId          String
-  positionId      String
-  hiredAt         DateTime?
+  id                   String           @id @default(cuid())
+  tenantId             String
+  employeeCode         String
+  name                 String
+  documentId           String?
+  userId               String?
+  employer             PersonEmployer   @default(own)
+  contractorName       String?
+  siteId               String
+  positionId           String
+  hiredAt              DateTime?
   /// Desde cuándo está en el puesto actual. NULL = desde el ingreso. Solo cambia al cambiar de puesto.
-  positionSince   DateTime?
-  status          PersonStatus     @default(active)
-  inactiveAt      DateTime?
+  positionSince        DateTime?
+  status               PersonStatus     @default(active)
+  inactiveAt           DateTime?
   /// Contratista del que depende (módulo Proveedores). `contractorName` sigue siendo el texto libre.
-  supplierId      String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  supplier        Supplier?        @relation(fields: [supplierId], references: [id], onDelete: SetNull)
-  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  site            Site             @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
-  incidentHealths IncidentHealth[]
-  position        JobPosition      @relation(fields: [positionId], references: [id], onDelete: Restrict)
-  user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
-  extraSites      PersonSite[]
-  jobTasks        PersonJobTask[]
-  dueItems        DueItem[]
-  trainingRecords TrainingRecord[]
+  supplierId           String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  supplier             Supplier?        @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  tenant               Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site                 Site             @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
+  incidentHealths      IncidentHealth[]
+  position             JobPosition      @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  user                 User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  extraSites           PersonSite[]
+  jobTasks             PersonJobTask[]
+  dueItems             DueItem[]
+  trainingRecords      TrainingRecord[]
+  assignedAssets       Asset[]
+  performedInspections Inspection[]
 
   @@unique([tenantId, employeeCode])
   @@unique([tenantId, userId])
@@ -2147,4 +2157,375 @@ model TrainingAudit {
   @@index([tenantId, createdAt])
   @@index([tenantId, entityType, entityId])
   @@map("training_audit")
+}
+
+// ─── Inspecciones (Task 15): activos, plantillas versionadas e inspecciones ─
+// Los tipos de activo viven en código (src/domain/inspections/asset-types); acá solo se guarda su clave.
+// Los usuarios se guardan como id sin FK (igual que los demás ownerUserId).
+
+enum AssetStatus {
+  in_service
+  out_of_service
+  retired
+}
+
+enum AssetOwnership {
+  own
+  rented
+  contractor
+}
+
+enum InspectionTemplateScope {
+  asset
+  area
+  activity
+}
+
+enum InspectionIntervalUnit {
+  days
+  months
+}
+
+enum InspectionItemCriticality {
+  critical
+  major
+  minor
+}
+
+enum InspectionItemKind {
+  check
+  number
+  text
+  reading
+}
+
+enum InspectionStatus {
+  draft
+  closed
+}
+
+enum InspectionResult {
+  fit
+  fit_with_observations
+  unfit
+}
+
+enum InspectionAnswerValue {
+  conform
+  nonconform
+  na
+}
+
+enum InspectionAttachmentKind {
+  photo
+  evidence
+  destruction
+}
+
+/// Equipo que se controla: hoy extintores. Un activo con inspecciones no se borra, se da de baja.
+model Asset {
+  id                String                 @id @default(cuid())
+  tenantId          String
+  /// Clave del tipo en el registro de código (p. ej. `extinguisher`).
+  typeKey           String
+  /// Único por empresa, en mayúsculas, hasta 30 caracteres.
+  code              String
+  description       String
+  siteId            String
+  sector            String?
+  status            AssetStatus            @default(in_service)
+  statusReason      String?
+  statusChangedAt   DateTime               @default(now())
+  ownership         AssetOwnership         @default(own)
+  contractorName    String?
+  /// Persona (no usuario) a cargo del activo; muchos operadores no tienen login.
+  assignedPersonId  String?
+  /// Validado con el esquema zod del tipo.
+  attributes        Json
+  attributesVersion Int                    @default(1)
+  retiredAt         DateTime?
+  retirementReason  String?
+  createdByUserId   String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site              Site                   @relation(fields: [siteId], references: [id], onDelete: NoAction)
+  assignedPerson    Person?                @relation(fields: [assignedPersonId], references: [id], onDelete: SetNull)
+  dueDates          AssetDueDate[]
+  statusEvents      AssetStatusEvent[]
+  inspections       Inspection[]
+  plans             InspectionPlan[]
+  attachments       InspectionAttachment[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, typeKey, status])
+  @@index([tenantId, siteId, status])
+  @@index([siteId])
+  @@index([assignedPersonId])
+  @@map("asset")
+}
+
+/// Vencimiento documental del activo (mantenimiento, prueba hidráulica…). Mantiene un DueItem abierto.
+model AssetDueDate {
+  id         String    @id @default(cuid())
+  tenantId   String
+  assetId    String
+  kind       String
+  dueAt      DateTime  @db.Date
+  lastDoneAt DateTime? @db.Date
+  /// N.º de certificado o comprobante.
+  reference  String?
+  leadDays   Int       @default(30)
+  /// Si vence, impide usar el activo.
+  blocking   Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  asset      Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, kind])
+  @@index([tenantId, dueAt])
+  @@map("asset_due_date")
+}
+
+/// Historial de cambios de estado: responde «¿por qué está fuera de servicio y quién lo dijo?».
+model AssetStatusEvent {
+  id           String       @id @default(cuid())
+  tenantId     String
+  assetId      String
+  fromStatus   AssetStatus?
+  toStatus     AssetStatus
+  reasonCode   String
+  inspectionId String?
+  byUserId     String?
+  note         String?
+  createdAt    DateTime     @default(now())
+  asset        Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId, createdAt])
+  @@index([tenantId, createdAt])
+  @@map("asset_status_event")
+}
+
+/// Plantilla de inspección de la empresa. Se siembra desde el anexo del SPEC y el cliente la edita (siempre creando una versión nueva).
+model InspectionTemplate {
+  id                String                      @id @default(cuid())
+  tenantId          String
+  key               String
+  name              String
+  scope             InspectionTemplateScope
+  assetTypeKey      String?
+  /// Nulo: control previo al uso o sin calendario.
+  intervalUnit      InspectionIntervalUnit?
+  intervalValue     Int?
+  leadDays          Int                         @default(7)
+  reinspectionDays  Int                         @default(7)
+  findingOnCritical Boolean                     @default(false)
+  canReinstate      Boolean                     @default(false)
+  retireOnUnfit     Boolean                     @default(false)
+  activeVersionId   String?
+  active            Boolean                     @default(true)
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  tenant            Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  activeVersion     InspectionTemplateVersion?  @relation("TemplateActiveVersion", fields: [activeVersionId], references: [id], onDelete: SetNull)
+  versions          InspectionTemplateVersion[] @relation("TemplateVersions")
+  inspections       Inspection[]
+  plans             InspectionPlan[]
+
+  @@unique([tenantId, key])
+  @@map("inspection_template")
+}
+
+/// Inmutable: nunca se actualiza ni se borra. Editar la plantilla crea la versión siguiente.
+model InspectionTemplateVersion {
+  id              String                   @id @default(cuid())
+  tenantId        String
+  templateId      String
+  version         Int
+  note            String?
+  createdByUserId String?
+  createdAt       DateTime                 @default(now())
+  template        InspectionTemplate       @relation("TemplateVersions", fields: [templateId], references: [id], onDelete: Cascade)
+  activeFor       InspectionTemplate[]     @relation("TemplateActiveVersion")
+  items           InspectionTemplateItem[]
+  inspections     Inspection[]
+
+  @@unique([templateId, version])
+  @@map("inspection_template_version")
+}
+
+model InspectionTemplateItem {
+  id          String                    @id @default(cuid())
+  tenantId    String
+  versionId   String
+  /// Estable entre versiones: permite compararlas.
+  code        String
+  section     String
+  sortOrder   Int
+  text        String
+  help        String?
+  /// Se ignora en los ítems que no puntúan (texto y lectura).
+  criticality InspectionItemCriticality @default(minor)
+  kind        InspectionItemKind        @default(check)
+  unit        String?
+  minValue    Float?
+  maxValue    Float?
+  naAllowed   Boolean                   @default(true)
+  photoOnNc   Boolean                   @default(false)
+  required    Boolean                   @default(true)
+  /// `odometer_km` u `hours`.
+  readingKey  String?
+  /// El valor lo deriva el sistema, p. ej. `{ "dueKind": "hydrostatic_test" }`.
+  autoSource  Json?
+  /// Condición sobre un atributo del activo o un dato de contexto.
+  appliesWhen Json?
+  version     InspectionTemplateVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  answers     InspectionAnswer[]
+
+  @@unique([versionId, code])
+  @@index([versionId, sortOrder])
+  @@map("inspection_template_item")
+}
+
+model Inspection {
+  id                  String                    @id @default(cuid())
+  tenantId            String
+  templateId          String
+  /// Versión de la plantilla con la que se empezó: fija los ítems de esta inspección para siempre.
+  versionId           String
+  assetId             String?
+  /// Siempre se guarda la sede (la del activo, o la elegida si se inspecciona un área).
+  siteId              String
+  sector              String?
+  inspectorUserId     String
+  /// Quien hizo el control si no es el usuario que lo carga.
+  performedByPersonId String?
+  status              InspectionStatus          @default(draft)
+  startedAt           DateTime                  @default(now())
+  inspectedAt         DateTime                  @db.Date
+  closedAt            DateTime?
+  result              InspectionResult?
+  scorePct            Float?
+  applicableCount     Int?
+  conformCount        Int?
+  nonconformCount     Int?
+  readingKm           Int?
+  readingHours        Float?
+  notes               String?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  tenant              Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  template            InspectionTemplate        @relation(fields: [templateId], references: [id], onDelete: NoAction)
+  templateVersion     InspectionTemplateVersion @relation(fields: [versionId], references: [id], onDelete: NoAction)
+  asset               Asset?                    @relation(fields: [assetId], references: [id], onDelete: NoAction)
+  site                Site                      @relation(fields: [siteId], references: [id], onDelete: NoAction)
+  performedBy         Person?                   @relation(fields: [performedByPersonId], references: [id], onDelete: SetNull)
+  answers             InspectionAnswer[]
+  attachments         InspectionAttachment[]
+  lastForPlans        InspectionPlan[]
+
+  @@index([tenantId, status, inspectedAt(sort: Desc)])
+  @@index([tenantId, siteId, inspectedAt(sort: Desc)])
+  @@index([tenantId, assetId, inspectedAt(sort: Desc)])
+  @@index([tenantId, templateId, inspectedAt(sort: Desc)])
+  @@index([tenantId, result, inspectedAt(sort: Desc)])
+  @@index([versionId])
+  @@index([siteId])
+  @@map("inspection")
+}
+
+/// Una fila por ítem aplicable, creada al abrir el borrador: «completa» es «ninguna sin responder».
+model InspectionAnswer {
+  id           String                 @id @default(cuid())
+  tenantId     String
+  inspectionId String
+  itemId       String
+  value        InspectionAnswerValue?
+  numberValue  Float?
+  textValue    String?
+  comment      String?
+  /// El valor lo calcula el sistema (vencimientos del activo) y el inspector no lo puede pisar.
+  autoDerived  Boolean                @default(false)
+  answeredAt   DateTime?
+  inspection   Inspection             @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  item         InspectionTemplateItem @relation(fields: [itemId], references: [id], onDelete: NoAction)
+  attachments  InspectionAttachment[]
+
+  @@unique([inspectionId, itemId])
+  @@index([itemId])
+  @@map("inspection_answer")
+}
+
+/// Fotos y evidencias (molde de FindingAttachment). Al menos una de `inspectionId` o `assetId` (CHECK en la migración).
+model InspectionAttachment {
+  id           String                   @id @default(cuid())
+  tenantId     String
+  inspectionId String?
+  answerId     String?
+  assetId      String?
+  kind         InspectionAttachmentKind @default(photo)
+  storageKey   String
+  fileName     String
+  contentType  String
+  sizeBytes    Int
+  label        String?
+  uploadedById String?
+  createdAt    DateTime                 @default(now())
+  inspection   Inspection?              @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  answer       InspectionAnswer?        @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  asset        Asset?                   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, inspectionId])
+  @@index([answerId])
+  @@index([assetId])
+  @@map("inspection_attachment")
+}
+
+/// Programa y lectura rápida: una fila por (plantilla, sujeto). «Vencidas» y «último resultado» salen de acá
+/// sin agregar sobre la tabla grande de inspecciones.
+model InspectionPlan {
+  id               String             @id @default(cuid())
+  tenantId         String
+  templateId       String
+  /// `asset:<id>` o `site:<id>`.
+  subjectKey       String
+  assetId          String?
+  siteId           String
+  lastInspectionId String?
+  lastInspectedAt  DateTime?          @db.Date
+  lastResult       InspectionResult?
+  nextDueAt        DateTime?          @db.Date
+  /// Falso cuando el programa se cerró (activo dado de baja).
+  active           Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  tenant           Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  template         InspectionTemplate @relation(fields: [templateId], references: [id], onDelete: NoAction)
+  asset            Asset?             @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  site             Site               @relation(fields: [siteId], references: [id], onDelete: NoAction)
+  lastInspection   Inspection?        @relation(fields: [lastInspectionId], references: [id], onDelete: SetNull)
+
+  @@unique([templateId, subjectKey])
+  @@index([tenantId, nextDueAt])
+  @@index([tenantId, templateId, lastInspectedAt])
+  @@index([tenantId, siteId, nextDueAt])
+  @@index([assetId])
+  @@map("inspection_plan")
+}
+
+/// Registro de quién cambió qué: altas, ediciones, bajas, importaciones y renovaciones de activos.
+model InspectionAudit {
+  id          String   @id @default(cuid())
+  tenantId    String
+  entityType  String
+  entityId    String
+  action      String
+  actorUserId String?
+  summary     String
+  createdAt   DateTime @default(now())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, entityType, entityId])
+  @@map("inspection_audit")
 }

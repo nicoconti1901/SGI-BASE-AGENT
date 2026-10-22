@@ -19,7 +19,11 @@ export type AuthzAction =
   | "manage_supplier_criteria"
   | "upload_supplier_documents"
   | "manage_training"
-  | "record_training";
+  | "record_training"
+  | "manage_assets"
+  | "import_assets"
+  | "manage_inspection_templates"
+  | "release_assets";
 
 /**
  * Política documentada (Task 6):
@@ -41,6 +45,8 @@ export type AuthzAction =
  *   de documento solo el admin; cargar documentos también el colaborador
  * - Capacitaciones (SPEC-training): cursos, matriz y anulaciones (`manage_training`) admin y responsable de
  *   proceso; registrar sesiones y registros (`record_training`) además el colaborador
+ * - Inspecciones (SPEC-inspections): activos (alta, edición, baja) y liberar un activo, admin y responsable de proceso;
+ *   importar activos y editar plantillas, solo el admin. Registrar inspecciones usa «write».
  */
 const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
   viewer: ["read"],
@@ -59,6 +65,8 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "upload_supplier_documents",
     "manage_training",
     "record_training",
+    "manage_assets",
+    "release_assets",
   ],
   tenant_admin: [
     "read",
@@ -80,6 +88,10 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "upload_supplier_documents",
     "manage_training",
     "record_training",
+    "manage_assets",
+    "import_assets",
+    "manage_inspection_templates",
+    "release_assets",
   ],
 };
 
