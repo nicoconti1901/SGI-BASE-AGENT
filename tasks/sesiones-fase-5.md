@@ -48,9 +48,10 @@ Los slices se nombran como en cada SPEC (S1…S11 en inspecciones; 16.x, 17.x, 1
 |---|---|---|
 | Base común | Panel contado en la base, resumen diario por persona, módulos por empresa, `Finding.origin`, fechas de asignación para la gracia | #9, #11 |
 | Accidentabilidad | 17.1 dominio e índices, 17.2 ficha de accidente | #13 |
-| Proveedores | 19.1 dominio, 19.2 registro, lista, importación y aprobados | #14 |
-| Capacitaciones | 20.1 dominio y consulta agregada, 20.2 cursos y editor de la matriz | #12 |
-| Inspecciones | S1 dominio, S2 activos y vencimientos de extintores, S3 registro de la inspección en el celular | #15 |
+| Proveedores | 19.1 dominio, 19.2 registro, lista, importación y aprobados · 19.3 criterios con versiones, evaluación y documentos | #14, #19 |
+| Capacitaciones | 20.1 dominio y consulta agregada, 20.2 cursos y editor de la matriz · 20.3 sesiones y registros · 20.4 seguimiento por sede y persona · 20.5 avisos por persona, eficacia y plan anual · 20.6 habilitación para tareas críticas | #12, #18, #22 |
+| Inspecciones | S1 dominio, S2 activos y vencimientos de extintores, S3 registro de la inspección en el celular · S4–S5 consecuencias y lista con contadores | #15, #17 |
+| Calibraciones | 16.1 dominio y modelo, 16.2 registro y lista de equipos de medición con semáforo | #20 |
 
 ## Lo que falta, en orden
 
@@ -58,12 +59,7 @@ Una fila = una sesión. Dos filas con el mismo número de ventana pueden correr 
 
 | Ventana | Sesión | Qué entrega | Depende de | Tamaño |
 |---|---|---|---|---|
-| 1 | `/modulo inspecciones S4 S5` | Consecuencias (Action, Finding borrador, estado del activo, próxima inspección) y lista con contadores | S3 (hecho) | M |
-| 1 | `/modulo capacitaciones 20.3 20.4` | Sesiones y registros, importación del histórico, matriz de cumplimiento y tablero | 20.2 (hecho) | M |
-| 2 | `/modulo calibraciones 16.1 16.2` | Dominio, equipos de medición sobre el registro de activos, lista con semáforo | Activos de S2 (hecho) | M |
-| 2 | `/modulo proveedores 19.3` | Criterios con versiones, evaluación (completa, simplificada, declarada), documentos, habilitación | 19.2 (hecho) | L |
 | 3 | `/modulo accidentabilidad 17.3 17.4` | Exposición mensual y tablero de índices | 17.2 (hecho) | M |
-| 3 | `/modulo capacitaciones 20.5 20.6` | Avisos por persona, eficacia, plan anual y habilitación para tareas críticas | 20.4 | M |
 | 4 | `/modulo calibraciones 16.3 16.4 16.5` | Carga por puntos, vencidos y fuera de tolerancia, evaluación de impacto | 16.2 | M |
 | 4 | `/modulo proveedores 19.4 19.5` | Reevaluación, hallazgos, comunicaciones, tablero | 19.3 | M |
 | 5 | `/modulo inspecciones S6` | Editor de plantillas, guía, e2e del extintor no apto | S4–S5 | S |

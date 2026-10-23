@@ -590,12 +590,12 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 
 **Sub-tareas:**
 - [x] 16.0 (hecho 2026-10-21: `RESEARCH-calibration.md` y `SPEC-calibration.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `SPEC-calibration.md` (magnitudes, intervalos, regla de decisión, estados, etiqueta de estado) aprobado por el PO
-- [ ] 16.1 Dominio + Prisma:
+- [x] 16.1 (hecho 2026-10-23, PR #20) Dominio + Prisma:
   - `Asset` de tipo `measuring_equipment`, con atributos: magnitud, rango, resolución, EMP, uso crítico, si requiere calibración y/o verificación, e intervalos.
   - `CalibrationRecord`: tipo (calibración o verificación), fecha, laboratorio, n.° de certificado, acreditación; puntos con valor nominal, medido, error y U; resultado; certificado en PDF.
   - `ImpactAssessment`.
   - Funciones `calibrationDecision`, `calibrationStatus` (vigente / por vencer / vencida / no apto / en calibración) y `nextCalibrationDue`, con tests.
-- [ ] 16.2 Registro y lista de equipos: filtros por sede, magnitud y estado; semáforo; ficha con el historial de calibraciones y los certificados para descargar
+- [x] 16.2 (hecho 2026-10-23, PR #20) Registro y lista de equipos: filtros por sede, magnitud y estado; semáforo; ficha con el historial de calibraciones y los certificados para descargar
 - [ ] 16.3 Carga de calibración o verificación: formulario por puntos con cálculo automático de la conformidad; certificado adjunto; envío a calibrar (estado "en calibración", con fecha estimada de regreso)
 - [ ] 16.4 Vencidos y fuera de tolerancia:
   - `DueItem` para la próxima calibración o verificación.
@@ -743,7 +743,7 @@ Abarca a los contratistas (45001 §8.1.4.2) y a los proveedores con impacto ambi
   - `SupplierDocument` con vencimiento (ART, seguros, habilitaciones).
   - Funciones `scoreEvaluation`, `resultFromScore` y `nextEvaluationDue`, y transiciones de estado, con tests.
 - [x] 19.2 (hecho 2026-10-22, PR #14) Registro y lista de proveedores con filtros (estado, criticidad, categoría, sede); ficha con el historial de evaluaciones, documentos y hallazgos; **lista de proveedores aprobados** exportable
-- [ ] 19.3 Evaluación inicial (selección) y aprobación. Los documentos requeridos según el tipo tienen vencimiento y generan un `DueItem`. Un contratista con la ART o el seguro vencidos aparece como no habilitado.
+- [x] 19.3 (hecho 2026-10-23, PR #19) Evaluación inicial (selección) y aprobación. Los documentos requeridos según el tipo tienen vencimiento y generan un `DueItem`. Un contratista con la ART o el seguro vencidos aparece como no habilitado.
 - [ ] 19.4 Reevaluación periódica:
   - `DueItem` según la criticidad;
   - el formulario trae precargados como evidencia los **hallazgos del período originados en el proveedor**;
@@ -810,11 +810,11 @@ El estado se calcula a partir de la matriz y de los registros; nunca se marca a 
   - **ficha por persona**: cursos requeridos, estado, historial, próximos vencimientos, tareas para las que está habilitada;
   - **tablero por sede**: % de cumplimiento, vencidas, por vencer a 30/60/90 días, faltantes por curso;
   - exportación CSV.
-- [ ] 20.5 Vencimientos y eficacia:
+- [x] 20.5 (hecho 2026-10-23, PR #22: aviso por persona con alta silenciosa, bandeja de eficacia con acción o reprogramación, plan anual por sede con exportación CSV, responsable de avisos) Vencimientos y eficacia:
   - `DueItem` de vencimiento agrupado (un resumen por sede y por persona, no un aviso por cada celda de la matriz);
   - `DueItem` para la evaluación de eficacia; si no fue eficaz → acción o nueva fecha;
   - plan anual opcional (planificado frente a realizado, por sede).
-- [ ] 20.6 Uso de las habilitaciones (`isQualifiedForTask`) en las inspecciones de equipos pesados, la auditoría de campo y el conductor vial; guía, menú, e2e, README
+- [x] 20.6 (hecho 2026-10-23, PR #22: `getTaskQualifications`, insignia en `PersonPicker` con `qualifyForTaskId`, guía `/training/guia`, e2e `training-followup.spec.ts`) Uso de las habilitaciones (`isQualifiedForTask`) en las inspecciones de equipos pesados, la auditoría de campo y el conductor vial; guía, menú, e2e, README. **Falta conectar el selector** en 15.9, 15.11 y 18.4 cuando esos tipos existan.
 
 **Acceptance criteria:**
 - [ ] Al cambiar el puesto o las tareas de una persona se recalculan sus cursos requeridos, sin tocar su historial
