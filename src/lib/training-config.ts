@@ -25,13 +25,13 @@ export class TrainingError extends Error {
 
 const dateFromIso = (iso: IsoDate) => new Date(`${iso}T00:00:00.000Z`);
 
-async function audit(
+export async function audit(
   db: Db | Tx,
   input: {
     tenantId: string;
     entityType: string;
     entityId: string;
-    action: "create" | "update" | "deactivate" | "reactivate" | "import" | "delete" | "review" | "recalculate";
+    action: "create" | "update" | "deactivate" | "reactivate" | "import" | "delete" | "review" | "recalculate" | "register" | "void" | "attach";
     actorUserId: string | null;
     summary: string;
     reason?: string | null;

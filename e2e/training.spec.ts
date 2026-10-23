@@ -47,8 +47,9 @@ test("se arma la matriz de capacitaciones con vista previa de impacto y sello de
 
   // Cursos: importar dos del catálogo sugerido (nada se activa solo).
   await page.goto(`/t/${slug}/training`);
-  await expect(page).toHaveURL(new RegExp(`/t/${slug}/training/courses$`));
   await expect(page.getByRole("heading", { name: "Capacitaciones", level: 1 })).toBeVisible();
+  await page.getByRole("link", { name: "Cursos", exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/t/${slug}/training/courses$`));
   await expect(page.getByText("Todavía no hay cursos.")).toBeVisible();
   await expect(page.getByText("A validar").first()).toBeVisible();
   await page.getByLabel("Importar Trabajo en altura").check();

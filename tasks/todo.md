@@ -800,12 +800,12 @@ El estado se calcula a partir de la matriz y de los registros; nunca se marca a 
   - `TrainingEffectiveness`.
   - Funciones puras `computeTrainingStatus(persona, requisitos, registros, hoy)` e `isQualifiedForTask`, con tests.
 - [x] 20.2 (hecho 2026-10-22, PR #12) Catálogo de cursos + **editor de la matriz**: grillas de puestos × cursos y de tareas × cursos, donde se marca si es obligatorio o recomendado y el plazo
-- [ ] 20.3 Registro:
+- [x] 20.3 (hecho 2026-10-22, sin commitear: `training-records.ts`, `/training/sessions/**`, `/api/training/attachments`) Registro:
   - sesión con asistentes (selección múltiple por sede o puesto) y resultado de cada asistente;
   - planilla de asistencia o certificado subidos a storage;
   - carga individual de un certificado externo;
   - correcciones con motivo.
-- [ ] 20.4 Seguimiento:
+- [x] 20.4 (hecho 2026-10-22, sin commitear: Resumen, `/training/compliance` con exportación, ficha `/training/people/[id]`) Seguimiento:
   - **matriz de cumplimiento** de personas × cursos con semáforo (filtros por sede, puesto, tarea y estado);
   - **ficha por persona**: cursos requeridos, estado, historial, próximos vencimientos, tareas para las que está habilitada;
   - **tablero por sede**: % de cumplimiento, vencidas, por vencer a 30/60/90 días, faltantes por curso;

@@ -38,9 +38,9 @@ export function FollowUpControls({ slug, inspectionId, hasEvidence }: { slug: st
 
   return (
     <div className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-3">
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="flex max-w-full flex-wrap items-end gap-2 [&>*]:min-w-0 [&>*]:max-w-full">
         <Field label="Evidencia de lo resuelto" hint="Foto o documento. Hace falta al menos una para completar.">
-          <input ref={fileRef} type="file" className="text-sm" />
+          <input ref={fileRef} type="file" className="w-full max-w-full text-sm" />
         </Field>
         <Button type="button" variant="secondary" disabled={pending} onClick={upload}>
           Adjuntar
