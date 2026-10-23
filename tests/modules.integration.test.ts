@@ -37,7 +37,7 @@ describe.skipIf(!hasDatabase)("módulos por empresa (integration)", () => {
 
   it("rechaza desactivar Usuarios, activar un módulo planificado o una clave desconocida", async () => {
     await expect(setModuleEnabled({ tenantId: a, moduleKey: "users", enabled: false, actorUserId: null }, db)).rejects.toBeInstanceOf(ModuleActivationError);
-    await expect(setModuleEnabled({ tenantId: a, moduleKey: "instruments", enabled: true, actorUserId: null }, db)).rejects.toBeInstanceOf(ModuleActivationError);
+    await expect(setModuleEnabled({ tenantId: a, moduleKey: "road_safety", enabled: true, actorUserId: null }, db)).rejects.toBeInstanceOf(ModuleActivationError);
     await expect(setModuleEnabled({ tenantId: a, moduleKey: "nope", enabled: true, actorUserId: null }, db)).rejects.toBeInstanceOf(ModuleActivationError);
   });
 });

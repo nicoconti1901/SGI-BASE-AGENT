@@ -77,11 +77,12 @@ export const MODULE_CATALOG: readonly ModuleDefinition[] = [
     section: "sst",
     path: "instruments",
     clauses: [
+      { standard: "ISO9001", clause: "7.1.5.1" },
       { standard: "ISO9001", clause: "7.1.5.2" },
       { standard: "ISO14001", clause: "9.1.1" },
       { standard: "ISO45001", clause: "9.1.1" },
     ],
-    status: "planned",
+    status: "available",
     defaultEnabled: false,
   },
   {

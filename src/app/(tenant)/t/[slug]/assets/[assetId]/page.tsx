@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getAsset } from "@/lib/assets";
+import { INSTRUMENT_TYPE_KEY } from "@/domain/calibration/types";
 import { listSites } from "@/lib/masterdata";
 import { loadInspectionsAccess } from "@/app/(tenant)/t/[slug]/inspections/access";
 import { AssetForm, RenewDueDateForm, RetireAssetForm } from "@/app/(tenant)/t/[slug]/assets/AssetForms";
@@ -32,6 +33,8 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
   const { tenant, canManageAssets, canWrite } = await loadInspectionsAccess(slug);
   const asset = await getAsset(tenant.id, assetId);
   if (!asset) notFound();
+  // Los equipos de medición se ven y se editan en su módulo.
+  if (asset.typeKey === INSTRUMENT_TYPE_KEY) redirect(`/t/${slug}/instruments/${asset.id}`);
 
   const type = getAssetType(asset.typeKey);
   const attributes = asset.attributes as Record<string, unknown>;

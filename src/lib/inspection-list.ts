@@ -1,6 +1,7 @@
 import { Prisma, type InspectionResult } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { Db } from "@/lib/inspection-support";
+import { INSTRUMENT_TYPE_KEY } from "@/domain/calibration/types";
 import { addDays, dateFromIso, isIsoDate, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import { MAX_EXPORT_ROWS, type InspectionCsvRow } from "@/domain/inspections/export";
 
@@ -94,7 +95,7 @@ export async function inspectionCounters(tenantId: string, db: Db = prisma) {
     db.inspectionPlan.count({ where: { tenantId, active: true, nextDueAt: { lt: start } } }),
     db.inspectionPlan.count({ where: { tenantId, active: true, nextDueAt: { gte: start, lte: dateFromIso(addDays(today, 7)) } } }),
     db.inspection.count({ where: { tenantId, status: "closed", result: "unfit", inspectedAt: { gte: dateFromIso(addDays(today, -UNFIT_WINDOW_DAYS)) } } }),
-    db.asset.count({ where: { tenantId, status: "out_of_service" } }),
+    db.asset.count({ where: { tenantId, status: "out_of_service", typeKey: { not: INSTRUMENT_TYPE_KEY } } }),
   ]);
   return { overdue, upcoming, unfit, outOfService, unfitSince: addDays(today, -UNFIT_WINDOW_DAYS) };
 }

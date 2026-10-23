@@ -13,6 +13,7 @@ import {
 } from "@/lib/inspection-support";
 import { cleanName, normalizeKey } from "@/domain/masterdata/roster";
 import { getAssetType, isAssetTypeKey, type AssetTypeDef } from "@/domain/inspections/asset-types";
+import { INSTRUMENT_TYPE_KEY } from "@/domain/calibration/types";
 import { parseAssetCsv, type AssetCsvIssue, type AssetCsvRow } from "@/domain/inspections/asset-types/csv";
 import { normalizeAssetCode, resolveDueDates, type DueInput, type ResolvedDueDate } from "@/domain/inspections/asset-types/resolve";
 import { addInterval, assetCompliance, type Interval } from "@/domain/inspections/schedule";
@@ -383,7 +384,8 @@ function assetWhere(tenantId: string, f: AssetFilter): Prisma.AssetWhereInput {
   const q = f.q?.trim();
   return {
     tenantId,
-    ...(f.typeKey ? { typeKey: f.typeKey } : {}),
+    // Los equipos de medición tienen su propio módulo (Equipos de medición): no se inspeccionan por plantilla.
+    typeKey: f.typeKey ? { equals: f.typeKey, not: INSTRUMENT_TYPE_KEY } : { not: INSTRUMENT_TYPE_KEY },
     ...(f.siteId ? { siteId: f.siteId } : {}),
     ...(f.status && f.status !== "all" ? { status: f.status } : {}),
     ...(q ? { OR: [{ code: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] } : {}),
