@@ -3,11 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
-import {
-  createDueItem,
-  scanDueReminders,
-  setOfferActivation,
-} from "@/lib/automation";
+import { createDueItem, setOfferActivation } from "@/lib/automation";
+import { runDueScan } from "@/lib/due-scan";
 
 export type AutomationActionState = {
   error?: string;
@@ -47,7 +44,7 @@ export async function runDueScanAction(
       if (!tenant) return { error: "Tenant no encontrado" };
       tenantId = tenant.id;
     }
-    const result = await scanDueReminders({ tenantId });
+    const result = await runDueScan({ tenantId });
     revalidatePath("/platform/automations");
     if (slug) {
       revalidatePath(`/t/${slug}/automations`);

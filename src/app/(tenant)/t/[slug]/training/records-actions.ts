@@ -55,6 +55,7 @@ export type SessionPayload = {
   hours: number | null;
   evaluatorUserId: string | null;
   notes: string | null;
+  plannedSessionId?: string | null;
   attendees: AttendeeInput[];
 };
 

@@ -2028,6 +2028,8 @@ model TrainingSession {
   status          TrainingSessionStatus @default(held)
   /// Fecha en que se dictó o en que está planificada.
   heldAt          DateTime              @db.Date
+  /// Fecha con la que nació en el plan anual. NULL = sesión que no estaba planificada.
+  plannedFor      DateTime?             @db.Date
   siteId          String?
   level           TrainingLevel?
   instructorKind  InstructorKind        @default(internal)
@@ -2051,6 +2053,7 @@ model TrainingSession {
   @@index([tenantId, heldAt])
   @@index([tenantId, courseId])
   @@index([tenantId, siteId, heldAt])
+  @@index([tenantId, plannedFor])
   @@map("training_session")
 }
 

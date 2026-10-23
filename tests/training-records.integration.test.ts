@@ -228,13 +228,20 @@ describe.skipIf(!hasDatabase)("registro y seguimiento de capacitaciones (integra
       const before = await db.trainingRecord.count({ where: { tenantId: a } });
       expect(await db.trainingRecord.count({ where: { tenantId: a } })).toBe(before); // la vista previa no guardó nada
 
+      const importStartedAt = new Date();
       const done = await applyTrainingImport({ tenantId: a, actorUserId: actor, csv: file });
       expect(done.counts).toMatchObject({ create: 2, error: 2 });
       expect(await db.trainingRecord.count({ where: { tenantId: a } })).toBe(before + 2);
       const imported = await db.trainingRecord.findMany({ where: { tenantId: a, source: "import" }, include: { effectiveness: true } });
       expect(imported.length).toBeGreaterThanOrEqual(2);
       expect(imported.every((r) => r.effectiveness === null)).toBe(true);
-      expect(await db.dueItem.count({ where: { tenantId: a } })).toBe(0);
+      // Los avisos por persona nacen "ya avisados": lo vencido o dentro de la ventana no dispara nada el primer día.
+      // (solo los que tocó la importación: los de las altas anteriores sí avisan).
+      expect(
+        await db.dueItem.count({
+          where: { tenantId: a, entityType: "training_person", status: "open", updatedAt: { gte: importStartedAt }, dueAt: { lt: new Date() }, lastReminderKind: null },
+        }),
+      ).toBe(0);
     });
 
     it("reimportar el mismo archivo no duplica; un cambio de nota actualiza", async () => {

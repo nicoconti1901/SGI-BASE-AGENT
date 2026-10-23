@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { INPUT_CLASS } from "@/components/ui";
 import { searchPeopleAction, type PersonOption } from "@/components/pickers/picker-actions";
+import { StatusChip } from "@/components/ui";
 
 type PersonPickerProps = {
   slug: string;
@@ -13,6 +14,11 @@ type PersonPickerProps = {
   required?: boolean;
   /** Limita la búsqueda a una sede (base o adicional). */
   siteId?: string;
+  /**
+   * Muestra si cada persona está habilitada para esta tarea (según Capacitaciones). Es solo informativo: no impide
+   * elegir a nadie. Sin esta propiedad, o con el módulo apagado, no se muestra nada.
+   */
+  qualifyForTaskId?: string;
   /** Persona ya elegida (edición). */
   defaultPerson?: PersonOption | null;
   onChange?: (person: PersonOption | null) => void;
@@ -29,6 +35,7 @@ export function PersonPicker({
   hint = "Buscá por nombre o legajo.",
   required,
   siteId,
+  qualifyForTaskId,
   defaultPerson = null,
   onChange,
 }: PersonPickerProps) {
@@ -47,7 +54,7 @@ export function PersonPicker({
     const mine = ++seq.current;
     const timer = setTimeout(async () => {
       setLoading(true);
-      const found = await searchPeopleAction(slug, { q: query, siteId });
+      const found = await searchPeopleAction(slug, { q: query, siteId, taskId: qualifyForTaskId });
       // Una respuesta vieja no pisa a una búsqueda más reciente.
       if (mine === seq.current) {
         setResults(found);
@@ -56,7 +63,7 @@ export function PersonPicker({
       }
     }, 200);
     return () => clearTimeout(timer);
-  }, [query, open, siteId, slug]);
+  }, [query, open, siteId, slug, qualifyForTaskId]);
 
   function choose(person: PersonOption | null) {
     setSelected(person);
@@ -96,6 +103,7 @@ export function PersonPicker({
             <span className="ml-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
               {selected.employeeCode} · {selected.siteName}
             </span>
+            <QualificationChip person={selected} />
           </span>
           <button
             type="button"
@@ -157,6 +165,7 @@ export function PersonPicker({
                     <span className="ml-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
                       {p.employeeCode} · {p.siteName}
                     </span>
+                    <QualificationChip person={p} />
                   </li>
                 ))
               )}
@@ -166,5 +175,27 @@ export function PersonPicker({
       )}
       {hint ? <span className="text-xs text-[var(--color-ink-muted)]">{hint}</span> : null}
     </div>
+  );
+}
+
+/** Habilitado / no habilitado para la tarea, con texto (no solo color). */
+function QualificationChip({ person }: { person: PersonOption }) {
+  const q = person.qualification;
+  if (!q) return null;
+  if (!q.hasRequirements) {
+    return (
+      <span className="ml-2 inline-block align-middle">
+        <StatusChip status="info" label="Tarea sin requisitos" />
+      </span>
+    );
+  }
+  return (
+    <span className="ml-2 inline-block align-middle">
+      {q.qualified ? (
+        <StatusChip status="ok" label="Habilitado" />
+      ) : (
+        <StatusChip status="danger" label={q.missingCourses === 1 ? "No habilitado · falta 1 curso" : `No habilitado · faltan ${q.missingCourses} cursos`} />
+      )}
+    </span>
   );
 }

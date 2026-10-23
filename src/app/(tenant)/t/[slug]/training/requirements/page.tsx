@@ -2,14 +2,22 @@ import { EmptyState, SectionBlock } from "@/components/ui";
 import { loadTrainingAccess } from "@/app/(tenant)/t/[slug]/training/access";
 import { RequirementGrid, type GridRow, type SavedCell } from "@/app/(tenant)/t/[slug]/training/requirements/RequirementGrid";
 import { ReviewStamp } from "@/app/(tenant)/t/[slug]/training/requirements/ReviewStamp";
+import { OwnerForm } from "@/app/(tenant)/t/[slug]/training/requirements/OwnerForm";
 import { getMatrixReview, loadMatrix } from "@/lib/training-config";
+import { getTrainingOwnerUserId } from "@/lib/training-followup";
+import { listTenantMembers } from "@/lib/identity";
 import { trainingToday } from "@/lib/training";
 import { cellKey } from "@/domain/training/matrix";
 
 export default async function RequirementsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { tenant, canManage } = await loadTrainingAccess(slug);
-  const [matrix, review] = await Promise.all([loadMatrix(tenant.id), getMatrixReview(tenant.id)]);
+  const [matrix, review, members, ownerUserId] = await Promise.all([
+    loadMatrix(tenant.id),
+    getMatrixReview(tenant.id),
+    canManage ? listTenantMembers(tenant.id) : Promise.resolve([]),
+    canManage ? getTrainingOwnerUserId(tenant.id) : Promise.resolve(null),
+  ]);
 
   if (matrix.courses.length === 0) {
     return (
@@ -70,6 +78,15 @@ export default async function RequirementsPage({ params }: { params: Promise<{ s
         )}
         {canManage ? <ReviewStamp slug={slug} /> : null}
       </SectionBlock>
+
+      {canManage ? (
+        <SectionBlock
+          title="Avisos de vencimiento"
+          what="Un aviso por persona con lo que vence o falta, no uno por curso. Se actualiza solo cuando se registra una capacitación."
+        >
+          <OwnerForm slug={slug} members={members.map((m) => ({ id: m.user.id, name: m.user.name }))} current={ownerUserId} />
+        </SectionBlock>
+      ) : null}
     </div>
   );
 }

@@ -6,14 +6,24 @@ import { listCourses } from "@/lib/training-config";
 import { listJobPositions, listSites } from "@/lib/masterdata";
 import { listTenantMembers } from "@/lib/identity";
 import { trainingToday } from "@/lib/training";
+import { getPlannedSession } from "@/lib/training-plan";
 import { EmptyState, SectionBlock } from "@/components/ui";
 
-export default async function NewSessionPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function NewSessionPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ planned?: string }>;
+}) {
   const { slug } = await params;
+  const { planned: plannedId } = await searchParams;
   const { tenant, canRecord } = await loadTrainingAccess(slug);
   if (!canRecord) notFound();
   const [courses, sites, positions, members] = await Promise.all([listCourses(tenant.id), listSites(tenant.id), listJobPositions(tenant.id), listTenantMembers(tenant.id)]);
   const base = `/t/${slug}/training`;
+  const planned = plannedId ? await getPlannedSession(tenant.id, plannedId) : null;
+  if (plannedId && !planned) notFound();
 
   return (
     <div className="flex flex-col gap-4">
@@ -33,6 +43,7 @@ export default async function NewSessionPage({ params }: { params: Promise<{ slu
             sites={sites.map((s) => ({ id: s.id, name: s.name }))}
             positions={positions.map((p) => ({ id: p.id, name: p.name }))}
             members={members.map((m) => ({ id: m.user.id, name: m.user.name }))}
+            planned={planned}
           />
         )}
       </SectionBlock>

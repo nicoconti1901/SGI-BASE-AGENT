@@ -31,7 +31,7 @@ export async function audit(
     tenantId: string;
     entityType: string;
     entityId: string;
-    action: "create" | "update" | "deactivate" | "reactivate" | "import" | "delete" | "review" | "recalculate" | "register" | "void" | "attach";
+    action: "create" | "update" | "deactivate" | "reactivate" | "import" | "delete" | "review" | "recalculate" | "register" | "void" | "attach" | "plan" | "evaluate" | "settings";
     actorUserId: string | null;
     summary: string;
     reason?: string | null;
