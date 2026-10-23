@@ -23,7 +23,8 @@ export type AuthzAction =
   | "manage_assets"
   | "import_assets"
   | "manage_inspection_templates"
-  | "release_assets";
+  | "release_assets"
+  | "manage_calibration";
 
 /**
  * Política documentada (Task 6):
@@ -47,6 +48,8 @@ export type AuthzAction =
  *   proceso; registrar sesiones y registros (`record_training`) además el colaborador
  * - Inspecciones (SPEC-inspections): activos (alta, edición, baja) y liberar un activo, admin y responsable de proceso;
  *   importar activos y editar plantillas, solo el admin. Registrar inspecciones usa «write».
+ * - Equipos de medición (SPEC-calibration): configurar el equipo (regla, EMP, intervalos), anular registros y completar
+ *   evaluaciones de impacto (`manage_calibration`) admin y responsable de proceso. Cargar calibraciones usa «write».
  */
 const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
   viewer: ["read"],
@@ -67,6 +70,7 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "record_training",
     "manage_assets",
     "release_assets",
+    "manage_calibration",
   ],
   tenant_admin: [
     "read",
@@ -92,6 +96,7 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "import_assets",
     "manage_inspection_templates",
     "release_assets",
+    "manage_calibration",
   ],
 };
 

@@ -164,6 +164,10 @@ model Tenant {
   inspections           Inspection[]
   inspectionPlans       InspectionPlan[]
   inspectionAudits      InspectionAudit[]
+  instrumentControls    InstrumentControl[]
+  calibRecords          CalibrationRecord[]
+  impacts               ImpactAssessment[]
+  instrumentShipments   InstrumentShipment[]
 
   @@map("tenant")
 }
@@ -517,6 +521,8 @@ model Finding {
   supplierLink      SupplierFinding?
   /// Inspección que lo originó (Task 15): el vínculo vive en Inspection.findingId.
   inspection        Inspection?
+  /// Evaluación de impacto de una calibración que lo originó (Task 16): el vínculo vive en ImpactAssessment.findingId.
+  impactAssessment  ImpactAssessment?
 
   @@index([tenantId, status])
   @@index([tenantId, type])
@@ -828,6 +834,7 @@ model Action {
   trainingEffectiveness TrainingEffectiveness[]
   /// Inspección que la originó (Task 15): el vínculo vive en Inspection.actionId.
   inspection            Inspection?
+  impactLinks           ImpactAction[]
 
   @@index([tenantId, status])
   @@index([ownerUserId])
@@ -2260,6 +2267,12 @@ model Asset {
   inspections       Inspection[]
   plans             InspectionPlan[]
   attachments       InspectionAttachment[]
+  // Task 16 (equipos de medición): control metrológico y sus registros.
+  instrControl      InstrumentControl?
+  calibRecords      CalibrationRecord[]
+  refForRecords     CalibrationRecord[]    @relation("CalibrationReferenceStandard")
+  impacts           ImpactAssessment[]
+  shipments         InstrumentShipment[]
 
   @@unique([tenantId, code])
   @@index([tenantId, typeKey, status])
@@ -2558,4 +2571,275 @@ model InspectionAudit {
   @@index([tenantId, createdAt])
   @@index([tenantId, entityType, entityId])
   @@map("inspection_audit")
+}
+
+// ─── Task 16: equipos de medición y calibraciones (SPEC-calibration.md) ────────────────────────────
+
+enum CalibrationKind {
+  calibration
+  verification
+}
+
+enum CalibrationRecordStatus {
+  draft
+  closed
+  voided
+}
+
+enum CalibrationTraceability {
+  nmi
+  accredited_lab
+  other_lab
+  in_house
+}
+
+enum CalibrationDecisionRule {
+  guard_band
+  simple_acceptance
+  certificate_statement
+}
+
+enum CalibrationBasis {
+  points
+  certificate_statement
+}
+
+enum CalibrationLabStatement {
+  conforme
+  no_conforme
+}
+
+enum CalibrationResult {
+  apt
+  not_apt
+}
+
+enum CalibrationAsFoundResult {
+  apt
+  not_apt
+  not_evaluated
+}
+
+enum CalibrationStage {
+  as_found
+  as_left
+}
+
+enum ImpactAssessmentTrigger {
+  as_found_not_apt
+  adjusted_without_as_found
+  functional_check_failed
+}
+
+enum ImpactAssessmentStatus {
+  pending
+  completed
+}
+
+enum ImpactAssessmentOutcome {
+  no_affected_results
+  affected_results_actioned
+  cannot_determine
+}
+
+/// Control metrológico del equipo (1:1 con Asset de tipo measuring_equipment). Las columnas «derivadas» las escribe
+/// recomputeInstrumentControl y se pueden reconstruir siempre desde los registros; nadie las edita.
+model InstrumentControl {
+  id                         String                  @id @default(cuid())
+  tenantId                   String
+  assetId                    String                  @unique
+  /// Clave de la magnitud en el catálogo del código (src/domain/calibration/types.ts).
+  magnitude                  String
+  isReferenceStandard        Boolean                 @default(false)
+  criticalUse                Boolean                 @default(false)
+  criticalUseReason          String?
+  requiresCalibration        Boolean                 @default(false)
+  calibrationIntervalMonths  Int?
+  requiresVerification       Boolean                 @default(false)
+  verificationIntervalMonths Int?
+  intervalReason             String?
+  /// Obligatoria si no se exige ni calibración ni verificación.
+  noControlReason            String?
+  decisionRule               CalibrationDecisionRule @default(guard_band)
+  decisionRuleReason         String?
+  alertLeadDays              Int                     @default(30)
+  /// Canales (sensor/magnitud/unidad/rango/EMP), validado con zod.
+  channels                   Json                    @default("[]")
+  // Derivadas
+  calibrationValidUntil      DateTime?               @db.Date
+  verificationValidUntil     DateTime?               @db.Date
+  /// El menor de los vencimientos exigidos.
+  nextDueAt                  DateTime?               @db.Date
+  lastDecision               CalibrationResult?
+  impactPending              Boolean                 @default(false)
+  inCalibrationSince         DateTime?               @db.Date
+  expectedReturnAt           DateTime?               @db.Date
+  createdAt                  DateTime                @default(now())
+  updatedAt                  DateTime                @updatedAt
+  tenant                     Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  asset                      Asset                   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, nextDueAt])
+  @@index([tenantId, magnitude])
+  @@index([tenantId, impactPending])
+  @@map("instrument_control")
+}
+
+/// Calibración o verificación de un equipo. Cerrado no se edita: se anula con motivo y se vuelve a cargar.
+model CalibrationRecord {
+  id                       String                    @id @default(cuid())
+  tenantId                 String
+  assetId                  String
+  kind                     CalibrationKind
+  status                   CalibrationRecordStatus   @default(draft)
+  voidReason               String?
+  voidedByUserId           String?
+  voidedAt                 DateTime?
+  /// Fecha de ejecución (de ahí corre la vigencia), no la del certificado.
+  performedAt              DateTime                  @db.Date
+  certificateNumber        String?
+  certificateIssuedAt      DateTime?                 @db.Date
+  labName                  String
+  traceability             CalibrationTraceability
+  accreditationBody        String?
+  accreditationNumber      String?
+  accreditationScopeCovers Boolean?
+  traceabilityBasis        String?
+  /// Patrón usado en una verificación interna: otro equipo registrado.
+  referenceStandardAssetId String?
+  conditions               String?
+  adjusted                 Boolean                   @default(false)
+  /// Snapshot de la regla al cerrar: cambiar el equipo después no cambia este resultado.
+  ruleApplied              CalibrationDecisionRule
+  ruleReasonApplied        String?
+  basis                    CalibrationBasis          @default(points)
+  labStatement             CalibrationLabStatement?
+  labStatementSpec         String?
+  labDecisionRule          String?
+  // Resultados calculados al cerrar
+  asFoundResult            CalibrationAsFoundResult?
+  asLeftResult             CalibrationResult?
+  intervalMonthsApplied    Int?
+  validUntil               DateTime?                 @db.Date
+  loadedByUserId           String
+  closedAt                 DateTime?
+  notes                    String?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  asset                    Asset                     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  referenceStandard        Asset?                    @relation("CalibrationReferenceStandard", fields: [referenceStandardAssetId], references: [id], onDelete: SetNull)
+  points                   CalibrationPoint[]
+  attachments              CalibrationAttachment[]
+  impactAssessment         ImpactAssessment?
+
+  @@index([tenantId, assetId, performedAt(sort: Desc)])
+  @@index([tenantId, status])
+  @@index([referenceStandardAssetId])
+  @@map("calibration_record")
+}
+
+/// Un punto medido. nominal/medido/incertidumbre los carga la persona; error, EMP y «pasa» se calculan al cerrar.
+model CalibrationPoint {
+  id          String            @id @default(cuid())
+  tenantId    String
+  recordId    String
+  channelKey  String
+  stage       CalibrationStage  @default(as_found)
+  nominal     Decimal           @db.Decimal(20, 8)
+  measured    Decimal           @db.Decimal(20, 8)
+  uncertainty Decimal?          @db.Decimal(20, 8)
+  coverageK   Decimal?          @db.Decimal(6, 2)
+  error       Decimal?          @db.Decimal(20, 8)
+  empApplied  Decimal?          @db.Decimal(20, 8)
+  unit        String?
+  ok          Boolean?
+  /// within | error_exceeds_emp | in_guard_band | uncertainty_exceeds_emp | missing_uncertainty | emp_zero_at_point
+  reason      String?
+  sortOrder   Int               @default(0)
+  record      CalibrationRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@index([recordId, stage, sortOrder])
+  @@index([tenantId, recordId])
+  @@map("calibration_point")
+}
+
+/// Certificado (PDF o imagen) en el storage S3; mismo patrón que FindingAttachment.
+model CalibrationAttachment {
+  id           String            @id @default(cuid())
+  tenantId     String
+  recordId     String
+  storageKey   String
+  fileName     String
+  contentType  String
+  sizeBytes    Int
+  uploadedById String?
+  createdAt    DateTime          @default(now())
+  record       CalibrationRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, recordId])
+  @@map("calibration_attachment")
+}
+
+/// Evaluación del impacto de mediciones pasadas cuando el equipo estaba fuera de tolerancia (ISO 9001 §7.1.5.2).
+model ImpactAssessment {
+  id                String                   @id @default(cuid())
+  tenantId          String
+  assetId           String
+  triggerRecordId   String?                  @unique
+  trigger           ImpactAssessmentTrigger
+  /// Fecha del último registro apto; nulo = desde que se empezó a usar.
+  windowFrom        DateTime?                @db.Date
+  windowTo          DateTime                 @db.Date
+  status            ImpactAssessmentStatus   @default(pending)
+  outcome           ImpactAssessmentOutcome?
+  affectedSummary   String?
+  rationale         String?
+  completedByUserId String?
+  completedAt       DateTime?
+  findingId         String?                  @unique
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  tenant            Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  asset             Asset                    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  triggerRecord     CalibrationRecord?       @relation(fields: [triggerRecordId], references: [id], onDelete: SetNull)
+  finding           Finding?                 @relation(fields: [findingId], references: [id], onDelete: SetNull)
+  actions           ImpactAction[]
+
+  @@index([tenantId, assetId])
+  @@index([tenantId, status])
+  @@map("impact_assessment")
+}
+
+/// Seguimiento (Action existente) de una evaluación de impacto.
+model ImpactAction {
+  id                 String           @id @default(cuid())
+  tenantId           String
+  impactAssessmentId String
+  actionId           String
+  createdAt          DateTime         @default(now())
+  impactAssessment   ImpactAssessment @relation(fields: [impactAssessmentId], references: [id], onDelete: Cascade)
+  action             Action           @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@unique([impactAssessmentId, actionId])
+  @@index([actionId])
+  @@map("impact_assessment_action")
+}
+
+/// Envío del equipo al laboratorio. Mientras returnedAt es nulo el equipo está «en calibración».
+model InstrumentShipment {
+  id               String    @id @default(cuid())
+  tenantId         String
+  assetId          String
+  sentAt           DateTime  @db.Date
+  expectedReturnAt DateTime? @db.Date
+  returnedAt       DateTime? @db.Date
+  labName          String?
+  createdByUserId  String?
+  createdAt        DateTime  @default(now())
+  tenant           Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  asset            Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, assetId, sentAt(sort: Desc)])
+  @@map("instrument_shipment")
 }
