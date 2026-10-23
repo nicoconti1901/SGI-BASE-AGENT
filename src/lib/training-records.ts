@@ -442,7 +442,8 @@ export async function listSessions(tenantId: string, filter: { courseId?: string
       ? { OR: [{ heldAt: { lt: dateFromIso(afterDate) } }, { heldAt: dateFromIso(afterDate), id: { lt: afterId } }] }
       : {};
   const rows = await db.trainingSession.findMany({
-    where: { tenantId, ...(filter.courseId ? { courseId: filter.courseId } : {}), ...(filter.siteId ? { siteId: filter.siteId } : {}), AND: [cursor] },
+    // Las planificadas viven en la pestaña Plan; acá solo lo dictado (y lo anulado).
+    where: { tenantId, status: { not: "planned" }, ...(filter.courseId ? { courseId: filter.courseId } : {}), ...(filter.siteId ? { siteId: filter.siteId } : {}), AND: [cursor] },
     orderBy: [{ heldAt: "desc" }, { id: "desc" }],
     take: take + 1,
     include: {

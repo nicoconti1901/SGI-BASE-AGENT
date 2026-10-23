@@ -26,7 +26,7 @@ import {
   type CourseModalityValue,
 } from "@/domain/training/courses";
 import { MATRIX_MAX_CHANGES, type MatrixChange } from "@/domain/training/matrix";
-import { reconcileSafely, setTrainingOwner } from "@/lib/training-followup";
+import { reconcileSafely } from "@/lib/training-followup";
 
 export type TrainingActionState = { error?: string; ok?: string };
 

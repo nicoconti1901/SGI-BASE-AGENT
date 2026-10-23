@@ -18,6 +18,8 @@ export default async function TrainingLayout({ children, params }: LayoutProps<"
           { href: base, label: "Resumen" },
           { href: `${base}/compliance`, label: "Cumplimiento" },
           { href: `${base}/sessions`, label: "Sesiones" },
+          { href: `${base}/effectiveness`, label: "Eficacia" },
+          { href: `${base}/plan`, label: "Plan anual" },
           { href: `${base}/courses`, label: "Cursos" },
           { href: `${base}/requirements`, label: "Requisitos" },
         ]}

@@ -10,6 +10,7 @@ import { prisma } from "@/lib/db";
 import { TrainingError, audit } from "@/lib/training-config";
 import { trainingToday } from "@/lib/training";
 import { addDays, dateOnly, isIsoDate, type IsoDate } from "@/domain/training/dates";
+import { PLAN_LEVEL_LABELS } from "@/domain/training/plan-labels";
 
 type Db = PrismaClient;
 
@@ -194,12 +195,6 @@ export async function listPlanSessions(
     instructorName: r.instructorName,
   }));
 }
-
-export const PLAN_LEVEL_LABELS = {
-  senior: "Nivel superior",
-  middle: "Nivel intermedio",
-  operational: "Nivel operativo",
-} as const;
 
 /** CSV del plan para imprimir y firmar (lo firmado se sube a Documentos). */
 export function planToCsv(rows: readonly PlanSessionRow[], siteLabel: string): string {
