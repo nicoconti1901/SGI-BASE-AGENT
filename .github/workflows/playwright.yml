@@ -46,7 +46,9 @@ jobs:
         npm run db:seed
         npm run db:seed:demo
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps chromium
+      # Los espejos de apt fallan o se cancelan de vez en cuando: un reintento evita rehacer todo el job.
+      timeout-minutes: 15
+      run: npx playwright install --with-deps chromium || (sleep 20 && npx playwright install --with-deps chromium)
     - name: Run Playwright tests
       run: npx playwright test
     - uses: actions/upload-artifact@v4
