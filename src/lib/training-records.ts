@@ -10,6 +10,7 @@ import { getObjectStorage } from "@/lib/storage";
 import type { ObjectStorage } from "@/lib/storage/types";
 import { TrainingError, audit } from "@/lib/training-config";
 import { loadPersonTrainingData, trainingToday } from "@/lib/training";
+import { reconcileSafely } from "@/lib/training-followup";
 import { cleanName, normalizeKey } from "@/domain/masterdata/roster";
 import { addDays, isIsoDate, dateOnly, type IsoDate } from "@/domain/training/dates";
 import { computeTrainingStatus, computeValidUntil, isQualifiedForTask, summarizeCompliance } from "@/domain/training/rules";
@@ -91,6 +92,8 @@ export type SessionInput = {
   /** Quien evalúa la eficacia, si el curso la pide. */
   evaluatorUserId?: string | null;
   notes?: string | null;
+  /** Sesión del plan anual que se está dictando: se completa en lugar de crear otra. */
+  plannedSessionId?: string | null;
   attendees: AttendeeInput[];
 };
 
@@ -111,6 +114,18 @@ export async function registerSession(input: SessionInput, db: Db = prisma) {
   if (input.hours !== null && input.hours !== undefined && !(input.hours > 0 && input.hours <= 999)) throw new TrainingError("La duración tiene que ser mayor que 0");
   const scores = input.attendees.map((a) => checkScore(a.score));
 
+  const planned = input.plannedSessionId
+    ? await db.trainingSession.findFirst({
+        where: { id: input.plannedSessionId, tenantId: input.tenantId },
+        select: { id: true, courseId: true, status: true, voidedAt: true },
+      })
+    : null;
+  if (input.plannedSessionId) {
+    if (!planned || planned.status !== "planned" || planned.voidedAt) {
+      throw new TrainingError("La sesión planificada ya no está pendiente: revisá el plan");
+    }
+    if (planned.courseId !== input.courseId) throw new TrainingError("El curso no coincide con el de la sesión planificada");
+  }
   const course = await requireCourse(db, input.tenantId, input.courseId);
   await requireActivePeople(db, input.tenantId, ids);
   if (input.siteId) {
@@ -119,27 +134,38 @@ export async function registerSession(input: SessionInput, db: Db = prisma) {
   }
   const evaluatorUserId = await requireMember(db, input.tenantId, input.evaluatorUserId, "El evaluador");
 
+  let outcome: { sessionId: string; records: number };
   try {
-    return await db.$transaction(
+    outcome = await db.$transaction(
       async (tx) => {
-        const session = await tx.trainingSession.create({
-          data: {
-            tenantId: input.tenantId,
-            courseId: course.id,
-            status: "held",
-            heldAt: dateFromIso(heldAt),
-            siteId: input.siteId || null,
-            level: input.level ?? null,
-            instructorKind: input.instructorKind,
-            instructorName,
-            providerName: cleanName(input.providerName ?? "") || null,
-            hours: input.hours ?? course.defaultHours ?? null,
-            evaluatorUserId,
-            notes: input.notes?.trim() || null,
-            createdByUserId: input.actorUserId,
-          },
-          select: { id: true },
-        });
+        const sessionData = {
+          status: "held" as const,
+          heldAt: dateFromIso(heldAt),
+          siteId: input.siteId || null,
+          level: input.level ?? null,
+          instructorKind: input.instructorKind,
+          instructorName,
+          providerName: cleanName(input.providerName ?? "") || null,
+          hours: input.hours ?? course.defaultHours ?? null,
+          evaluatorUserId,
+          notes: input.notes?.trim() || null,
+        };
+        let session: { id: string };
+        if (planned) {
+          // Completa la sesión del plan solo si sigue pendiente (otro usuario pudo haberla completado).
+          const done = await tx.trainingSession.updateMany({
+            where: { id: planned.id, tenantId: input.tenantId, status: "planned", voidedAt: null },
+            // Lo que el plan ya definía (sede, nivel) se conserva si el formulario no lo trae.
+            data: { ...sessionData, siteId: input.siteId || undefined, level: input.level ?? undefined },
+          });
+          if (done.count === 0) throw new TrainingError("La sesión planificada ya no está pendiente: revisá el plan");
+          session = { id: planned.id };
+        } else {
+          session = await tx.trainingSession.create({
+            data: { tenantId: input.tenantId, courseId: course.id, createdByUserId: input.actorUserId, ...sessionData },
+            select: { id: true },
+          });
+        }
         const validUntil = computeValidUntil(heldAt, course.validityMonths);
         const records = await tx.trainingRecord.createManyAndReturn({
           data: input.attendees.map((a, i) => ({
@@ -179,6 +205,8 @@ export async function registerSession(input: SessionInput, db: Db = prisma) {
   } catch (error) {
     return uniqueToError(error);
   }
+  await reconcileSafely(input.tenantId, { personIds: ids, sessionIds: [outcome.sessionId] }, db);
+  return outcome;
 }
 
 // ─── Carga individual de un certificado ────────────────────────────────────
@@ -214,8 +242,9 @@ export async function addIndividualRecord(input: IndividualRecordInput, db: Db =
   const evaluatorUserId = await requireMember(db, input.tenantId, input.evaluatorUserId, "El evaluador");
 
   const validUntil = input.result === "passed" ? (certificateDue ?? computeValidUntil(completedAt, course.validityMonths)) : null;
+  let created: { id: string };
   try {
-    return await db.$transaction(async (tx) => {
+    created = await db.$transaction(async (tx) => {
       const record = await tx.trainingRecord.create({
         data: {
           tenantId: input.tenantId,
@@ -252,6 +281,8 @@ export async function addIndividualRecord(input: IndividualRecordInput, db: Db =
   } catch (error) {
     return uniqueToError(error);
   }
+  await reconcileSafely(input.tenantId, { personIds: [input.personId], recordIds: [created.id] }, db);
+  return created;
 }
 
 // ─── Anulación con motivo ──────────────────────────────────────────────────
@@ -265,7 +296,7 @@ function checkReason(reason: string): string {
 /** Un registro anulado no cuenta para nada, pero queda en el historial con quién y por qué. */
 export async function voidRecord(input: { tenantId: string; actorUserId: string; recordId: string; reason: string }, db: Db = prisma) {
   const reason = checkReason(input.reason);
-  return db.$transaction(async (tx) => {
+  const voided = await db.$transaction(async (tx) => {
     const record = await tx.trainingRecord.findFirst({ where: { id: input.recordId, tenantId: input.tenantId }, include: { course: { select: { name: true } } } });
     if (!record) throw new TrainingError("Registro no encontrado");
     if (record.voidedAt) throw new TrainingError("El registro ya está anulado");
@@ -277,12 +308,18 @@ export async function voidRecord(input: { tenantId: string; actorUserId: string;
     await audit(tx, { tenantId: input.tenantId, entityType: "training_record", entityId: record.id, action: "void", actorUserId: input.actorUserId, summary: `Registro de «${record.course.name}» anulado`, reason });
     return record;
   });
+  await reconcileSafely(
+    input.tenantId,
+    { personIds: [voided.personId], ...(voided.sessionId ? { sessionIds: [voided.sessionId] } : { recordIds: [voided.id] }) },
+    db,
+  );
+  return voided;
 }
 
 /** Anula la sesión y todos sus registros vigentes con el mismo motivo. */
 export async function voidSession(input: { tenantId: string; actorUserId: string; sessionId: string; reason: string }, db: Db = prisma) {
   const reason = checkReason(input.reason);
-  return db.$transaction(async (tx) => {
+  const outcome = await db.$transaction(async (tx) => {
     const session = await tx.trainingSession.findFirst({ where: { id: input.sessionId, tenantId: input.tenantId }, include: { course: { select: { name: true } } } });
     if (!session) throw new TrainingError("Sesión no encontrada");
     if (session.voidedAt) throw new TrainingError("La sesión ya está anulada");
@@ -291,7 +328,12 @@ export async function voidSession(input: { tenantId: string; actorUserId: string
       where: { id: session.id, tenantId: input.tenantId, voidedAt: null },
       data: { voidedAt: now, voidedByUserId: input.actorUserId, voidReason: reason, status: "cancelled" },
     });
-    if (done.count === 0) return { voidedRecords: 0 };
+    if (done.count === 0) return { voidedRecords: 0, personIds: [] as string[] };
+    const affected = await tx.trainingRecord.findMany({
+      where: { sessionId: session.id, tenantId: input.tenantId, voidedAt: null },
+      select: { personId: true },
+      take: MAX_ATTENDEES,
+    });
     const records = await tx.trainingRecord.updateMany({
       where: { sessionId: session.id, tenantId: input.tenantId, voidedAt: null },
       data: { voidedAt: now, voidedByUserId: input.actorUserId, voidReason: reason },
@@ -305,8 +347,10 @@ export async function voidSession(input: { tenantId: string; actorUserId: string
       summary: `Sesión «${session.course.name}» anulada con ${records.count} registro(s)`,
       reason,
     });
-    return { voidedRecords: records.count };
+    return { voidedRecords: records.count, personIds: affected.map((r) => r.personId) };
   });
+  await reconcileSafely(input.tenantId, { personIds: outcome.personIds, sessionIds: [input.sessionId] }, db);
+  return { voidedRecords: outcome.voidedRecords };
 }
 
 // ─── Adjuntos (planilla firmada, certificado) ──────────────────────────────
@@ -560,6 +604,8 @@ export async function applyTrainingImport(input: { tenantId: string; actorUserId
       ),
     );
   }
+  // Alta silenciosa: lo que ya estaba vencido o faltante no avisa; solo avisan las transiciones posteriores.
+  await reconcileSafely(input.tenantId, { silent: true }, db);
   await audit(db, {
     tenantId: input.tenantId,
     entityType: "training_record",

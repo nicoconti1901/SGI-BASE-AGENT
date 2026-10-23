@@ -16,16 +16,18 @@ export type SessionFormProps = {
   sites: Option[];
   positions: Option[];
   members: Option[];
+  /** Sesión del plan anual que se está dictando: curso, sede y nivel vienen del plan. */
+  planned?: { id: string; courseId: string; heldAt: string; siteId: string | null; level: string | null } | null;
 };
 
 /** Alta de una sesión: curso y datos, asistentes tildados por sede o puesto, resultado de cada uno y planilla. */
-export function SessionForm({ slug, today, courses, sites, positions, members }: SessionFormProps) {
+export function SessionForm({ slug, today, courses, sites, positions, members, planned = null }: SessionFormProps) {
   const router = useRouter();
   const sheetRef = useRef<HTMLInputElement>(null);
-  const [courseId, setCourseId] = useState(courses[0]?.id ?? "");
-  const [heldAt, setHeldAt] = useState(today);
-  const [siteId, setSiteId] = useState("");
-  const [level, setLevel] = useState("");
+  const [courseId, setCourseId] = useState(planned?.courseId ?? courses[0]?.id ?? "");
+  const [heldAt, setHeldAt] = useState(planned && planned.heldAt < today ? planned.heldAt : today);
+  const [siteId, setSiteId] = useState(planned?.siteId ?? "");
+  const [level, setLevel] = useState(planned?.level ?? "");
   const [instructorKind, setInstructorKind] = useState<"internal" | "external">("internal");
   const [instructorName, setInstructorName] = useState("");
   const [providerName, setProviderName] = useState("");
@@ -90,6 +92,7 @@ export function SessionForm({ slug, today, courses, sites, positions, members }:
     if (!course) return setError("Elegí el curso");
     start(async () => {
       const result = await registerSessionAction(slug, {
+        plannedSessionId: planned?.id ?? null,
         courseId,
         heldAt,
         siteId: siteId || null,
@@ -121,7 +124,7 @@ export function SessionForm({ slug, today, courses, sites, positions, members }:
     <div className="flex flex-col gap-6">
       <section aria-label="Datos de la sesión" className="grid gap-3 sm:grid-cols-2">
         <Field label="Curso" required>
-          <select value={courseId} onChange={(e) => setCourseId(e.target.value)} className={INPUT_CLASS}>
+          <select value={courseId} onChange={(e) => setCourseId(e.target.value)} disabled={Boolean(planned)} className={INPUT_CLASS}>
             {courses.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}

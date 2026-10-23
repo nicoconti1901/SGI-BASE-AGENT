@@ -26,6 +26,7 @@ import {
   type CourseModalityValue,
 } from "@/domain/training/courses";
 import { MATRIX_MAX_CHANGES, type MatrixChange } from "@/domain/training/matrix";
+import { reconcileSafely, setTrainingOwner } from "@/lib/training-followup";
 
 export type TrainingActionState = { error?: string; ok?: string };
 
@@ -128,6 +129,7 @@ export async function recalculateCourseValidityAction(
   const { ctx, tenant } = access;
   try {
     const { updated } = await recalculateCourseValidity({ tenantId: tenant.id, actorUserId: ctx.userId, courseId: id });
+    if (updated > 0) await reconcileSafely(tenant.id, { silent: true, onlyPeople: true });
     revalidatePath(`/t/${slug}/training`, "layout");
     return { ok: updated === 0 ? "No había vencimientos para actualizar" : `Se actualizaron ${updated} registro(s)` };
   } catch (error) {
@@ -183,6 +185,8 @@ export async function saveRequirementsAction(slug: string, changes: MatrixChange
   const { ctx, tenant } = access;
   try {
     const r = await applyRequirementChanges({ tenantId: tenant.id, actorUserId: ctx.userId, changes: sanitizeChanges(changes) });
+    // Requisitos nuevos en lote: lo que ya estaba vencido o faltante no avisa, solo las transiciones posteriores.
+    await reconcileSafely(tenant.id, { silent: true, onlyPeople: true });
     revalidatePath(`/t/${slug}/training`, "layout");
     return { ok: `Matriz guardada: ${r.created} alta(s), ${r.updated} cambio(s), ${r.removed} baja(s)` };
   } catch (error) {

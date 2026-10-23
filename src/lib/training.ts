@@ -176,7 +176,7 @@ export type ComplianceCell = {
  * - el estado sale de un CASE con `today` como parámetro.
  * Siempre filtra por `tenantId` como primer predicado.
  */
-function cellsCte(tenantId: string, s: ComplianceScope): Prisma.Sql {
+export function cellsCte(tenantId: string, s: ComplianceScope): Prisma.Sql {
   const tz = s.timeZone ?? DEFAULT_TIME_ZONE;
   const today = Prisma.sql`${s.today}::date`;
   const personFilters: Prisma.Sql[] = [Prisma.sql`p."tenantId" = ${tenantId}`, Prisma.sql`p."status" = 'active'`];
@@ -232,6 +232,7 @@ function cellsCte(tenantId: string, s: ComplianceScope): Prisma.Sql {
     ),
     cells AS (
       SELECT rq.person_id, s."siteId" AS site_id, rq."courseId", rq.mandatory, b."validUntil" AS valid_until,
+             rq.grace_end, c."reminderDays" AS reminder_days,
              (b."id" IS NOT NULL) AS has_record,
              COALESCE(NULLIF(e."status"::text, 'not_applicable'), 'n/a') AS effectiveness,
              CASE

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { scanDueReminders } from "@/lib/automation";
+import { runDueScan } from "@/lib/due-scan";
 import { verifyAutomationSecret } from "@/lib/automation-webhook";
 
 /**
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
   const startedAt = Date.now();
   try {
-    const result = await scanDueReminders();
+    const result = await runDueScan();
     console.info(
       JSON.stringify({
         event: "automation.scan.succeeded",
