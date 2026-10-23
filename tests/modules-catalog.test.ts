@@ -43,10 +43,10 @@ describe("catálogo de módulos", () => {
   it("una activación pisa el valor por defecto, pero un planificado nunca se activa", () => {
     const enabled = enabledModuleKeys([
       { moduleKey: "risks", enabled: false },
-      { moduleKey: "instruments", enabled: true },
+      { moduleKey: "road_safety", enabled: true },
     ]);
     expect(enabled.has("risks")).toBe(false);
-    expect(enabled.has("instruments")).toBe(false);
+    expect(enabled.has("road_safety")).toBe(false);
   });
 
   it("Usuarios no se puede desactivar", () => {
