@@ -141,6 +141,8 @@ export type SafetySettings = {
   lostDaysCap: number;
   exposureDueDay: number;
   showOptionalIndices: boolean;
+  /** Quien recibe el aviso de carga de la exposición (sin definir: los administradores). */
+  exposureOwnerUserId: string | null;
 };
 
 export const DEFAULT_SAFETY_SETTINGS: SafetySettings = {
@@ -149,6 +151,7 @@ export const DEFAULT_SAFETY_SETTINGS: SafetySettings = {
   lostDaysCap: 365,
   exposureDueDay: 10,
   showOptionalIndices: false,
+  exposureOwnerUserId: null,
 };
 
 /** Clave de mes "AAAA-MM". */
