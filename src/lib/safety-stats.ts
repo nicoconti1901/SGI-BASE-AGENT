@@ -87,6 +87,7 @@ export async function getSafetySettings(tenantId: string, db: Db = prisma): Prom
     lostDaysCap: row.lostDaysCap,
     exposureDueDay: row.exposureDueDay,
     showOptionalIndices: row.showOptionalIndices,
+    exposureOwnerUserId: row.exposureOwnerUserId,
   };
 }
 
@@ -100,12 +101,17 @@ export async function updateSafetySettings(
   if (!Number.isInteger(s.fatalChargeDays) || s.fatalChargeDays < 0) throw new SafetyStatsError("El cargo por fatal es 0 o más días");
   if (!Number.isInteger(s.lostDaysCap) || s.lostDaysCap < 1 || s.lostDaysCap > 3650) throw new SafetyStatsError("El tope de días va entre 1 y 3.650");
   if (!Number.isInteger(s.exposureDueDay) || s.exposureDueDay < 1 || s.exposureDueDay > 28) throw new SafetyStatsError("El día de vencimiento va entre 1 y 28");
+  if (s.exposureOwnerUserId) {
+    const member = await db.membership.findFirst({ where: { tenantId: input.tenantId, userId: s.exposureOwnerUserId }, select: { userId: true } });
+    if (!member) throw new SafetyStatsError("El responsable de la carga no pertenece a la empresa");
+  }
   const data = {
     fatalChargeDays: s.fatalChargeDays,
     severityBase: s.severityBase,
     lostDaysCap: s.lostDaysCap,
     exposureDueDay: s.exposureDueDay,
     showOptionalIndices: s.showOptionalIndices,
+    exposureOwnerUserId: s.exposureOwnerUserId,
   };
   await db.safetyStatsSettings.upsert({
     where: { tenantId: input.tenantId },
@@ -755,7 +761,17 @@ export async function syncFollowUpDueItem(tenantId: string, incidentRecordId: st
 export const INCIDENT_PAGE_SIZE = 25;
 
 export async function listIncidents(
-  input: { tenantId: string; page?: number; classification?: IncidentClassification; siteId?: string; includeCancelled?: boolean },
+  input: {
+    tenantId: string;
+    page?: number;
+    classification?: IncidentClassification;
+    siteId?: string;
+    includeCancelled?: boolean;
+    /** Solo los casos con baja que siguen sin fecha de reintegro. */
+    open?: boolean;
+    /** Solo los casos con lesión a los que les falta la ficha de salud. */
+    incomplete?: boolean;
+  },
   db: Db = prisma,
 ) {
   const page = Math.max(input.page ?? 1, 1);
@@ -763,6 +779,8 @@ export async function listIncidents(
     tenantId: input.tenantId,
     ...(input.classification ? { classification: input.classification } : {}),
     ...(input.siteId ? { siteId: input.siteId } : {}),
+    ...(input.open ? { classification: "lost_time", returnToWorkDate: null } : {}),
+    ...(input.incomplete ? { classification: { in: [...INJURY_CLASSIFICATIONS] }, health: { is: null } } : {}),
     ...(input.includeCancelled ? {} : { finding: { status: { not: "cancelled" } } }),
   };
   const [total, rows] = await Promise.all([
