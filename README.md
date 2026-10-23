@@ -122,7 +122,7 @@ Los permisos son `manage_master_data` y `assign_job_tasks` en `src/domain/identi
 - **Task 11c** — hecha: objetivos e indicadores con carga por período, análisis de desvío, tablero con tendencias y guía (`/t/[slug]/indicators`).  
 - **Task 11d** — hecha: auditorías externas con informe PDF adjunto, hallazgos manuales y extracción con IA con revisión humana (ver `SPEC-external-audits.md`; requiere `ANTHROPIC_API_KEY`).  
 - **Task 12+** — portal cliente / dashboards / E2E.  
-- **Fase 5** — operación SST, proveedores y competencia (Tasks 14–20, ver `tasks/todo.md`). Task 14 (datos maestros) hecha; sigue 15 (inspecciones).
+- **Fase 5** — operación SST, proveedores y competencia (Tasks 14–20, ver `tasks/todo.md`). Hechas la Task 14 (datos maestros) y la Task 20 (capacitaciones); en curso 15 (inspecciones: motor, extintores, consecuencias y lista), 16 (equipos de medición: dominio y lista), 17 (accidentabilidad: dominio y ficha) y 19 (proveedores: registro y evaluación).
 
 ---
 
@@ -301,7 +301,7 @@ El menú de cada empresa se agrupa por secciones y muestra solo los módulos act
 | Cumplimiento | Documentos · Auditorías internas y externas | §7.5 · §9.2 |
 | Mejora | Hallazgos · Riesgos y oportunidades · Objetivos e indicadores | §10.2 · §6.1 · §6.2 y §9.1 |
 | Operación SST | Inspecciones, equipos de medición, accidentabilidad y seguridad vial (Fase 5, planificados) | 45001 §8.1 y §9.1.1 · 9001 §7.1.5.2 · 45001 §10.2 |
-| Personas y terceros | Datos maestros · Capacitaciones y proveedores (Fase 5, planificados) | §7.2–7.3 · 9001 §8.4 |
+| Personas y terceros | Datos maestros · Capacitaciones (matriz, registro, cumplimiento, eficacia, plan anual y habilitaciones) · Proveedores (Fase 5) | §7.2–7.3 · 9001 §8.4 |
 | Administración | Automatizaciones · Usuarios | — |
 
 Los vencimientos de todos los módulos se avisan con un resumen diario por persona: cada responsable recibe los suyos y el administrador de la empresa todos, agrupados por sede.  
