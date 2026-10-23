@@ -76,7 +76,7 @@ export function EvaluationForm({ slug, kind, id, today, suggestedReschedule, sug
 
   return (
     <div className="flex flex-col gap-6">
-      <section aria-label="Resultado general" className="grid gap-3 sm:grid-cols-2">
+      <section aria-label="Datos de la evaluación" className="grid gap-3 sm:grid-cols-2">
         <Field label="Resultado general" required>
           <select value={status} onChange={(e) => setStatus(e.target.value as EvaluationStatus)} className={INPUT_CLASS}>
             {(Object.keys(EVALUATION_STATUS_LABELS) as EvaluationStatus[]).map((s) => (

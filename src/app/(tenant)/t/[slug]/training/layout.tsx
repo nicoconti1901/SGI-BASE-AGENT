@@ -22,6 +22,7 @@ export default async function TrainingLayout({ children, params }: LayoutProps<"
           { href: `${base}/plan`, label: "Plan anual" },
           { href: `${base}/courses`, label: "Cursos" },
           { href: `${base}/requirements`, label: "Requisitos" },
+          { href: `${base}/guia`, label: "Guía" },
         ]}
       />
       {children}

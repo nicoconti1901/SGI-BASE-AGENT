@@ -15,10 +15,11 @@ import {
   dateOnly,
   type IsoDate,
 } from "@/domain/training/dates";
-import { computeTrainingStatus } from "@/domain/training/rules";
+import { computeTrainingStatus, isQualifiedForTask } from "@/domain/training/rules";
 import type {
   CourseStatus,
   EffectivenessOutcome,
+  TaskQualification,
   TrainingPerson,
   TrainingRecordInput,
   TrainingRequirement,
@@ -140,6 +141,133 @@ export async function getPersonTrainingStatus(
   const data = await loadPersonTrainingData(tenantId, personId, { timeZone: opts.timeZone }, db);
   if (!data) return null;
   return computeTrainingStatus(data.person, data.requirements, data.records, opts.today ?? trainingToday());
+}
+
+// ─── Habilitación para una tarea (20.6) ────────────────────────────────────
+
+/** Tope de personas por consulta de habilitación (un selector trae a lo sumo 20). */
+export const QUALIFICATION_MAX_PEOPLE = 100;
+
+/**
+ * ¿Está habilitada cada persona para una tarea? Mira solo los cursos obligatorios de la tarea (`isQualifiedForTask`).
+ * Son 4 consultas fijas sin importar cuántas personas se pidan. Devuelve `null` si la tarea no es de la empresa;
+ * las personas que no son de la empresa o están dadas de baja no figuran en el resultado.
+ */
+export async function getTaskQualifications(
+  tenantId: string,
+  personIds: string[],
+  taskId: string,
+  opts: { today?: IsoDate; timeZone?: string } = {},
+  db: Db = prisma,
+): Promise<Map<string, TaskQualification> | null> {
+  const tz = opts.timeZone ?? DEFAULT_TIME_ZONE;
+  const ids = [...new Set(personIds)].slice(0, QUALIFICATION_MAX_PEOPLE);
+  const task = await db.jobTask.findFirst({ where: { id: taskId, tenantId }, select: { id: true } });
+  if (!task) return null;
+  const result = new Map<string, TaskQualification>();
+  if (ids.length === 0) return result;
+
+  const people = await db.person.findMany({
+    where: { tenantId, id: { in: ids }, status: "active" },
+    select: {
+      id: true,
+      hiredAt: true,
+      positionId: true,
+      positionSince: true,
+      jobTasks: { select: { jobTaskId: true, assignedAt: true } },
+    },
+  });
+  if (people.length === 0) return result;
+
+  const positionIds = [...new Set(people.map((p) => p.positionId))];
+  const taskIds = [...new Set([taskId, ...people.flatMap((p) => p.jobTasks.map((t) => t.jobTaskId))])];
+  const [requirementRows, recordRows] = await Promise.all([
+    db.trainingRequirement.findMany({
+      where: {
+        tenantId,
+        OR: [
+          { targetKind: "all" },
+          { targetKind: "position", positionId: { in: positionIds } },
+          { targetKind: "task", jobTaskId: { in: taskIds } },
+        ],
+      },
+      select: {
+        courseId: true,
+        targetKind: true,
+        positionId: true,
+        jobTaskId: true,
+        mandatory: true,
+        graceDays: true,
+        effectiveFrom: true,
+        course: { select: { reminderDays: true } },
+      },
+      take: PERSON_ROWS_LIMIT,
+    }),
+    db.trainingRecord.findMany({
+      where: { tenantId, personId: { in: people.map((p) => p.id) } },
+      select: {
+        personId: true,
+        courseId: true,
+        completedAt: true,
+        result: true,
+        validUntil: true,
+        voidedAt: true,
+        effectiveness: { select: { status: true } },
+      },
+      orderBy: [{ completedAt: "desc" }, { id: "asc" }],
+      take: PERSON_ROWS_LIMIT * 4,
+    }),
+  ]);
+
+  const requirements: TrainingRequirement[] = requirementRows.map((r) => ({
+    courseId: r.courseId,
+    targetKind: r.targetKind,
+    positionId: r.positionId,
+    jobTaskId: r.jobTaskId,
+    mandatory: r.mandatory,
+    graceDays: r.graceDays,
+    effectiveFrom: dateOnly(r.effectiveFrom),
+    reminderDays: r.course.reminderDays,
+  }));
+  const recordsByPerson = new Map<string, TrainingRecordInput[]>();
+  for (const r of recordRows) {
+    const list = recordsByPerson.get(r.personId) ?? [];
+    list.push({
+      courseId: r.courseId,
+      completedAt: dateOnly(r.completedAt),
+      result: r.result,
+      validUntil: r.validUntil ? dateOnly(r.validUntil) : null,
+      voided: r.voidedAt !== null,
+      effectiveness: r.effectiveness?.status ?? null,
+    });
+    recordsByPerson.set(r.personId, list);
+  }
+
+  const today = opts.today ?? trainingToday();
+  for (const p of people) {
+    const person: TrainingPerson = {
+      id: p.id,
+      active: true,
+      hiredAt: p.hiredAt ? dateOnly(p.hiredAt) : null,
+      positionId: p.positionId,
+      positionSince: p.positionSince ? dateInZone(p.positionSince, tz) : null,
+      tasks: p.jobTasks.map((t) => ({ jobTaskId: t.jobTaskId, assignedAt: dateInZone(t.assignedAt, tz) })),
+    };
+    result.set(p.id, isQualifiedForTask(person, taskId, requirements, recordsByPerson.get(p.id) ?? [], today));
+  }
+  return result;
+}
+
+/** Habilitación de una persona para una tarea. `null` si la persona o la tarea no son de la empresa (o está de baja). */
+export async function getTaskQualification(
+  tenantId: string,
+  personId: string,
+  taskId: string,
+  opts: { today?: IsoDate; timeZone?: string } = {},
+  db: Db = prisma,
+): Promise<TaskQualification | null> {
+  const all = await getTaskQualifications(tenantId, [personId], taskId, opts, db);
+  return all?.get(personId) ?? null;
 }
 
 // ─── Vistas agregadas: la misma regla en SQL ───────────────────────────────
