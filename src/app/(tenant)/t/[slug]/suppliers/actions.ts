@@ -6,9 +6,13 @@ import { getAppSessionContext } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { requireModuleEnabled } from "@/lib/modules";
-import { canTenantRole, type AuthzAction } from "@/domain/identity/authz";
 import {
-  SupplierError,
+  formText,
+  requireSupplierAccess,
+  supplierFailure,
+  type SupplierActionState,
+} from "@/app/(tenant)/t/[slug]/suppliers/guard";
+import {
   applySupplierImport,
   createSupplier,
   deactivateSupplier,
@@ -24,31 +28,13 @@ import {
 import type { SupplierCriticalityValue, SupplierTypeValue } from "@/domain/suppliers/types";
 import type { SupplierCsvError } from "@/domain/suppliers/import";
 
-export type SupplierActionState = { error?: string; ok?: string };
+export type { SupplierActionState };
 
 const MAX_CSV_BYTES = 2 * 1024 * 1024;
 
-/** Sesión, permiso por rol y módulo activo: los permisos se controlan acá, no solo ocultando botones. */
-async function requireAccess(slug: string, action: AuthzAction) {
-  const ctx = await getAppSessionContext();
-  if (!ctx) return { error: "Debés iniciar sesión" } as const;
-  const tenant = await getTenantBySlug(slug);
-  if (!tenant) return { error: "Empresa no encontrada" } as const;
-  const membership = await getMembership(ctx.userId, tenant.id);
-  if (!canTenantRole(membership?.role, action, { isPlatformSuperuser: ctx.isPlatformSuperuser })) {
-    return { error: "Tu rol no tiene permiso para esta acción" } as const;
-  }
-  await requireModuleEnabled(tenant.id, "suppliers");
-  return { ctx, tenant } as const;
-}
-
-function fail(error: unknown): SupplierActionState {
-  if (error instanceof SupplierError) return { error: error.message };
-  console.error(error);
-  return { error: "No se pudo guardar. Probá de nuevo." };
-}
-
-const text = (formData: FormData, key: string) => String(formData.get(key) ?? "");
+const requireAccess = requireSupplierAccess;
+const fail = supplierFailure;
+const text = formText;
 
 function supplierInput(formData: FormData): SupplierInput {
   return {

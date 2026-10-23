@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { closeDueItemsForEntity, upsertOpenDueItemForEntity, type CreateDueItemInput } from "@/lib/automation";
 import { cleanName, normalizeKey } from "@/domain/masterdata/roster";
 import { buildApprovedList, type ApprovedList } from "@/domain/suppliers/approved-list";
 import { CUIT_ERROR_MESSAGES, formatCuit, isValidCuit } from "@/domain/suppliers/cuit";
@@ -43,13 +44,16 @@ const num = (value: Prisma.Decimal | null) => (value === null ? null : Number(va
 type AuditInput = {
   tenantId: string;
   entityId: string;
-  action: "create" | "update" | "deactivate" | "reactivate" | "import" | "export" | "link_person" | "unlink_person";
+  action:
+    | "create" | "update" | "deactivate" | "reactivate" | "import" | "export" | "link_person" | "unlink_person"
+    | "evaluate" | "void_evaluation" | "publish_template" | "save_template" | "discard_template"
+    | "upload_document" | "void_document" | "save_document_type";
   actorUserId: string | null;
   summary: string;
 };
 
 /** Mismo registro de auditoría que datos maestros (quién, cuándo, qué). */
-async function audit(db: Tx, input: AuditInput) {
+export async function audit(db: Tx, input: AuditInput) {
   await db.masterDataAudit.create({ data: { entityType: "supplier", ...input } });
 }
 
@@ -139,7 +143,129 @@ export async function recomputeSupplierSummary(tenantId: string, supplierId: str
     config,
     today: buenosAiresToday(now),
   });
-  return db.supplier.update({ where: { id: supplier.id }, data: { ...summary, lastScore: summary.lastScore } });
+  const updated = await db.supplier.update({ where: { id: supplier.id }, data: { ...summary, lastScore: summary.lastScore } });
+  await syncEvaluationDueItem(db, updated);
+  await syncDocumentDueItems(db, updated);
+  return updated;
+}
+
+/**
+ * Un `DueItem` abierto por documento vigente con vencimiento (`supplier_document` / document.id).
+ * El vigente de cada tipo es el último no anulado; los reemplazados, anulados o de un proveedor de baja se cierran.
+ * También deja `supersededAt` al día. Idempotente: repetir no duplica.
+ */
+async function syncDocumentDueItems(
+  db: Tx,
+  supplier: { id: string; tenantId: string; legalName: string; ownerUserId: string | null; inactiveAt: Date | null },
+) {
+  const docs = await db.supplierDocument.findMany({
+    where: { tenantId: supplier.tenantId, supplierId: supplier.id },
+    select: { id: true, typeId: true, expiresAt: true, voidedAt: true, supersededAt: true, type: { select: { name: true, recurrence: true, active: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 1000,
+  });
+  if (docs.length === 0) return;
+
+  const seen = new Set<string>();
+  const current: typeof docs = [];
+  const retired: string[] = [];
+  const stillCurrent: string[] = [];
+  const supersede: string[] = [];
+  for (const doc of docs) {
+    const isCurrent = !doc.voidedAt && !seen.has(doc.typeId);
+    if (!doc.voidedAt) seen.add(doc.typeId);
+    if (isCurrent && doc.expiresAt && doc.type.active && !supplier.inactiveAt) current.push(doc);
+    else retired.push(doc.id);
+    if (isCurrent && doc.supersededAt) stillCurrent.push(doc.id);
+    if (!isCurrent && !doc.voidedAt && !doc.supersededAt) supersede.push(doc.id);
+  }
+
+  await db.dueItem.updateMany({
+    where: { tenantId: supplier.tenantId, entityType: SUPPLIER_DOCUMENT_ENTITY, entityId: { in: retired }, status: "open" },
+    data: { status: "closed" },
+  });
+  if (stillCurrent.length) await db.supplierDocument.updateMany({ where: { id: { in: stillCurrent } }, data: { supersededAt: null } });
+  if (supersede.length) await db.supplierDocument.updateMany({ where: { id: { in: supersede } }, data: { supersededAt: new Date() } });
+  if (current.length === 0) return;
+
+  const siteId = await singleSupplierSiteId(supplier.tenantId, supplier.id, db);
+  for (const doc of current) {
+    await ensureOpenDueItem(
+      db,
+      {
+        tenantId: supplier.tenantId,
+        entityType: SUPPLIER_DOCUMENT_ENTITY,
+        entityId: doc.id,
+        title: `Vence «${doc.type.name}» de ${supplier.legalName}`,
+        dueAt: doc.expiresAt!,
+        leadDays: doc.type.recurrence === "monthly" ? 7 : 30,
+        ownerUserId: supplier.ownerUserId,
+        siteId,
+      },
+      asClient(db),
+    );
+  }
+}
+
+/** Las funciones de automatización tipan `PrismaClient`; en una transacción usan los mismos delegados. */
+export const asClient = (db: Tx | PrismaClient) => db as unknown as PrismaClient;
+
+export const SUPPLIER_EVALUATION_ENTITY = "supplier_evaluation";
+export const SUPPLIER_DOCUMENT_ENTITY = "supplier_document";
+const REEVALUATION_LEAD_DAYS = 30;
+
+/** `siteId` del vencimiento: la sede del proveedor solo si atiende exactamente una. */
+export async function singleSupplierSiteId(tenantId: string, supplierId: string, db: Tx): Promise<string | null> {
+  const sites = await db.supplierSite.findMany({ where: { tenantId, supplierId }, select: { siteId: true }, take: 2 });
+  return sites.length === 1 ? sites[0].siteId : null;
+}
+
+/**
+ * Deja un único `DueItem` abierto para la entidad. Si ya existe uno idéntico no lo toca (actualizarlo
+ * borraría el registro de avisos ya enviados); si cambió algo, lo actualiza; si no existe, lo crea.
+ */
+async function ensureOpenDueItem(db: Tx, input: CreateDueItemInput & { entityId: string }, client: PrismaClient) {
+  const existing = await db.dueItem.findFirst({
+    where: { tenantId: input.tenantId, entityType: input.entityType, entityId: input.entityId, status: "open" },
+  });
+  if (
+    existing &&
+    existing.dueAt.getTime() === input.dueAt.getTime() &&
+    existing.title === input.title.trim() &&
+    existing.leadDays === (input.leadDays ?? existing.leadDays) &&
+    existing.ownerUserId === (input.ownerUserId ?? null) &&
+    existing.siteId === (input.siteId ?? null)
+  ) {
+    return existing;
+  }
+  return upsertOpenDueItemForEntity(input, client);
+}
+
+/**
+ * Un único `DueItem` abierto de reevaluación por proveedor (`supplier_evaluation` / supplier.id):
+ * se actualiza con la fecha vigente o se cierra si ya no corresponde. Repetir no duplica.
+ */
+async function syncEvaluationDueItem(
+  db: Tx,
+  supplier: { id: string; tenantId: string; legalName: string; status: SupplierStatusValue; nextEvaluationDueAt: Date | null; ownerUserId: string | null },
+) {
+  const key = { tenantId: supplier.tenantId, entityType: SUPPLIER_EVALUATION_ENTITY, entityId: supplier.id };
+  if (supplier.status === "inactive" || !supplier.nextEvaluationDueAt) {
+    await closeDueItemsForEntity(key, asClient(db));
+    return;
+  }
+  await ensureOpenDueItem(
+    db,
+    {
+      ...key,
+      title: `Reevaluar proveedor: ${supplier.legalName}`,
+      dueAt: supplier.nextEvaluationDueAt,
+      leadDays: REEVALUATION_LEAD_DAYS,
+      ownerUserId: supplier.ownerUserId,
+      siteId: await singleSupplierSiteId(supplier.tenantId, supplier.id, db),
+    },
+    asClient(db),
+  );
 }
 
 // ─── Alta, edición y baja ──────────────────────────────────────────────────

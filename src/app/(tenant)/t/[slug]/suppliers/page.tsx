@@ -97,6 +97,9 @@ export default async function SuppliersPage({ params, searchParams }: { params: 
             <Link href={`${base}/approved`} className={buttonClass("secondary")}>
               Lista de aprobados
             </Link>
+            <Link href={`${base}/criteria`} className={buttonClass("ghost")}>
+              Criterios y documentos
+            </Link>
           </>
         }
       />

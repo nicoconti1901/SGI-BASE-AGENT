@@ -2,6 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EmptyState, PageHeader, SectionBlock, StatGrid, StatTile, StatusChip, buttonClass } from "@/components/ui";
 import { getSupplier, listSupplierPeople, searchLinkablePeople } from "@/lib/suppliers";
+import { getSupplierEvaluation, listSupplierEvaluations } from "@/lib/supplier-evaluations";
+import { listSupplierDocumentHistory, listSupplierDocuments } from "@/lib/supplier-documents";
+import { DocumentsPanel, EvaluationsPanel } from "@/app/(tenant)/t/[slug]/suppliers/[supplierId]/Panels";
 import { loadSupplierAccess } from "@/app/(tenant)/t/[slug]/suppliers/access";
 import { SemaphoreChip } from "@/app/(tenant)/t/[slug]/suppliers/SemaphoreChip";
 import { LinkPersonForm, SupplierActiveControl, UnlinkPersonButton } from "@/app/(tenant)/t/[slug]/suppliers/[supplierId]/SupplierControls";
@@ -50,11 +53,11 @@ export default async function SupplierPage({
   searchParams,
 }: {
   params: Promise<{ slug: string; supplierId: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; eval?: string }>;
 }) {
   const { slug, supplierId } = await params;
   const sp = await searchParams;
-  const { tenant, canManage } = await loadSupplierAccess(slug);
+  const { tenant, canManage, canEvaluate, canUpload } = await loadSupplierAccess(slug);
   const supplier = await getSupplier(tenant.id, supplierId);
   if (!supplier) notFound();
 
@@ -76,6 +79,12 @@ export default async function SupplierPage({
 
   const people = tab === "people" ? await listSupplierPeople(tenant.id, supplier.id) : [];
   const linkable = tab === "people" && canManage ? await searchLinkablePeople(tenant.id, supplier.id) : [];
+  const evaluations = tab === "evaluations" ? await listSupplierEvaluations(tenant.id, supplier.id) : [];
+  const selectedEvaluation = tab === "evaluations" && sp.eval ? await getSupplierEvaluation(tenant.id, supplier.id, sp.eval) : null;
+  const [documentRows, documentHistory] =
+    tab === "documents"
+      ? await Promise.all([listSupplierDocuments(tenant.id, supplier.id), listSupplierDocumentHistory(tenant.id, supplier.id)])
+      : [[], []];
 
   return (
     <>
@@ -85,6 +94,11 @@ export default async function SupplierPage({
         purpose={[supplier.tradeName, supplier.taxId ? `CUIT ${formatCuit(supplier.taxId)}` : "Sin CUIT", supplier.category].filter(Boolean).join(" · ")}
         actions={
           <>
+            {canEvaluate && supplier.status !== "inactive" ? (
+              <Link href={`${base}/${supplier.id}/evaluate`} className={buttonClass("primary")}>
+                {supplier.lastEvaluationId ? "Reevaluar" : "Evaluar"}
+              </Link>
+            ) : null}
             {canManage ? (
               <Link href={`${base}/${supplier.id}/edit`} className={buttonClass("secondary")}>
                 Editar
@@ -182,14 +196,10 @@ export default async function SupplierPage({
       ) : null}
 
       {tab === "evaluations" ? (
-        <SectionBlock title="Evaluaciones" what="Cada evaluación guarda una copia fija de los criterios, pesos y umbrales con los que se hizo.">
-          <EmptyState what="Todavía no se registró ninguna evaluación." next="la carga de evaluaciones se habilita en una próxima versión del módulo." />
-        </SectionBlock>
+        <EvaluationsPanel slug={slug} supplierId={supplier.id} rows={evaluations} selected={selectedEvaluation} canEvaluate={canEvaluate && supplier.status !== "inactive"} />
       ) : null}
       {tab === "documents" ? (
-        <SectionBlock title="Documentos" what="Certificados, seguros y habilitaciones, cada uno con su vencimiento.">
-          <EmptyState what="Todavía no hay documentos cargados." next="la carga de documentos se habilita en una próxima versión del módulo." />
-        </SectionBlock>
+        <DocumentsPanel slug={slug} supplierId={supplier.id} rows={documentRows} history={documentHistory} canUpload={canUpload} canVoid={canManage} />
       ) : null}
       {tab === "findings" ? (
         <SectionBlock title="Hallazgos y acciones" what="Lo que se detectó en este proveedor y cómo se está resolviendo.">
