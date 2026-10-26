@@ -4,6 +4,7 @@ import { getInstrument } from "@/lib/instruments";
 import { loadInstrumentsAccess } from "@/app/(tenant)/t/[slug]/instruments/access";
 import { InstrumentStatusChip } from "@/app/(tenant)/t/[slug]/instruments/status";
 import { RetireInstrumentForm } from "@/app/(tenant)/t/[slug]/instruments/RetireForm";
+import { ReturnFromLabForm, SendToLabForm } from "@/app/(tenant)/t/[slug]/instruments/[assetId]/RecordControls";
 import {
   DECISION_RULE_LABELS,
   RECORD_KIND_LABELS,
@@ -13,7 +14,7 @@ import {
   magnitudeLabel,
   type Channel,
 } from "@/domain/calibration";
-import { formatDateEs, isoFromDate } from "@/domain/inspections/dates";
+import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import { ASSET_STATUS_LABELS } from "@/domain/inspections/types";
 import { SectionBlock, StatusChip, buttonClass } from "@/components/ui";
 
@@ -60,7 +61,7 @@ export default async function InstrumentPage({
 }) {
   const { slug, assetId } = await params;
   const sp = await searchParams;
-  const { tenant, canManage } = await loadInstrumentsAccess(slug);
+  const { tenant, canManage, canWrite } = await loadInstrumentsAccess(slug);
   const page = Number(sp.historial);
   const detail = await getInstrument(tenant.id, assetId, { historyPage: Number.isInteger(page) && page > 1 ? page : 1 });
   if (!detail) notFound();
@@ -121,6 +122,31 @@ export default async function InstrumentPage({
         ) : null}
         {retired ? <p className="text-sm">Dado de baja{asset.retirementReason ? `: ${asset.retirementReason}` : ""}.</p> : null}
       </section>
+
+      {canWrite && !retired ? (
+        <section aria-label="Acciones" className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-3">
+            {control.requiresCalibration ? (
+              <Link href={`${base}/${asset.id}/records/new`} className={buttonClass(usable || openShipment ? "secondary" : "primary")}>
+                Cargar calibración
+              </Link>
+            ) : null}
+            {control.requiresVerification ? (
+              <Link href={`${base}/${asset.id}/records/new?tipo=verification`} className={buttonClass("secondary")}>
+                Cargar verificación
+              </Link>
+            ) : null}
+          </div>
+          {controlled ? (
+            <details className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4">
+              <summary className="cursor-pointer text-sm font-semibold">{openShipment ? "Registrar el regreso del laboratorio" : "Enviar a calibrar"}</summary>
+              <div className="mt-3">
+                {openShipment ? <ReturnFromLabForm slug={slug} assetId={asset.id} today={todayIso()} /> : <SendToLabForm slug={slug} assetId={asset.id} today={todayIso()} />}
+              </div>
+            </details>
+          ) : null}
+        </section>
+      ) : null}
 
       {pendingAssessment ? (
         <SectionBlock title="Evaluación de impacto pendiente" what="El equipo estuvo fuera de tolerancia: hay que revisar si las mediciones hechas con él son confiables.">
@@ -205,6 +231,7 @@ export default async function InstrumentPage({
                   <th scope="col" className={th}>Resultado</th>
                   <th scope="col" className={th}>Vigente hasta</th>
                   <th scope="col" className={th}>Certificado</th>
+                  <th scope="col" className={th}><span className="sr-only">Detalle</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-line)]">
@@ -260,6 +287,11 @@ export default async function InstrumentPage({
                             ))}
                           </ul>
                         )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <Link href={`${base}/${asset.id}/records/${r.id}`} className="text-[var(--color-accent)] hover:underline">
+                          {r.status === "draft" && canWrite ? "Continuar" : "Ver detalle"}
+                        </Link>
                       </td>
                     </tr>
                   );
