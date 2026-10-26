@@ -16,6 +16,8 @@ export async function loadSupplierAccess(slug: string) {
     ctx,
     tenant,
     canManage: canTenantRole(membership?.role, "manage_suppliers", opts),
+    /** Crear hallazgos: el permiso vigente de Hallazgos, no el de administrar proveedores. */
+    canRegisterFinding: canTenantRole(membership?.role, "write", opts),
     canEvaluate: canTenantRole(membership?.role, "evaluate_suppliers", opts),
     canUpload: canTenantRole(membership?.role, "upload_supplier_documents", opts),
     canEditCriteria: canTenantRole(membership?.role, "manage_supplier_criteria", opts),

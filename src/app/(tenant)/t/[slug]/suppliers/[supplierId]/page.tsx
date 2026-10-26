@@ -5,6 +5,10 @@ import { getSupplier, listSupplierPeople, searchLinkablePeople } from "@/lib/sup
 import { getSupplierEvaluation, listSupplierEvaluations } from "@/lib/supplier-evaluations";
 import { listSupplierDocumentHistory, listSupplierDocuments } from "@/lib/supplier-documents";
 import { DocumentsPanel, EvaluationsPanel } from "@/app/(tenant)/t/[slug]/suppliers/[supplierId]/Panels";
+import { CommunicationsPanel, FindingsPanel, ScoreTrendPanel } from "@/app/(tenant)/t/[slug]/suppliers/[supplierId]/FollowupPanels";
+import { getPublishedTemplate } from "@/lib/supplier-criteria";
+import { getScoreTrend, listCommunicableEvaluations, listSupplierCommunications, listSupplierFindings } from "@/lib/supplier-followup";
+import { EVALUATION_KIND_LABELS } from "@/domain/suppliers/evaluation";
 import { loadSupplierAccess } from "@/app/(tenant)/t/[slug]/suppliers/access";
 import { SemaphoreChip } from "@/app/(tenant)/t/[slug]/suppliers/SemaphoreChip";
 import { LinkPersonForm, SupplierActiveControl, UnlinkPersonButton } from "@/app/(tenant)/t/[slug]/suppliers/[supplierId]/SupplierControls";
@@ -12,6 +16,8 @@ import { formatCuit } from "@/domain/suppliers/cuit";
 import { buenosAiresToday, isoDay } from "@/domain/suppliers/dates";
 import { describeAttention, isEnabled } from "@/domain/suppliers/status";
 import {
+  DEFAULT_THRESHOLDS,
+  EVALUATION_RESULT_LABELS,
   SUPPLIER_CRITICALITY_LABELS,
   SUPPLIER_STATUS_LABELS,
   SUPPLIER_TYPE_LABELS,
@@ -53,11 +59,11 @@ export default async function SupplierPage({
   searchParams,
 }: {
   params: Promise<{ slug: string; supplierId: string }>;
-  searchParams: Promise<{ tab?: string; eval?: string }>;
+  searchParams: Promise<{ tab?: string; eval?: string; tipo?: string }>;
 }) {
   const { slug, supplierId } = await params;
   const sp = await searchParams;
-  const { tenant, canManage, canEvaluate, canUpload } = await loadSupplierAccess(slug);
+  const { tenant, canManage, canEvaluate, canUpload, canRegisterFinding } = await loadSupplierAccess(slug);
   const supplier = await getSupplier(tenant.id, supplierId);
   if (!supplier) notFound();
 
@@ -86,12 +92,25 @@ export default async function SupplierPage({
       ? await Promise.all([listSupplierDocuments(tenant.id, supplier.id), listSupplierDocumentHistory(tenant.id, supplier.id)])
       : [[], []];
 
+  const [trend, approvedMin] =
+    tab === "summary"
+      ? await Promise.all([getScoreTrend(tenant.id, supplier.id), getPublishedTemplate(tenant.id, supplier.type).then((t) => t?.approvedMin ?? DEFAULT_THRESHOLDS.approvedMin)])
+      : [[], DEFAULT_THRESHOLDS.approvedMin];
+  const findingRows = tab === "findings" ? await listSupplierFindings(tenant.id, supplier.id) : [];
+  const communicationRows = tab === "communications" ? await listSupplierCommunications(tenant.id, supplier.id) : [];
+  const communicable = tab === "communications" && canManage ? await listCommunicableEvaluations(tenant.id, supplier.id) : [];
+  // «Registrar que se lo comunicó» desde una evaluación llega con ?tipo=resultado&eval=<id>.
+  const resultFor = sp.tipo === "resultado" && communicable.some((e) => e.id === sp.eval) ? sp.eval : undefined;
+  const todayIso = isoDay(today);
+
   return (
     <>
       <PageHeader
         eyebrow={`Proveedor · ${SUPPLIER_TYPE_LABELS[supplier.type]} · ISO 9001 §8.4`}
         title={supplier.legalName}
         purpose={[supplier.tradeName, supplier.taxId ? `CUIT ${formatCuit(supplier.taxId)}` : "Sin CUIT", supplier.category].filter(Boolean).join(" · ")}
+        guideHref={`${base}/guide`}
+        guideLabel="Guía de proveedores →"
         actions={
           <>
             {canEvaluate && supplier.status !== "inactive" ? (
@@ -194,22 +213,36 @@ export default async function SupplierPage({
           </dl>
         </SectionBlock>
       ) : null}
+      {tab === "summary" ? <ScoreTrendPanel points={trend} approvedMin={approvedMin} /> : null}
 
       {tab === "evaluations" ? (
-        <EvaluationsPanel slug={slug} supplierId={supplier.id} rows={evaluations} selected={selectedEvaluation} canEvaluate={canEvaluate && supplier.status !== "inactive"} />
+        <EvaluationsPanel slug={slug} supplierId={supplier.id} rows={evaluations} selected={selectedEvaluation} canEvaluate={canEvaluate && supplier.status !== "inactive"} canCommunicate={canManage} />
       ) : null}
       {tab === "documents" ? (
         <DocumentsPanel slug={slug} supplierId={supplier.id} rows={documentRows} history={documentHistory} canUpload={canUpload} canVoid={canManage} />
       ) : null}
       {tab === "findings" ? (
-        <SectionBlock title="Hallazgos y acciones" what="Lo que se detectó en este proveedor y cómo se está resolviendo.">
-          <EmptyState what="No hay hallazgos registrados para este proveedor." />
-        </SectionBlock>
+        <FindingsPanel
+          slug={slug}
+          supplierId={supplier.id}
+          rows={findingRows}
+          canRegister={canRegisterFinding}
+          canEvaluate={canEvaluate && supplier.status !== "inactive"}
+          hasEvaluation={supplier.lastEvaluationId !== null}
+          today={todayIso}
+        />
       ) : null}
       {tab === "communications" ? (
-        <SectionBlock title="Comunicaciones" what="Qué se le pidió y qué resultado se le comunicó al proveedor (ISO 9001 §8.4.3).">
-          <EmptyState what="Todavía no se registró ninguna comunicación." />
-        </SectionBlock>
+        <CommunicationsPanel
+          slug={slug}
+          supplierId={supplier.id}
+          rows={communicationRows}
+          evaluations={communicable.map((e) => ({ id: e.id, label: `${EVALUATION_KIND_LABELS[e.kind]} del ${dmy(e.evaluatedAt)} · ${EVALUATION_RESULT_LABELS[e.result].toLowerCase()}` }))}
+          canRegister={canManage}
+          today={todayIso}
+          defaultKind={resultFor ? "evaluation_result" : "requirements"}
+          defaultEvaluationId={resultFor}
+        />
       ) : null}
 
       {tab === "people" ? (

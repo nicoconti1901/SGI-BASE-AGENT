@@ -34,12 +34,14 @@ export function EvaluationsPanel({
   rows,
   selected,
   canEvaluate,
+  canCommunicate,
 }: {
   slug: string;
   supplierId: string;
   rows: EvaluationRow[];
   selected: EvaluationDetail | null;
   canEvaluate: boolean;
+  canCommunicate: boolean;
 }) {
   const base = `/t/${slug}/suppliers/${supplierId}`;
   return (
@@ -167,6 +169,13 @@ export function EvaluationsPanel({
             </div>
           ) : null}
 
+          {canCommunicate && !selected.voidedAt ? (
+            <p>
+              <Link href={`${base}?tab=comunicaciones&tipo=resultado&eval=${selected.id}`} className={buttonClass("secondary")}>
+                Registrar que se lo comunicó
+              </Link>
+            </p>
+          ) : null}
           {canEvaluate && !selected.voidedAt ? <VoidEvaluationForm slug={slug} supplierId={supplierId} evaluationId={selected.id} /> : null}
         </article>
       ) : null}

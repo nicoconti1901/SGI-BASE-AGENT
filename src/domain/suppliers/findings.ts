@@ -63,13 +63,14 @@ export type TrendPoint = { evaluatedAt: Date; score: number };
  * Las evaluaciones sin puntaje (aceptación con motivo) y las anuladas no entran.
  */
 export function scoreTrend(
-  evaluations: readonly { evaluatedAt: Date; totalScore: number | null; voided: boolean }[],
+  evaluations: readonly { evaluatedAt: Date; createdAt?: Date; totalScore: number | null; voided: boolean }[],
   limit = 12,
 ): (TrendPoint & { delta: number | null })[] {
+  // Dos evaluaciones del mismo día se ordenan por el momento en que se cargaron.
   const points = evaluations
     .filter((e) => !e.voided && e.totalScore !== null)
-    .map((e) => ({ evaluatedAt: e.evaluatedAt, score: e.totalScore as number }))
-    .sort((a, b) => a.evaluatedAt.getTime() - b.evaluatedAt.getTime())
+    .map((e) => ({ evaluatedAt: e.evaluatedAt, createdAt: e.createdAt?.getTime() ?? 0, score: e.totalScore as number }))
+    .sort((a, b) => a.evaluatedAt.getTime() - b.evaluatedAt.getTime() || a.createdAt - b.createdAt)
     .slice(-limit);
   return points.map((p, i) => ({ ...p, delta: i === 0 ? null : Math.round((p.score - points[i - 1].score) * 10) / 10 }));
 }

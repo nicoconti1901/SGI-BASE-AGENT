@@ -275,9 +275,9 @@ export async function readCommunicationFile(
 export async function getScoreTrend(tenantId: string, supplierId: string, db: Tx = prisma) {
   const rows = await db.supplierEvaluation.findMany({
     where: { tenantId, supplierId, voidedAt: null, totalScore: { not: null } },
-    select: { evaluatedAt: true, totalScore: true },
+    select: { evaluatedAt: true, createdAt: true, totalScore: true },
     orderBy: [{ evaluatedAt: "desc" }, { createdAt: "desc" }],
     take: 12,
   });
-  return scoreTrend(rows.map((r) => ({ evaluatedAt: r.evaluatedAt, totalScore: r.totalScore === null ? null : Number(r.totalScore), voided: false })));
+  return scoreTrend(rows.map((r) => ({ evaluatedAt: r.evaluatedAt, createdAt: r.createdAt, totalScore: r.totalScore === null ? null : Number(r.totalScore), voided: false })));
 }

@@ -31,11 +31,12 @@ export function EvidencePanel({
       </p>
       {reasons.length ? (
         <HintCallout>
-          <ul className="list-disc pl-5">
+          <span className="flex flex-col gap-1">
+            <span className="font-semibold">Conviene reevaluar ahora</span>
             {reasons.map((r) => (
-              <li key={r}>{r}</li>
+              <span key={r}>{r}</span>
             ))}
-          </ul>
+          </span>
         </HintCallout>
       ) : null}
       {evidence.findings.length ? (

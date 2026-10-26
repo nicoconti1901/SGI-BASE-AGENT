@@ -48,6 +48,16 @@ describe("scoreTrend", () => {
     expect(trend.map((t) => t.delta)).toEqual([null, -11.5, 3.5]);
   });
 
+  it("dos evaluaciones del mismo día se ordenan por cuándo se cargaron", () => {
+    const sameDay = d("2026-10-21");
+    const trend = scoreTrend([
+      { evaluatedAt: sameDay, createdAt: new Date("2026-10-21T16:00:00Z"), totalScore: 80, voided: false },
+      { evaluatedAt: sameDay, createdAt: new Date("2026-10-21T15:00:00Z"), totalScore: 100, voided: false },
+    ]);
+    expect(trend.map((t) => t.score)).toEqual([100, 80]);
+    expect(trend[1].delta).toBe(-20);
+  });
+
   it("no cuenta las anuladas ni las aceptaciones sin puntaje", () => {
     const trend = scoreTrend([ev("2026-01-01", 80), ev("2026-06-01", 50, true), ev("2026-09-01", null), ev("2026-10-01", 85)]);
     expect(trend.map((t) => t.score)).toEqual([80, 85]);
