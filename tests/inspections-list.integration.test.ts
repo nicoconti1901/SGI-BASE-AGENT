@@ -79,7 +79,7 @@ describe.skipIf(!hasDatabase)("lista, contadores y exportación de inspecciones 
       expect((await list({ result: "unfit" })).map((i) => i.asset?.code)).toEqual([expect.stringContaining("A2")]);
       expect(await list({ siteId: siteNorte })).toHaveLength(1);
       expect(await list({ inspectorUserId: omar })).toHaveLength(1);
-      const template = await db.inspectionTemplate.findFirstOrThrow({ where: { tenantId: a } });
+      const template = await db.inspectionTemplate.findFirstOrThrow({ where: { tenantId: a, key: "extinguisher_periodic" } });
       expect(await list({ templateId: template.id })).toHaveLength(3);
       expect(await list({ templateId: "no-existe" })).toHaveLength(0);
     });

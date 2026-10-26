@@ -124,7 +124,7 @@ export function instrumentUsability(input: {
 }): Usability {
   if (input.assetStatus === "retired") return { usable: false, reason: "El equipo está dado de baja", action: null };
   if (input.assetStatus === "out_of_service") {
-    return { usable: false, reason: "El equipo está fuera de servicio", action: "Volver a ponerlo en servicio desde Activos" };
+    return { usable: false, reason: "El equipo está fuera de servicio", action: "Repetir la prueba funcional: si es apta y la cierra un responsable de proceso, vuelve a servicio" };
   }
   const noun = KIND_NOUN[input.dueKind ?? "calibration"];
   switch (input.status) {

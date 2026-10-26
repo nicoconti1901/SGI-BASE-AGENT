@@ -17,9 +17,12 @@ import {
   magnitudeLabel,
   type Channel,
 } from "@/domain/calibration";
-import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
-import { ASSET_STATUS_LABELS } from "@/domain/inspections/types";
-import { SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { diffDays, formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
+import { ASSET_STATUS_LABELS, RESULT_LABELS } from "@/domain/inspections/types";
+import { Button, FormError, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { getEnabledModulesCached } from "@/lib/modules";
+import { lastFunctionalCheck } from "@/lib/functional-check";
+import { startFunctionalCheckAction } from "@/app/(tenant)/t/[slug]/instruments/actions";
 
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -60,7 +63,7 @@ export default async function InstrumentPage({
   searchParams,
 }: {
   params: Promise<{ slug: string; assetId: string }>;
-  searchParams: Promise<{ historial?: string }>;
+  searchParams: Promise<{ historial?: string; error?: string }>;
 }) {
   const { slug, assetId } = await params;
   const sp = await searchParams;
@@ -69,9 +72,12 @@ export default async function InstrumentPage({
   const detail = await getInstrument(tenant.id, assetId, { historyPage: Number.isInteger(page) && page > 1 ? page : 1 });
   if (!detail) notFound();
   const { asset, control, channels, view, records, openShipment, pendingAssessment } = detail;
-  const [completedAssessments, members] = await Promise.all([
+  // La prueba funcional usa el motor de Inspecciones: solo se ofrece si ese módulo está activo.
+  const functionalCheckEnabled = (await getEnabledModulesCached(tenant.id)).has("inspections");
+  const [completedAssessments, members, lastCheck] = await Promise.all([
     listCompletedAssessments(tenant.id, asset.id),
     canManage && pendingAssessment ? listTenantMemberOptions(tenant.id) : Promise.resolve([]),
+    functionalCheckEnabled ? lastFunctionalCheck(tenant.id, asset.id) : Promise.resolve(null),
   ]);
   const base = `/t/${slug}/instruments`;
   const attrs = asset.attributes as Record<string, string | undefined>;
@@ -143,7 +149,29 @@ export default async function InstrumentPage({
                 Cargar verificación
               </Link>
             ) : null}
+            {functionalCheckEnabled ? (
+              <form action={startFunctionalCheckAction.bind(null, slug, asset.id)}>
+                <Button type="submit" variant="secondary">
+                  Hacer la prueba funcional
+                </Button>
+              </form>
+            ) : null}
           </div>
+          {sp.error ? <FormError>{sp.error}</FormError> : null}
+          {functionalCheckEnabled ? (
+            <p className="text-xs text-[var(--color-ink-muted)]">
+              {lastCheck ? (
+                <>
+                  Último control previo al uso: {formatDateEs(lastCheck.inspectedAt)} · {RESULT_LABELS[lastCheck.result ?? "fit"]} (hace {Math.max(0, diffDays(lastCheck.inspectedAt, todayIso()))} días){" "}
+                  <Link href={`/t/${slug}/inspections/${lastCheck.id}`} className="text-[var(--color-accent)] hover:underline">
+                    Ver
+                  </Link>
+                </>
+              ) : (
+                "Todavía no se hizo ninguna prueba funcional. Es opcional y no extiende la vigencia de la calibración."
+              )}
+            </p>
+          ) : null}
           {controlled ? (
             <details className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4">
               <summary className="cursor-pointer text-sm font-semibold">{openShipment ? "Registrar el regreso del laboratorio" : "Enviar a calibrar"}</summary>

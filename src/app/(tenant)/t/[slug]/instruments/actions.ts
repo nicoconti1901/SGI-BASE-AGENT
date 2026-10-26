@@ -11,6 +11,7 @@ import { prisma } from "@/lib/db";
 import { retireAsset } from "@/lib/assets";
 import { createInstrument, recomputeInstrumentControl, updateInstrument } from "@/lib/instruments";
 import { completeImpactAssessment, type ImpactActionInput } from "@/lib/impact-assessments";
+import { startInspection } from "@/lib/inspections";
 import { InspectionError } from "@/lib/inspection-support";
 import {
   closeCalibrationRecord,
@@ -267,6 +268,28 @@ export async function sendToCalibrationAction(slug: string, assetId: string, _pr
   revalidatePath(`/t/${slug}/instruments`);
   revalidatePath(`/t/${slug}/instruments/${assetId}`);
   return { ok: "Equipo enviado a calibrar" };
+}
+
+/**
+ * Empieza la prueba funcional del equipo con el motor de inspecciones y abre su pantalla. Necesita que el módulo
+ * Inspecciones esté activo; si algo falla vuelve a la ficha con el motivo.
+ */
+export async function startFunctionalCheckAction(slug: string, assetId: string): Promise<void> {
+  const backWith = (message: string): never => redirect(`/t/${slug}/instruments/${assetId}?error=${encodeURIComponent(message)}`);
+  const access = await requireAccess(slug, "write");
+  if ("error" in access) return backWith(access.error ?? "No se pudo empezar la prueba funcional");
+  if (!(await getEnabledModulesCached(access.tenant.id)).has("inspections")) return backWith("La prueba funcional necesita el módulo Inspecciones activo");
+  const asset = await prisma.asset.findFirst({ where: { id: assetId, tenantId: access.tenant.id, typeKey: INSTRUMENT_TYPE_KEY }, select: { id: true } });
+  if (!asset) return backWith("Equipo no encontrado");
+  let id: string;
+  try {
+    id = (await startInspection({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, assetId })).id;
+  } catch (error) {
+    if (error instanceof InspectionError) return backWith(error.message);
+    console.error(error);
+    return backWith("No se pudo empezar la prueba funcional");
+  }
+  redirect(`/t/${slug}/inspections/${id}`);
 }
 
 /** Completa la evaluación de impacto (solo quien administra el módulo). Las acciones viajan como JSON desde el formulario. */

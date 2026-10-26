@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import { EXTINGUISHER_TYPE } from "./extinguisher";
+import { MEASURING_EQUIPMENT_TYPE } from "./measuring-equipment";
 
 /** Qué vencimiento documental lleva un tipo de activo y cada cuánto se renueva. */
 export type DueKindSpec = {
@@ -69,11 +70,17 @@ export function isAssetTypeKey(value: string): value is AssetTypeKey {
   return Object.hasOwn(ASSET_TYPES, value);
 }
 
+/**
+ * Tipo de un activo ya existente. Además de los del registro, resuelve el equipo de medición (prueba funcional),
+ * que no se puede crear ni importar desde Activos: por eso `isAssetTypeKey` no lo incluye.
+ */
 export function getAssetType(key: string): AssetTypeDef {
+  if (key === MEASURING_EQUIPMENT_TYPE.key) return MEASURING_EQUIPMENT_TYPE;
   if (!isAssetTypeKey(key)) throw new Error(`Tipo de activo desconocido: ${key}`);
   return ASSET_TYPES[key];
 }
 
 export function assetTypeLabel(key: string): string {
+  if (key === MEASURING_EQUIPMENT_TYPE.key) return MEASURING_EQUIPMENT_TYPE.label;
   return isAssetTypeKey(key) ? ASSET_TYPES[key].label : key;
 }
