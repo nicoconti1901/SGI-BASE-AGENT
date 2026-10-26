@@ -9,8 +9,21 @@ import { getEnabledModulesCached } from "@/lib/modules";
 import { canTenantRole, type AuthzAction } from "@/domain/identity/authz";
 import { prisma } from "@/lib/db";
 import { retireAsset } from "@/lib/assets";
-import { createInstrument, updateInstrument } from "@/lib/instruments";
+import { createInstrument, recomputeInstrumentControl, updateInstrument } from "@/lib/instruments";
+import { completeImpactAssessment, type ImpactActionInput } from "@/lib/impact-assessments";
+import { startInspection } from "@/lib/inspections";
 import { InspectionError } from "@/lib/inspection-support";
+import {
+  closeCalibrationRecord,
+  discardCalibrationDraft,
+  registerInstrumentReturn,
+  removeCalibrationCertificate,
+  saveCalibrationDraft,
+  sendInstrumentToCalibration,
+  uploadCalibrationCertificate,
+  voidCalibrationRecord,
+  type PointDraft,
+} from "@/lib/calibration-records";
 import { INSTRUMENT_TYPE_KEY } from "@/domain/calibration/types";
 
 export type InstrumentActionState = { error?: string; ok?: string };
@@ -50,6 +63,8 @@ export async function retireInstrumentAction(slug: string, assetId: string, _pre
     const asset = await prisma.asset.findFirst({ where: { id: assetId, tenantId: access.tenant.id, typeKey: INSTRUMENT_TYPE_KEY }, select: { id: true } });
     if (!asset) return { error: "Equipo no encontrado" };
     await retireAsset({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, assetId, reason: text(formData, "reason") });
+    // Un equipo dado de baja deja de vencer; su evaluación de impacto pendiente, si la hay, sigue en pie.
+    await recomputeInstrumentControl(access.tenant.id, assetId);
   } catch (error) {
     return fail(error);
   }
@@ -113,4 +128,214 @@ export async function saveInstrumentAction(slug: string, assetId: string | null,
   if (createdId) redirect(`/t/${slug}/instruments/${createdId}`);
   revalidatePath(`/t/${slug}/instruments/${assetId}`);
   return { ok: "Cambios guardados" };
+}
+
+// ─── Calibraciones y verificaciones (16.3) ─────────────────────────────────
+
+export type RecordActionState = InstrumentActionState & { recordId?: string };
+
+type PointsPayload = { as_found?: unknown; as_left?: unknown };
+
+function pointsFrom(formData: FormData): { asFound: PointDraft[]; asLeft: PointDraft[] } {
+  try {
+    const parsed = JSON.parse(text(formData, "points") || "{}") as PointsPayload;
+    const rows = (list: unknown): PointDraft[] =>
+      Array.isArray(list)
+        ? list.map((p: Record<string, unknown>) => ({
+            channelKey: String(p?.channelKey ?? ""),
+            nominal: String(p?.nominal ?? ""),
+            measured: String(p?.measured ?? ""),
+            uncertainty: p?.uncertainty === undefined || p?.uncertainty === null ? null : String(p.uncertainty),
+          }))
+        : [];
+    return { asFound: rows(parsed.as_found), asLeft: rows(parsed.as_left) };
+  } catch {
+    throw new InspectionError("No se pudieron leer los puntos: volvé a cargarlos");
+  }
+}
+
+/**
+ * Guarda el borrador (con los certificados que se adjuntaron) y, con «Cerrar», calcula el resultado y lo cierra.
+ * Si el cierre falla, el borrador queda guardado y se devuelve su id para seguir sobre el mismo registro.
+ */
+export async function saveRecordAction(slug: string, assetId: string, recordId: string | null, _prev: RecordActionState, formData: FormData): Promise<RecordActionState> {
+  const access = await requireAccess(slug, "write");
+  if ("error" in access) return { error: access.error, recordId: recordId ?? undefined };
+  const tenantId = access.tenant.id;
+  const actorUserId = access.ctx.userId;
+  let id: string | null = recordId ?? (text(formData, "recordId") || null);
+  const isNew = recordId === null && id === null;
+  const closing = text(formData, "intent") === "close";
+  try {
+    const { asFound, asLeft } = pointsFrom(formData);
+    const statement = text(formData, "labStatement");
+    const saved = await saveCalibrationDraft({
+      tenantId,
+      actorUserId,
+      assetId,
+      recordId: id,
+      kind: text(formData, "kind"),
+      performedAt: text(formData, "performedAt"),
+      certificateNumber: text(formData, "certificateNumber"),
+      certificateIssuedAt: text(formData, "certificateIssuedAt"),
+      labName: text(formData, "labName"),
+      traceability: text(formData, "traceability"),
+      accreditationBody: text(formData, "accreditationBody"),
+      accreditationNumber: text(formData, "accreditationNumber"),
+      accreditationScopeCovers: flag(formData, "accreditationScopeCovers"),
+      traceabilityBasis: text(formData, "traceabilityBasis"),
+      referenceStandardAssetId: text(formData, "referenceStandardAssetId"),
+      conditions: text(formData, "conditions"),
+      adjusted: flag(formData, "adjusted"),
+      basis: text(formData, "basis") === "certificate_statement" ? "certificate_statement" : "points",
+      labStatement: statement === "conforme" || statement === "no_conforme" ? statement : null,
+      labStatementSpec: text(formData, "labStatementSpec"),
+      labDecisionRule: text(formData, "labDecisionRule"),
+      coverageK: text(formData, "coverageK"),
+      notes: text(formData, "notes"),
+      asFoundPoints: asFound,
+      asLeftPoints: asLeft,
+    });
+    id = saved.id;
+    for (const file of formData.getAll("certificate")) {
+      if (!(file instanceof File) || file.size === 0) continue;
+      await uploadCalibrationCertificate({ tenantId, recordId: id, fileName: file.name, contentType: file.type, body: Buffer.from(await file.arrayBuffer()), uploadedById: actorUserId });
+    }
+    if (closing) await closeCalibrationRecord({ tenantId, actorUserId, recordId: id });
+  } catch (error) {
+    return { ...fail(error), recordId: id ?? undefined };
+  }
+  revalidatePath(`/t/${slug}/instruments`);
+  revalidatePath(`/t/${slug}/instruments/${assetId}`);
+  if (closing) redirect(`/t/${slug}/instruments/${assetId}`);
+  if (isNew) redirect(`/t/${slug}/instruments/${assetId}/records/${id}`);
+  revalidatePath(`/t/${slug}/instruments/${assetId}/records/${id}`);
+  return { ok: "Borrador guardado", recordId: id ?? undefined };
+}
+
+export async function discardDraftAction(slug: string, assetId: string, recordId: string): Promise<InstrumentActionState> {
+  const access = await requireAccess(slug, "write");
+  if ("error" in access) return { error: access.error };
+  try {
+    await discardCalibrationDraft({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, recordId });
+  } catch (error) {
+    return fail(error);
+  }
+  revalidatePath(`/t/${slug}/instruments/${assetId}`);
+  redirect(`/t/${slug}/instruments/${assetId}`);
+}
+
+export async function removeCertificateAction(slug: string, assetId: string, attachmentId: string): Promise<InstrumentActionState> {
+  const access = await requireAccess(slug, "write");
+  if ("error" in access) return { error: access.error };
+  try {
+    const { recordId } = await removeCalibrationCertificate({ tenantId: access.tenant.id, attachmentId });
+    revalidatePath(`/t/${slug}/instruments/${assetId}/records/${recordId}`);
+  } catch (error) {
+    return fail(error);
+  }
+  return { ok: "Archivo quitado" };
+}
+
+export async function voidRecordAction(slug: string, assetId: string, recordId: string, _prev: InstrumentActionState, formData: FormData): Promise<InstrumentActionState> {
+  const access = await requireAccess(slug, "manage_calibration");
+  if ("error" in access) return { error: access.error };
+  try {
+    await voidCalibrationRecord({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, recordId, reason: text(formData, "reason") });
+  } catch (error) {
+    return fail(error);
+  }
+  revalidatePath(`/t/${slug}/instruments`);
+  revalidatePath(`/t/${slug}/instruments/${assetId}`);
+  return { ok: "Registro anulado" };
+}
+
+export async function sendToCalibrationAction(slug: string, assetId: string, _prev: InstrumentActionState, formData: FormData): Promise<InstrumentActionState> {
+  const access = await requireAccess(slug, "write");
+  if ("error" in access) return { error: access.error };
+  try {
+    await sendInstrumentToCalibration({
+      tenantId: access.tenant.id,
+      actorUserId: access.ctx.userId,
+      assetId,
+      sentAt: text(formData, "sentAt"),
+      expectedReturnAt: text(formData, "expectedReturnAt"),
+      labName: text(formData, "labName"),
+    });
+  } catch (error) {
+    return fail(error);
+  }
+  revalidatePath(`/t/${slug}/instruments`);
+  revalidatePath(`/t/${slug}/instruments/${assetId}`);
+  return { ok: "Equipo enviado a calibrar" };
+}
+
+/**
+ * Empieza la prueba funcional del equipo con el motor de inspecciones y abre su pantalla. Necesita que el módulo
+ * Inspecciones esté activo; si algo falla vuelve a la ficha con el motivo.
+ */
+export async function startFunctionalCheckAction(slug: string, assetId: string): Promise<void> {
+  const backWith = (message: string): never => redirect(`/t/${slug}/instruments/${assetId}?error=${encodeURIComponent(message)}`);
+  const access = await requireAccess(slug, "write");
+  if ("error" in access) return backWith(access.error ?? "No se pudo empezar la prueba funcional");
+  if (!(await getEnabledModulesCached(access.tenant.id)).has("inspections")) return backWith("La prueba funcional necesita el módulo Inspecciones activo");
+  const asset = await prisma.asset.findFirst({ where: { id: assetId, tenantId: access.tenant.id, typeKey: INSTRUMENT_TYPE_KEY }, select: { id: true } });
+  if (!asset) return backWith("Equipo no encontrado");
+  let id: string;
+  try {
+    id = (await startInspection({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, assetId })).id;
+  } catch (error) {
+    if (error instanceof InspectionError) return backWith(error.message);
+    console.error(error);
+    return backWith("No se pudo empezar la prueba funcional");
+  }
+  redirect(`/t/${slug}/inspections/${id}`);
+}
+
+/** Completa la evaluación de impacto (solo quien administra el módulo). Las acciones viajan como JSON desde el formulario. */
+export async function completeImpactAction(slug: string, assetId: string, assessmentId: string, _prev: InstrumentActionState, formData: FormData): Promise<InstrumentActionState> {
+  const access = await requireAccess(slug, "manage_calibration");
+  if ("error" in access) return { error: access.error };
+  try {
+    let actions: ImpactActionInput[] = [];
+    try {
+      const parsed: unknown = JSON.parse(text(formData, "actions") || "[]");
+      actions = Array.isArray(parsed)
+        ? parsed.map((a: Record<string, unknown>) => ({ title: String(a?.title ?? ""), ownerUserId: String(a?.ownerUserId ?? ""), dueAt: a?.dueAt ? String(a.dueAt) : null }))
+        : [];
+    } catch {
+      throw new InspectionError("No se pudieron leer las acciones: volvé a cargarlas");
+    }
+    // El equipo del que se completa la evaluación tiene que ser el de la pantalla: la URL no la manda.
+    const assessment = await prisma.impactAssessment.findFirst({ where: { id: assessmentId, tenantId: access.tenant.id, assetId }, select: { id: true } });
+    if (!assessment) return { error: "Evaluación no encontrada" };
+    await completeImpactAssessment({
+      tenantId: access.tenant.id,
+      actorUserId: access.ctx.userId,
+      assessmentId,
+      outcome: text(formData, "outcome"),
+      affectedSummary: text(formData, "affectedSummary"),
+      rationale: text(formData, "rationale"),
+      registerFinding: flag(formData, "registerFinding"),
+      actions,
+    });
+  } catch (error) {
+    return fail(error);
+  }
+  revalidatePath(`/t/${slug}/instruments`);
+  revalidatePath(`/t/${slug}/instruments/${assetId}`);
+  return { ok: "Evaluación completada" };
+}
+
+export async function registerReturnAction(slug: string, assetId: string, _prev: InstrumentActionState, formData: FormData): Promise<InstrumentActionState> {
+  const access = await requireAccess(slug, "write");
+  if ("error" in access) return { error: access.error };
+  try {
+    await registerInstrumentReturn({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, assetId, returnedAt: text(formData, "returnedAt") });
+  } catch (error) {
+    return fail(error);
+  }
+  revalidatePath(`/t/${slug}/instruments`);
+  revalidatePath(`/t/${slug}/instruments/${assetId}`);
+  return { ok: "Regreso registrado" };
 }

@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
 import { createJobPosition, createPerson, createSite } from "@/lib/masterdata";
 import { ensureDefaultTemplates } from "@/lib/inspection-templates";
+import { DEFAULT_TEMPLATES } from "@/domain/inspections/templates";
 import {
   applyAssetImport,
   createAsset,
@@ -63,12 +64,13 @@ describe.skipIf(!hasDatabase)("activos de inspecciones (integración)", () => {
     await Promise.all([ensureDefaultTemplates(a), ensureDefaultTemplates(a), ensureDefaultTemplates(a)]);
     await ensureDefaultTemplates(a);
     const templates = await db.inspectionTemplate.findMany({ where: { tenantId: a }, include: { versions: { include: { items: true } } } });
-    expect(templates).toHaveLength(1);
-    expect(templates[0].key).toBe("extinguisher_periodic");
-    expect(templates[0].versions).toHaveLength(1);
-    expect(templates[0].versions[0].items).toHaveLength(15);
-    expect(templates[0].activeVersionId).toBe(templates[0].versions[0].id);
-    expect(templates[0]).toMatchObject({ intervalUnit: "months", intervalValue: 1, canReinstate: true, retireOnUnfit: false, findingOnCritical: false });
+    // Una por plantilla precargada, cada una con una sola versión.
+    expect(templates.map((t) => t.key).sort()).toEqual(DEFAULT_TEMPLATES.map((t) => t.key).sort());
+    for (const t of templates) expect(t.versions).toHaveLength(1);
+    const extinguisher = templates.find((t) => t.key === "extinguisher_periodic")!;
+    expect(extinguisher.versions[0].items).toHaveLength(15);
+    expect(extinguisher.activeVersionId).toBe(extinguisher.versions[0].id);
+    expect(extinguisher).toMatchObject({ intervalUnit: "months", intervalValue: 1, canReinstate: true, retireOnUnfit: false, findingOnCritical: false });
   });
 
   it("el alta crea el activo, sus vencimientos, su programa y los avisos abiertos", async () => {

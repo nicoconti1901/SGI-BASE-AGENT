@@ -4,6 +4,10 @@ import { getInstrument } from "@/lib/instruments";
 import { loadInstrumentsAccess } from "@/app/(tenant)/t/[slug]/instruments/access";
 import { InstrumentStatusChip } from "@/app/(tenant)/t/[slug]/instruments/status";
 import { RetireInstrumentForm } from "@/app/(tenant)/t/[slug]/instruments/RetireForm";
+import { ReturnFromLabForm, SendToLabForm } from "@/app/(tenant)/t/[slug]/instruments/[assetId]/RecordControls";
+import { ImpactForm } from "@/app/(tenant)/t/[slug]/instruments/[assetId]/ImpactForm";
+import { IMPACT_OUTCOME_LABELS, listCompletedAssessments } from "@/lib/impact-assessments";
+import { listTenantMemberOptions } from "@/lib/findings";
 import {
   DECISION_RULE_LABELS,
   RECORD_KIND_LABELS,
@@ -13,9 +17,12 @@ import {
   magnitudeLabel,
   type Channel,
 } from "@/domain/calibration";
-import { formatDateEs, isoFromDate } from "@/domain/inspections/dates";
-import { ASSET_STATUS_LABELS } from "@/domain/inspections/types";
-import { SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { diffDays, formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
+import { ASSET_STATUS_LABELS, RESULT_LABELS } from "@/domain/inspections/types";
+import { Button, FormError, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { getEnabledModulesCached } from "@/lib/modules";
+import { lastFunctionalCheck } from "@/lib/functional-check";
+import { startFunctionalCheckAction } from "@/app/(tenant)/t/[slug]/instruments/actions";
 
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -56,15 +63,22 @@ export default async function InstrumentPage({
   searchParams,
 }: {
   params: Promise<{ slug: string; assetId: string }>;
-  searchParams: Promise<{ historial?: string }>;
+  searchParams: Promise<{ historial?: string; error?: string }>;
 }) {
   const { slug, assetId } = await params;
   const sp = await searchParams;
-  const { tenant, canManage } = await loadInstrumentsAccess(slug);
+  const { ctx, tenant, canManage, canWrite } = await loadInstrumentsAccess(slug);
   const page = Number(sp.historial);
   const detail = await getInstrument(tenant.id, assetId, { historyPage: Number.isInteger(page) && page > 1 ? page : 1 });
   if (!detail) notFound();
   const { asset, control, channels, view, records, openShipment, pendingAssessment } = detail;
+  // La prueba funcional usa el motor de Inspecciones: solo se ofrece si ese módulo está activo.
+  const functionalCheckEnabled = (await getEnabledModulesCached(tenant.id)).has("inspections");
+  const [completedAssessments, members, lastCheck] = await Promise.all([
+    listCompletedAssessments(tenant.id, asset.id),
+    canManage && pendingAssessment ? listTenantMemberOptions(tenant.id) : Promise.resolve([]),
+    functionalCheckEnabled ? lastFunctionalCheck(tenant.id, asset.id) : Promise.resolve(null),
+  ]);
   const base = `/t/${slug}/instruments`;
   const attrs = asset.attributes as Record<string, string | undefined>;
   const retired = asset.status === "retired";
@@ -122,6 +136,53 @@ export default async function InstrumentPage({
         {retired ? <p className="text-sm">Dado de baja{asset.retirementReason ? `: ${asset.retirementReason}` : ""}.</p> : null}
       </section>
 
+      {canWrite && !retired ? (
+        <section aria-label="Acciones" className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-3">
+            {control.requiresCalibration ? (
+              <Link href={`${base}/${asset.id}/records/new`} className={buttonClass(usable || openShipment ? "secondary" : "primary")}>
+                Cargar calibración
+              </Link>
+            ) : null}
+            {control.requiresVerification ? (
+              <Link href={`${base}/${asset.id}/records/new?tipo=verification`} className={buttonClass("secondary")}>
+                Cargar verificación
+              </Link>
+            ) : null}
+            {functionalCheckEnabled ? (
+              <form action={startFunctionalCheckAction.bind(null, slug, asset.id)}>
+                <Button type="submit" variant="secondary">
+                  Hacer la prueba funcional
+                </Button>
+              </form>
+            ) : null}
+          </div>
+          {sp.error ? <FormError>{sp.error}</FormError> : null}
+          {functionalCheckEnabled ? (
+            <p className="text-xs text-[var(--color-ink-muted)]">
+              {lastCheck ? (
+                <>
+                  Último control previo al uso: {formatDateEs(lastCheck.inspectedAt)} · {RESULT_LABELS[lastCheck.result ?? "fit"]} (hace {Math.max(0, diffDays(lastCheck.inspectedAt, todayIso()))} días){" "}
+                  <Link href={`/t/${slug}/inspections/${lastCheck.id}`} className="text-[var(--color-accent)] hover:underline">
+                    Ver
+                  </Link>
+                </>
+              ) : (
+                "Todavía no se hizo ninguna prueba funcional. Es opcional y no extiende la vigencia de la calibración."
+              )}
+            </p>
+          ) : null}
+          {controlled ? (
+            <details className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4">
+              <summary className="cursor-pointer text-sm font-semibold">{openShipment ? "Registrar el regreso del laboratorio" : "Enviar a calibrar"}</summary>
+              <div className="mt-3">
+                {openShipment ? <ReturnFromLabForm slug={slug} assetId={asset.id} today={todayIso()} /> : <SendToLabForm slug={slug} assetId={asset.id} today={todayIso()} />}
+              </div>
+            </details>
+          ) : null}
+        </section>
+      ) : null}
+
       {pendingAssessment ? (
         <SectionBlock title="Evaluación de impacto pendiente" what="El equipo estuvo fuera de tolerancia: hay que revisar si las mediciones hechas con él son confiables.">
           <dl className="grid gap-3 sm:grid-cols-3">
@@ -133,6 +194,11 @@ export default async function InstrumentPage({
               <StatusChip status="danger" label="Pendiente" />
             </Item>
           </dl>
+          {canManage ? (
+            <ImpactForm slug={slug} assetId={asset.id} assessmentId={pendingAssessment.id} members={members} defaultOwnerId={members.some((m) => m.id === ctx.userId) ? ctx.userId : ""} />
+          ) : (
+            <p className="text-sm text-[var(--color-ink-muted)]">La completa un administrador o un responsable de proceso. Hasta entonces el equipo no se puede usar.</p>
+          )}
         </SectionBlock>
       ) : null}
 
@@ -185,6 +251,40 @@ export default async function InstrumentPage({
         </SectionBlock>
       ) : null}
 
+      {completedAssessments.length > 0 ? (
+        <SectionBlock title="Evaluaciones de impacto realizadas" what="Qué se decidió cuando el equipo estuvo fuera de tolerancia.">
+          <ul className="flex flex-col gap-3">
+            {completedAssessments.map((a) => (
+              <li key={a.id} className="flex flex-col gap-1 rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3 text-sm">
+                <span className="font-medium">
+                  {a.outcome ? IMPACT_OUTCOME_LABELS[a.outcome] : "—"}
+                  <span className="ml-2 font-normal text-[var(--color-ink-muted)]">
+                    {a.windowFrom ? `desde el ${dateOrDash(a.windowFrom)}` : "desde que se empezó a usar"} hasta el {dateOrDash(a.windowTo)} · completada el {dateOrDash(a.completedAt)}
+                  </span>
+                </span>
+                {a.affectedSummary ? <span>Qué se midió: {a.affectedSummary}</span> : null}
+                {a.rationale ? <span className="text-[var(--color-ink-muted)]">{a.rationale}</span> : null}
+                {a.finding ? (
+                  <Link href={`/t/${slug}/findings/${a.finding.id}`} className="text-[var(--color-accent)] hover:underline">
+                    Hallazgo: {a.finding.title}
+                  </Link>
+                ) : null}
+                {a.actions.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {a.actions.map((x) => (
+                      <li key={x.action.id}>
+                        {x.action.title}
+                        {x.action.dueAt ? ` · para el ${formatDateEs(isoFromDate(x.action.dueAt))}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </SectionBlock>
+      ) : null}
+
       <SectionBlock
         title={`Historial de calibraciones y verificaciones (${detail.recordCount})`}
         what="Cada control con su resultado, su vigencia y el certificado para descargar."
@@ -205,6 +305,7 @@ export default async function InstrumentPage({
                   <th scope="col" className={th}>Resultado</th>
                   <th scope="col" className={th}>Vigente hasta</th>
                   <th scope="col" className={th}>Certificado</th>
+                  <th scope="col" className={th}><span className="sr-only">Detalle</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-line)]">
@@ -260,6 +361,11 @@ export default async function InstrumentPage({
                             ))}
                           </ul>
                         )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <Link href={`${base}/${asset.id}/records/${r.id}`} className="text-[var(--color-accent)] hover:underline">
+                          {r.status === "draft" && canWrite ? "Continuar" : "Ver detalle"}
+                        </Link>
                       </td>
                     </tr>
                   );

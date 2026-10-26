@@ -11,6 +11,7 @@ import { InspectionCapture, type CaptureItem } from "@/app/(tenant)/t/[slug]/ins
 import { CorrectAnswer, FollowUpControls, PrintButton } from "@/app/(tenant)/t/[slug]/inspections/[inspectionId]/InspectionFollowUp";
 import { startInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 import { getAssetType } from "@/domain/inspections/asset-types";
+import { INSTRUMENT_TYPE_KEY } from "@/domain/calibration/types";
 import { explainResult, itemOutcome } from "@/domain/inspections/result";
 import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import { CRITICALITY_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
@@ -104,8 +105,8 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
           <>
             <StatusChip status={RESULT_CHIP[result]} label={RESULT_LABELS[result]} />
             {asset ? (
-              <Link href={`/t/${slug}/assets/${asset.id}`} className={buttonClass("secondary", "print:hidden")}>
-                Ver el activo
+              <Link href={asset.typeKey === INSTRUMENT_TYPE_KEY ? `/t/${slug}/instruments/${asset.id}` : `/t/${slug}/assets/${asset.id}`} className={buttonClass("secondary", "print:hidden")}>
+                {asset.typeKey === INSTRUMENT_TYPE_KEY ? "Ver el equipo" : "Ver el activo"}
               </Link>
             ) : null}
             <PrintButton />

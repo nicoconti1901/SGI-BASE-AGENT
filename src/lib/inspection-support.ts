@@ -24,9 +24,12 @@ export async function writeAudit(
   await db.inspectionAudit.create({ data: input });
 }
 
+/** Vencimientos de equipos de medición (Task 16): `entityId` es el equipo, o la evaluación en `instrument_impact`. */
+export type InstrumentDueEntityType = "instrument_calibration" | "instrument_verification" | "instrument_impact";
+
 export type DueItemSpec = {
   tenantId: string;
-  entityType: "inspection_plan" | "asset_due_date" | typeof ACTION_ENTITY_TYPE;
+  entityType: "inspection_plan" | "asset_due_date" | InstrumentDueEntityType | typeof ACTION_ENTITY_TYPE;
   entityId: string;
   title: string;
   dueAt: Date;

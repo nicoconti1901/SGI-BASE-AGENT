@@ -5,3 +5,5 @@ export * from "./record";
 export * from "./status";
 export * from "./config";
 export * from "./describe";
+export * from "./closing";
+export * from "./guide";

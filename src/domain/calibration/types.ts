@@ -4,6 +4,9 @@ import type { Numeric } from "./decimal";
 /** Clave del tipo de activo de los equipos de medición. No está en el registro de inspecciones: tiene su propio módulo. */
 export const INSTRUMENT_TYPE_KEY = "measuring_equipment";
 
+/** Plantilla de inspección de la prueba funcional («bump test»): sale del motor de la Task 15. */
+export const FUNCTIONAL_CHECK_TEMPLATE_KEY = "functional_check";
+
 export const DECISION_RULES = ["guard_band", "simple_acceptance", "certificate_statement"] as const;
 export type DecisionRule = (typeof DECISION_RULES)[number];
 

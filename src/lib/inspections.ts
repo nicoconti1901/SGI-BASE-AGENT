@@ -5,6 +5,7 @@ import { InspectionError, writeAudit, type Db, type Tx } from "@/lib/inspection-
 import { getAssetType } from "@/domain/inspections/asset-types";
 import { applicableItems, deriveInspectionResult, itemOutcome, resolveAutoConform } from "@/domain/inspections/result";
 import { applyAssetStatus, createFollowUp, updatePlan, type FollowUpChoice } from "@/lib/inspection-consequences";
+import { runInspectionCloseHooks } from "@/lib/inspection-hooks";
 import type { NonconformingItem } from "@/domain/inspections/consequences";
 import { validateInspectionForClose, MAX_PHOTOS_PER_ANSWER, MAX_PHOTOS_PER_INSPECTION } from "@/domain/inspections/close";
 import { dateFromIso, isIsoDate, isoFromDate, todayIso } from "@/domain/inspections/dates";
@@ -568,6 +569,12 @@ export async function closeInspection(
         choice: input.followUp,
         detectedAt: inspectedAt,
       });
+      await runInspectionCloseHooks(tx, template.key, {
+        tenantId: input.tenantId,
+        actorUserId: input.actorUserId,
+        inspection: { id: inspection.id, assetId: inspection.assetId, inspectedAt },
+        result: derived.result,
+      });
       return { id: inspection.id, alreadyClosed: false };
     },
     { timeout: 30_000 },
@@ -713,6 +720,14 @@ export async function correctInspectionAnswer(
           nonconforming,
           statusChange,
           detectedAt: isoFromDate(inspection.inspectedAt),
+        });
+      }
+      if (previousResult !== "unfit" && derived.result === "unfit") {
+        await runInspectionCloseHooks(tx, template.key, {
+          tenantId: input.tenantId,
+          actorUserId: input.actorUserId,
+          inspection: { id: inspection.id, assetId: inspection.assetId, inspectedAt: isoFromDate(inspection.inspectedAt) },
+          result: derived.result,
         });
       }
       return { result: derived.result, previousResult, statusChange };
