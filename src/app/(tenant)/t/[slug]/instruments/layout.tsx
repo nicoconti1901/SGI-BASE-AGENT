@@ -10,6 +10,8 @@ export default async function InstrumentsLayout({ children, params }: LayoutProp
         eyebrow="Equipos de medición · ISO 9001 §7.1.5 · ISO 14001 y 45001 §9.1.1"
         title="Equipos de medición"
         purpose="Qué equipos podés usar hoy y cuáles no, con la evidencia de su calibración."
+        guideHref={`/t/${slug}/instruments/guia`}
+        guideLabel="Guía de equipos de medición →"
       />
       {children}
     </PageFrame>

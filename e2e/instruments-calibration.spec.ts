@@ -5,20 +5,28 @@ import { test, expect, type Page } from "@playwright/test";
  * certificado adjunto, el cierre y el equipo vigente; después un envío al laboratorio. Usa una empresa propia y activa
  * el módulo desde la plataforma. Requiere `npm run db:seed`.
  */
-async function setup(page: Page, stamp: number) {
-  const slug = `e2e-carga-${stamp}`;
-  const code = `DET-${String(stamp).slice(-5)}`;
+const PNG_1PX = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+
+/** `tag` distingue las empresas de pruebas que corren en paralelo (el reloj puede dar el mismo milisegundo). */
+async function setup(page: Page, tag: string, opts: { inspections?: boolean } = {}) {
+  const stamp = Date.now();
+  const slug = `e2e-carga-${stamp}-${tag}`;
+  const code = `DET-${tag.toUpperCase()}${String(stamp).slice(-4)}`;
   await page.goto("/");
   await page.getByRole("button", { name: /Superusuario SGI/ }).click();
   await expect(page).toHaveURL(/\/platform$/, { timeout: 30_000 });
   await page.goto("/platform/tenants");
-  await page.getByLabel("Nombre").fill(`E2E Carga ${stamp}`);
+  await page.getByLabel("Nombre").fill(`E2E Carga ${stamp} ${tag}`);
   await page.getByLabel(/^Slug/).fill(slug);
   await page.getByRole("button", { name: "Crear tenant y aplicar plantilla" }).click();
   await expect(page).toHaveURL(new RegExp(`/platform/tenants/${slug}$`), { timeout: 30_000 });
   const modules = page.getByRole("region", { name: "Módulos de la empresa" }).or(page.locator("section", { hasText: "Módulos de la empresa" }));
   await modules.getByRole("button", { name: "Activar Equipos de medición", exact: true }).click();
   await expect(modules.getByRole("button", { name: "Desactivar Equipos de medición" })).toBeVisible({ timeout: 20_000 });
+  if (opts.inspections) {
+    await modules.getByRole("button", { name: "Activar Inspecciones", exact: true }).click();
+    await expect(modules.getByRole("button", { name: "Desactivar Inspecciones" })).toBeVisible({ timeout: 20_000 });
+  }
 
   await page.goto(`/t/${slug}/master-data/sites`);
   const site = page.locator("form", { has: page.getByRole("button", { name: "Registrar sede" }) });
@@ -66,7 +74,7 @@ test("un detector fuera de tolerancia queda en «No usar» hasta completar la ev
   page.on("console", (m) => {
     if (m.type() === "error" && /controlled|uncontrolled|hydrat/i.test(m.text())) warnings.push(m.text().slice(0, 200));
   });
-  const { slug, code, fichaUrl } = await setup(page, Date.now() + 1);
+  const { slug, code, fichaUrl } = await setup(page, "impacto");
 
   // Un punto fuera de tolerancia (58 contra 50 ppm, máximo ±5): no apto y evaluación de impacto abierta.
   await loadAndClose(page, fichaUrl, "58");
@@ -121,13 +129,58 @@ test("un detector fuera de tolerancia queda en «No usar» hasta completar la ev
   expect(warnings).toEqual([]);
 });
 
+test("la prueba funcional es opcional: sin Inspecciones no se ofrece, y una falla saca el equipo de servicio y abre la evaluación", async ({ page }) => {
+  test.setTimeout(5 * 60_000);
+  const warnings: string[] = [];
+  page.on("console", (m) => {
+    if (m.type() === "error" && /controlled|uncontrolled|hydrat/i.test(m.text())) warnings.push(m.text().slice(0, 200));
+  });
+  const { code, fichaUrl } = await setup(page, "prueba", { inspections: true });
+  await loadAndClose(page, fichaUrl, "50,5");
+  await expect(page.getByText("Se puede usar")).toBeVisible();
+  await expect(page.getByText(/Todavía no se hizo ninguna prueba funcional/)).toBeVisible();
+
+  // Una prueba funcional apta no cambia nada: el equipo sigue vigente.
+  await page.getByRole("button", { name: "Hacer la prueba funcional" }).click();
+  await expect(page).toHaveURL(/\/inspections\/[a-z0-9]+$/, { timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: code, level: 2 })).toBeVisible({ timeout: 30_000 });
+  const conformButtons = page.getByRole("button", { name: "Conforme", exact: true });
+  for (let i = 0, n = await conformButtons.count(); i < n; i++) await conformButtons.nth(i).click();
+  await page.getByRole("button", { name: "Revisar y cerrar" }).click();
+  await page.getByRole("button", { name: "Cerrar y firmar" }).click();
+  await expect(page.getByRole("link", { name: "Ver el equipo" })).toBeVisible({ timeout: 30_000 });
+  await page.goto(fichaUrl);
+  await expect(page.getByText("Se puede usar")).toBeVisible();
+  await expect(page.getByText(/Último control previo al uso: .* Apto/)).toBeVisible();
+
+  // Ahora no responde al gas de prueba: no apto.
+  await page.getByRole("button", { name: "Hacer la prueba funcional" }).click();
+  await expect(page).toHaveURL(/\/inspections\/[a-z0-9]+$/, { timeout: 30_000 });
+  for (let i = 0, n = await conformButtons.count(); i < n; i++) await conformButtons.nth(i).click();
+  const response = page.getByRole("article", { name: /Responde a una referencia conocida/ });
+  await response.getByRole("button", { name: "No conforme" }).click();
+  await response.getByLabel(/Qué encontraste/).fill("La lectura no sube con el gas de prueba");
+  await response.getByLabel("Sacar o elegir foto").setInputFiles({ name: "bump.png", mimeType: "image/png", buffer: PNG_1PX });
+  await expect(response.getByRole("img", { name: /Foto de la no conformidad/ })).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: "Revisar y cerrar" }).click();
+  await page.getByRole("button", { name: "Cerrar y firmar" }).click();
+  await expect(page.getByRole("link", { name: "Ver el equipo" })).toBeVisible({ timeout: 30_000 });
+
+  // La ficha: fuera de servicio y con la evaluación de impacto pendiente por la prueba fallida.
+  await page.goto(fichaUrl);
+  await expect(page.getByText("NO USAR")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Evaluación de impacto pendiente" })).toBeVisible();
+  await expect(page.getByText("Falló la prueba funcional")).toBeVisible();
+  expect(warnings).toEqual([]);
+});
+
 test("carga la calibración de un detector con tres puntos, ve el resultado en vivo y lo deja vigente", async ({ page }) => {
   test.setTimeout(4 * 60_000);
   const warnings: string[] = [];
   page.on("console", (m) => {
     if (m.type() === "error" && /controlled|uncontrolled|hydrat/i.test(m.text())) warnings.push(m.text().slice(0, 200));
   });
-  const { slug, code, fichaUrl } = await setup(page, Date.now());
+  const { slug, code, fichaUrl } = await setup(page, "carga");
 
   await page.getByRole("link", { name: "Cargar calibración" }).click();
   await expect(page).toHaveURL(/\/records\/new$/, { timeout: 30_000 });
@@ -170,7 +223,19 @@ test("carga la calibración de un detector con tres puntos, ve el resultado en v
   // La ficha: vigente, con el certificado para descargar y el detalle del registro.
   await expect(page.getByText("Se puede usar")).toBeVisible();
   await expect(page.getByText("NO USAR")).toHaveCount(0);
+  // Sin el módulo Inspecciones no se ofrece la prueba funcional.
+  await expect(page.getByRole("button", { name: "Hacer la prueba funcional" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "certificado-001.pdf" })).toBeVisible();
+
+  // El tablero de la lista: cumplimiento del plan y la guía del módulo.
+  await page.goto(`/t/${slug}/instruments`);
+  const plan = page.getByRole("region", { name: "Plan de calibración y próximos vencimientos" });
+  await expect(plan).toContainText("100 %");
+  await expect(plan).toContainText("1 de 1 equipos con control se pueden usar hoy");
+  await expect(plan.getByText("Ningún equipo vence en los próximos 30 días.")).toBeVisible();
+  await page.getByRole("link", { name: "Guía de equipos de medición →" }).click();
+  await expect(page.getByRole("heading", { name: "Guía de equipos de medición" })).toBeVisible({ timeout: 30_000 });
+  await page.goto(fichaUrl);
   await page.getByRole("link", { name: "Ver detalle" }).click();
   await expect(page.getByRole("heading", { name: new RegExp(`Calibración del .* · ${code}`) })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("cell", { name: "±5" })).toBeVisible();
