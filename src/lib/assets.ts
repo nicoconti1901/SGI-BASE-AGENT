@@ -421,6 +421,16 @@ export async function listAssets(tenantId: string, filter: AssetFilter = {}, db:
   };
 }
 
+/** Las últimas inspecciones del activo (índice `[tenantId, assetId, inspectedAt]`): una consulta, con tope. */
+export async function listAssetInspections(tenantId: string, assetId: string, take = 10, db: Db = prisma) {
+  return db.inspection.findMany({
+    where: { tenantId, assetId },
+    orderBy: [{ inspectedAt: "desc" }, { id: "desc" }],
+    take,
+    select: { id: true, status: true, result: true, scorePct: true, inspectedAt: true, template: { select: { name: true } } },
+  });
+}
+
 export async function getAsset(tenantId: string, assetId: string, db: Db = prisma) {
   const asset = await db.asset.findFirst({
     where: { id: assetId, tenantId },
