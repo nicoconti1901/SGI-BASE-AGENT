@@ -46,6 +46,7 @@ export function EvaluateForm({
   supplierId,
   criticality,
   kinds,
+  defaultKind,
   template,
   members,
   currentUserId,
@@ -56,6 +57,8 @@ export function EvaluateForm({
   supplierId: string;
   criticality: SupplierCriticalityValue;
   kinds: EvaluationKindValue[];
+  /** Tipo preseleccionado (por ejemplo «por evento» desde un hallazgo). */
+  defaultKind?: EvaluationKindValue;
   template: { version: number; approvedMin: number; conditionalMin: number; criteria: FormCriterion[] };
   members: Option[];
   currentUserId: string;
@@ -68,7 +71,7 @@ export function EvaluateForm({
   const keep = useKeepInputs(formAction, state);
 
   const modes: EvaluationModeValue[] = criticality === "critical" ? ["full"] : criticality === "low" ? ["declared", "full", "simplified"] : ["full", "simplified"];
-  const [kind, setKind] = useState<EvaluationKindValue>(kinds[0]);
+  const [kind, setKind] = useState<EvaluationKindValue>(defaultKind && kinds.includes(defaultKind) ? defaultKind : kinds[0]);
   const [mode, setMode] = useState<EvaluationModeValue>(modes[0]);
   const [scores, setScores] = useState<Record<string, string>>({});
   const [comments, setComments] = useState<Record<string, string>>({});

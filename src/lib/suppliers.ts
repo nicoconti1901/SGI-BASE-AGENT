@@ -1,5 +1,7 @@
+import { randomUUID } from "node:crypto";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { reminderStartsAt } from "@/domain/automation/due";
 import { closeDueItemsForEntity, upsertOpenDueItemForEntity, type CreateDueItemInput } from "@/lib/automation";
 import { cleanName, normalizeKey } from "@/domain/masterdata/roster";
 import { buildApprovedList, type ApprovedList } from "@/domain/suppliers/approved-list";
@@ -12,7 +14,7 @@ import {
   type SupplierCsvRow,
   type SupplierImportPlan,
 } from "@/domain/suppliers/import";
-import { DEFAULT_REEVALUATION, type ReevaluationConfig } from "@/domain/suppliers/schedule";
+import { DEFAULT_INITIAL_EVAL_DAYS, DEFAULT_REEVALUATION, initialEvaluationDue, type ReevaluationConfig } from "@/domain/suppliers/schedule";
 import { computeSupplierSummary, windowEnd } from "@/domain/suppliers/summary";
 import { DEFAULT_CRITERIA, DEFAULT_DOCUMENT_TYPES } from "@/domain/suppliers/templates";
 import {
@@ -97,10 +99,21 @@ export async function ensureSupplierDefaults(tenantId: string, db: PrismaClient 
   }
 }
 
-export async function getReevaluationConfig(tenantId: string, db: Tx = prisma): Promise<ReevaluationConfig> {
+/** Periodicidad de la reevaluación y plazo de la evaluación inicial de la empresa (con los valores por defecto del SPEC). */
+export async function getSupplierSchedule(
+  tenantId: string,
+  db: Tx = prisma,
+): Promise<{ config: ReevaluationConfig; initialEvalDays: number }> {
   const s = await db.supplierSettings.findUnique({ where: { tenantId } });
-  if (!s) return DEFAULT_REEVALUATION;
-  return { critical: s.reevalCriticalMonths, standard: s.reevalStandardMonths, conditional: s.reevalConditionalMonths };
+  if (!s) return { config: DEFAULT_REEVALUATION, initialEvalDays: DEFAULT_INITIAL_EVAL_DAYS };
+  return {
+    config: { critical: s.reevalCriticalMonths, standard: s.reevalStandardMonths, conditional: s.reevalConditionalMonths },
+    initialEvalDays: s.initialEvalDays,
+  };
+}
+
+export async function getReevaluationConfig(tenantId: string, db: Tx = prisma): Promise<ReevaluationConfig> {
+  return (await getSupplierSchedule(tenantId, db)).config;
 }
 
 // ─── Resumen desnormalizado ────────────────────────────────────────────────
@@ -114,7 +127,7 @@ export async function recomputeSupplierSummary(tenantId: string, supplierId: str
   const supplier = await db.supplier.findFirst({ where: { id: supplierId, tenantId } });
   if (!supplier) throw new SupplierError("Proveedor no encontrado");
 
-  const [last, docTypes, config] = await Promise.all([
+  const [last, docTypes, schedule] = await Promise.all([
     db.supplierEvaluation.findFirst({
       where: { tenantId, supplierId, voidedAt: null },
       orderBy: [{ evaluatedAt: "desc" }, { createdAt: "desc" }],
@@ -124,7 +137,7 @@ export async function recomputeSupplierSummary(tenantId: string, supplierId: str
       where: { tenantId, active: true, appliesTo: { has: supplier.type }, OR: [{ required: true }, { blocksEnablement: true }] },
       select: { id: true, required: true, blocksEnablement: true },
     }),
-    getReevaluationConfig(tenantId, db),
+    getSupplierSchedule(tenantId, db),
   ]);
   const currentDocs = docTypes.length
     ? await db.supplierDocument.findMany({
@@ -140,11 +153,11 @@ export async function recomputeSupplierSummary(tenantId: string, supplierId: str
     last: last && { ...last, totalScore: num(last.totalScore) },
     docTypes,
     currentDocs,
-    config,
+    config: schedule.config,
     today: buenosAiresToday(now),
   });
   const updated = await db.supplier.update({ where: { id: supplier.id }, data: { ...summary, lastScore: summary.lastScore } });
-  await syncEvaluationDueItem(db, updated);
+  await syncEvaluationDueItem(db, updated, schedule.initialEvalDays);
   await syncDocumentDueItems(db, updated);
   return updated;
 }
@@ -213,6 +226,7 @@ export const asClient = (db: Tx | PrismaClient) => db as unknown as PrismaClient
 export const SUPPLIER_EVALUATION_ENTITY = "supplier_evaluation";
 export const SUPPLIER_DOCUMENT_ENTITY = "supplier_document";
 const REEVALUATION_LEAD_DAYS = 30;
+const INITIAL_EVALUATION_LEAD_DAYS = 7;
 
 /** `siteId` del vencimiento: la sede del proveedor solo si atiende exactamente una. */
 export async function singleSupplierSiteId(tenantId: string, supplierId: string, db: Tx): Promise<string | null> {
@@ -242,25 +256,46 @@ async function ensureOpenDueItem(db: Tx, input: CreateDueItemInput & { entityId:
 }
 
 /**
- * Un único `DueItem` abierto de reevaluación por proveedor (`supplier_evaluation` / supplier.id):
- * se actualiza con la fecha vigente o se cierra si ya no corresponde. Repetir no duplica.
+ * Un único `DueItem` abierto de evaluación por proveedor (`supplier_evaluation` / supplier.id):
+ * - sin evaluar (crítico y estándar): la evaluación inicial pendiente, alta + N días, aviso 7 días antes;
+ * - evaluado: la reevaluación en la fecha vigente, aviso 30 días antes;
+ * - no aprobado, bajo impacto, de baja: ninguno (se cierra el abierto).
+ * Se actualiza con la fecha vigente o se cierra si ya no corresponde. Repetir no duplica.
  */
 async function syncEvaluationDueItem(
   db: Tx,
-  supplier: { id: string; tenantId: string; legalName: string; status: SupplierStatusValue; nextEvaluationDueAt: Date | null; ownerUserId: string | null },
+  supplier: {
+    id: string;
+    tenantId: string;
+    legalName: string;
+    status: SupplierStatusValue;
+    criticality: SupplierCriticalityValue;
+    createdAt: Date;
+    nextEvaluationDueAt: Date | null;
+    ownerUserId: string | null;
+  },
+  initialEvalDays: number,
 ) {
   const key = { tenantId: supplier.tenantId, entityType: SUPPLIER_EVALUATION_ENTITY, entityId: supplier.id };
-  if (supplier.status === "inactive" || !supplier.nextEvaluationDueAt) {
+  const initialDue = initialEvaluationDue({
+    status: supplier.status,
+    criticality: supplier.criticality,
+    createdDay: buenosAiresToday(supplier.createdAt),
+    initialEvalDays,
+  });
+  const dueAt = supplier.status === "inactive" ? null : (supplier.nextEvaluationDueAt ?? initialDue);
+  if (!dueAt) {
     await closeDueItemsForEntity(key, asClient(db));
     return;
   }
+  const isInitial = !supplier.nextEvaluationDueAt;
   await ensureOpenDueItem(
     db,
     {
       ...key,
-      title: `Reevaluar proveedor: ${supplier.legalName}`,
-      dueAt: supplier.nextEvaluationDueAt,
-      leadDays: REEVALUATION_LEAD_DAYS,
+      title: isInitial ? `Evaluar proveedor nuevo: ${supplier.legalName}` : `Reevaluar proveedor: ${supplier.legalName}`,
+      dueAt,
+      leadDays: isInitial ? INITIAL_EVALUATION_LEAD_DAYS : REEVALUATION_LEAD_DAYS,
       ownerUserId: supplier.ownerUserId,
       siteId: await singleSupplierSiteId(supplier.tenantId, supplier.id, db),
     },
@@ -753,8 +788,12 @@ export async function applySupplierImport(
           missingBlockingDocs: applicable.filter((t) => t.blocksEnablement).length,
         };
       };
+      const { initialEvalDays } = await getSupplierSchedule(input.tenantId, tx);
+      const createdDay = buenosAiresToday(new Date());
+      const rows = toCreate.map((row) => ({ id: randomUUID(), row }));
       await tx.supplier.createMany({
-        data: toCreate.map((row) => ({
+        data: rows.map(({ id, row }) => ({
+          id,
           tenantId: input.tenantId,
           legalName: row.legalName,
           tradeName: row.tradeName,
@@ -773,6 +812,23 @@ export async function applySupplierImport(
           ...missing(row.type),
         })),
       });
+      // La evaluación inicial pendiente de los críticos y estándar, en lote (el mismo `DueItem` que deja `recomputeSupplierSummary`).
+      const dueAt = initialEvaluationDue({ status: "potential", criticality: "standard", createdDay, initialEvalDays });
+      const pending = rows.filter(({ row }) => row.criticality !== "low");
+      if (dueAt && pending.length) {
+        await tx.dueItem.createMany({
+          data: pending.map(({ id, row }) => ({
+            tenantId: input.tenantId,
+            title: `Evaluar proveedor nuevo: ${row.legalName}`,
+            entityType: SUPPLIER_EVALUATION_ENTITY,
+            entityId: id,
+            dueAt,
+            leadDays: INITIAL_EVALUATION_LEAD_DAYS,
+            remindAt: reminderStartsAt(dueAt, INITIAL_EVALUATION_LEAD_DAYS),
+            ownerUserId: row.ownerEmail ? (ctx.ownerByEmail.get(row.ownerEmail) ?? null) : null,
+          })),
+        });
+      }
       await audit(tx, {
         tenantId: input.tenantId,
         entityId: "import",
