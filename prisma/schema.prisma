@@ -141,6 +141,7 @@ model Tenant {
   exposurePeriods       ExposurePeriod[]
   exposureRevisions     ExposureRevision[]
   safetySettings        SafetyStatsSettings?
+  safetyIndicatorLinks  SafetyIndicatorLink[]
   sites                 Site[]
   jobPositions          JobPosition[]
   jobTasks              JobTask[]
@@ -1132,11 +1133,11 @@ model Objective {
 
 /// Indicador (§9.1) que sigue el avance de un objetivo.
 model Indicator {
-  id             String             @id @default(cuid())
+  id             String                @id @default(cuid())
   tenantId       String
   objectiveId    String
   name           String
-  formula        String             @default("")
+  formula        String                @default("")
   unit           String
   direction      IndicatorDirection
   target         Float
@@ -1144,12 +1145,13 @@ model Indicator {
   frequency      IndicatorFrequency
   kind           IndicatorKind
   ownerUserId    String
-  active         Boolean            @default(true)
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  tenant         Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  objective      Objective          @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  active         Boolean               @default(true)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  tenant         Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  objective      Objective             @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
   measurements   Measurement[]
+  safetyLinks    SafetyIndicatorLink[]
 
   @@index([tenantId, objectiveId])
   @@index([ownerUserId])
@@ -2845,4 +2847,23 @@ model InstrumentShipment {
 
   @@index([tenantId, assetId, sentAt(sort: Desc)])
   @@map("instrument_shipment")
+}
+
+// ─── Accidentabilidad: meta de los índices (Task 17.4) — SPEC-accident-stats.md ───
+
+/// Vincula un índice del tablero con un Indicador de la Task 11c para leer su meta. Solo se lee: los índices
+/// se calculan y nunca escriben mediciones. `metric` es `if`, `ig`, `ii` o `id` (CHECK en el SQL de la migración).
+model SafetyIndicatorLink {
+  id          String    @id @default(cuid())
+  tenantId    String
+  metric      String
+  indicatorId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  indicator   Indicator @relation(fields: [indicatorId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, metric])
+  @@index([indicatorId])
+  @@map("safety_indicator_link")
 }
