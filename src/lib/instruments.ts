@@ -5,7 +5,7 @@ import type { ObjectStorage } from "@/lib/storage/types";
 import { InspectionError, closeOpenDueItems, ownerOfPerson, syncOpenDueItem, writeAudit, type Db, type Tx } from "@/lib/inspection-support";
 import { cleanName } from "@/domain/masterdata/roster";
 import { normalizeAssetCode } from "@/domain/inspections/asset-types/resolve";
-import { addDays, dateFromIso, endOfDayInstant, isIsoDate, isoFromDate, todayIso } from "@/domain/inspections/dates";
+import { addDays, addMonths, dateFromIso, diffDays, endOfDayInstant, isIsoDate, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import {
   INSTRUMENT_TYPE_KEY,
   STATUS_GROUPS,
@@ -358,7 +358,7 @@ function baseQuery(tenantId: string, filter: InstrumentFilter, today: string) {
   const q = filter.q?.trim();
   const like = q ? `%${q.replace(/[\\%_]/g, "\\$&")}%` : null;
   return Prisma.sql`
-    SELECT a.id, a.code, c."nextDueAt", ${STATUS_SQL(today)} AS st
+    SELECT a.id, a.code, a.status AS "assetStatus", c."nextDueAt", ${STATUS_SQL(today)} AS st
     FROM "instrument_control" c
     JOIN "asset" a ON a.id = c."assetId" AND a."tenantId" = c."tenantId"
     WHERE c."tenantId" = ${tenantId}
@@ -382,6 +382,76 @@ export async function instrumentCounters(tenantId: string, filter: InstrumentFil
   }
   out.total = [...byStatus.values()].reduce((a, b) => a + b, 0);
   return out;
+}
+
+export type PlanCompliance = {
+  /** Equipos con control metrológico (sin los dados de baja ni los «sin control»). */
+  controlled: number;
+  /** De esos, los que se pueden usar hoy. */
+  usable: number;
+  /** Calibraciones aptas de los últimos 12 meses que tenían una anterior: cuántas se hicieron antes de que venciera. */
+  onTime: number;
+  renewals: number;
+};
+
+/**
+ * Cumplimiento del plan, con dos consultas agregadas (sin cargar equipos): cuántos equipos con control se pueden usar
+ * hoy, y qué parte de las recalibraciones de los últimos 12 meses se hizo antes del vencimiento de la anterior.
+ */
+export async function planCompliance(tenantId: string, filter: InstrumentFilter = {}, db: Db = prisma, today: string = todayIso()): Promise<PlanCompliance> {
+  const since = addMonths(today, -12);
+  const [status, renewals] = await Promise.all([
+    db.$queryRaw<{ controlled: bigint; usable: bigint }[]>`
+      SELECT count(*) FILTER (WHERE b.st <> 'not_required') AS controlled,
+             count(*) FILTER (WHERE b.st IN ('valid', 'due_soon') AND b."assetStatus" = 'in_service') AS usable
+      FROM (${baseQuery(tenantId, filter, today)}) b`,
+    db.$queryRaw<{ on_time: bigint; total: bigint }[]>`
+      WITH recs AS (
+        SELECT r."performedAt",
+               LAG(r."validUntil") OVER (PARTITION BY r."assetId" ORDER BY r."performedAt", r."closedAt") AS prev_until
+        FROM "calibration_record" r
+        JOIN "asset" a ON a.id = r."assetId" AND a."tenantId" = r."tenantId"
+        WHERE r."tenantId" = ${tenantId} AND r.kind = 'calibration' AND r.status = 'closed' AND r."asLeftResult" = 'apt'
+          AND a.status <> 'retired' AND a."typeKey" = ${INSTRUMENT_TYPE_KEY}
+          ${filter.siteId ? Prisma.sql`AND a."siteId" = ${filter.siteId}` : Prisma.empty}
+      )
+      SELECT count(*) FILTER (WHERE prev_until IS NOT NULL AND "performedAt" <= prev_until) AS on_time,
+             count(*) FILTER (WHERE prev_until IS NOT NULL) AS total
+      FROM recs WHERE "performedAt" >= ${since}::date`,
+  ]);
+  return {
+    controlled: Number(status[0]?.controlled ?? 0),
+    usable: Number(status[0]?.usable ?? 0),
+    onTime: Number(renewals[0]?.on_time ?? 0),
+    renewals: Number(renewals[0]?.total ?? 0),
+  };
+}
+
+export type UpcomingDue = { assetId: string; code: string; description: string; siteName: string; nextDueAt: string; daysLeft: number };
+
+/** Equipos que vencen en los próximos `days` días, el más próximo primero (los ya vencidos están en «No usar»). */
+export async function upcomingInstrumentDues(
+  tenantId: string,
+  opts: { days?: number; limit?: number; siteId?: string } = {},
+  db: Db = prisma,
+  today: string = todayIso(),
+): Promise<{ items: UpcomingDue[]; total: number }> {
+  const days = opts.days ?? 30;
+  const limit = opts.limit ?? 8;
+  const rows = await db.$queryRaw<{ id: string; code: string; description: string; site: string; nextDueAt: Date; total: bigint }[]>`
+    SELECT a.id, a.code, a.description, s.name AS site, c."nextDueAt", count(*) OVER () AS total
+    FROM "instrument_control" c
+    JOIN "asset" a ON a.id = c."assetId" AND a."tenantId" = c."tenantId"
+    JOIN "site" s ON s.id = a."siteId"
+    WHERE c."tenantId" = ${tenantId} AND a."typeKey" = ${INSTRUMENT_TYPE_KEY} AND a.status <> 'retired'
+      AND c."nextDueAt" >= ${today}::date AND c."nextDueAt" <= ${addDays(today, days)}::date
+      ${opts.siteId ? Prisma.sql`AND a."siteId" = ${opts.siteId}` : Prisma.empty}
+    ORDER BY c."nextDueAt" ASC, a.code ASC
+    LIMIT ${limit}`;
+  return {
+    total: rows[0] ? Number(rows[0].total) : 0,
+    items: rows.map((r) => ({ assetId: r.id, code: r.code, description: r.description, siteName: r.site, nextDueAt: isoFromDate(r.nextDueAt), daysLeft: diffDays(today, isoFromDate(r.nextDueAt)) })),
+  };
 }
 
 const listInclude = {

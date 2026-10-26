@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { instrumentCounters, listInstruments, INSTRUMENTS_EXPORT_LIMIT } from "@/lib/instruments";
+import { instrumentCounters, listInstruments, planCompliance, upcomingInstrumentDues, INSTRUMENTS_EXPORT_LIMIT } from "@/lib/instruments";
 import { listSites } from "@/lib/masterdata";
 import { SitePicker } from "@/components/pickers/SitePicker";
 import { loadInstrumentsAccess } from "@/app/(tenant)/t/[slug]/instruments/access";
@@ -29,7 +29,14 @@ export default async function InstrumentsPage({ params, searchParams }: { params
   const filter = instrumentFilterFromParams(sp);
   // Los contadores respetan sede, magnitud y búsqueda, pero no el estado: son los accesos a cada estado.
   const scope = { q: filter.q, siteId: filter.siteId, magnitude: filter.magnitude };
-  const [counters, page, sites] = await Promise.all([instrumentCounters(tenant.id, scope), listInstruments(tenant.id, filter), listSites(tenant.id)]);
+  const [counters, page, sites, compliance, upcoming] = await Promise.all([
+    instrumentCounters(tenant.id, scope),
+    listInstruments(tenant.id, filter),
+    listSites(tenant.id),
+    planCompliance(tenant.id, scope),
+    upcomingInstrumentDues(tenant.id, { siteId: filter.siteId }),
+  ]);
+  const pct = (part: number, whole: number) => (whole === 0 ? "—" : `${Math.round((part / whole) * 100)} %`);
 
   const query = (extra: Record<string, string | undefined>) => {
     const keep: Record<string, string> = {};
@@ -78,6 +85,44 @@ export default async function InstrumentsPage({ params, searchParams }: { params
       <p className="text-xs text-[var(--color-ink-muted)]">
         «No usar» agrupa los vencidos, los no aptos y los que todavía no tienen su calibración inicial. «Por vencer» avisa con los días de anticipación de cada equipo.
       </p>
+
+      <section aria-label="Plan de calibración y próximos vencimientos" className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <div className="flex flex-col gap-3">
+          <h3 className="text-sm font-semibold">Cumplimiento del plan</h3>
+          <StatGrid cols={2} aria-label="Cumplimiento del plan de calibración">
+            <StatTile label="Equipos utilizables" value={pct(compliance.usable, compliance.controlled)} tone={compliance.controlled > 0 && compliance.usable < compliance.controlled ? "warning" : "default"} />
+            <StatTile label="Recalibrados a tiempo" value={pct(compliance.onTime, compliance.renewals)} tone={compliance.renewals > 0 && compliance.onTime < compliance.renewals ? "warning" : "default"} />
+          </StatGrid>
+          <p className="text-xs text-[var(--color-ink-muted)]">
+            {compliance.usable} de {compliance.controlled} equipos con control se pueden usar hoy. {compliance.onTime} de {compliance.renewals} recalibraciones de los últimos 12 meses se hicieron antes de que venciera la anterior.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3">
+          <h3 className="text-sm font-semibold">Vencen en los próximos 30 días ({upcoming.total})</h3>
+          {upcoming.items.length === 0 ? (
+            <p className="text-sm text-[var(--color-ink-muted)]">Ningún equipo vence en los próximos 30 días.</p>
+          ) : (
+            <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-line)] text-sm">
+              {upcoming.items.map((u) => (
+                <li key={u.assetId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2.5">
+                  <span className="min-w-0">
+                    <Link href={`${base}/${u.assetId}`} className="font-[family-name:var(--font-mono)] font-medium text-[var(--color-accent)] hover:underline">
+                      {u.code}
+                    </Link>{" "}
+                    <span className="text-[var(--color-ink-muted)]">
+                      {u.description} · {u.siteName}
+                    </span>
+                  </span>
+                  <span className="tabular-nums">
+                    {formatDateEs(u.nextDueAt)} · {u.daysLeft === 0 ? "vence hoy" : u.daysLeft === 1 ? "falta 1 día" : `faltan ${u.daysLeft} días`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {upcoming.total > upcoming.items.length ? <p className="text-xs text-[var(--color-ink-muted)]">Se muestran los {upcoming.items.length} más próximos. El resto está en «Por vencer».</p> : null}
+        </div>
+      </section>
 
       <form method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end" aria-label="Filtros">
         <Field label="Buscar" hint="Por código o descripción.">
