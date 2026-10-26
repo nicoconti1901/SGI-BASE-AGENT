@@ -2,10 +2,10 @@ import { Prisma, type AssetOwnership, type InstrumentControl, type PrismaClient 
 import { prisma } from "@/lib/db";
 import { getObjectStorage } from "@/lib/storage";
 import type { ObjectStorage } from "@/lib/storage/types";
-import { InspectionError, writeAudit, type Db, type Tx } from "@/lib/inspection-support";
+import { InspectionError, closeOpenDueItems, ownerOfPerson, syncOpenDueItem, writeAudit, type Db, type Tx } from "@/lib/inspection-support";
 import { cleanName } from "@/domain/masterdata/roster";
 import { normalizeAssetCode } from "@/domain/inspections/asset-types/resolve";
-import { dateFromIso, isIsoDate, isoFromDate, todayIso } from "@/domain/inspections/dates";
+import { addDays, dateFromIso, endOfDayInstant, isIsoDate, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import {
   INSTRUMENT_TYPE_KEY,
   STATUS_GROUPS,
@@ -226,7 +226,7 @@ export async function updateInstrument(
 /**
  * Reconstruye las columnas derivadas de `InstrumentControl` desde los registros cerrados y no anulados, el envío
  * abierto y las evaluaciones pendientes. Es idempotente: recalcular dos veces deja lo mismo.
- * (La sincronización de los `DueItem` llega con la Task 16.4.)
+ * También deja al día los `DueItem` del equipo (próxima calibración o verificación y evaluaciones pendientes).
  */
 export async function recomputeInstrumentControl(tenantId: string, assetId: string, db: Db | Tx = prisma) {
   const control = await db.instrumentControl.findFirst({ where: { tenantId, assetId } });
@@ -236,7 +236,7 @@ export async function recomputeInstrumentControl(tenantId: string, assetId: stri
       where: { tenantId, assetId, status: "closed" },
       select: { kind: true, status: true, performedAt: true, closedAt: true, asLeftResult: true, validUntil: true },
     }),
-    db.impactAssessment.count({ where: { tenantId, assetId, status: "pending" } }),
+    db.impactAssessment.findMany({ where: { tenantId, assetId, status: "pending" }, select: { id: true, createdAt: true } }),
     db.instrumentShipment.findFirst({ where: { tenantId, assetId, returnedAt: null }, orderBy: { sentAt: "desc" }, select: { sentAt: true, expectedReturnAt: true } }),
   ]);
   const summaries: RecordSummary[] = records.map((r) => ({
@@ -250,11 +250,11 @@ export async function recomputeInstrumentControl(tenantId: string, assetId: stri
   const d = deriveControl({
     requirements: { calibration: control.requiresCalibration, verification: control.requiresVerification },
     records: summaries,
-    pendingAssessments: pending,
+    pendingAssessments: pending.length,
     openShipment: openShipment ? { sentAt: isoFromDate(openShipment.sentAt), expectedReturnAt: iso(openShipment.expectedReturnAt) } : null,
   });
   const toDate = (v: string | null) => (v ? dateFromIso(v) : null);
-  return db.instrumentControl.update({
+  const updated = await db.instrumentControl.update({
     where: { assetId },
     data: {
       calibrationValidUntil: toDate(d.calibrationValidUntil),
@@ -266,6 +266,63 @@ export async function recomputeInstrumentControl(tenantId: string, assetId: stri
       expectedReturnAt: toDate(d.expectedReturnAt),
     },
   });
+  await syncInstrumentDueItems(db, { tenantId, assetId, control: updated, pending });
+  return updated;
+}
+
+/** Días corridos que se le dan a una evaluación de impacto abierta (fijo en el código, no por empresa). */
+export const IMPACT_ASSESSMENT_DUE_DAYS = 10;
+
+/**
+ * Deja exactamente un vencimiento abierto por equipo y tipo (calibración, verificación) y por evaluación pendiente.
+ * Es idempotente: recalcular dos veces no duplica. Un equipo dado de baja o con último resultado «no apto» deja de
+ * vencer (ya está en rojo y pide una calibración nueva); la evaluación de impacto sigue vigente aunque se dé de baja.
+ */
+async function syncInstrumentDueItems(
+  db: Db | Tx,
+  input: { tenantId: string; assetId: string; control: InstrumentControl; pending: { id: string; createdAt: Date }[] },
+) {
+  const { tenantId, assetId, control } = input;
+  const asset = await db.asset.findFirst({ where: { id: assetId, tenantId }, select: { code: true, description: true, siteId: true, assignedPersonId: true, status: true } });
+  if (!asset) return;
+  const owner = await ownerOfPerson(db, tenantId, asset.assignedPersonId);
+  const active = asset.status !== "retired" && control.lastDecision !== "not_apt";
+  const kinds = [
+    { entityType: "instrument_calibration", required: control.requiresCalibration, until: control.calibrationValidUntil, label: "Calibración" },
+    { entityType: "instrument_verification", required: control.requiresVerification, until: control.verificationValidUntil, label: "Verificación" },
+  ] as const;
+  for (const kind of kinds) {
+    if (active && kind.required && kind.until) {
+      await syncOpenDueItem(db, {
+        tenantId,
+        entityType: kind.entityType,
+        entityId: assetId,
+        title: `${kind.label} de ${asset.code} — ${asset.description}`,
+        dueAt: endOfDayInstant(isoFromDate(kind.until)),
+        leadDays: control.alertLeadDays,
+        ownerUserId: owner,
+        siteId: asset.siteId,
+        personId: asset.assignedPersonId,
+      });
+    } else {
+      await closeOpenDueItems(db, tenantId, kind.entityType, [assetId]);
+    }
+  }
+  for (const assessment of input.pending) {
+    await syncOpenDueItem(db, {
+      tenantId,
+      entityType: "instrument_impact",
+      entityId: assessment.id,
+      title: `Evaluación de impacto de ${asset.code} — ${asset.description}`,
+      dueAt: endOfDayInstant(addDays(todayIso(assessment.createdAt), IMPACT_ASSESSMENT_DUE_DAYS)),
+      leadDays: 3,
+      ownerUserId: owner,
+      siteId: asset.siteId,
+      personId: asset.assignedPersonId,
+    });
+  }
+  const finished = await db.impactAssessment.findMany({ where: { tenantId, assetId, status: "completed" }, select: { id: true } });
+  await closeOpenDueItems(db, tenantId, "instrument_impact", finished.map((a) => a.id));
 }
 
 // ─── Lista, contadores y exportación ───────────────────────────────────────
@@ -528,6 +585,21 @@ export async function checkInstrumentForUse(
   return valid
     ? { usable: true, reason: null, action: null }
     : { usable: false, reason: `El equipo no tenía una calibración vigente al ${onDate.split("-").reverse().join("/")}`, action: null };
+}
+
+/**
+ * Lo que llama el servidor de un módulo que usa un equipo, antes de guardar: si no se puede usar, corta con el
+ * motivo. Con `onDate` en el pasado, exige que haya estado vigente ese día.
+ */
+export async function requireUsableInstrument(
+  tenantId: string,
+  assetId: string,
+  opts: { onDate?: string } = {},
+  db: Db = prisma,
+  today: string = todayIso(),
+): Promise<void> {
+  const usability = await checkInstrumentForUse(tenantId, assetId, opts, db, today);
+  if (!usability.usable) throw new InspectionError(`No se puede usar el equipo: ${usability.reason ?? "no disponible"}`, "instrument_unusable");
 }
 
 // ─── Certificados ──────────────────────────────────────────────────────────
