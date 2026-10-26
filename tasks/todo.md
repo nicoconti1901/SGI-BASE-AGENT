@@ -596,12 +596,12 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
   - `ImpactAssessment`.
   - Funciones `calibrationDecision`, `calibrationStatus` (vigente / por vencer / vencida / no apto / en calibración) y `nextCalibrationDue`, con tests.
 - [x] 16.2 (hecho 2026-10-23, PR #20) Registro y lista de equipos: filtros por sede, magnitud y estado; semáforo; ficha con el historial de calibraciones y los certificados para descargar
-- [ ] 16.3 Carga de calibración o verificación: formulario por puntos con cálculo automático de la conformidad; certificado adjunto; envío a calibrar (estado "en calibración", con fecha estimada de regreso)
-- [ ] 16.4 Vencidos y fuera de tolerancia:
+- [x] 16.3 (hecho 2026-10-26, PR #25) Carga de calibración o verificación: formulario por puntos con cálculo automático de la conformidad; certificado adjunto; envío a calibrar (estado "en calibración", con fecha estimada de regreso)
+- [x] 16.4 (hecho 2026-10-26, PR #25) Vencidos y fuera de tolerancia:
   - `DueItem` para la próxima calibración o verificación.
   - Un equipo vencido o no apto muestra un estado bloqueante, también en las inspecciones y auditorías de campo que lo usan.
   - Un equipo no apto exige, antes de volver a servicio, una evaluación de impacto: mediciones afectadas desde la última calibración apta, decisión tomada y hallazgo opcional.
-- [ ] 16.5 Control previo al uso (bump test) opcional, con una plantilla del motor de la Task 15. Tablero: equipos por estado, vencimientos de los próximos 30 días, cumplimiento del plan de calibración. e2e.
+- [x] 16.5 (hecho 2026-10-26, PR #25) Control previo al uso (bump test) opcional, con una plantilla del motor de la Task 15. Tablero: equipos por estado, vencimientos de los próximos 30 días, cumplimiento del plan de calibración. e2e.
 
 **Acceptance criteria:**
 - [ ] Un equipo con la calibración vencida o no apta aparece como "no usar" en la ficha, la lista y los selectores
@@ -643,8 +643,8 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
   - `ExposurePeriod`: sede × mes × propio/contratista, con HHT y dotación promedio.
   - Funciones puras de índices y totales, con tests sobre un conjunto de datos de referencia cuyos valores se calculan a mano.
 - [x] 17.2 (hecho 2026-10-22, PR #13) Registro: el alta de un hallazgo de tipo incidente suma un paso "ficha de accidente"; los días perdidos se actualizan hasta el alta médica (con historial); permisos de datos sensibles
-- [ ] 17.3 Carga mensual de la exposición por sede (formulario + importación CSV), con un `DueItem` mensual de carga. Si falta la HHT de un período, el índice se muestra "sin datos", nunca 0.
-- [ ] 17.4 Tablero `/safety/stats`:
+- [x] 17.3 (hecho 2026-10-26, PR #24) Carga mensual de la exposición por sede (formulario + importación CSV), con un `DueItem` mensual de carga. Si falta la HHT de un período, el índice se muestra "sin datos", nunca 0.
+- [x] 17.4 (hecho 2026-10-26, PR #24) Tablero `/safety/stats`:
   - períodos: mes, acumulado del año y últimos 12 meses móviles; por sede y por propio/contratista;
   - IF, IG, II e ID con su tendencia;
   - pirámide de eventos (de casi accidentes a fatales);

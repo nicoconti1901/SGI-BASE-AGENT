@@ -122,7 +122,7 @@ Los permisos son `manage_master_data` y `assign_job_tasks` en `src/domain/identi
 - **Task 11c** — hecha: objetivos e indicadores con carga por período, análisis de desvío, tablero con tendencias y guía (`/t/[slug]/indicators`).  
 - **Task 11d** — hecha: auditorías externas con informe PDF adjunto, hallazgos manuales y extracción con IA con revisión humana (ver `SPEC-external-audits.md`; requiere `ANTHROPIC_API_KEY`).  
 - **Task 12+** — portal cliente / dashboards / E2E.  
-- **Fase 5** — operación SST, proveedores y competencia (Tasks 14–20, ver `tasks/todo.md`). Hechas la Task 14 (datos maestros) y la Task 20 (capacitaciones); en curso 15 (inspecciones: motor, extintores, consecuencias y lista), 16 (equipos de medición: dominio y lista), 17 (accidentabilidad: dominio y ficha) y 19 (proveedores: registro y evaluación).
+- **Fase 5** — operación SST, proveedores y competencia (Tasks 14–20, ver `tasks/todo.md`). Hechas la Task 14 (datos maestros) y la Task 20 (capacitaciones); en curso 15 (inspecciones: motor, extintores, consecuencias y lista), 16 (equipos de medición: carga de calibraciones, evaluación de impacto y prueba funcional), 17 (accidentabilidad: ficha, exposición mensual y tablero) y 19 (proveedores: registro y evaluación).
 
 ---
 
