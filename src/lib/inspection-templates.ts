@@ -155,12 +155,22 @@ export async function getTemplateForEdit(tenantId: string, templateId: string, d
     }),
   ]);
   const def = getDefaultTemplate(template.key);
+  const items = rows.map(itemRowToDef);
   return {
     template,
     versionId: template.activeVersionId,
-    items: rows.map(itemRowToDef),
+    items,
     versions,
     hasDefault: def != null,
+    context: def ? editContextFor(def) : null,
+    snapshot: {
+      versionId: template.activeVersionId,
+      name: template.name,
+      intervalUnit: template.intervalUnit,
+      intervalValue: template.intervalValue,
+      findingOnCritical: template.findingOnCritical,
+      items,
+    } satisfies EditorSnapshot,
   };
 }
 
@@ -170,6 +180,9 @@ export type TemplateEditValues = {
   intervalValue: number | null;
   findingOnCritical: boolean;
 };
+
+/** Estado vigente de una plantilla tal como lo muestra el editor. */
+export type EditorSnapshot = TemplateEditValues & { versionId: string; items: TemplateItemDef[] };
 
 export type SaveTemplateResult = { changed: boolean; version: number; warnings: TemplateIssue[] };
 

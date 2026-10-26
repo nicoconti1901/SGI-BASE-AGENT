@@ -41,6 +41,13 @@ export type TemplateEditContext = {
 const MAX_INTERVAL_DAYS_BY_KEY: Record<string, number> = { extinguisher_periodic: 90 };
 const MAX_INTERVAL_DAYS = 24 * 30;
 
+/** La frecuencia en palabras: «Cada mes», «Cada 15 días», «Antes de cada uso». */
+export function describeInterval(unit: IntervalUnit | null, value: number | null): string {
+  if (!unit || !value) return "Antes de cada uso";
+  if (unit === "days") return value === 1 ? "Todos los días" : value === 7 ? "Cada semana" : `Cada ${value} días`;
+  return value === 1 ? "Cada mes" : `Cada ${value} meses`;
+}
+
 export const MAX_NAME_LENGTH = 80;
 export const MAX_ITEM_TEXT_LENGTH = 300;
 
