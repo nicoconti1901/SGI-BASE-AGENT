@@ -15,6 +15,8 @@ export default async function SafetyModuleLayout({ children, params }: LayoutPro
         eyebrow="ISO 45001 · §9.1.1 · §10.2"
         title="Accidentabilidad"
         purpose="Cada accidente se registra una sola vez, como un hallazgo de tipo incidente con su ficha. Los índices se calculan solos con las horas que cargás."
+        guideHref={`${base}/guia`}
+        guideLabel="Guía de accidentabilidad →"
         actions={
           canReport ? (
             <Link href={`/t/${slug}/findings/new?type=incident`} className={buttonClass("primary")}>

@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { loadSafetyAccess } from "@/app/(tenant)/t/[slug]/safety/access";
 import { Bars, IndexCard } from "@/app/(tenant)/t/[slug]/safety/stats/parts";
-import { defaultAnchorMonth, getSafetyDashboard, SAFETY_METRICS, type SafetyMetric } from "@/lib/safety-dashboard";
+import { parseSafetyFilter, safetyFilterQuery, type SafetyQuery } from "@/app/(tenant)/t/[slug]/safety/filters";
+import { getSafetyDashboard, SAFETY_METRICS, type SafetyMetric } from "@/lib/safety-dashboard";
 import { exposureMonthOptions } from "@/lib/safety-exposure";
-import { WINDOW_KINDS, WINDOW_LABELS, type GroupFilter, type WindowKind } from "@/domain/safety-stats/dashboard";
+import { WINDOW_KINDS, WINDOW_LABELS, type GroupFilter } from "@/domain/safety-stats/dashboard";
+import { canViewHealthData } from "@/domain/safety-stats/access";
 import { monthLabel } from "@/domain/safety-stats/exposure-import";
 import { localDay } from "@/domain/safety-stats/period";
 import { CLASSIFICATION_LABELS } from "@/domain/safety-stats/types";
 import { Button, EmptyState, Field, HintCallout, INPUT_CLASS, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
 
-type Query = { ventana?: string; mes?: string; sede?: string; grupo?: string };
+type Query = SafetyQuery;
 
 const GROUP_LABELS: Record<GroupFilter, string> = { total: "Propio y contratistas", own: "Personal propio", contractor: "Contratistas" };
 
@@ -23,18 +25,17 @@ const METRIC_CARD: Record<SafetyMetric, { title: string; unit: (base: number) =>
 export default async function SafetyStatsPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Query> }) {
   const { slug } = await params;
   const sp = await searchParams;
-  const { tenant, canManage } = await loadSafetyAccess(slug);
+  const { tenant, canManage, actor } = await loadSafetyAccess(slug);
+  const canViewHealth = canViewHealthData(actor);
   const today = localDay(new Date());
 
-  const kind: WindowKind = (WINDOW_KINDS as readonly string[]).includes(sp.ventana ?? "") ? (sp.ventana as WindowKind) : "month";
-  const group: GroupFilter = sp.grupo === "own" || sp.grupo === "contractor" ? sp.grupo : "total";
+  const { kind, group, anchor, siteId } = await parseSafetyFilter(tenant.id, sp, today);
   const months = exposureMonthOptions(today, 24);
-  const fallback = await defaultAnchorMonth(tenant.id, today);
-  const anchor = sp.mes && /^\d{4}-(0[1-9]|1[0-2])$/.test(sp.mes) && sp.mes <= today.slice(0, 7) ? sp.mes : fallback;
   if (!months.includes(anchor)) months.push(anchor);
 
-  const dash = await getSafetyDashboard(tenant.id, { kind, anchor, siteId: sp.sede || undefined, group, today });
+  const dash = await getSafetyDashboard(tenant.id, { kind, anchor, siteId, group, today });
   const base = `/t/${slug}/safety`;
+  const filterQuery = safetyFilterQuery({ kind, anchor, siteId, group });
   const { current, previous, window: w, settings } = dash;
   const statusChip =
     current.status === "ok" ? <StatusChip status="ok" label="Completo" /> : current.status === "partial" ? <StatusChip status="warning" label="Parcial" /> : <StatusChip status="danger" label="Sin datos" />;
@@ -107,6 +108,20 @@ export default async function SafetyStatsPage({ params, searchParams }: { params
             ? ` · se usaron ${current.monthsUsed.length} de ${w.months.length} meses`
             : ""}
         </p>
+
+        <nav aria-label="Exportar" className="flex flex-wrap gap-2">
+          <Link href={`${base}/resumen?${filterQuery}`} className={buttonClass("secondary", "min-h-9")}>
+            Resumen para imprimir
+          </Link>
+          <a href={`${base}/export?${filterQuery}&tipo=totales`} className={buttonClass("secondary", "min-h-9")}>
+            Descargar CSV por sede y mes
+          </a>
+          {canViewHealth ? (
+            <a href={`${base}/export?${filterQuery}&tipo=casos`} className={buttonClass("secondary", "min-h-9")}>
+              Descargar casos (con nombres)
+            </a>
+          ) : null}
+        </nav>
 
         {current.status !== "ok" && dash.gaps.length > 0 ? (
           <section aria-label="Qué falta" className="flex flex-col gap-2 rounded-[var(--radius-lg)] border border-[var(--color-warning-line)] bg-[var(--color-warning-soft)] p-4 text-sm">
