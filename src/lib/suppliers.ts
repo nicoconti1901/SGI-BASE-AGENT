@@ -49,7 +49,7 @@ type AuditInput = {
   action:
     | "create" | "update" | "deactivate" | "reactivate" | "import" | "export" | "link_person" | "unlink_person"
     | "evaluate" | "void_evaluation" | "publish_template" | "save_template" | "discard_template"
-    | "upload_document" | "void_document" | "save_document_type";
+    | "upload_document" | "void_document" | "save_document_type" | "create_finding" | "communicate";
   actorUserId: string | null;
   summary: string;
 };
