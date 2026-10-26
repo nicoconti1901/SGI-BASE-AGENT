@@ -4,6 +4,7 @@ import { getObjectStorage } from "@/lib/storage";
 import type { ObjectStorage } from "@/lib/storage/types";
 import { InspectionError, writeAudit, type Db, type Tx } from "@/lib/inspection-support";
 import { checkInstrumentForUse, parseChannels, recomputeInstrumentControl } from "@/lib/instruments";
+import { dropPendingAssessmentOfRecord, openImpactAssessmentForRecord } from "@/lib/impact-assessments";
 import { isAllowedUploadContentType, resolveUploadContentType } from "@/domain/documents/versioning";
 import { dateFromIso, isIsoDate, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import {
@@ -304,6 +305,16 @@ export async function closeCalibrationRecord(input: { tenantId: string; actorUse
         data: { error: r.error, empApplied: r.emp, unit: r.unit, ok: r.ok, reason: r.reason },
       });
     }
+    // El as-found fuera de tolerancia (o un ajuste sin datos de antes en un equipo crítico) obliga a evaluar el impacto.
+    await openImpactAssessmentForRecord(tx, {
+      tenantId: input.tenantId,
+      assetId: record.assetId,
+      recordId: record.id,
+      performedAt,
+      asFoundResult: outcome.asFoundResult,
+      adjusted: record.adjusted && record.basis === "points",
+      criticalUse: control.criticalUse,
+    });
     await afterRecordChange(tx, { tenantId: input.tenantId, actorUserId: input.actorUserId, assetId: record.assetId });
     await writeAudit(tx, {
       tenantId: input.tenantId,
@@ -335,6 +346,8 @@ export async function voidCalibrationRecord(input: { tenantId: string; actorUser
       data: { status: "voided", voidReason: reason, voidedByUserId: input.actorUserId, voidedAt: new Date() },
     });
     if (claimed.count !== 1) throw new InspectionError("El registro ya fue anulado");
+    // Si el registro anulado había abierto una evaluación que nadie completó, ya no corresponde.
+    await dropPendingAssessmentOfRecord(tx, input.tenantId, record.id);
     await afterRecordChange(tx, { tenantId: input.tenantId, actorUserId: input.actorUserId, assetId: record.assetId });
     await writeAudit(tx, { tenantId: input.tenantId, entityType: "calibration_record", entityId: record.id, action: "void", actorUserId: input.actorUserId, summary: `Registro de ${record.asset.code} anulado: ${reason}` });
     return { id: record.id, assetId: record.assetId };
