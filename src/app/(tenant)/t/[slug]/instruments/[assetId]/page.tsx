@@ -5,6 +5,9 @@ import { loadInstrumentsAccess } from "@/app/(tenant)/t/[slug]/instruments/acces
 import { InstrumentStatusChip } from "@/app/(tenant)/t/[slug]/instruments/status";
 import { RetireInstrumentForm } from "@/app/(tenant)/t/[slug]/instruments/RetireForm";
 import { ReturnFromLabForm, SendToLabForm } from "@/app/(tenant)/t/[slug]/instruments/[assetId]/RecordControls";
+import { ImpactForm } from "@/app/(tenant)/t/[slug]/instruments/[assetId]/ImpactForm";
+import { IMPACT_OUTCOME_LABELS, listCompletedAssessments } from "@/lib/impact-assessments";
+import { listTenantMemberOptions } from "@/lib/findings";
 import {
   DECISION_RULE_LABELS,
   RECORD_KIND_LABELS,
@@ -61,11 +64,15 @@ export default async function InstrumentPage({
 }) {
   const { slug, assetId } = await params;
   const sp = await searchParams;
-  const { tenant, canManage, canWrite } = await loadInstrumentsAccess(slug);
+  const { ctx, tenant, canManage, canWrite } = await loadInstrumentsAccess(slug);
   const page = Number(sp.historial);
   const detail = await getInstrument(tenant.id, assetId, { historyPage: Number.isInteger(page) && page > 1 ? page : 1 });
   if (!detail) notFound();
   const { asset, control, channels, view, records, openShipment, pendingAssessment } = detail;
+  const [completedAssessments, members] = await Promise.all([
+    listCompletedAssessments(tenant.id, asset.id),
+    canManage && pendingAssessment ? listTenantMemberOptions(tenant.id) : Promise.resolve([]),
+  ]);
   const base = `/t/${slug}/instruments`;
   const attrs = asset.attributes as Record<string, string | undefined>;
   const retired = asset.status === "retired";
@@ -159,6 +166,11 @@ export default async function InstrumentPage({
               <StatusChip status="danger" label="Pendiente" />
             </Item>
           </dl>
+          {canManage ? (
+            <ImpactForm slug={slug} assetId={asset.id} assessmentId={pendingAssessment.id} members={members} defaultOwnerId={members.some((m) => m.id === ctx.userId) ? ctx.userId : ""} />
+          ) : (
+            <p className="text-sm text-[var(--color-ink-muted)]">La completa un administrador o un responsable de proceso. Hasta entonces el equipo no se puede usar.</p>
+          )}
         </SectionBlock>
       ) : null}
 
@@ -208,6 +220,40 @@ export default async function InstrumentPage({
           ) : (
             <p className="text-sm text-[var(--color-ink-muted)]">Todavía no hay canales definidos.</p>
           )}
+        </SectionBlock>
+      ) : null}
+
+      {completedAssessments.length > 0 ? (
+        <SectionBlock title="Evaluaciones de impacto realizadas" what="Qué se decidió cuando el equipo estuvo fuera de tolerancia.">
+          <ul className="flex flex-col gap-3">
+            {completedAssessments.map((a) => (
+              <li key={a.id} className="flex flex-col gap-1 rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3 text-sm">
+                <span className="font-medium">
+                  {a.outcome ? IMPACT_OUTCOME_LABELS[a.outcome] : "—"}
+                  <span className="ml-2 font-normal text-[var(--color-ink-muted)]">
+                    {a.windowFrom ? `desde el ${dateOrDash(a.windowFrom)}` : "desde que se empezó a usar"} hasta el {dateOrDash(a.windowTo)} · completada el {dateOrDash(a.completedAt)}
+                  </span>
+                </span>
+                {a.affectedSummary ? <span>Qué se midió: {a.affectedSummary}</span> : null}
+                {a.rationale ? <span className="text-[var(--color-ink-muted)]">{a.rationale}</span> : null}
+                {a.finding ? (
+                  <Link href={`/t/${slug}/findings/${a.finding.id}`} className="text-[var(--color-accent)] hover:underline">
+                    Hallazgo: {a.finding.title}
+                  </Link>
+                ) : null}
+                {a.actions.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {a.actions.map((x) => (
+                      <li key={x.action.id}>
+                        {x.action.title}
+                        {x.action.dueAt ? ` · para el ${formatDateEs(isoFromDate(x.action.dueAt))}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </li>
+            ))}
+          </ul>
         </SectionBlock>
       ) : null}
 

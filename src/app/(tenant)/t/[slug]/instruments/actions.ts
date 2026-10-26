@@ -9,7 +9,8 @@ import { getEnabledModulesCached } from "@/lib/modules";
 import { canTenantRole, type AuthzAction } from "@/domain/identity/authz";
 import { prisma } from "@/lib/db";
 import { retireAsset } from "@/lib/assets";
-import { createInstrument, updateInstrument } from "@/lib/instruments";
+import { createInstrument, recomputeInstrumentControl, updateInstrument } from "@/lib/instruments";
+import { completeImpactAssessment, type ImpactActionInput } from "@/lib/impact-assessments";
 import { InspectionError } from "@/lib/inspection-support";
 import {
   closeCalibrationRecord,
@@ -61,6 +62,8 @@ export async function retireInstrumentAction(slug: string, assetId: string, _pre
     const asset = await prisma.asset.findFirst({ where: { id: assetId, tenantId: access.tenant.id, typeKey: INSTRUMENT_TYPE_KEY }, select: { id: true } });
     if (!asset) return { error: "Equipo no encontrado" };
     await retireAsset({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, assetId, reason: text(formData, "reason") });
+    // Un equipo dado de baja deja de vencer; su evaluación de impacto pendiente, si la hay, sigue en pie.
+    await recomputeInstrumentControl(access.tenant.id, assetId);
   } catch (error) {
     return fail(error);
   }
@@ -264,6 +267,41 @@ export async function sendToCalibrationAction(slug: string, assetId: string, _pr
   revalidatePath(`/t/${slug}/instruments`);
   revalidatePath(`/t/${slug}/instruments/${assetId}`);
   return { ok: "Equipo enviado a calibrar" };
+}
+
+/** Completa la evaluación de impacto (solo quien administra el módulo). Las acciones viajan como JSON desde el formulario. */
+export async function completeImpactAction(slug: string, assetId: string, assessmentId: string, _prev: InstrumentActionState, formData: FormData): Promise<InstrumentActionState> {
+  const access = await requireAccess(slug, "manage_calibration");
+  if ("error" in access) return { error: access.error };
+  try {
+    let actions: ImpactActionInput[] = [];
+    try {
+      const parsed: unknown = JSON.parse(text(formData, "actions") || "[]");
+      actions = Array.isArray(parsed)
+        ? parsed.map((a: Record<string, unknown>) => ({ title: String(a?.title ?? ""), ownerUserId: String(a?.ownerUserId ?? ""), dueAt: a?.dueAt ? String(a.dueAt) : null }))
+        : [];
+    } catch {
+      throw new InspectionError("No se pudieron leer las acciones: volvé a cargarlas");
+    }
+    // El equipo del que se completa la evaluación tiene que ser el de la pantalla: la URL no la manda.
+    const assessment = await prisma.impactAssessment.findFirst({ where: { id: assessmentId, tenantId: access.tenant.id, assetId }, select: { id: true } });
+    if (!assessment) return { error: "Evaluación no encontrada" };
+    await completeImpactAssessment({
+      tenantId: access.tenant.id,
+      actorUserId: access.ctx.userId,
+      assessmentId,
+      outcome: text(formData, "outcome"),
+      affectedSummary: text(formData, "affectedSummary"),
+      rationale: text(formData, "rationale"),
+      registerFinding: flag(formData, "registerFinding"),
+      actions,
+    });
+  } catch (error) {
+    return fail(error);
+  }
+  revalidatePath(`/t/${slug}/instruments`);
+  revalidatePath(`/t/${slug}/instruments/${assetId}`);
+  return { ok: "Evaluación completada" };
 }
 
 export async function registerReturnAction(slug: string, assetId: string, _prev: InstrumentActionState, formData: FormData): Promise<InstrumentActionState> {

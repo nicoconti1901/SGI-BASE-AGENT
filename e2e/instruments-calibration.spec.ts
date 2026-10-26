@@ -47,6 +47,80 @@ async function fillRow(page: Page, group: string, index: number, values: [string
   await scope.getByLabel("Incert. (U)").nth(index).fill(values[2]);
 }
 
+/** Carga y cierra una calibración de un solo punto (patrón 50 ppm) con el certificado adjunto. */
+async function loadAndClose(page: Page, fichaUrl: string, measured: string) {
+  await page.goto(fichaUrl);
+  await page.getByRole("link", { name: "Cargar calibración" }).click();
+  await expect(page).toHaveURL(/\/records\/new$/, { timeout: 30_000 });
+  await page.getByRole("textbox", { name: /^Laboratorio/ }).fill("INTI");
+  await page.getByLabel("Trazabilidad").selectOption("nmi");
+  await fillRow(page, "Puntos medidos", 0, ["50", measured, "0,5"]);
+  await page.getByLabel(/Adjuntar el certificado/).setInputFiles({ name: "certificado.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4 e2e") });
+  await page.getByRole("button", { name: "Cerrar y guardar resultado" }).click();
+  await expect(page).toHaveURL(fichaUrl, { timeout: 30_000 });
+}
+
+test("un detector fuera de tolerancia queda en «No usar» hasta completar la evaluación de impacto, con hallazgo y acción", async ({ page }) => {
+  test.setTimeout(5 * 60_000);
+  const warnings: string[] = [];
+  page.on("console", (m) => {
+    if (m.type() === "error" && /controlled|uncontrolled|hydrat/i.test(m.text())) warnings.push(m.text().slice(0, 200));
+  });
+  const { slug, code, fichaUrl } = await setup(page, Date.now() + 1);
+
+  // Un punto fuera de tolerancia (58 contra 50 ppm, máximo ±5): no apto y evaluación de impacto abierta.
+  await loadAndClose(page, fichaUrl, "58");
+  await expect(page.getByText("NO USAR")).toBeVisible();
+  await expect(page.getByText("No apto en el último control").first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Evaluación de impacto pendiente" })).toBeVisible();
+  await expect(page.getByText("Mediciones a revisar")).toBeVisible();
+
+  // La lista lo muestra como «No usar» con el motivo y cuenta la evaluación pendiente.
+  await page.goto(`/t/${slug}/instruments`);
+  const row = page.locator("tbody tr").first();
+  await expect(row).toContainText(code);
+  await expect(row).toContainText("No usar");
+  await expect(row).toContainText("No apto en el último control");
+
+  // Cargar una calibración apta no alcanza: falta la evaluación, y la lista la cuenta aparte.
+  await loadAndClose(page, fichaUrl, "50,5");
+  await expect(page.getByText("NO USAR")).toBeVisible();
+  await expect(page.getByText("Falta la evaluación de impacto de la última calibración").first()).toBeVisible();
+  await page.goto(`/t/${slug}/instruments`);
+  await expect(page.getByRole("link", { name: /^Evaluaciones pendientes: 1/ })).toBeVisible();
+  await page.goto(fichaUrl);
+
+  // Sin acciones ni hallazgo, «no se puede determinar» se rechaza.
+  const panel = page.locator("section", { has: page.getByRole("heading", { name: "Evaluación de impacto pendiente" }) });
+  await panel.getByLabel("No se puede determinar el efecto").check();
+  await panel.getByLabel("Qué se midió con el equipo en ese período").fill("Atmósfera de espacios confinados de la cuadrilla norte");
+  await panel.getByLabel("Justificación de la decisión").fill("No hay registros que permitan reconstruir los valores");
+  await panel.getByRole("button", { name: "Completar la evaluación" }).click();
+  await expect(panel.getByText(/^Si hubo mediciones afectadas.*al menos una acción o un hallazgo/)).toBeVisible({ timeout: 30_000 });
+
+  // Con mediciones afectadas el hallazgo en borrador se crea solo (las acciones de seguimiento se prueban en integración:
+  // el superusuario de plataforma no es miembro de la empresa y no puede ser responsable).
+  await panel.getByLabel("Hubo mediciones afectadas y se tomaron acciones").check();
+  await expect(panel.getByLabel(/Registrar un hallazgo en borrador/)).toBeChecked();
+  await panel.getByRole("button", { name: "Completar la evaluación" }).click();
+
+  await expect(page.getByText("Se puede usar")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Evaluaciones de impacto realizadas" })).toBeVisible();
+  await expect(page.getByText("Hubo mediciones afectadas y se tomaron acciones").first()).toBeVisible();
+  const finding = page.getByRole("link", { name: /^Hallazgo: / });
+  await expect(finding).toBeVisible();
+
+  // El hallazgo existe en borrador y viene de la calibración.
+  await finding.click();
+  await expect(page).toHaveURL(/\/findings\//, { timeout: 30_000 });
+  await expect(page.getByText("Borrador de hallazgo")).toBeVisible();
+
+  // La lista ya no tiene nada que atender.
+  await page.goto(`/t/${slug}/instruments`);
+  await expect(page.locator("tbody tr").first()).not.toContainText("No usar");
+  expect(warnings).toEqual([]);
+});
+
 test("carga la calibración de un detector con tres puntos, ve el resultado en vivo y lo deja vigente", async ({ page }) => {
   test.setTimeout(4 * 60_000);
   const warnings: string[] = [];
