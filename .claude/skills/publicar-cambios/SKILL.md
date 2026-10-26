@@ -12,6 +12,8 @@ Correr en **Sonnet**. Haiku solo si el cambio es chico (pocos archivos, un solo 
 
 Invocar esta skill autoriza crear la rama, commitear, pushear, abrir el PR y mergear a `main`. Se ejecuta de punta a punta sin pedir confirmación, **salvo** en los puntos de parada. Todo mensaje (commits, rama, PR, README, reporte) va en **español**.
 
+Esta skill es la excepción a la regla de `CLAUDE.md` «no commitear ni subir a git»: invocarla levanta esa regla para la publicación. Los permisos necesarios (`git push`, `git merge`, `gh pr create`, `gh pr merge`) tienen que estar en el allowlist de Bash de la configuración de Claude Code (los agrega el usuario); si una herramienta igual los bloquea, **parar y avisar** en vez de esquivar el bloqueo.
+
 En Windows, correr git con la herramienta **Bash** (Git Bash): los heredocs funcionan y se evitan los problemas de comillas de PowerShell.
 
 ## Reglas que no se negocian
