@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getAsset, listAssetInspections } from "@/lib/assets";
+import { daysAgoLabel, lastPreUseControl } from "@/lib/inspection-preuse";
 import { INSTRUMENT_TYPE_KEY } from "@/domain/calibration/types";
 import { listSites } from "@/lib/masterdata";
 import { loadInspectionsAccess } from "@/app/(tenant)/t/[slug]/inspections/access";
@@ -11,7 +12,8 @@ import { dueState } from "@/domain/inspections/schedule";
 import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import { OWNERSHIP_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
 import { STATUS_REASON_LABELS } from "@/domain/inspections/asset-status";
-import { FormError, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { Button, FormError, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { startPreUseInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -47,6 +49,8 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
   const specs = type.dueKinds(attributes);
   // Arneses y cabos: con la vida útil vencida no se mutan solos, se muestra el pedido de baja (SPEC, decisión 7).
   const lifeExpired = !retired && asset.dueDates.some((d) => d.kind === "service_life_end" && isoFromDate(d.dueAt) < today);
+  const preUseKey = type.preUseTemplateKey;
+  const lastPreUse = preUseKey ? await lastPreUseControl(tenant.id, asset.id, preUseKey) : null;
   const kinds = [...asset.dueDates.map((d) => d.kind), ...specs.map((s) => s.kind).filter((k) => !asset.dueDates.some((d) => d.kind === k))];
 
   return (
@@ -148,6 +152,28 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
               attributes,
             }}
           />
+        </SectionBlock>
+      ) : null}
+
+      {preUseKey ? (
+        <SectionBlock title="Control previo al uso" what="Lo hace quien usa el equipo antes de salir. No tiene calendario ni vencimiento.">
+          {lastPreUse ? (
+            <p className="flex flex-wrap items-center gap-2 text-sm">
+              <Link href={`/t/${slug}/inspections/${lastPreUse.id}`} className="font-medium text-[var(--color-accent)] hover:underline">
+                Último control previo: {daysAgoLabel(lastPreUse.daysAgo)} ({formatDateEs(lastPreUse.inspectedAt)})
+              </Link>
+              {lastPreUse.result ? <StatusChip status={RESULT_CHIP[lastPreUse.result]} label={RESULT_LABELS[lastPreUse.result]} /> : null}
+            </p>
+          ) : (
+            <p className="text-sm text-[var(--color-ink-muted)]">Todavía no se hizo ningún control previo.</p>
+          )}
+          {canWrite && !retired ? (
+            <form action={startPreUseInspectionAction.bind(null, slug, asset.id)}>
+              <Button type="submit" variant="secondary" className="min-h-12">
+                Hacer un control previo
+              </Button>
+            </form>
+          ) : null}
         </SectionBlock>
       ) : null}
 

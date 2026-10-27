@@ -67,7 +67,7 @@ function dueKinds(raw: Record<string, unknown>): DueKindSpec[] {
   return specs;
 }
 
-function yesNo(raw: string): { ok: true; value: boolean } | { ok: false; message: string } {
+export function yesNo(raw: string): { ok: true; value: boolean } | { ok: false; message: string } {
   const k = normalizeKey(raw);
   if (["si", "s", "true", "1", "x"].includes(k)) return { ok: true, value: true };
   if (["", "no", "n", "false", "0"].includes(k)) return { ok: true, value: false };
