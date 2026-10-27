@@ -9,7 +9,7 @@ import { AssetStatusChip } from "@/app/(tenant)/t/[slug]/assets/status";
 import { startPreUseInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 import { getAssetType } from "@/domain/inspections/asset-types";
 import { assetTypeLabel } from "@/domain/inspections/asset-types";
-import { Button, EmptyState, Field, FormError, INPUT_CLASS, SectionBlock } from "@/components/ui";
+import { Button, EmptyState, Field, FormError, INPUT_CLASS, SectionBlock, StatusChip } from "@/components/ui";
 
 export default async function NewInspectionPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ q?: string; sq?: string; assetId?: string; error?: string }> }) {
   const { slug } = await params;
