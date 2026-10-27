@@ -12,7 +12,8 @@ import { dueState } from "@/domain/inspections/schedule";
 import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import { OWNERSHIP_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
 import { STATUS_REASON_LABELS } from "@/domain/inspections/asset-status";
-import { Button, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { startPreUseInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
@@ -47,9 +48,9 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
   const sites = canManageAssets && !retired ? await listSites(tenant.id) : [];
   const today = todayIso();
   const specs = type.dueKinds(attributes);
+  const kinds = [...asset.dueDates.map((d) => d.kind), ...specs.map((s) => s.kind).filter((k) => !asset.dueDates.some((d) => d.kind === k))];
   const preUseKey = type.preUseTemplateKey;
   const lastPreUse = preUseKey ? await lastPreUseControl(tenant.id, asset.id, preUseKey) : null;
-  const kinds = [...asset.dueDates.map((d) => d.kind), ...specs.map((s) => s.kind).filter((k) => !asset.dueDates.some((d) => d.kind === k))];
 
   return (
     <div className="flex flex-col gap-6">

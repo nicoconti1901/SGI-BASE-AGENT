@@ -4,8 +4,9 @@ import { getAsset, searchAssets } from "@/lib/assets";
 import { loadInspectionsAccess } from "@/app/(tenant)/t/[slug]/inspections/access";
 import { startInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 import { AssetStatusChip } from "@/app/(tenant)/t/[slug]/assets/status";
-import { assetTypeLabel, getAssetType } from "@/domain/inspections/asset-types";
 import { startPreUseInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
+import { getAssetType } from "@/domain/inspections/asset-types";
+import { assetTypeLabel } from "@/domain/inspections/asset-types";
 import { Button, EmptyState, Field, FormError, INPUT_CLASS, SectionBlock } from "@/components/ui";
 
 export default async function NewInspectionPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ q?: string; assetId?: string; error?: string }> }) {
