@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findNextPendingAsset, getInspectionView } from "@/lib/inspections";
 import { OBRADOR_TEMPLATE_KEY, siteExtinguisherStatus } from "@/lib/inspection-sites";
+import { FIELD_AUDIT_KEY, fieldAuditSummary } from "@/domain/inspections/field-audit";
 import { prisma } from "@/lib/db";
 import { listTenantMembers } from "@/lib/identity";
 import { ownerOfPerson } from "@/lib/inspection-support";
@@ -31,7 +32,13 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
   const { inspection } = view;
   const asset = inspection.asset;
   const type = asset ? getAssetType(asset.typeKey) : null;
-  const summary = asset && type ? `${type.label} · ${type.summarize(asset.attributes as Record<string, unknown>)}` : "Inspección de área";
+  const isFieldAudit = inspection.template.key === FIELD_AUDIT_KEY;
+  const summary =
+    asset && type
+      ? `${type.label} · ${type.summarize(asset.attributes as Record<string, unknown>)}`
+      : isFieldAudit
+        ? fieldAuditSummary(inspection)
+        : "Inspección de área";
   const back = (
     <p className="print:hidden">
       <Link href={`/t/${slug}/inspections`} className="text-sm font-medium text-[var(--color-accent)] hover:underline">
@@ -99,7 +106,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
 
   // Cerrada: resultado y respuestas, solo lectura.
   const result = inspection.result!;
-  const next = canWrite
+  const next = canWrite && !isFieldAudit
     ? await findNextPendingAsset({ tenantId: tenant.id, siteId: inspection.siteId, excludeAssetId: inspection.assetId, actorUserId: ctx.userId })
     : null;
   const nonconforming = view.items.filter(({ item, evalItem, answer }) => {

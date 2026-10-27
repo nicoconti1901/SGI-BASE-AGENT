@@ -20,6 +20,8 @@ import {
 } from "@/lib/inspections";
 import { InspectionError } from "@/lib/inspection-support";
 import { scheduleSiteInspection, startSiteInspection, unscheduleSiteInspection } from "@/lib/inspection-sites";
+import { setMonthlyTarget, startFieldAudit } from "@/lib/inspection-field-audits";
+import { MONTH_RE } from "@/domain/inspections/field-audit";
 import { prisma } from "@/lib/db";
 import { completeAction } from "@/lib/actions";
 import { uploadActionAttachment } from "@/lib/action-attachments";
@@ -97,6 +99,52 @@ export async function setSiteScheduleAction(slug: string, siteId: string, schedu
   }
   revalidatePath(`/t/${slug}/inspections`);
   redirect(`/t/${slug}/inspections/new`);
+}
+
+/** Empezar (o retomar) una auditoría de seguridad en campo: sede, tarea, contratista, supervisor y tareas especiales. */
+export async function startFieldAuditAction(slug: string, formData: FormData): Promise<void> {
+  const access = await requireWriter(slug);
+  if (!access.ok) redirect(`/t/${slug}/inspections/campo?error=${encodeURIComponent(access.error)}`);
+  const text = (key: string) => String(formData.get(key) ?? "").trim();
+  let id: string;
+  try {
+    id = (
+      await startFieldAudit({
+        tenantId: access.tenant.id,
+        actorUserId: access.ctx.userId,
+        siteId: text("siteId"),
+        jobTaskId: text("jobTaskId") || null,
+        contractorName: text("contractorName") || null,
+        supervisorPersonId: text("supervisorPersonId") || null,
+        specialTasks: formData.getAll("specialTasks").map(String),
+      })
+    ).id;
+  } catch (error) {
+    const message = error instanceof InspectionError ? error.message : "No se pudo empezar la auditoría";
+    if (!(error instanceof InspectionError)) console.error(error);
+    redirect(`/t/${slug}/inspections/campo?error=${encodeURIComponent(message)}`);
+  }
+  redirect(`/t/${slug}/inspections/${id}`);
+}
+
+/** Fijar la meta mensual de auditorías de campo de una sede: lo hace quien gestiona activos. */
+export async function setMonthlyTargetAction(slug: string, month: string, siteId: string, formData: FormData): Promise<void> {
+  const access = await requireWriter(slug);
+  const membership = access.ok ? await getMembership(access.ctx.userId, access.tenant.id) : null;
+  const allowed = access.ok && canTenantRole(membership?.role, "manage_assets", { isPlatformSuperuser: access.ctx.isPlatformSuperuser });
+  const back = `/t/${slug}/inspections/campo${MONTH_RE.test(month) ? `?month=${month}` : ""}`;
+  const withError = (message: string) => `${back}${back.includes("?") ? "&" : "?"}error=${encodeURIComponent(message)}`;
+  if (!access.ok || !allowed) redirect(withError(access.ok ? "Tu rol no permite fijar la meta" : access.error));
+  const raw = String(formData.get("monthlyTarget") ?? "").trim();
+  try {
+    await setMonthlyTarget({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, siteId, target: raw === "" ? null : Number(raw) });
+  } catch (error) {
+    const message = error instanceof InspectionError ? error.message : "No se pudo guardar la meta";
+    if (!(error instanceof InspectionError)) console.error(error);
+    redirect(withError(message));
+  }
+  revalidatePath(`/t/${slug}/inspections/campo`);
+  redirect(back);
 }
 
 export async function saveAnswerAction(slug: string, inspectionId: string, itemId: string, patch: AnswerPatch): Promise<CaptureResult> {
