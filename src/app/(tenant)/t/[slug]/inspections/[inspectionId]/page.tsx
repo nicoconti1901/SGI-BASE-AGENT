@@ -18,6 +18,9 @@ import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates"
 import { CRITICALITY_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
 import { Button, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
 
+/** Las acciones de seguimiento separan los pasos extra (retirar, destruir) de la lista de no conformidades. */
+const STEPS_MARKER = "\nAdemás:\n";
+
 const RESULT_CHIP: Record<InspectionResult, "ok" | "warning" | "danger"> = { fit: "ok", fit_with_observations: "warning", unfit: "danger" };
 
 export default async function InspectionPage({ params }: { params: Promise<{ slug: string; inspectionId: string }> }) {
@@ -175,6 +178,11 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
               {ACTION_STATUS_LABELS[inspection.action.status as ActionStatus]} · Responsable: {view.userName(inspection.action.ownerUserId)}
               {inspection.action.dueAt ? ` · Plazo: ${formatDateEs(todayIso(inspection.action.dueAt))}` : ""}
             </p>
+            {inspection.action.description?.includes(STEPS_MARKER) ? (
+              <p className="whitespace-pre-line">
+                <strong>Además:</strong> {inspection.action.description.split(STEPS_MARKER)[1]}
+              </p>
+            ) : null}
             {inspection.finding ? (
               <p>
                 Hallazgo en borrador:{" "}

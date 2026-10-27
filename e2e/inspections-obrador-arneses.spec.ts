@@ -81,7 +81,8 @@ test("zona de obradores y arneses: el obrador se programa y se inspecciona desde
   await expect(row).toContainText("No apto");
   await expect(row).toContainText("Obra e2e");
   await page.goto(`/t/${slug}/inspections?vista=proximas`);
-  await expect(page.getByText("No hay inspecciones para los próximos 7 días.")).toBeVisible();
+  // La reinspección a 7 días figura en «Próximas 7 días», con el botón para empezarla.
+  await expect(page.getByRole("button", { name: "Inspeccionar Zona de obradores de Obra e2e" })).toBeVisible();
 
   // ── Arneses y cabos de vida: importar por CSV (uno vigente, uno con la vida útil vencida) ──
   const fresh = `ARN${tag}-01`;
