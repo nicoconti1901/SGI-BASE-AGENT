@@ -273,12 +273,14 @@ describe.skipIf(!hasDatabase)("proveedores 19.3: criterios, evaluación y docume
       expect(history.filter((h) => h.voidedAt)).toHaveLength(1);
     });
 
-    it("anular la única evaluación deja al proveedor sin evaluar y sin reevaluación", async () => {
+    it("anular la única evaluación deja al proveedor sin evaluar, sin reevaluación y con la evaluación inicial pendiente", async () => {
       const s = await make(a, { legalName: "Unica SA" });
       const { evaluation } = await evaluate(s.id, a, "product");
       await voidEvaluation({ tenantId: a, actorUserId: actor, supplierId: s.id, evaluationId: evaluation.id, reason: "error de carga", now: NOW }, db);
       expect(await getSupplier(a, s.id, db)).toMatchObject({ status: "potential", lastEvaluationId: null, nextEvaluationDueAt: null });
-      expect(await openDue(a, "supplier_evaluation", s.id)).toHaveLength(0);
+      const due = await openDue(a, "supplier_evaluation", s.id);
+      expect(due).toHaveLength(1);
+      expect(due[0].title).toMatch(/^Evaluar proveedor nuevo/);
     });
 
     it("no anula la evaluación de otra empresa", async () => {

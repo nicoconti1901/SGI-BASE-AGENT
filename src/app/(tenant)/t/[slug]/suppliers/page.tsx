@@ -82,6 +82,8 @@ export default async function SuppliersPage({ params, searchParams }: { params: 
         eyebrow="Proveedores · ISO 9001 §8.4 · ISO 14001 §8.1 · ISO 45001 §8.1.4"
         title="Proveedores"
         purpose="A quién le compra la empresa, por qué confía en cada uno y cuánto control le aplica."
+        guideHref={`${base}/guide`}
+        guideLabel="Guía de proveedores →"
         actions={
           <>
             {canManage ? (

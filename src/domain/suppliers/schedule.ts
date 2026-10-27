@@ -1,5 +1,47 @@
-import { addMonthsClamped } from "./dates";
-import type { EvaluationResultValue, SupplierCriticalityValue } from "./types";
+import { addDays, addMonthsClamped } from "./dates";
+import type { EvaluationResultValue, SupplierCriticalityValue, SupplierStatusValue } from "./types";
+
+/** Días por defecto para hacer la evaluación inicial desde el alta (editable por empresa). */
+export const DEFAULT_INITIAL_EVAL_DAYS = 30;
+
+/**
+ * Vencimiento de la evaluación inicial pendiente: alta + N días, solo para críticos y estándar que todavía no
+ * tienen ninguna evaluación vigente. Bajo impacto se acepta de un paso (no se espera nada); de baja o ya evaluado, tampoco.
+ * `createdDay` es el día de calendario del alta (medianoche UTC).
+ */
+export function initialEvaluationDue(input: {
+  status: SupplierStatusValue;
+  criticality: SupplierCriticalityValue;
+  createdDay: Date;
+  initialEvalDays: number;
+}): Date | null {
+  if (input.status !== "potential" || input.criticality === "low") return null;
+  return addDays(input.createdDay, Math.max(0, input.initialEvalDays));
+}
+
+export type ReevaluationSignals = {
+  /** Hallazgos del proveedor abiertos y detectados después de la última evaluación. */
+  openFindingsSinceLast: number;
+  /** El plan de mejora de una evaluación «con condiciones» ya está cerrado: toca comprobar si se cumplió. */
+  planClosed: boolean;
+  /** Hay un documento bloqueante vencido o faltante. */
+  blockingDocsIssue: boolean;
+};
+
+/** Motivos, en lenguaje llano, por los que conviene una reevaluación por evento ya (lista vacía = ninguno). */
+export function eventReevaluationReasons(signals: ReevaluationSignals): string[] {
+  const reasons: string[] = [];
+  if (signals.openFindingsSinceLast > 0) {
+    reasons.push(
+      signals.openFindingsSinceLast === 1
+        ? "Hay un hallazgo abierto desde la última evaluación."
+        : `Hay ${signals.openFindingsSinceLast} hallazgos abiertos desde la última evaluación.`,
+    );
+  }
+  if (signals.planClosed) reasons.push("El plan de mejora ya está cerrado: reevaluar confirma si el proveedor cumplió.");
+  if (signals.blockingDocsIssue) reasons.push("Tiene documentación obligatoria vencida o faltante.");
+  return reasons;
+}
 
 /** Meses entre reevaluaciones; null = sin periodicidad. Configurable por empresa. */
 export type ReevaluationConfig = {
