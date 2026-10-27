@@ -5,8 +5,8 @@ import type { EvaluationResultValue, SupplierCriticalityValue, SupplierStatusVal
 export const DEFAULT_INITIAL_EVAL_DAYS = 30;
 
 /**
- * Vencimiento de la evaluación inicial pendiente: alta + N días, solo para críticos y estándar que todavía no
- * tienen ninguna evaluación vigente. Bajo impacto se acepta de un paso (no se espera nada); de baja o ya evaluado, tampoco.
+ * Vencimiento de la evaluación inicial pendiente: alta + N días, solo para críticos que todavía no tienen
+ * ninguna evaluación vigente. Estándar y bajo impacto no esperan nada (se evalúan cuando se necesita); de baja o ya evaluado, tampoco.
  * `createdDay` es el día de calendario del alta (medianoche UTC).
  */
 export function initialEvaluationDue(input: {
@@ -15,7 +15,7 @@ export function initialEvaluationDue(input: {
   createdDay: Date;
   initialEvalDays: number;
 }): Date | null {
-  if (input.status !== "potential" || input.criticality === "low") return null;
+  if (input.status !== "potential" || input.criticality !== "critical") return null;
   return addDays(input.createdDay, Math.max(0, input.initialEvalDays));
 }
 

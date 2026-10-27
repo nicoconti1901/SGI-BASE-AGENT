@@ -65,8 +65,8 @@ describe.skipIf(!hasDatabase)("proveedores 19.4: evaluación inicial pendiente y
   });
 
   describe("evaluación inicial pendiente", () => {
-    it("el alta de un estándar deja un vencimiento a 30 días con su responsable y aviso a 7", async () => {
-      const s = await make(a, { legalName: "Nuevo estándar SA" });
+    it("el alta de un crítico deja un vencimiento a 30 días con su responsable y aviso a 7", async () => {
+      const s = await make(a, { legalName: "Nuevo estándar SA", criticality: "critical", criticalityReason: "afecta el producto" });
       const due = await openDue(a, s.id);
       expect(due).toHaveLength(1);
       expect(due[0]).toMatchObject({ title: "Evaluar proveedor nuevo: Nuevo estándar SA", leadDays: 7, ownerUserId: owner, status: "open" });
@@ -74,15 +74,15 @@ describe.skipIf(!hasDatabase)("proveedores 19.4: evaluación inicial pendiente y
       expect(due[0].remindAt.getTime()).toBe(due[0].dueAt.getTime() - 7 * 86_400_000);
     });
 
-    it("también para un crítico; no para bajo impacto", async () => {
-      const crit = await make(a, { legalName: "Nuevo crítico SA", criticality: "critical", criticalityReason: "afecta el producto" });
+    it("solo para críticos: estándar y bajo impacto no generan vencimiento", async () => {
+      const std = await make(a, { legalName: "Nuevo estándar 2 SA" });
       const low = await make(a, { legalName: "Nuevo bajo SA", criticality: "low", criticalityReason: "compra ocasional" });
-      expect(await openDue(a, crit.id)).toHaveLength(1);
+      expect(await openDue(a, std.id)).toHaveLength(0);
       expect(await openDue(a, low.id)).toHaveLength(0);
     });
 
     it("recalcular no duplica ni reinicia los avisos ya enviados", async () => {
-      const s = await make(a, { legalName: "Idempotente SA" });
+      const s = await make(a, { legalName: "Idempotente SA", criticality: "critical", criticalityReason: "afecta el producto" });
       const [before] = await openDue(a, s.id);
       await db.dueItem.update({ where: { id: before.id }, data: { lastReminderKind: "upcoming", lastRemindedAt: NOW } });
       await recomputeSupplierSummary(a, s.id, db);
@@ -94,7 +94,7 @@ describe.skipIf(!hasDatabase)("proveedores 19.4: evaluación inicial pendiente y
 
     it("el plazo sale de los ajustes de la empresa", async () => {
       await db.supplierSettings.update({ where: { tenantId: b }, data: { initialEvalDays: 10 } });
-      const s = await make(b, { legalName: "Plazo corto SA", ownerUserId: "" });
+      const s = await make(b, { legalName: "Plazo corto SA", ownerUserId: "", criticality: "critical", criticalityReason: "afecta el producto" });
       const [due] = await db.dueItem.findMany({ where: { tenantId: b, entityId: s.id, status: "open" } });
       expect(isoDay(due.dueAt)).toBe(isoDay(addDays(buenosAiresToday(s.createdAt), 10)));
     });
@@ -117,7 +117,7 @@ describe.skipIf(!hasDatabase)("proveedores 19.4: evaluación inicial pendiente y
     });
 
     it("anular la única evaluación devuelve la evaluación inicial pendiente", async () => {
-      const s = await make(a, { legalName: "Anulado SA" });
+      const s = await make(a, { legalName: "Anulado SA", criticality: "critical", criticalityReason: "afecta el producto" });
       const { evaluation } = await evaluate(a, s.id);
       expect((await openDue(a, s.id))[0].title).toMatch(/^Reevaluar/);
       await voidEvaluation({ tenantId: a, actorUserId: actor, supplierId: s.id, evaluationId: evaluation.id, reason: "equivocada", now: NOW }, db);
@@ -126,12 +126,14 @@ describe.skipIf(!hasDatabase)("proveedores 19.4: evaluación inicial pendiente y
       expect(due[0].title).toMatch(/^Evaluar proveedor nuevo/);
     });
 
-    it("cambiar a bajo impacto o dar de baja lo cierra; reactivar lo vuelve a abrir", async () => {
-      const s = await make(a, { legalName: "Cambia SA" });
+    it("cambiar a bajo impacto o estándar, o dar de baja, lo cierra; volver a crítico o reactivar lo abre", async () => {
+      const s = await make(a, { legalName: "Cambia SA", criticality: "critical", criticalityReason: "afecta el producto" });
       expect(await openDue(a, s.id)).toHaveLength(1);
       await updateSupplier({ tenantId: a, actorUserId: actor, id: s.id, legalName: "Cambia SA", type: "product", criticality: "low", criticalityReason: "ya no es relevante" });
       expect(await openDue(a, s.id)).toHaveLength(0);
       await updateSupplier({ tenantId: a, actorUserId: actor, id: s.id, legalName: "Cambia SA", type: "product", criticality: "standard", ownerUserId: owner });
+      expect(await openDue(a, s.id)).toHaveLength(0);
+      await updateSupplier({ tenantId: a, actorUserId: actor, id: s.id, legalName: "Cambia SA", type: "product", criticality: "critical", criticalityReason: "afecta el producto", ownerUserId: owner });
       expect(await openDue(a, s.id)).toHaveLength(1);
       await deactivateSupplier({ tenantId: a, actorUserId: actor, id: s.id, reason: "cerró" }, db);
       expect(await openDue(a, s.id)).toHaveLength(0);
@@ -139,7 +141,7 @@ describe.skipIf(!hasDatabase)("proveedores 19.4: evaluación inicial pendiente y
       expect(await openDue(a, s.id)).toHaveLength(1);
     });
 
-    it("la importación deja el pendiente de críticos y estándar en lote, y ninguno para bajo impacto", async () => {
+    it("la importación deja el pendiente solo de los críticos; estándar, sin criticidad y bajo impacto no generan ninguno", async () => {
       const t = (await createTenantWithTemplate({ name: "Reeval import", slug: `reeval-imp-${stamp}`, size: "small", activity: "servicios" })).id;
       tenantIds.push(t);
       await db.membership.create({ data: { userId: actor, tenantId: t, role: "tenant_admin" } });
@@ -155,13 +157,13 @@ describe.skipIf(!hasDatabase)("proveedores 19.4: evaluación inicial pendiente y
       expect(await applySupplierImport({ tenantId: t, actorUserId: actor, csv })).toMatchObject({ created: 4 });
       const suppliers = await db.supplier.findMany({ where: { tenantId: t } });
       const due = await db.dueItem.findMany({ where: { tenantId: t, entityType: "supplier_evaluation", status: "open" } });
-      expect(due).toHaveLength(3);
-      const low = suppliers.find((s) => s.legalName === "Imp bajo SA")!;
-      expect(due.map((x) => x.entityId)).not.toContain(low.id);
+      expect(due).toHaveLength(1);
+      const std = suppliers.filter((s) => s.legalName !== "Imp crítico SA");
+      expect(due.map((x) => x.entityId)).not.toContain(std[0].id);
       expect(due.find((x) => x.entityId === suppliers.find((s) => s.legalName === "Imp crítico SA")!.id)).toMatchObject({ ownerUserId: actor, leadDays: 7 });
       // Un recálculo posterior no duplica lo que dejó la importación.
       for (const s of suppliers) await recomputeSupplierSummary(t, s.id, db);
-      expect(await db.dueItem.count({ where: { tenantId: t, entityType: "supplier_evaluation", status: "open" } })).toBe(3);
+      expect(await db.dueItem.count({ where: { tenantId: t, entityType: "supplier_evaluation", status: "open" } })).toBe(1);
     });
   });
 
