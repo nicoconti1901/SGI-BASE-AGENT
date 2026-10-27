@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findNextPendingAsset, getInspectionView } from "@/lib/inspections";
 import { OBRADOR_TEMPLATE_KEY, siteExtinguisherStatus } from "@/lib/inspection-sites";
+import { FIELD_AUDIT_TEMPLATE_KEY } from "@/lib/inspection-field-audit";
+import { SPECIAL_TASKS, isSpecialTask } from "@/domain/inspections/templates/field-audit";
 import { prisma } from "@/lib/db";
 import { listTenantMembers } from "@/lib/identity";
 import { ownerOfPerson } from "@/lib/inspection-support";
@@ -21,6 +23,18 @@ import { Button, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
 /** Las acciones de seguimiento separan los pasos extra (retirar, destruir) de la lista de no conformidades. */
 const STEPS_MARKER = "\nAdemás:\n";
 
+/** Contexto de una auditoría en campo en una línea: tarea, contratista, supervisor y tareas especiales. */
+function fieldAuditSummary(inspection: { jobTask: { name: string } | null; contractorName: string | null; supervisor: { name: string } | null; specialTasks: string[] }) {
+  const special = inspection.specialTasks.filter(isSpecialTask).map((t) => SPECIAL_TASKS[t]);
+  const parts = [
+    inspection.jobTask ? `Tarea: ${inspection.jobTask.name}` : null,
+    inspection.contractorName ? `Contratista: ${inspection.contractorName}` : null,
+    inspection.supervisor ? `Supervisor: ${inspection.supervisor.name}` : null,
+    special.length > 0 ? `Tareas especiales: ${special.join(", ")}` : null,
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(" · ") : "Auditoría de seguridad en campo";
+}
+
 const RESULT_CHIP: Record<InspectionResult, "ok" | "warning" | "danger"> = { fit: "ok", fit_with_observations: "warning", unfit: "danger" };
 
 export default async function InspectionPage({ params }: { params: Promise<{ slug: string; inspectionId: string }> }) {
@@ -31,7 +45,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
   const { inspection } = view;
   const asset = inspection.asset;
   const type = asset ? getAssetType(asset.typeKey) : null;
-  const summary = asset && type ? `${type.label} · ${type.summarize(asset.attributes as Record<string, unknown>)}` : "Inspección de área";
+  const summary = asset && type ? `${type.label} · ${type.summarize(asset.attributes as Record<string, unknown>)}` : inspection.template.key === FIELD_AUDIT_TEMPLATE_KEY ? fieldAuditSummary(inspection) : "Inspección de área";
   const back = (
     <p className="print:hidden">
       <Link href={`/t/${slug}/inspections`} className="text-sm font-medium text-[var(--color-accent)] hover:underline">

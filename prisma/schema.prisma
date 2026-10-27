@@ -164,6 +164,7 @@ model Tenant {
   inspectionTemplates   InspectionTemplate[]
   inspections           Inspection[]
   inspectionPlans       InspectionPlan[]
+  inspectionTargets     InspectionTarget[]
   inspectionAudits      InspectionAudit[]
   instrumentControls    InstrumentControl[]
   calibRecords          CalibrationRecord[]
@@ -1218,26 +1219,27 @@ enum PersonStatus {
 
 /// Dónde: oficina, base, obrador, yacimiento, campamento o planta.
 model Site {
-  id               String            @id @default(cuid())
-  tenantId         String
-  name             String
-  kind             SiteKind          @default(office)
-  address          String?
-  active           Boolean           @default(true)
-  inactiveAt       DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  basePeople       Person[]          @relation("PersonBaseSite")
-  incidents        IncidentRecord[]
-  exposures        ExposurePeriod[]
-  people           PersonSite[]
-  dueItems         DueItem[]
-  suppliers        SupplierSite[]
-  trainingSessions TrainingSession[]
-  assets           Asset[]
-  inspections      Inspection[]
-  inspectionPlans  InspectionPlan[]
+  id                String             @id @default(cuid())
+  tenantId          String
+  name              String
+  kind              SiteKind           @default(office)
+  address           String?
+  active            Boolean            @default(true)
+  inactiveAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  basePeople        Person[]           @relation("PersonBaseSite")
+  incidents         IncidentRecord[]
+  exposures         ExposurePeriod[]
+  people            PersonSite[]
+  dueItems          DueItem[]
+  suppliers         SupplierSite[]
+  trainingSessions  TrainingSession[]
+  assets            Asset[]
+  inspections       Inspection[]
+  inspectionPlans   InspectionPlan[]
+  inspectionTargets InspectionTarget[]
 
   @@unique([tenantId, name])
   @@index([tenantId, active])
@@ -1274,6 +1276,7 @@ model JobTask {
   tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   people               PersonJobTask[]
   trainingRequirements TrainingRequirement[]
+  inspections          Inspection[]
 
   @@unique([tenantId, name])
   @@index([tenantId, active])
@@ -1283,37 +1286,38 @@ model JobTask {
 /// Quién: nómina propia y de contratistas. No necesariamente usa el sistema (`userId` opcional).
 /// Sin datos de salud. La baja es lógica: nunca se borra el historial.
 model Person {
-  id                   String           @id @default(cuid())
-  tenantId             String
-  employeeCode         String
-  name                 String
-  documentId           String?
-  userId               String?
-  employer             PersonEmployer   @default(own)
-  contractorName       String?
-  siteId               String
-  positionId           String
-  hiredAt              DateTime?
+  id                    String           @id @default(cuid())
+  tenantId              String
+  employeeCode          String
+  name                  String
+  documentId            String?
+  userId                String?
+  employer              PersonEmployer   @default(own)
+  contractorName        String?
+  siteId                String
+  positionId            String
+  hiredAt               DateTime?
   /// Desde cuándo está en el puesto actual. NULL = desde el ingreso. Solo cambia al cambiar de puesto.
-  positionSince        DateTime?
-  status               PersonStatus     @default(active)
-  inactiveAt           DateTime?
+  positionSince         DateTime?
+  status                PersonStatus     @default(active)
+  inactiveAt            DateTime?
   /// Contratista del que depende (módulo Proveedores). `contractorName` sigue siendo el texto libre.
-  supplierId           String?
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
-  supplier             Supplier?        @relation(fields: [supplierId], references: [id], onDelete: SetNull)
-  tenant               Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  site                 Site             @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
-  incidentHealths      IncidentHealth[]
-  position             JobPosition      @relation(fields: [positionId], references: [id], onDelete: Restrict)
-  user                 User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
-  extraSites           PersonSite[]
-  jobTasks             PersonJobTask[]
-  dueItems             DueItem[]
-  trainingRecords      TrainingRecord[]
-  assignedAssets       Asset[]
-  performedInspections Inspection[]
+  supplierId            String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  supplier              Supplier?        @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site                  Site             @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
+  incidentHealths       IncidentHealth[]
+  position              JobPosition      @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  user                  User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  extraSites            PersonSite[]
+  jobTasks              PersonJobTask[]
+  dueItems              DueItem[]
+  trainingRecords       TrainingRecord[]
+  assignedAssets        Asset[]
+  performedInspections  Inspection[]
+  supervisedInspections Inspection[]     @relation("InspectionSupervisor")
 
   @@unique([tenantId, employeeCode])
   @@unique([tenantId, userId])
@@ -2353,6 +2357,7 @@ model InspectionTemplate {
   versions          InspectionTemplateVersion[] @relation("TemplateVersions")
   inspections       Inspection[]
   plans             InspectionPlan[]
+  targets           InspectionTarget[]
 
   @@unique([tenantId, key])
   @@map("inspection_template")
@@ -2419,6 +2424,12 @@ model Inspection {
   /// Siempre se guarda la sede (la del activo, o la elegida si se inspecciona un área).
   siteId              String
   sector              String?
+  /// Solo en la auditoría de seguridad en campo (contexto de la tarea auditada).
+  jobTaskId           String?
+  contractorName      String?
+  supervisorPersonId  String?
+  /// `height` / `confined_space` / `lifting`: deciden qué ítems de «tareas especiales» aplican.
+  specialTasks        String[]
   inspectorUserId     String
   /// Quien hizo el control si no es el usuario que lo carga.
   performedByPersonId String?
@@ -2448,6 +2459,8 @@ model Inspection {
   asset               Asset?                    @relation(fields: [assetId], references: [id], onDelete: NoAction)
   site                Site                      @relation(fields: [siteId], references: [id], onDelete: NoAction)
   performedBy         Person?                   @relation(fields: [performedByPersonId], references: [id], onDelete: SetNull)
+  jobTask             JobTask?                  @relation(fields: [jobTaskId], references: [id], onDelete: SetNull)
+  supervisor          Person?                   @relation("InspectionSupervisor", fields: [supervisorPersonId], references: [id], onDelete: SetNull)
   answers             InspectionAnswer[]
   attachments         InspectionAttachment[]
   lastForPlans        InspectionPlan[]
@@ -2866,4 +2879,25 @@ model SafetyIndicatorLink {
   @@unique([tenantId, metric])
   @@index([indicatorId])
   @@map("safety_indicator_link")
+}
+
+// ─── Inspecciones: auditoría de seguridad en campo (S11) — SPEC-inspections.md ───
+
+/// Meta mensual de auditorías de campo por sede y plantilla. El cumplimiento (hechas / meta) se calcula al leer.
+model InspectionTarget {
+  id            String             @id @default(cuid())
+  tenantId      String
+  templateId    String
+  siteId        String
+  monthlyTarget Int
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  template      InspectionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  site          Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, siteId])
+  @@index([tenantId, templateId])
+  @@index([siteId])
+  @@map("inspection_target")
 }

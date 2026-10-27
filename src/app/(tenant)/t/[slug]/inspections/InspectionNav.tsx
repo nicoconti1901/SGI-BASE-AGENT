@@ -9,6 +9,7 @@ export async function InspectionNav({ slug }: { slug: string }) {
       tabs={[
         { href: `/t/${slug}/inspections`, label: "Inspecciones" },
         { href: `/t/${slug}/assets`, label: "Activos" },
+        { href: `/t/${slug}/inspections/campo`, label: "Auditorías en campo" },
         ...(canViewTemplates ? [{ href: `/t/${slug}/inspections/templates`, label: "Plantillas" }] : []),
         { href: `/t/${slug}/inspections/guia`, label: "Guía" },
       ]}
