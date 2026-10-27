@@ -1,5 +1,6 @@
 import { EXTINGUISHER_PERIODIC } from "./extinguisher";
 import { FALL_PROTECTION_PERIODIC } from "./fall-protection";
+import { FIELD_AUDIT } from "./field-audit";
 import { FUNCTIONAL_CHECK } from "./functional-check";
 import { HEAVY_PERIODIC, HEAVY_PRE_USE } from "./heavy-equipment";
 import { LIGHT_PERIODIC, LIGHT_PRE_USE } from "./light-vehicle";
@@ -8,7 +9,7 @@ import type { TemplateDefinition } from "./types";
 
 /**
  * Plantillas precargadas. Agregar un tipo = una línea acá (y su tipo de activo en `asset-types/`).
- * Las demás del anexo (campo) se suman en los tramos siguientes.
+ * Con la auditoría de campo quedan todas las del anexo.
  */
 export const DEFAULT_TEMPLATES: readonly TemplateDefinition[] = [
   EXTINGUISHER_PERIODIC,
@@ -18,6 +19,7 @@ export const DEFAULT_TEMPLATES: readonly TemplateDefinition[] = [
   FALL_PROTECTION_PERIODIC,
   HEAVY_PRE_USE,
   HEAVY_PERIODIC,
+  FIELD_AUDIT,
   FUNCTIONAL_CHECK,
 ];
 
