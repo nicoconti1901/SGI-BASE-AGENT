@@ -672,6 +672,8 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 
 ## Task 18: seguridad vial — estadística propia y separada
 
+> **DIFERIDA (decisión del PO, 2026-10-27).** Se retoma al final, cuando todo lo pendiente de la Fase 5 esté terminado, y se define como un módulo particular bajo la **ISO 39001** (norma propia en el catálogo ISO). El alcance de abajo es el original; `RESEARCH-road-safety.md` y `SPEC-road-safety.md` (PR #32) son borradores de insumo y se reescriben desde ese enfoque antes de aprobar nada. Mientras tanto `road_safety` queda `planned` en el catálogo.
+
 **Description:** Módulo y tablero **propios** de seguridad vial (referencias: ISO 39001 e indicadores del estilo IOGP), separados de la accidentabilidad general. Cubre todos los eventos viales: con o sin lesión, en misión o in itinere, y los que solo dejan daño material. Los índices se calculan sobre los **km recorridos** por la flota. Reutiliza la ficha de accidente (marcada como vial) y el registro de vehículos de la Task 15.
 
 **Sub-tareas:**
