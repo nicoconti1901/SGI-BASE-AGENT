@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findNextPendingAsset, getInspectionView } from "@/lib/inspections";
+import { OBRADOR_TEMPLATE_KEY, siteExtinguisherStatus } from "@/lib/inspection-sites";
 import { prisma } from "@/lib/db";
 import { listTenantMembers } from "@/lib/identity";
 import { ownerOfPerson } from "@/lib/inspection-support";
@@ -17,6 +18,9 @@ import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates"
 import { CRITICALITY_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
 import { Button, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
 
+/** Las acciones de seguimiento separan los pasos extra (retirar, destruir) de la lista de no conformidades. */
+const STEPS_MARKER = "\nAdemás:\n";
+
 const RESULT_CHIP: Record<InspectionResult, "ok" | "warning" | "danger"> = { fit: "ok", fit_with_observations: "warning", unfit: "danger" };
 
 export default async function InspectionPage({ params }: { params: Promise<{ slug: string; inspectionId: string }> }) {
@@ -27,7 +31,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
   const { inspection } = view;
   const asset = inspection.asset;
   const type = asset ? getAssetType(asset.typeKey) : null;
-  const summary = asset && type ? `${type.label} · ${type.summarize(asset.attributes as Record<string, unknown>)}` : inspection.template.name;
+  const summary = asset && type ? `${type.label} · ${type.summarize(asset.attributes as Record<string, unknown>)}` : "Inspección de área";
   const back = (
     <p className="print:hidden">
       <Link href={`/t/${slug}/inspections`} className="text-sm font-medium text-[var(--color-accent)] hover:underline">
@@ -46,12 +50,21 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
         </div>
       );
     }
+    // Zona de obradores: el sistema muestra cuántos extintores de la sede están vencidos (SPEC, anexo T2).
+    const extinguishers = inspection.template.key === OBRADOR_TEMPLATE_KEY ? await siteExtinguisherStatus(tenant.id, inspection.siteId) : null;
+    const extinguisherNote = extinguishers
+      ? extinguishers.total === 0
+        ? "El sistema no tiene extintores cargados en esta sede."
+        : extinguishers.expired === 0
+          ? `Los ${extinguishers.total} extintores cargados en esta sede tienen sus vencimientos al día.`
+          : `Atención: ${extinguishers.expired} de ${extinguishers.total} extintores cargados en esta sede tienen algún vencimiento vencido.`
+      : null;
     const items: CaptureItem[] = view.items.map(({ answer, item, evalItem, autoDueAt }) => ({
       itemId: item.id,
       code: item.code,
       section: item.section,
       text: item.text,
-      help: item.help,
+      help: item.code === "fire_extinguishers" && extinguisherNote ? extinguisherNote : item.help,
       unit: item.unit,
       evalItem,
       auto: evalItem.autoSource ? { dueAt: autoDueAt, conform: evalItem.autoConform === true } : null,
@@ -98,7 +111,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
     <div className="flex flex-col gap-6">
       {back}
       <SectionBlock
-        title={asset ? `${asset.code} · ${inspection.template.name}` : inspection.template.name}
+        title={asset ? `${asset.code} · ${inspection.template.name}` : `${inspection.template.name} · ${inspection.site.name}`}
         eyebrow={`Inspección del ${formatDateEs(isoFromDate(inspection.inspectedAt))} · ${inspection.site.name}`}
         what={summary}
         actions={
@@ -165,6 +178,11 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
               {ACTION_STATUS_LABELS[inspection.action.status as ActionStatus]} · Responsable: {view.userName(inspection.action.ownerUserId)}
               {inspection.action.dueAt ? ` · Plazo: ${formatDateEs(todayIso(inspection.action.dueAt))}` : ""}
             </p>
+            {inspection.action.description?.includes(STEPS_MARKER) ? (
+              <p className="whitespace-pre-line">
+                <strong>Además:</strong> {inspection.action.description.split(STEPS_MARKER)[1]}
+              </p>
+            ) : null}
             {inspection.finding ? (
               <p>
                 Hallazgo en borrador:{" "}

@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import { EXTINGUISHER_TYPE } from "./extinguisher";
+import { FALL_PROTECTION_TYPE } from "./fall-protection";
 import { MEASURING_EQUIPMENT_TYPE } from "./measuring-equipment";
 
 /** Qué vencimiento documental lleva un tipo de activo y cada cuánto se renueva. */
@@ -49,7 +50,7 @@ export type AssetTypeDef = {
 
 export type AttributeField =
   | { key: string; label: string; type: "select"; options: { value: string; label: string }[]; required: boolean; hint?: string }
-  | { key: string; label: string; type: "number"; required: boolean; min?: number; step?: number; hint?: string }
+  | { key: string; label: string; type: "number"; required: boolean; min?: number; step?: number; initial?: number; hint?: string }
   | { key: string; label: string; type: "date"; required: boolean; hint?: string }
   | { key: string; label: string; type: "text"; required: boolean; hint?: string }
   | { key: string; label: string; type: "boolean"; required: boolean; hint?: string };
@@ -60,6 +61,7 @@ export type AttributeField =
  */
 export const ASSET_TYPES = {
   extinguisher: EXTINGUISHER_TYPE,
+  fall_protection: FALL_PROTECTION_TYPE,
 } as const satisfies Record<string, AssetTypeDef>;
 
 export type AssetTypeKey = keyof typeof ASSET_TYPES;

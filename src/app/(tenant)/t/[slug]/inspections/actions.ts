@@ -19,6 +19,7 @@ import {
   type CorrectionPatch,
 } from "@/lib/inspections";
 import { InspectionError } from "@/lib/inspection-support";
+import { scheduleSiteInspection, startSiteInspection, unscheduleSiteInspection } from "@/lib/inspection-sites";
 import { prisma } from "@/lib/db";
 import { completeAction } from "@/lib/actions";
 import { uploadActionAttachment } from "@/lib/action-attachments";
@@ -60,6 +61,41 @@ export async function startInspectionAction(slug: string, assetId: string): Prom
     redirect(`/t/${slug}/inspections/new?error=${encodeURIComponent(message)}`);
   }
   redirect(`/t/${slug}/inspections/${id}`);
+}
+
+/** Empezar (o retomar) la inspección de la zona de obradores de una sede y abrir su pantalla. */
+export async function startSiteInspectionAction(slug: string, siteId: string): Promise<void> {
+  const access = await requireWriter(slug);
+  if (!access.ok) redirect(`/t/${slug}/inspections?error=${encodeURIComponent(access.error)}`);
+  let id: string;
+  try {
+    id = (await startSiteInspection({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, siteId })).id;
+  } catch (error) {
+    const message = error instanceof InspectionError ? error.message : "No se pudo empezar la inspección";
+    if (!(error instanceof InspectionError)) console.error(error);
+    redirect(`/t/${slug}/inspections/new?error=${encodeURIComponent(message)}`);
+  }
+  redirect(`/t/${slug}/inspections/${id}`);
+}
+
+/** Programar (o sacar del programa) la zona de obradores de una sede: lo hace quien gestiona activos. */
+export async function setSiteScheduleAction(slug: string, siteId: string, schedule: boolean): Promise<void> {
+  const access = await requireWriter(slug);
+  const ctx = await getAppSessionContext();
+  const membership = ctx && access.ok ? await getMembership(ctx.userId, access.tenant.id) : null;
+  const allowed = access.ok && canTenantRole(membership?.role, "manage_assets", { isPlatformSuperuser: ctx?.isPlatformSuperuser });
+  if (!access.ok || !allowed) redirect(`/t/${slug}/inspections/new?error=${encodeURIComponent(access.ok ? "Tu rol no permite programar inspecciones" : access.error)}`);
+  try {
+    const input = { tenantId: access.tenant.id, actorUserId: access.ctx.userId, siteId };
+    if (schedule) await scheduleSiteInspection(input);
+    else await unscheduleSiteInspection(input);
+  } catch (error) {
+    const message = error instanceof InspectionError ? error.message : "No se pudo guardar el programa";
+    if (!(error instanceof InspectionError)) console.error(error);
+    redirect(`/t/${slug}/inspections/new?error=${encodeURIComponent(message)}`);
+  }
+  revalidatePath(`/t/${slug}/inspections`);
+  redirect(`/t/${slug}/inspections/new`);
 }
 
 export async function saveAnswerAction(slug: string, inspectionId: string, itemId: string, patch: AnswerPatch): Promise<CaptureResult> {

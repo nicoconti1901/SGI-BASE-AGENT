@@ -63,7 +63,7 @@ function AttributeInput({ field, value }: { field: AttributeField; value: unknow
           ))}
         </select>
       ) : field.type === "number" ? (
-        <input name={name} type="number" inputMode="decimal" required={field.required} min={field.min} step={field.step ?? "any"} defaultValue={value === undefined ? "" : String(value)} className={INPUT_CLASS} />
+        <input name={name} type="number" inputMode="decimal" required={field.required} min={field.min} step={field.step ?? "any"} defaultValue={value === undefined ? String(field.initial ?? "") : String(value)} className={INPUT_CLASS} />
       ) : (
         <input name={name} type={field.type === "date" ? "date" : "text"} required={field.required} defaultValue={value === undefined ? "" : String(value)} className={INPUT_CLASS} />
       )}
