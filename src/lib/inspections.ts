@@ -163,7 +163,7 @@ export async function getInspectionView(tenantId: string, inspectionId: string, 
       site: { select: { name: true } },
       performedBy: { select: { id: true, name: true, employeeCode: true, site: { select: { name: true } } } },
       finding: { select: { id: true, title: true, status: true } },
-      action: { select: { id: true, title: true, status: true, ownerUserId: true, dueAt: true, attachments: { select: { id: true, fileName: true } } } },
+      action: { select: { id: true, title: true, description: true, status: true, ownerUserId: true, dueAt: true, attachments: { select: { id: true, fileName: true } } } },
       corrections: { orderBy: { createdAt: "desc" } },
       answers: {
         orderBy: { item: { sortOrder: "asc" } },

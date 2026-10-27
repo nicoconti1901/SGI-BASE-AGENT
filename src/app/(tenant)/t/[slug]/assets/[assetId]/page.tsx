@@ -14,7 +14,7 @@ import { dueState } from "@/domain/inspections/schedule";
 import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import { OWNERSHIP_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
 import { STATUS_REASON_LABELS } from "@/domain/inspections/asset-status";
-import { SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { FormError, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
 
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -48,6 +48,8 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
   const sites = canManageAssets && !retired ? await listSites(tenant.id) : [];
   const today = todayIso();
   const specs = type.dueKinds(attributes);
+  // Arneses y cabos: con la vida útil vencida no se mutan solos, se muestra el pedido de baja (SPEC, decisión 7).
+  const lifeExpired = !retired && asset.dueDates.some((d) => d.kind === "service_life_end" && isoFromDate(d.dueAt) < today);
   const kinds = [...asset.dueDates.map((d) => d.kind), ...specs.map((s) => s.kind).filter((k) => !asset.dueDates.some((d) => d.kind === k))];
   const preUseKey = type.preUseTemplateKey;
   const lastPreUse = preUseKey ? await lastPreUseControl(tenant.id, asset.id, preUseKey) : null;
@@ -93,6 +95,10 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
         </dl>
       </SectionBlock>
 
+      {lifeExpired ? (
+        <FormError>Vida útil vencida: dar de baja. Un equipo anticaídas vencido no puede usarse ni declararse apto; registrá la baja más abajo y destruilo.</FormError>
+      ) : null}
+
       <SectionBlock title="Vencimientos" what="Mantenimiento y pruebas del equipo. Cada uno avisa antes de vencer." next={canManageAssets && !retired ? "renová el vencimiento cuando se haga el trabajo." : undefined}>
         {kinds.length === 0 ? (
           <p className="text-sm text-[var(--color-ink-muted)]">Este activo no lleva vencimientos.</p>
@@ -117,7 +123,7 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
                     </div>
                     {state ? <StatusChip status={state.status} label={state.label} /> : null}
                   </div>
-                  {canManageAssets && !retired ? <RenewDueDateForm slug={slug} assetId={asset.id} kind={kind} label={label} /> : null}
+                  {canManageAssets && !retired && kind !== "service_life_end" ? <RenewDueDateForm slug={slug} assetId={asset.id} kind={kind} label={label} /> : null}
                 </li>
               );
             })}

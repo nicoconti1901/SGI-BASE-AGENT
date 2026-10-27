@@ -501,15 +501,15 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
   - NC → corrección o hallazgo (`Finding` con origen inspección y vínculo en ambos sentidos).
   - Activo fuera de servicio; solo vuelve a servicio con una reinspección apta.
   - `DueItem` para la próxima inspección y para cada `AssetDueDate`, con notificaciones agrupadas por sede para no saturar.
-- [ ] 15.6 Editor de plantillas por tenant (versionado) + guía `/inspections/guia` + menú
+- [x] 15.6 (hecho 2026-10-27, PR #29, S6) Editor de plantillas por tenant (versionado) + guía `/inspections/guia` + menú
 
 **Sub-tareas — tipos** (cada uno define atributos del activo, plantilla precargada, frecuencia, vencimientos y regla de no apto; lista y registro verificados en el navegador):
-- [ ] 15.7 **Extintores**
+- [x] 15.7 (hecho 2026-10-27, PR #15, #17 y #29) **Extintores**
   - Activo: n.° interno, agente (ABC, CO₂, espuma AFFF, HCFC/halotrón, agua, clase K), capacidad en kg, ubicación o sector, n.° de cilindro, empresa recargadora.
   - Vencimientos: **carga (anual)** y **prueba hidráulica (cada 5 años)**.
   - Control **mensual** (IRAM 3517-2): acceso libre y señalización, presión en zona verde o peso del CO₂, precinto y pasador, manguera y boquilla, cilindro sin golpes ni corrosión, tarjeta de control legible, altura de montaje, carga y PH vigentes.
   - No apto: presión, precinto, cilindro dañado, carga o PH vencidos → retiro y reemplazo.
-- [ ] 15.8 **Zona de obradores**
+- [ ] 15.8 (S7, PR #33 abierto en borrador, CI verde, falta marcar «ready» y `/integrar`; arneses S9 en el mismo PR) **Zona de obradores**
   - Inspección de área (sede de tipo obrador o un sector), **semanal**.
   - Orden y limpieza; delimitación y señalización.
   - Instalación eléctrica: tablero con tapa y disyuntor, puesta a tierra, sin empalmes precarios.
@@ -651,7 +651,7 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
   - distribución por forma del accidente, agente, parte del cuerpo, día y hora;
   - días sin accidentes con baja, por sede;
   - comparación opcional contra una meta, vinculando un Indicador de la Task 11c.
-- [ ] 17.5 Exportación (CSV + resumen imprimible para la revisión por la dirección), guía, menú, e2e, README
+- [x] 17.5 (hecho 2026-10-26, PR #28) Exportación (CSV + resumen imprimible para la revisión por la dirección), guía, menú, e2e, README
 
 **Acceptance criteria:**
 - [ ] Los índices coinciden con el cálculo manual del conjunto de datos de referencia
@@ -671,6 +671,8 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 ---
 
 ## Task 18: seguridad vial — estadística propia y separada
+
+> **DIFERIDA (decisión del PO, 2026-10-27).** Se retoma al final, cuando todo lo pendiente de la Fase 5 esté terminado, y se define como un módulo particular bajo la **ISO 39001** (norma propia en el catálogo ISO). El alcance de abajo es el original; `RESEARCH-road-safety.md` y `SPEC-road-safety.md` (PR #32) son borradores de insumo y se reescriben desde ese enfoque antes de aprobar nada. Mientras tanto `road_safety` queda `planned` en el catálogo.
 
 **Description:** Módulo y tablero **propios** de seguridad vial (referencias: ISO 39001 e indicadores del estilo IOGP), separados de la accidentabilidad general. Cubre todos los eventos viales: con o sin lesión, en misión o in itinere, y los que solo dejan daño material. Los índices se calculan sobre los **km recorridos** por la flota. Reutiliza la ficha de accidente (marcada como vial) y el registro de vehículos de la Task 15.
 
@@ -744,12 +746,12 @@ Abarca a los contratistas (45001 §8.1.4.2) y a los proveedores con impacto ambi
   - Funciones `scoreEvaluation`, `resultFromScore` y `nextEvaluationDue`, y transiciones de estado, con tests.
 - [x] 19.2 (hecho 2026-10-22, PR #14) Registro y lista de proveedores con filtros (estado, criticidad, categoría, sede); ficha con el historial de evaluaciones, documentos y hallazgos; **lista de proveedores aprobados** exportable
 - [x] 19.3 (hecho 2026-10-23, PR #19) Evaluación inicial (selección) y aprobación. Los documentos requeridos según el tipo tienen vencimiento y generan un `DueItem`. Un contratista con la ART o el seguro vencidos aparece como no habilitado.
-- [ ] 19.4 Reevaluación periódica:
+- [x] 19.4 (hecho 2026-10-27, PR #30; la evaluación inicial pendiente se genera solo para críticos, PR #31, decisión del PO) Reevaluación periódica:
   - `DueItem` según la criticidad;
   - el formulario trae precargados como evidencia los **hallazgos del período originados en el proveedor**;
   - resultado condicional → plan de mejora con la `Action` compartida (Task 11);
   - no aprobado → suspendido.
-- [ ] 19.5 Hallazgo de proveedor (`Finding` con `supplierId`); registro de la comunicación del resultado al proveedor (§8.4.3); tablero (por estado, evaluaciones vencidas, ranking, evolución del puntaje); guía, menú, e2e
+- [x] 19.5 (hecho 2026-10-27, PR #30) Hallazgo de proveedor (`Finding` con `supplierId`); registro de la comunicación del resultado al proveedor (§8.4.3); tablero (por estado, evaluaciones vencidas, ranking, evolución del puntaje); guía, menú, e2e
 
 **Acceptance criteria:**
 - [ ] El puntaje y el resultado se calculan; no se tipean

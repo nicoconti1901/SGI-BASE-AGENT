@@ -38,7 +38,7 @@ Cuando el PR esté abierto y con CI en verde, en otra sesión: `/integrar <núme
 | `accidentabilidad` | `SPEC-accident-stats.md` | `acc` | `feat/accidentabilidad-<slices>` | `safety_stats` |
 | `proveedores` | `SPEC-suppliers.md` | `prov` | `feat/proveedores-<slices>` | `suppliers` |
 | `capacitaciones` | `SPEC-training.md` | `cap` | `feat/capacitaciones-<slices>` | `training` |
-| `seguridad-vial` | `SPEC-road-safety.md` (a escribir) | `vial` | `feat/seguridad-vial-<slices>` | `road_safety` |
+| `seguridad-vial` (**diferido**, ver abajo) | `SPEC-road-safety.md` (borrador, no se aprueba ahora) | `vial` | `feat/seguridad-vial-<slices>` | `road_safety` |
 
 Los slices se nombran como en cada SPEC (S1…S11 en inspecciones; 16.x, 17.x, 19.x, 20.x en el resto).
 
@@ -47,10 +47,10 @@ Los slices se nombran como en cada SPEC (S1…S11 en inspecciones; 16.x, 17.x, 1
 | Módulo | Entregado | PR |
 |---|---|---|
 | Base común | Panel contado en la base, resumen diario por persona, módulos por empresa, `Finding.origin`, fechas de asignación para la gracia | #9, #11 |
-| Accidentabilidad | 17.1 dominio e índices, 17.2 ficha de accidente · 17.3 exposición mensual, 17.4 tablero de índices | #13, #24 |
-| Proveedores | 19.1 dominio, 19.2 registro, lista, importación y aprobados · 19.3 criterios con versiones, evaluación y documentos | #14, #19 |
+| Accidentabilidad | 17.1 dominio e índices, 17.2 ficha de accidente · 17.3 exposición mensual, 17.4 tablero de índices · 17.5 exportación CSV, resumen imprimible y guía | #13, #24, #28 |
+| Proveedores | 19.1 dominio, 19.2 registro, lista, importación y aprobados · 19.3 criterios con versiones, evaluación y documentos · 19.4 reevaluación y evaluación inicial pendiente (solo críticos, #31) · 19.5 hallazgos, comunicaciones, evolución y guía | #14, #19, #30, #31 |
 | Capacitaciones | 20.1 dominio y consulta agregada, 20.2 cursos y editor de la matriz · 20.3 sesiones y registros · 20.4 seguimiento por sede y persona · 20.5 avisos por persona, eficacia y plan anual · 20.6 habilitación para tareas críticas | #12, #18, #22 |
-| Inspecciones | S1 dominio, S2 activos y vencimientos de extintores, S3 registro de la inspección en el celular · S4–S5 consecuencias y lista con contadores | #15, #17 |
+| Inspecciones | S1 dominio, S2 activos y vencimientos de extintores, S3 registro de la inspección en el celular · S4–S5 consecuencias y lista con contadores · S6 editor de plantillas, guía y e2e del extintor no apto | #15, #17, #29 |
 | Calibraciones | 16.1 dominio y modelo, 16.2 registro y lista de equipos de medición con semáforo · 16.3 carga por puntos, 16.4 vencimientos y evaluación de impacto, 16.5 prueba funcional, tablero y guía | #20, #25 |
 
 ## Lo que falta, en orden
@@ -59,15 +59,14 @@ Una fila = una sesión. Dos filas con el mismo número de ventana pueden correr 
 
 | Ventana | Sesión | Qué entrega | Depende de | Tamaño |
 |---|---|---|---|---|
-| 4 | `/modulo proveedores 19.4 19.5` | Reevaluación, hallazgos, comunicaciones, tablero | 19.3 | M |
-| 5 | `/modulo inspecciones S6` | Editor de plantillas, guía, e2e del extintor no apto | S4–S5 | S |
-| 5 | `/modulo accidentabilidad 17.5` | Exportación, resumen imprimible, guía, e2e | 17.4 | S |
-| 6 | `/modulo inspecciones S7` y `S9` | Zona de obradores; arneses y cabos de vida | S6 | S + S |
-| 7 | `/modulo inspecciones S8` y `S10` | Vehículos livianos; equipos y vehículos pesados | S6, 20.6 | S + M |
+| ahora | `/integrar 33` | Inspecciones S7 (obradores) y S9 (arneses): PR abierto en **borrador** con CI verde; hay que marcarlo «ready» | — | XS |
+| ahora | `/integrar 34` | Inspecciones S8 (vehículos livianos): PR abierto en **borrador** con CI verde; va después de #33 (2 conflictos aditivos en `asset-types/index.ts` y `templates/index.ts`) | #33 | XS |
+| 7 | `/modulo inspecciones S10` | Equipos y vehículos pesados (izaje) | S6, 20.6 | M |
 | 8 | `/modulo inspecciones S11` | Auditoría de seguridad en campo | S6, 16.x, 20.6 | M |
-| 9 | Investigación y SPEC de seguridad vial (Task 18) | `RESEARCH-road-safety.md` y `SPEC-road-safety.md` para aprobar | 17.x, S8 | M |
-| 10 | `/modulo seguridad-vial 18.1 18.2` y `18.3 18.4` | Eventos viales, km por vehículo, tablero propio | SPEC 18 aprobado | L |
-| 11 | Checkpoint E | Flujo completo del plan, privacidad y permisos por rol, revisión humana | Todo lo anterior | M |
+| 9 | Checkpoint E | Flujo completo del plan, privacidad y permisos por rol, revisión humana | Todo lo anterior | M |
+| 10 | **Seguridad vial bajo ISO 39001** (módulo propio) | Se define como norma y módulo aparte: investigación y SPEC nuevos partiendo del borrador (#32), aprobación del PO y recién después `/modulo seguridad-vial …` | Todo lo anterior terminado | L |
+
+**Seguridad vial (decisión del PO, 2026-10-27):** se deja para el final. No se aprueba `SPEC-road-safety.md` ni se construye nada ahora. Cuando todo lo pendiente esté terminado (S10, S11, Checkpoint E y los PR abiertos integrados), se define como un módulo particular bajo la ISO 39001: su propia norma en el catálogo ISO (hoy `road_safety` figura `planned`), con cláusulas verificadas contra el texto oficial, y su SPEC se reescribe desde ese enfoque. La investigación y el SPEC borrador del PR #32 quedan como insumo, sin estado de aprobación. La Task 18 de `tasks/todo.md` queda marcada como diferida.
 
 Después de cada ventana, un PR chico de documentación actualiza `tasks/todo.md` y el README con lo entregado (lo hace la sesión de `/integrar`, no las de módulo).
 
@@ -76,6 +75,8 @@ Después de cada ventana, un PR chico de documentación actualiza `tasks/todo.md
 Surgieron en los reportes de los agentes; cada una tiene un default aplicado.
 
 - **Accidentabilidad:** si un hallazgo se anula, su vencimiento de seguimiento hoy se cierra recién en el siguiente seguimiento. Si no alcanza, hay que enganchar la anulación, que es del módulo de hallazgos.
-- **Proveedores:** "aprobados vigentes" en la franja de conteos significa aprobados o con condiciones y habilitados. El responsable de un proveedor es opcional en el servicio y el formulario lo propone.
+- **Proveedores (decididas por el PO el 2026-10-27):** la evaluación inicial pendiente solo para críticos (también al importar CSV) y el cierre del plan de mejora no pasa a ser un vencimiento real. Pendiente: "aprobados vigentes" en la franja de conteos significa aprobados o con condiciones y habilitados. El responsable de un proveedor es opcional en el servicio y el formulario lo propone.
 - **Capacitaciones:** confirmar las cuatro etiquetas de confianza del catálogo sugerido ("En la norma", "Tema en la norma", "Práctica habitual", "A validar").
 - **Antes de activar en clientes:** inspecciones (plantillas y criticidades), capacitaciones (vigencias), proveedores (pesos y documentos) y accidentabilidad (Ley 25.326) necesitan la revisión de un profesional, tal como indican sus SPEC.
+- **Seguridad vial (diferida):** cuando se retome, el borrador `SPEC-road-safety.md` tiene 21 decisiones con default, a revisar bajo el enfoque ISO 39001; lo más sensible es quién ve los nombres de conductores (D13) y la definición de lesión grave (D3). Hay que validar con profesionales la numeración de ISO 39001, el umbral de poca exposición y la base legal (Ley 25.326).
+- **Inspecciones:** los PR #33 y #34 usan defaults que conviene revisar: vida útil del arnés de 5 años por activo (sin ajuste por empresa), service obligatorio al dar de alta un vehículo, intervalos de referencia de seguro y RTO a 12 meses, service a 6 y monitoreo a 12.
