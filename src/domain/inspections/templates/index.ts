@@ -1,13 +1,14 @@
 import { EXTINGUISHER_PERIODIC } from "./extinguisher";
 import { FALL_PROTECTION_PERIODIC } from "./fall-protection";
 import { FUNCTIONAL_CHECK } from "./functional-check";
+import { HEAVY_PERIODIC, HEAVY_PRE_USE } from "./heavy-equipment";
 import { LIGHT_PERIODIC, LIGHT_PRE_USE } from "./light-vehicle";
 import { SITE_OBRADOR } from "./obrador";
 import type { TemplateDefinition } from "./types";
 
 /**
  * Plantillas precargadas. Agregar un tipo = una línea acá (y su tipo de activo en `asset-types/`).
- * Las demás del anexo (pesados, campo) se suman en los tramos siguientes.
+ * Las demás del anexo (campo) se suman en los tramos siguientes.
  */
 export const DEFAULT_TEMPLATES: readonly TemplateDefinition[] = [
   EXTINGUISHER_PERIODIC,
@@ -15,6 +16,8 @@ export const DEFAULT_TEMPLATES: readonly TemplateDefinition[] = [
   LIGHT_PRE_USE,
   LIGHT_PERIODIC,
   FALL_PROTECTION_PERIODIC,
+  HEAVY_PRE_USE,
+  HEAVY_PERIODIC,
   FUNCTIONAL_CHECK,
 ];
 
