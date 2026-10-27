@@ -43,6 +43,8 @@ Un solo motor para todos los tipos: **plantilla con versiones + inspección que 
 | 19 | Orden de construcción de los tipos | Extintores → obrador → livianos → arneses → pesados → campo | El obrador prueba el camino sin activo; livianos habilita la Task 18; pesados trae izaje |
 | 20 | Validación profesional | Las plantillas se construyen ya, pero **no se activan en producción** hasta que un profesional de HyS revise el anexo (criticidad, frecuencias) | Hay cuestiones sin verificar (RESEARCH §8) |
 
+> **Actualización (2026-10-27, PO):** las plantillas quedan **APROBADAS como default**. Esto no autoriza activar el módulo en ningún cliente: la puerta de producción sigue sujeta a la revisión del profesional de HyS.
+
 ## Domain model (conceptual)
 
 Todo con `tenantId` y lecturas por los helpers tenant-scoped existentes. Los tipos de activo viven en **código** (`src/domain/inspections/types/*`: clave, etiqueta, esquema zod de atributos, vencimientos que lleva, política); las **plantillas** viven en la **base**, porque el cliente las edita.
