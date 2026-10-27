@@ -8,9 +8,8 @@ const day = (x: Date | null) => (x ? isoDay(x) : null);
 describe("initialEvaluationDue", () => {
   const base = { status: "potential", criticality: "critical", createdDay: d("2026-10-21"), initialEvalDays: 30 } as const;
 
-  it("crítico y estándar sin evaluar: alta + 30 días", () => {
+  it("crítico sin evaluar: alta + 30 días", () => {
     expect(day(initialEvaluationDue(base))).toBe("2026-11-20");
-    expect(day(initialEvaluationDue({ ...base, criticality: "standard" }))).toBe("2026-11-20");
   });
 
   it("respeta los días configurados por la empresa", () => {
@@ -18,7 +17,8 @@ describe("initialEvaluationDue", () => {
     expect(day(initialEvaluationDue({ ...base, initialEvalDays: 0 }))).toBe("2026-10-21");
   });
 
-  it("bajo impacto no espera una evaluación inicial", () => {
+  it("estándar y bajo impacto no esperan una evaluación inicial", () => {
+    expect(initialEvaluationDue({ ...base, criticality: "standard" })).toBeNull();
     expect(initialEvaluationDue({ ...base, criticality: "low" })).toBeNull();
   });
 

@@ -107,10 +107,12 @@ Todas las tablas llevan `tenantId` (índices por tenant) y se leen con los helpe
 
 | Qué | `entityType` / `entityId` | `dueAt` | `leadDays` | Dueño / sede |
 |---|---|---|---|---|
-| Evaluación inicial pendiente (crítico y estándar) | `supplier_evaluation` / `supplier.id` | alta + 30 días | 7 | `ownerUserId` del proveedor |
+| Evaluación inicial pendiente (**solo críticos**) | `supplier_evaluation` / `supplier.id` | alta + 30 días | 7 | `ownerUserId` del proveedor |
 | Reevaluación | `supplier_evaluation` / `supplier.id` | `nextEvaluationDue` | 30 | idem |
 | Documento vigente | `supplier_document` / `document.id` | `expiresAt` | 30 (7 si es mensual) | idem |
 
+- **Decisión del PO (2026-10-27): la evaluación inicial pendiente (vencimiento + aviso) se genera solo para proveedores críticos**, también al importar un CSV. Los estándar y los de bajo impacto no generan ninguno; se evalúan cuando hace falta y entran en el ciclo de reevaluación recién con su primera evaluación.
+- **Decisión del PO (2026-10-27): el cierre del plan de mejora no pasa a ser un vencimiento real.** Se queda como motivo de reevaluación por evento, detectado al leer la pantalla de evaluar (`planClosed`), sin `DueItem` propio.
 - `siteId` del `DueItem` = la sede del proveedor **solo si atiende exactamente una**; si no, nulo (el resumen diario lo agrupa en "Sin sede").
 - A lo sumo **un `DueItem` abierto** por (tenant, `entityType`, `entityId`): el servicio cierra el anterior al crear el siguiente; reintentar no duplica (test de idempotencia).
 - Plan de mejora: `Action` con `ActionLink(targetType = supplier_evaluation, targetId = evaluation.id)`. Se usa `createAction` tal cual (responsable obligatorio). El seguimiento y la eficacia siguen el flujo existente de Acciones.
@@ -318,7 +320,7 @@ Una sola regla de integración: cada slice es un PR; los cambios en modelos comp
 | **19.1** Dominio + Prisma | Funciones puras con todas las tablas de casos como tests; schema y migración (`Supplier`, `SupplierSite`, plantillas y criterios, evaluaciones e ítems, tipos de documento y documentos, `SupplierFinding`, `SupplierCommunication`, `SupplierSettings`); `ActionLinkTarget.supplier_evaluation`; `Person.supplierId?`; permisos; `ensureSupplierDefaults`; tests de aislamiento entre tenants y de unicidad | M |
 | **19.2** Registro y lista | Alta, edición y baja; lista con semáforo, filtros, conteos y paginación en el servidor; ficha (resumen y pestañas vacías); **importación CSV** con vista previa; personas del contratista; **lista de aprobados** exportable; catálogo a `available` | M |
 | **19.3** Criterios, evaluación inicial y documentos | Pantalla de criterios con versiones; formulario de evaluación (completa, simplificada, declarada) con cálculo en vivo; `saveEvaluation` y `voidEvaluation`; tipos de documento y carga con `DueItem`; habilitación; evaluación condicional con su `Action` | L (si crece, partir en 19.3a criterios + evaluación y 19.3b documentos) |
-| **19.4** Reevaluación | `DueItem` de reevaluación y evaluación inicial pendiente; reevaluación periódica y por evento con evidencia precargada (hallazgos, acciones, documentos); suspensión al no aprobar; avisos | M |
+| **19.4** Reevaluación | `DueItem` de reevaluación y evaluación inicial pendiente (solo críticos); reevaluación periódica y por evento con evidencia precargada (hallazgos, acciones, documentos); suspensión al no aprobar; avisos | M |
 | **19.5** Hallazgos, comunicaciones y cierre | `SupplierFinding` desde la ficha; comunicaciones (requisitos y resultado); franja de conteos y evolución del puntaje; guía breve; menú; e2e; README | M |
 
 Verificación general por slice: `tsc`, `eslint`, `vitest` (unit e integración), y `e2e` desde 19.2.

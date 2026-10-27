@@ -257,9 +257,9 @@ async function ensureOpenDueItem(db: Tx, input: CreateDueItemInput & { entityId:
 
 /**
  * Un único `DueItem` abierto de evaluación por proveedor (`supplier_evaluation` / supplier.id):
- * - sin evaluar (crítico y estándar): la evaluación inicial pendiente, alta + N días, aviso 7 días antes;
+ * - sin evaluar (solo críticos): la evaluación inicial pendiente, alta + N días, aviso 7 días antes;
  * - evaluado: la reevaluación en la fecha vigente, aviso 30 días antes;
- * - no aprobado, bajo impacto, de baja: ninguno (se cierra el abierto).
+ * - no aprobado, estándar, bajo impacto, de baja: ninguno (se cierra el abierto).
  * Se actualiza con la fecha vigente o se cierra si ya no corresponde. Repetir no duplica.
  */
 async function syncEvaluationDueItem(
@@ -812,9 +812,9 @@ export async function applySupplierImport(
           ...missing(row.type),
         })),
       });
-      // La evaluación inicial pendiente de los críticos y estándar, en lote (el mismo `DueItem` que deja `recomputeSupplierSummary`).
-      const dueAt = initialEvaluationDue({ status: "potential", criticality: "standard", createdDay, initialEvalDays });
-      const pending = rows.filter(({ row }) => row.criticality !== "low");
+      // La evaluación inicial pendiente de los críticos, en lote (el mismo `DueItem` que deja `recomputeSupplierSummary`).
+      const dueAt = initialEvaluationDue({ status: "potential", criticality: "critical", createdDay, initialEvalDays });
+      const pending = rows.filter(({ row }) => row.criticality === "critical");
       if (dueAt && pending.length) {
         await tx.dueItem.createMany({
           data: pending.map(({ id, row }) => ({

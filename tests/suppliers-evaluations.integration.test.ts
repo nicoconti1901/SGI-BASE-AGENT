@@ -274,7 +274,7 @@ describe.skipIf(!hasDatabase)("proveedores 19.3: criterios, evaluación y docume
     });
 
     it("anular la única evaluación deja al proveedor sin evaluar, sin reevaluación y con la evaluación inicial pendiente", async () => {
-      const s = await make(a, { legalName: "Unica SA" });
+      const s = await make(a, { legalName: "Unica SA", criticality: "critical", criticalityReason: "afecta el producto" });
       const { evaluation } = await evaluate(s.id, a, "product");
       await voidEvaluation({ tenantId: a, actorUserId: actor, supplierId: s.id, evaluationId: evaluation.id, reason: "error de carga", now: NOW }, db);
       expect(await getSupplier(a, s.id, db)).toMatchObject({ status: "potential", lastEvaluationId: null, nextEvaluationDueAt: null });
