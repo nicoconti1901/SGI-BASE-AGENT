@@ -6,7 +6,7 @@ import { listTenantMembers } from "@/lib/identity";
 import { SitePicker } from "@/components/pickers/SitePicker";
 import { loadInspectionsAccess } from "@/app/(tenant)/t/[slug]/inspections/access";
 import { hasInspectionFilter, inspectionFilterFromParams, type InspectionSearchParams } from "@/app/(tenant)/t/[slug]/inspections/filters";
-import { startInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
+import { startInspectionAction, startSiteInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 import { formatDateEs, isoFromDate } from "@/domain/inspections/dates";
 import { MAX_EXPORT_ROWS } from "@/domain/inspections/export";
 import { RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
@@ -169,6 +169,12 @@ export default async function InspectionsPage({ params, searchParams }: { params
                       {canWrite && p.asset ? (
                         <form action={startInspectionAction.bind(null, slug, p.asset.id)}>
                           <Button type="submit" variant="secondary" className="min-h-10">
+                            Inspeccionar
+                          </Button>
+                        </form>
+                      ) : canWrite && !p.asset ? (
+                        <form action={startSiteInspectionAction.bind(null, slug, p.siteId)}>
+                          <Button type="submit" variant="secondary" className="min-h-10" aria-label={`Inspeccionar ${p.template.name} de ${p.site.name}`}>
                             Inspeccionar
                           </Button>
                         </form>
