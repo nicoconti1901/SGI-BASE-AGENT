@@ -22,6 +22,8 @@ export async function loadInspectionsAccess(slug: string) {
     canImportAssets: can("import_assets"),
     canRelease: can("release_assets"),
     canManageTemplates: can("manage_inspection_templates"),
+    // Plantillas: lectura para quien registra inspecciones; «Consulta» no las ve (SPEC, Permisos).
+    canViewTemplates: can("write"),
   };
 }
 

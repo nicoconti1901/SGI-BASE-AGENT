@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getAsset } from "@/lib/assets";
+import { getAsset, listAssetInspections } from "@/lib/assets";
 import { INSTRUMENT_TYPE_KEY } from "@/domain/calibration/types";
 import { listSites } from "@/lib/masterdata";
 import { loadInspectionsAccess } from "@/app/(tenant)/t/[slug]/inspections/access";
@@ -9,7 +9,7 @@ import { AssetStatusChip, ComplianceChip } from "@/app/(tenant)/t/[slug]/assets/
 import { getAssetType } from "@/domain/inspections/asset-types";
 import { dueState } from "@/domain/inspections/schedule";
 import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
-import { OWNERSHIP_LABELS } from "@/domain/inspections/types";
+import { OWNERSHIP_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
 import { STATUS_REASON_LABELS } from "@/domain/inspections/asset-status";
 import { SectionBlock, StatusChip, buttonClass } from "@/components/ui";
 
@@ -21,6 +21,8 @@ function Item({ label, children }: { label: string; children: React.ReactNode })
     </div>
   );
 }
+
+const RESULT_CHIP: Record<InspectionResult, "ok" | "warning" | "danger"> = { fit: "ok", fit_with_observations: "warning", unfit: "danger" };
 
 const DUE_CHIP = {
   ok: { status: "ok", label: "Vigente" },
@@ -37,6 +39,7 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
   if (asset.typeKey === INSTRUMENT_TYPE_KEY) redirect(`/t/${slug}/instruments/${asset.id}`);
 
   const type = getAssetType(asset.typeKey);
+  const inspections = await listAssetInspections(tenant.id, asset.id);
   const attributes = asset.attributes as Record<string, unknown>;
   const retired = asset.status === "retired";
   const sites = canManageAssets && !retired ? await listSites(tenant.id) : [];
@@ -141,6 +144,23 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
           />
         </SectionBlock>
       ) : null}
+
+      <SectionBlock title="Inspecciones" what="Los últimos controles de este equipo, con su resultado." next={canWrite && !retired ? "tocá «Inspeccionar» para registrar un control nuevo." : undefined}>
+        {inspections.length === 0 ? (
+          <p className="text-sm text-[var(--color-ink-muted)]">Todavía no se inspeccionó este equipo.</p>
+        ) : (
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+            {inspections.map((i) => (
+              <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
+                <Link href={`/t/${slug}/inspections/${i.id}`} className="font-medium text-[var(--color-accent)] hover:underline">
+                  {i.template.name} · {formatDateEs(isoFromDate(i.inspectedAt))}
+                </Link>
+                {i.status === "draft" || !i.result ? <StatusChip status="pending" label="Borrador" /> : <StatusChip status={RESULT_CHIP[i.result]} label={RESULT_LABELS[i.result]} />}
+              </li>
+            ))}
+          </ul>
+        )}
+      </SectionBlock>
 
       <SectionBlock title="Historial de estado" what="Por qué está como está y quién lo dijo.">
         <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">

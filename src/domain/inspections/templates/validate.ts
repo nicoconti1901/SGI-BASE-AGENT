@@ -39,6 +39,11 @@ export function validateTemplate(
   return issues;
 }
 
+/** Cantidad de ítems que puntúan para el peor activo de la muestra. */
+export function worstApplicableCount(items: readonly TemplateItemDef[], samples: readonly Record<string, unknown>[] = [{}]): number {
+  return Math.max(0, ...samples.map((asset) => applicableItems(items, { asset }).filter((i) => i.kind !== "text" && i.kind !== "reading").length));
+}
+
 function validateItem(item: TemplateItemDef): TemplateIssue[] {
   const out: TemplateIssue[] = [];
   const add = (code: string, message: string) => out.push({ code, message: `${item.code}: ${message}` });

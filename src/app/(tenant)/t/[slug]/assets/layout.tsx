@@ -1,5 +1,5 @@
 import { PageFrame, PageHeader } from "@/components/ui";
-import { InspectionTabs } from "@/app/(tenant)/t/[slug]/inspections/InspectionTabs";
+import { InspectionNav } from "@/app/(tenant)/t/[slug]/inspections/InspectionNav";
 import { requireAssetsModuleForSlug } from "@/app/(tenant)/t/[slug]/inspections/access";
 
 export default async function AssetsLayout({ children, params }: LayoutProps<"/t/[slug]/assets">) {
@@ -12,12 +12,7 @@ export default async function AssetsLayout({ children, params }: LayoutProps<"/t
         title="Activos"
         purpose="Los equipos que controlás: dónde están, cómo están y cuándo vence cada cosa."
       />
-      <InspectionTabs
-        tabs={[
-          { href: `/t/${slug}/inspections`, label: "Inspecciones" },
-          { href: `/t/${slug}/assets`, label: "Activos" },
-        ]}
-      />
+      <InspectionNav slug={slug} />
       {children}
     </PageFrame>
   );
