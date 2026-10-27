@@ -1,0 +1,129 @@
+import { LIGHT_PERIODIC_KEY, LIGHT_PRE_USE_KEY, LIGHT_VEHICLE_KEY } from "../asset-types/light-vehicle";
+import type { TemplateItemDef } from "../types";
+import { checkItem, type TemplateDefinition } from "./types";
+
+const docs = "Documentación";
+const safety = "Seguridad";
+const visibility = "Visibilidad";
+const mechanics = "Mecánica";
+const kit = "Kit";
+
+/** Lectura del odómetro: el motor la copia al cerrar y pide confirmar si baja respecto de la anterior. */
+const odometer: TemplateItemDef = {
+  code: "reading_odometer",
+  section: "Lectura",
+  text: "Odómetro (km)",
+  criticality: "minor",
+  kind: "reading",
+  readingKey: "odometer_km",
+  unit: "km",
+  naAllowed: false,
+  photoOnNc: false,
+  required: true,
+  minValue: 0,
+};
+
+/**
+ * T5. Control previo al uso, vehículos livianos: lo hace el conductor antes de salir (Ley 24.449 arts. 30, 31, 39 y 40).
+ * Es corto a propósito (9 ítems y la lectura). No libera un vehículo que SST dejó fuera de servicio (`canReinstate: false`) y no
+ * lleva calendario ni vencimientos (decisión 10): la ficha muestra «último control previo: hace N días». Un no apto deja el
+ * vehículo fuera de servicio y crea la acción de seguimiento, sin hallazgo: lo escala la inspección mensual.
+ * Propuesta del anexo del SPEC: debe revisarla un profesional de Higiene y Seguridad antes de activar el módulo.
+ */
+export const LIGHT_PRE_USE: TemplateDefinition = {
+  key: LIGHT_PRE_USE_KEY,
+  name: "Control previo al uso, vehículo liviano",
+  scope: "asset",
+  assetTypeKey: LIGHT_VEHICLE_KEY,
+  intervalUnit: null,
+  intervalValue: null,
+  leadDays: 0,
+  reinspectionDays: 1,
+  findingOnCritical: false,
+  canReinstate: false,
+  retireOnUnfit: false,
+  maxApplicableItems: 15,
+  items: [
+    checkItem("docs_license", docs, "Licencia del conductor vigente y de la categoría", "critical"),
+    checkItem("docs_onboard", docs, "Documentación a bordo (cédula, comprobante de seguro)", "minor"),
+    checkItem("safety_brakes", safety, "Frenos", "critical"),
+    checkItem("safety_steering", safety, "Dirección", "critical"),
+    checkItem("safety_tires", safety, "Neumáticos sin cortes ni deformaciones", "critical"),
+    checkItem("safety_belts", safety, "Cinturones de seguridad", "critical"),
+    checkItem("vis_lights", visibility, "Luces (bajas, freno, giro)", "major"),
+    checkItem("vis_glass", visibility, "Parabrisas, limpiaparabrisas y espejos", "major"),
+    checkItem("mech_leaks", mechanics, "Sin pérdidas bajo el vehículo", "major"),
+    odometer,
+  ],
+};
+
+/**
+ * T6. Inspección mensual, vehículos livianos: la hace SST (Ley 24.449 arts. 30, 31, 34 y 40).
+ * Seguro, RTO, service y monitoreo salen solos de los vencimientos del vehículo. Libera un vehículo fuera de servicio
+ * (reinspección apta cerrada por `process_owner` o superior) y crea un hallazgo en borrador si hay una no conformidad crítica.
+ * Propuesta del anexo del SPEC: debe revisarla un profesional de Higiene y Seguridad antes de activar el módulo.
+ */
+export const LIGHT_PERIODIC: TemplateDefinition = {
+  key: LIGHT_PERIODIC_KEY,
+  name: "Inspección mensual, vehículo liviano",
+  scope: "asset",
+  assetTypeKey: LIGHT_VEHICLE_KEY,
+  intervalUnit: "months",
+  intervalValue: 1,
+  leadDays: 7,
+  reinspectionDays: 7,
+  findingOnCritical: true,
+  canReinstate: true,
+  retireOnUnfit: false,
+  maxApplicableItems: 25,
+  items: [
+    checkItem("docs_insurance", docs, "Seguro vigente", "critical", {
+      help: "Lo completa el sistema con el vencimiento del seguro del vehículo.",
+      photoOnNc: false,
+      naAllowed: false,
+      autoSource: { dueKind: "insurance" },
+    }),
+    checkItem("docs_rto", docs, "RTO vigente", "critical", {
+      help: "Lo completa el sistema con el vencimiento de la RTO del vehículo.",
+      photoOnNc: false,
+      naAllowed: false,
+      autoSource: { dueKind: "rto" },
+    }),
+    checkItem("docs_service", docs, "Service al día", "major", {
+      help: "Lo completa el sistema con el vencimiento del service del vehículo.",
+      photoOnNc: false,
+      naAllowed: false,
+      autoSource: { dueKind: "service" },
+    }),
+    checkItem("docs_satellite", docs, "Monitoreo satelital activo", "minor", {
+      help: "Lo completa el sistema. Solo aparece si el vehículo tiene monitoreo satelital.",
+      photoOnNc: false,
+      naAllowed: false,
+      autoSource: { dueKind: "satellite_monitoring" },
+      appliesWhen: { source: "asset", key: "hasSatelliteMonitoring", equals: true },
+    }),
+    checkItem("safety_brakes_steering", safety, "Frenos y dirección (prueba)", "critical"),
+    checkItem("safety_tread", safety, "Profundidad del dibujo del neumático (mm)", "major", {
+      kind: "number",
+      unit: "mm",
+      minValue: 1.6,
+      maxValue: 15,
+      naAllowed: false,
+      help: "Medí el neumático más gastado. El límite mínimo es 1,6 mm (valor habitual: lo puede cambiar la empresa).",
+    }),
+    checkItem("safety_tires", safety, "Neumáticos sin daño estructural", "critical"),
+    checkItem("safety_belts", safety, "Cinturones y apoyacabezas", "critical"),
+    checkItem("safety_rollbar", safety, "Barra o jaula antivuelco", "major", {
+      help: "Solo para vehículos que la tienen.",
+      appliesWhen: { source: "asset", key: "hasRollbar", equals: true },
+    }),
+    checkItem("vis_lights_glass", visibility, "Luces, bocina, espejos, parabrisas y limpiaparabrisas", "major"),
+    checkItem("mech_levels", mechanics, "Niveles y sin pérdidas", "minor"),
+    checkItem("kit_extinguisher", kit, "Matafuego vigente", "major"),
+    checkItem("kit_flares", kit, "Balizas portátiles", "major"),
+    checkItem("kit_firstaid", kit, "Botiquín", "minor"),
+    checkItem("kit_vest", kit, "Chaleco reflectivo", "minor"),
+    checkItem("kit_spare", kit, "Rueda de auxilio, gato y llave", "major"),
+    { ...odometer },
+  ],
+};

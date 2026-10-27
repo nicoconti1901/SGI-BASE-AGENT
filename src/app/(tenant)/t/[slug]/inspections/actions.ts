@@ -23,6 +23,7 @@ import { scheduleSiteInspection, startSiteInspection, unscheduleSiteInspection }
 import { prisma } from "@/lib/db";
 import { completeAction } from "@/lib/actions";
 import { uploadActionAttachment } from "@/lib/action-attachments";
+import { getAssetType } from "@/domain/inspections/asset-types";
 
 export type CaptureResult<T = object> = ({ ok: true } & T) | { ok: false; error: string; blockers?: { code: string; message: string; itemId?: string }[]; missingItemIds?: string[] };
 
@@ -239,4 +240,22 @@ export async function completeFollowUpAction(slug: string, inspectionId: string)
   }
   revalidatePath(`/t/${slug}/inspections/${inspectionId}`);
   return { ok: true };
+}
+
+/** Empezar (o retomar) el control previo al uso de un activo (la plantilla corta del conductor u operador). */
+export async function startPreUseInspectionAction(slug: string, assetId: string): Promise<void> {
+  const access = await requireWriter(slug);
+  if (!access.ok) redirect(`/t/${slug}/inspections?error=${encodeURIComponent(access.error)}`);
+  let id: string;
+  try {
+    const asset = await prisma.asset.findFirst({ where: { id: assetId, tenantId: access.tenant.id }, select: { typeKey: true } });
+    const templateKey = asset ? getAssetType(asset.typeKey).preUseTemplateKey : undefined;
+    if (!templateKey) throw new InspectionError("Este activo no tiene control previo al uso");
+    id = (await startInspection({ tenantId: access.tenant.id, actorUserId: access.ctx.userId, assetId, templateKey })).id;
+  } catch (error) {
+    const message = error instanceof InspectionError ? error.message : "No se pudo empezar el control";
+    if (!(error instanceof InspectionError)) console.error(error);
+    redirect(`/t/${slug}/inspections/new?error=${encodeURIComponent(message)}`);
+  }
+  redirect(`/t/${slug}/inspections/${id}`);
 }
