@@ -49,9 +49,9 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
   const specs = type.dueKinds(attributes);
   // Arneses y cabos: con la vida útil vencida no se mutan solos, se muestra el pedido de baja (SPEC, decisión 7).
   const lifeExpired = !retired && asset.dueDates.some((d) => d.kind === "service_life_end" && isoFromDate(d.dueAt) < today);
+  const kinds = [...asset.dueDates.map((d) => d.kind), ...specs.map((s) => s.kind).filter((k) => !asset.dueDates.some((d) => d.kind === k))];
   const preUseKey = type.preUseTemplateKey;
   const lastPreUse = preUseKey ? await lastPreUseControl(tenant.id, asset.id, preUseKey) : null;
-  const kinds = [...asset.dueDates.map((d) => d.kind), ...specs.map((s) => s.kind).filter((k) => !asset.dueDates.some((d) => d.kind === k))];
 
   return (
     <div className="flex flex-col gap-6">
