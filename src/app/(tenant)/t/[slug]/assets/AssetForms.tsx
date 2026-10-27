@@ -11,7 +11,7 @@ import {
   saveAssetAction,
   type AssetActionState,
 } from "@/app/(tenant)/t/[slug]/assets/actions";
-import type { AttributeField } from "@/domain/inspections/asset-types";
+import { getAssetType, type AttributeField } from "@/domain/inspections/asset-types";
 
 const initial: AssetActionState = {};
 
@@ -135,8 +135,8 @@ export function AssetForm({
         <fieldset className="flex flex-col gap-3">
           <legend className="text-sm font-semibold">Vencimientos</legend>
           <p className="text-xs text-[var(--color-ink-muted)]">
-            Cargá la última fecha en que se hizo y el sistema calcula el vencimiento, o cargá el vencimiento directamente. El mantenimiento es obligatorio;
-            la prueba hidráulica, si la dejás vacía, se cuenta desde la fabricación. La prueba de manguera solo aplica a CO₂ o mangueras con válvula de control.
+            {getAssetType(typeKey).dueHelp ??
+              "Cargá la última fecha en que se hizo y el sistema calcula el vencimiento, o cargá el vencimiento directamente. El mantenimiento es obligatorio; la prueba hidráulica, si la dejás vacía, se cuenta desde la fabricación. La prueba de manguera solo aplica a CO₂ o mangueras con válvula de control."}
           </p>
           {Object.entries(dueKindLabels).map(([kind, label]) => (
             <div key={kind} className="grid gap-3 sm:grid-cols-2">

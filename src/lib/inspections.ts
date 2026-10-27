@@ -74,7 +74,7 @@ function dueDatesOf(rows: { kind: string; dueAt: Date }[]) {
  * los ítems de esta inspección ya no cambian aunque después se edite la plantilla.
  */
 export async function startInspection(
-  input: { tenantId: string; actorUserId: string; assetId: string; inspectedAt?: string },
+  input: { tenantId: string; actorUserId: string; assetId: string; inspectedAt?: string; templateKey?: string },
   db: Db = prisma,
 ) {
   const asset = await db.asset.findFirst({ where: { id: input.assetId, tenantId: input.tenantId }, include: { dueDates: true } });
@@ -86,7 +86,10 @@ export async function startInspection(
   if (!isIsoDate(inspectedAt)) throw new InspectionError("Fecha inválida");
 
   await ensureDefaultTemplates(input.tenantId, db);
-  const template = await getTemplateByKey(input.tenantId, type.periodicTemplateKey, db);
+  // Por defecto, la inspección periódica del tipo; algunos tipos suman un control previo al uso (otra plantilla, sin calendario).
+  const templateKey = input.templateKey ?? type.periodicTemplateKey;
+  if (templateKey !== type.periodicTemplateKey && templateKey !== type.preUseTemplateKey) throw new InspectionError("Este activo no admite ese tipo de control");
+  const template = await getTemplateByKey(input.tenantId, templateKey, db);
   if (!template || !template.activeVersionId) throw new InspectionError("No se encontró la plantilla de inspección del tipo");
 
   const existing = await db.inspection.findFirst({

@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { EXTINGUISHER_TYPE } from "./extinguisher";
 import { MEASURING_EQUIPMENT_TYPE } from "./measuring-equipment";
+import { LIGHT_VEHICLE_TYPE } from "./light-vehicle";
 
 /** Qué vencimiento documental lleva un tipo de activo y cada cuánto se renueva. */
 export type DueKindSpec = {
@@ -39,6 +40,10 @@ export type AssetTypeDef = {
   dueKindLabels: Record<string, string>;
   /** Plantilla de inspección periódica con calendario: la que genera el programa del activo. */
   periodicTemplateKey: string;
+  /** Control corto antes de usar el equipo (lo hace quien lo usa): sin calendario ni vencimientos. Solo algunos tipos lo llevan. */
+  preUseTemplateKey?: string;
+  /** Texto del formulario de alta sobre cómo cargar los vencimientos de este tipo. */
+  dueHelp?: string;
   /** Resumen de una línea para listas ("Polvo ABC · 5 kg"). */
   summarize: (attributes: Record<string, unknown>) => string;
   /** Campos del formulario de alta y de edición. */
@@ -60,6 +65,7 @@ export type AttributeField =
  */
 export const ASSET_TYPES = {
   extinguisher: EXTINGUISHER_TYPE,
+  light_vehicle: LIGHT_VEHICLE_TYPE,
 } as const satisfies Record<string, AssetTypeDef>;
 
 export type AssetTypeKey = keyof typeof ASSET_TYPES;

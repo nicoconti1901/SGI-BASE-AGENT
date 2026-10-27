@@ -4,7 +4,8 @@ import { getAsset, searchAssets } from "@/lib/assets";
 import { loadInspectionsAccess } from "@/app/(tenant)/t/[slug]/inspections/access";
 import { startInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 import { AssetStatusChip } from "@/app/(tenant)/t/[slug]/assets/status";
-import { assetTypeLabel } from "@/domain/inspections/asset-types";
+import { assetTypeLabel, getAssetType } from "@/domain/inspections/asset-types";
+import { startPreUseInspectionAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 import { Button, EmptyState, Field, FormError, INPUT_CLASS, SectionBlock } from "@/components/ui";
 
 export default async function NewInspectionPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ q?: string; assetId?: string; error?: string }> }) {
@@ -43,6 +44,16 @@ export default async function NewInspectionPage({ params, searchParams }: { para
             </div>
           </form>
         ) : null}
+        {chosen && chosen.status !== "retired" && getAssetType(chosen.typeKey).preUseTemplateKey ? (
+          <form action={startPreUseInspectionAction.bind(null, slug, chosen.id)} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+            <p className="text-sm text-[var(--color-ink-muted)]">Antes de usar el equipo: un control corto, sin calendario.</p>
+            <div>
+              <Button type="submit" variant="secondary" className="min-h-12 w-full sm:w-auto">
+                Control previo al uso
+              </Button>
+            </div>
+          </form>
+        ) : null}
 
         <form method="get" className="flex flex-wrap items-end gap-3">
           <div className="min-w-[14rem] flex-1">
@@ -74,6 +85,13 @@ export default async function NewInspectionPage({ params, searchParams }: { para
                       Inspeccionar
                     </Button>
                   </form>
+                  {getAssetType(a.typeKey).preUseTemplateKey ? (
+                    <form action={startPreUseInspectionAction.bind(null, slug, a.id)}>
+                      <Button type="submit" variant="secondary" className="min-h-12" aria-label={`Control previo al uso de ${a.code}`}>
+                        Control previo
+                      </Button>
+                    </form>
+                  ) : null}
                 </div>
               </li>
             ))}
