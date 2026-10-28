@@ -247,8 +247,8 @@ describe.skipIf(!hasDatabase)("vehículos livianos: control previo y mensual (in
       const { id } = await startInspection({ tenantId: a, actorUserId: inspector, assetId: v.id });
       const inspection = await db.inspection.findUniqueOrThrow({ where: { id }, include: { template: true, answers: { include: { item: true } } } });
       expect(inspection.template.key).toBe("light_periodic");
-      // Sin antivuelco ni monitoreo: 14 controles + odómetro.
-      expect(inspection.answers).toHaveLength(15);
+      // Sin antivuelco, monitoreo ni hidrogrúa: 20 controles + odómetro.
+      expect(inspection.answers).toHaveLength(21);
       expect(inspection.answers.filter((r) => r.autoDerived).map((r) => [r.item.code, r.value])).toEqual(
         expect.arrayContaining([
           ["docs_insurance", "conform"],
@@ -277,7 +277,7 @@ describe.skipIf(!hasDatabase)("vehículos livianos: control previo y mensual (in
         ],
       });
       const { id } = await startInspection({ tenantId: a, actorUserId: inspector, assetId: v.id });
-      expect(await db.inspectionAnswer.count({ where: { inspectionId: id } })).toBe(17);
+      expect(await db.inspectionAnswer.count({ where: { inspectionId: id } })).toBe(23);
     });
 
     it("con el seguro vencido nace no conforme: la inspección queda no apta, con hallazgo borrador y reinspección a 7 días", async () => {

@@ -41,7 +41,7 @@ describe.skipIf(!hasDatabase)("consecuencias de cerrar una inspección (integrac
   /** Responde todo «conforme» salvo lo indicado; una no conformidad crítica o mayor lleva comentario y foto. */
   async function fill(inspectionId: string, nonconform: string[] = []) {
     const view = (await getInspectionView(a, inspectionId))!;
-    for (const row of view.items.filter((i) => !i.answer.autoDerived)) {
+    for (const row of view.items.filter((i) => !i.answer.autoDerived && i.item.kind === "check")) {
       const bad = nonconform.includes(row.item.code);
       await saveAnswer({
         tenantId: a,

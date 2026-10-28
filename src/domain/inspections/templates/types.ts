@@ -23,6 +23,11 @@ export type TemplateDefinition = {
   items: TemplateItemDef[];
 };
 
+/** Ítem de texto libre: no puntúa y nunca bloquea el cierre. */
+export function textItem(code: string, section: string, text: string, help?: string): TemplateItemDef {
+  return { code, section, text, help: help ?? null, criticality: "minor", kind: "text", naAllowed: false, photoOnNc: false, required: false };
+}
+
 /** Construye un ítem de tipo «check» con los valores por defecto del SPEC. */
 export function checkItem(
   code: string,

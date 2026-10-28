@@ -51,7 +51,7 @@ describe.skipIf(!hasDatabase)("registro de inspecciones (integración)", () => {
   /** Responde todo lo que no es automático con «conforme». */
   async function answerAll(inspectionId: string, who = inspector, except: Record<string, "nonconform"> = {}) {
     const view = (await getInspectionView(a, inspectionId))!;
-    for (const row of view.items.filter((i) => !i.answer.autoDerived)) {
+    for (const row of view.items.filter((i) => !i.answer.autoDerived && i.item.kind === "check")) {
       await saveAnswer({ tenantId: a, actorUserId: who, canEditOthers: false, inspectionId, itemId: row.item.id, patch: { value: except[row.item.code] ?? "conform" } });
     }
     return view;
@@ -84,7 +84,7 @@ describe.skipIf(!hasDatabase)("registro de inspecciones (integración)", () => {
     expect(view.inspection).toMatchObject({ status: "draft", siteId: siteA, assetId: asset.id, result: null });
     expect(view.inspection.templateVersion.version).toBe(1);
     const codes = view.items.map((i) => i.item.code);
-    expect(codes).toHaveLength(13);
+    expect(codes).toHaveLength(14);
     expect(codes).toContain("state_gauge");
     expect(codes).not.toContain("state_weight");
     expect(codes).not.toContain("state_wheels");
@@ -158,7 +158,7 @@ describe.skipIf(!hasDatabase)("registro de inspecciones (integración)", () => {
     const error = await close(id).catch((e) => e);
     expect(error).toBeInstanceOf(InspectionError);
     expect(error.code).toBe("incomplete");
-    expect(error.message).toContain("11"); // 13 ítems, 2 los completa el sistema
+    expect(error.message).toContain("11"); // 13 ítems puntuables, 2 los completa el sistema
   });
 
   it("una no conformidad crítica exige foto y comentario; con ambos cierra como no apto", async () => {
@@ -233,7 +233,7 @@ describe.skipIf(!hasDatabase)("registro de inspecciones (integración)", () => {
     await db.inspectionTemplateItem.create({ data: { tenantId: a, versionId: v2.id, code: "solo_v2", section: "X", sortOrder: 0, text: "Único ítem", criticality: "critical", photoOnNc: true } });
     await db.inspectionTemplate.update({ where: { id: template.id }, data: { activeVersionId: v2.id } });
     try {
-      expect((await getInspectionView(a, id))!.items).toHaveLength(13);
+      expect((await getInspectionView(a, id))!.items).toHaveLength(14);
       const another = await newAsset();
       const fresh = await startInspection({ tenantId: a, actorUserId: inspector, assetId: another.id });
       const view = (await getInspectionView(a, fresh.id))!;

@@ -7,6 +7,10 @@ const safety = "Seguridad";
 const visibility = "Visibilidad";
 const mechanics = "Mecánica";
 const kit = "Kit";
+const crane = "Hidrogrúa";
+
+/** La sección de hidrogrúa solo aplica a los vehículos que la tienen. */
+const withCrane = { source: "asset", key: "hasHydraulicCrane", equals: true } as const;
 
 /** Lectura del odómetro: el motor la copia al cerrar y pide confirmar si baja respecto de la anterior. */
 const odometer: TemplateItemDef = {
@@ -61,6 +65,8 @@ export const LIGHT_PRE_USE: TemplateDefinition = {
  * T6. Inspección mensual, vehículos livianos: la hace SST (Ley 24.449 arts. 30, 31, 34 y 40).
  * Seguro, RTO, service y monitoreo salen solos de los vencimientos del vehículo. Libera un vehículo fuera de servicio
  * (reinspección apta cerrada por `process_owner` o superior) y crea un hallazgo en borrador si hay una no conformidad crítica.
+ * Incorpora la planilla RE 02 PE 12 del PO (credencial, tarjeta verde/azul, chapa y patentes, engrase, equipamiento de obra e
+ * hidrogrúa) sin duplicarla: fluidos e hidráulico son un solo ítem y la hidrogrúa aplica solo si el vehículo la tiene.
  * Propuesta del anexo del SPEC: debe revisarla un profesional de Higiene y Seguridad antes de activar el módulo.
  */
 export const LIGHT_PERIODIC: TemplateDefinition = {
@@ -102,6 +108,8 @@ export const LIGHT_PERIODIC: TemplateDefinition = {
       autoSource: { dueKind: "satellite_monitoring" },
       appliesWhen: { source: "asset", key: "hasSatelliteMonitoring", equals: true },
     }),
+    checkItem("docs_credential", docs, "Credencial del vehículo vigente", "minor", { help: "Verificá el vencimiento impreso en la credencial." }),
+    checkItem("docs_registration", docs, "Tarjeta verde o azul vigente", "major", { help: "Verificá el vencimiento y que figure el conductor autorizado." }),
     checkItem("safety_brakes_steering", safety, "Frenos y dirección (prueba)", "critical"),
     checkItem("safety_tread", safety, "Profundidad del dibujo del neumático (mm)", "major", {
       kind: "number",
@@ -118,12 +126,19 @@ export const LIGHT_PERIODIC: TemplateDefinition = {
       appliesWhen: { source: "asset", key: "hasRollbar", equals: true },
     }),
     checkItem("vis_lights_glass", visibility, "Luces, bocina, espejos, parabrisas y limpiaparabrisas", "major"),
-    checkItem("mech_levels", mechanics, "Niveles y sin pérdidas", "minor"),
+    checkItem("mech_body_plates", mechanics, "Chapa, pintura y chapas patente en buen estado", "minor"),
+    checkItem("mech_levels", mechanics, "Fluidos (aceite, refrigerante, frenos, hidráulico): niveles correctos y sin pérdidas", "minor"),
+    checkItem("mech_grease", mechanics, "Engrase al día", "minor"),
     checkItem("kit_extinguisher", kit, "Matafuego vigente", "major"),
     checkItem("kit_flares", kit, "Balizas portátiles", "major"),
     checkItem("kit_firstaid", kit, "Botiquín", "minor"),
     checkItem("kit_vest", kit, "Chaleco reflectivo", "minor"),
     checkItem("kit_spare", kit, "Rueda de auxilio, gato y llave", "major"),
+    checkItem("kit_site_gear", kit, "Escalera aislada, vallas, conos y cintas de peligro", "minor", { help: "Marcá «No aplica» si este vehículo no los lleva por su tarea." }),
+    checkItem("kit_site_signs", kit, "Cartelería de peligro y cartel de identificación de obra", "minor", { help: "Marcá «No aplica» si este vehículo no los lleva por su tarea." }),
+    checkItem("crane_hydraulic", crane, "Nivel de aceite hidráulico correcto y sin pérdidas", "major", { appliesWhen: withCrane }),
+    checkItem("crane_grease", crane, "Engrase de la hidrogrúa al día", "minor", { appliesWhen: withCrane }),
+    checkItem("crane_basket", crane, "Canasto en buen estado", "major", { appliesWhen: withCrane }),
     { ...odometer },
   ],
 };

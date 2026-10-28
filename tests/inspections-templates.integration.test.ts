@@ -90,7 +90,7 @@ describe.skipIf(!hasDatabase)("editor de plantillas con versiones (integración)
     const draft = await startInspection({ tenantId: a, actorUserId: admin, assetId: draftAsset.id });
 
     const view = (await getInspectionView(a, closed.id))!;
-    for (const row of view.items.filter((i) => !i.answer.autoDerived)) {
+    for (const row of view.items.filter((i) => !i.answer.autoDerived && i.item.kind === "check")) {
       await saveAnswer({ tenantId: a, actorUserId: admin, canEditOthers: false, inspectionId: closed.id, itemId: row.item.id, patch: { value: "conform" } });
     }
     await closeInspection({ tenantId: a, actorUserId: admin, canEditOthers: false, inspectionId: closed.id });
