@@ -38,7 +38,7 @@ Cuando el PR esté abierto y con CI en verde, en otra sesión: `/integrar <núme
 | `accidentabilidad` | `SPEC-accident-stats.md` | `acc` | `feat/accidentabilidad-<slices>` | `safety_stats` |
 | `proveedores` | `SPEC-suppliers.md` | `prov` | `feat/proveedores-<slices>` | `suppliers` |
 | `capacitaciones` | `SPEC-training.md` | `cap` | `feat/capacitaciones-<slices>` | `training` |
-| `seguridad-vial` (**diferido**, ver abajo) | `SPEC-road-safety.md` (borrador, no se aprueba ahora) | `vial` | `feat/seguridad-vial-<slices>` | `road_safety` |
+| `seguridad-vial` (ver abajo) | `SPEC-road-safety.md` (aprobado 2026-10-28; 18.0 es un PR serial, no `/modulo`) | `vial` | `feat/seguridad-vial-<slices>` | `road_safety` |
 
 Los slices se nombran como en cada SPEC (S1…S11 en inspecciones; 16.x, 17.x, 19.x, 20.x en el resto).
 
@@ -60,9 +60,9 @@ Una fila = una sesión. Dos filas con el mismo número de ventana pueden correr 
 | Ventana | Sesión | Qué entrega | Depende de | Tamaño |
 |---|---|---|---|---|
 | 9 | Checkpoint E | Flujo completo del plan, privacidad y permisos por rol, revisión humana | Todo lo anterior | M |
-| 10 | **Seguridad vial bajo ISO 39001** (módulo propio) | Se define como norma y módulo aparte: investigación y SPEC nuevos partiendo del borrador (#32), aprobación del PO y recién después `/modulo seguridad-vial …` | Todo lo anterior terminado | L |
+| 10 | **Seguridad vial bajo ISO 39001** (módulo propio) | Se define como norma y módulo aparte: investigación y SPEC nuevos partiendo del borrador (#32), SPEC aprobado el 2026-10-28; fundación 18.0 serial y luego `/modulo seguridad-vial 18.1 18.2` y `18.3 18.4` | Fundación 18.0 integrada | L |
 
-**Seguridad vial (decisión del PO, 2026-10-27):** se deja para el final. No se aprueba `SPEC-road-safety.md` ni se construye nada ahora. Cuando todo lo pendiente esté terminado (S10, S11, Checkpoint E y los PR abiertos integrados), se define como un módulo particular bajo la ISO 39001: su propia norma en el catálogo ISO (hoy `road_safety` figura `planned`), con cláusulas verificadas contra el texto oficial, y su SPEC se reescribe desde ese enfoque. La investigación y el SPEC borrador del PR #32 quedan como insumo, sin estado de aprobación. La Task 18 de `tasks/todo.md` queda marcada como diferida.
+**Seguridad vial (decisión del PO, 2026-10-28):** el PO aprobó `SPEC-road-safety.md` (ISO 39001 como norma propia, D1–D26 con sus defaults) y adelantó el módulo. Orden: fundación 18.0 (PR serial, `ISO39001` en el catálogo, `manage_road_safety`, `property_damage_only`) → `/modulo seguridad-vial 18.1 18.2` → `/modulo seguridad-vial 18.3 18.4`. **Ninguna cláusula de ISO 39001 está verificada**: los requisitos se cargan con el tag `sin-verificar` y el PO lo retira cuando confirme el índice contra la norma licenciada.
 
 Después de cada ventana, un PR chico de documentación actualiza `tasks/todo.md` y el README con lo entregado (lo hace la sesión de `/integrar`, no las de módulo).
 
@@ -74,7 +74,7 @@ Surgieron en los reportes de los agentes; cada una tiene un default aplicado.
 - **Proveedores (decididas por el PO el 2026-10-27):** la evaluación inicial pendiente solo para críticos (también al importar CSV) y el cierre del plan de mejora no pasa a ser un vencimiento real. Pendiente: "aprobados vigentes" en la franja de conteos significa aprobados o con condiciones y habilitados. El responsable de un proveedor es opcional en el servicio y el formulario lo propone.
 - **Capacitaciones:** confirmar las cuatro etiquetas de confianza del catálogo sugerido ("En la norma", "Tema en la norma", "Práctica habitual", "A validar").
 - **Inspecciones:** el PO aprobó las plantillas como default (decisión 20 de `SPEC-inspections.md`, 2026-10-27). No autoriza activar el módulo en ningún cliente.
-- **Seguridad vial:** diferida por decisión del PO; se define al final como módulo propio bajo ISO 39001. `road_safety` sigue `planned`.
+- **Seguridad vial:** SPEC aprobado (2026-10-28). `road_safety` sigue `planned` hasta 18.4.
 - **Antes de activar en clientes:** inspecciones (plantillas y criticidades), capacitaciones (vigencias), proveedores (pesos y documentos) y accidentabilidad (Ley 25.326) necesitan la revisión de un profesional, tal como indican sus SPEC.
-- **Seguridad vial (diferida):** cuando se retome, el borrador `SPEC-road-safety.md` tiene 21 decisiones con default, a revisar bajo el enfoque ISO 39001; lo más sensible es quién ve los nombres de conductores (D13) y la definición de lesión grave (D3). Hay que validar con profesionales la numeración de ISO 39001, el umbral de poca exposición y la base legal (Ley 25.326).
+- **Seguridad vial:** pendiente del PO confirmar el índice de cláusulas de ISO 39001 contra la norma licenciada. Hay que validar con profesionales la lesión grave (D8), el umbral de poca exposición (D16), el reparto por días (D12) y la base legal (Ley 25.326, D21/D24/D26).
 - **Inspecciones:** los PR #33 y #34 usan defaults que conviene revisar: vida útil del arnés de 5 años por activo (sin ajuste por empresa), service obligatorio al dar de alta un vehículo, intervalos de referencia de seguro y RTO a 12 meses, service a 6 y monitoreo a 12.
