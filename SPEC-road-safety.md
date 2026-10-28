@@ -1,6 +1,6 @@
 # Spec: `road-safety` — Seguridad vial bajo ISO 39001 (Task 18)
 
-Estado: **PARA APROBAR** (reescritura del 2026-10-28 del borrador del PR #32; ningún default está aprobado). Hasta que el PO apruebe no se construye nada: bloquea `/modulo seguridad-vial`.
+Estado: **APROBADO por el PO el 2026-10-28** con los defaults D1–D26 (reescritura del borrador del PR #32). **Excepción: el índice de cláusulas de ISO 39001 sigue sin verificar**; el tag `sin-verificar` (D1) no se retira hasta que el PO lo confirme contra la norma licenciada.
 Investigación y fuentes: `RESEARCH-road-safety.md` ("R§" apunta a esa sección; marcas A/B/C). **Ninguna cláusula de ISO 39001 está verificada contra el texto oficial** (R§1.1): donde este SPEC nombra una cláusula, lo dice.
 Se apoya en `SPEC-accident-stats.md` (ficha de accidente), `SPEC-inspections.md` (vehículos, odómetro), `SPEC-master-data.md`, `SPEC-training.md`, `SPEC-findings.md`, `SPEC-risks-opportunities.md` y `SPEC-audits.md`.
 
@@ -205,4 +205,4 @@ Cada paso se publica por separado. Modelos compartidos (`Finding`, `DueItem`, `T
 Índice de cláusulas de ISO 39001 contra una copia licenciada (D1, D5); lesión grave (D8); poca exposición (D16); reparto por días (D12); base legal y consentimiento para conductores y excesos (D21, D24); retención (D26).
 
 ## Aprobación
-- [ ] Aprobado por el PO (pendiente: ningún default está aprobado)
+- [x] Aprobado por el PO el 2026-10-28 (defaults D1–D26). Pendiente del PO: confirmar el índice de cláusulas contra ISO 39001:2012 licenciada; hasta entonces todo requisito `ISO39001` lleva `sin-verificar`.
