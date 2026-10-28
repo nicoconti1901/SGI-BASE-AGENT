@@ -7,6 +7,7 @@ import { canTenantRole } from "@/domain/identity/authz";
 import { StartFindingForm } from "@/app/(tenant)/t/[slug]/findings/StartFindingForm";
 import { getEnabledModulesCached } from "@/lib/modules";
 import { listSites } from "@/lib/masterdata";
+import { listEventVehicles } from "@/lib/road-safety";
 import { canManageHealthData } from "@/domain/safety-stats/access";
 import { isFindingType } from "@/domain/findings/types";
 
@@ -49,8 +50,11 @@ export default async function NewFindingPage({
   }
 
   // Paso «Ficha de accidente»: solo si el módulo está activo para la empresa.
-  const incidentEnabled = (await getEnabledModulesCached(tenant.id)).has("safety_stats");
+  const enabledModules = await getEnabledModulesCached(tenant.id);
+  const incidentEnabled = enabledModules.has("safety_stats");
+  const roadEnabled = incidentEnabled && enabledModules.has("road_safety");
   const sites = incidentEnabled ? (await listSites(tenant.id)).map((s) => ({ id: s.id, name: s.name })) : [];
+  const vehicles = roadEnabled ? await listEventVehicles(tenant.id) : [];
   const canManageHealth = canManageHealthData({ role: membership?.role, isPlatformSuperuser: ctx.isPlatformSuperuser });
 
   return (
@@ -72,7 +76,7 @@ export default async function NewFindingPage({
       <StartFindingForm
         slug={slug}
         defaultType={type && isFindingType(type) ? type : undefined}
-        incident={incidentEnabled ? { sites, canManageHealth } : undefined}
+        incident={incidentEnabled ? { sites, canManageHealth, road: roadEnabled ? { vehicles } : undefined } : undefined}
       />
     </div>
   );

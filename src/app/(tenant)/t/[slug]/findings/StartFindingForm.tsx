@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { NewIncidentFields, type SiteOption } from "@/app/(tenant)/t/[slug]/safety/IncidentFields";
+import type { RoadVehicleOption } from "@/app/(tenant)/t/[slug]/road-safety/RoadFields";
 import {
   startFindingAction,
   type FindingActionState,
@@ -21,7 +22,7 @@ export function StartFindingForm({
   slug: string;
   defaultType?: FindingType;
   /** Presente solo si el módulo de accidentabilidad está activo: habilita el paso «Ficha de accidente». */
-  incident?: { sites: SiteOption[]; canManageHealth: boolean };
+  incident?: { sites: SiteOption[]; canManageHealth: boolean; road?: { vehicles: RoadVehicleOption[] } };
 }) {
   const action = startFindingAction.bind(null, slug);
   const [state, formAction, pending] = useActionState(action, initial);
@@ -73,7 +74,7 @@ export function StartFindingForm({
         />
       </label>
       {showFicha && incident ? (
-        <NewIncidentFields slug={slug} sites={incident.sites} canManageHealth={incident.canManageHealth} />
+        <NewIncidentFields slug={slug} sites={incident.sites} canManageHealth={incident.canManageHealth} road={incident.road} />
       ) : null}
       {state.error ? (
         <p className="text-sm text-[var(--color-danger)]">{state.error}</p>
