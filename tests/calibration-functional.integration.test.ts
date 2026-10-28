@@ -8,7 +8,7 @@ import { closeCalibrationRecord, saveCalibrationDraft, uploadCalibrationCertific
 import { lastFunctionalCheck } from "@/lib/functional-check";
 import { addInspectionPhoto, closeInspection, correctInspectionAnswer, getInspectionView, saveAnswer, startInspection } from "@/lib/inspections";
 import { InspectionError } from "@/lib/inspection-support";
-import { addDays, addMonths, isoFromDate, todayIso } from "@/domain/inspections/dates";
+import { addDays, addMonths, diffDays, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import { DEFAULT_TEMPLATES } from "@/domain/inspections/templates";
 import { getAssetType, isAssetTypeKey } from "@/domain/inspections/asset-types";
 import { FUNCTIONAL_CHECK_TEMPLATE_KEY } from "@/domain/calibration/types";
@@ -225,7 +225,10 @@ describe.skipIf(!hasDatabase)("prueba funcional y tablero (integración)", () =>
       const soon = await make({ code: "SOON-1" }, siteA);
       await load(soon.id, { performedAt: addMonths(addDays(TODAY, 10), -6) }); // vence en 10 días
       const sooner = await make({ code: "SOON-2" }, siteA2);
-      await load(sooner.id, { performedAt: addMonths(addDays(TODAY, 4), -6) }); // vence en 4 días
+      // vence en ~4 días; al restar 6 meses de un día 31 el calendario recorta (31/10 → 30/04 → 30/10),
+      // así que el vencimiento real se calcula en vez de asumir exactamente 4
+      const soonerPerformedAt = addMonths(addDays(TODAY, 4), -6);
+      await load(sooner.id, { performedAt: soonerPerformedAt });
       const far = await make({ code: "FAR-1" }, siteA);
       await load(far.id); // vence en ~6 meses
 
@@ -233,7 +236,7 @@ describe.skipIf(!hasDatabase)("prueba funcional y tablero (integración)", () =>
       const codes = all.items.map((i) => i.code);
       expect(codes.indexOf("SOON-2")).toBeLessThan(codes.indexOf("SOON-1"));
       expect(codes).not.toContain("FAR-1");
-      expect(all.items.find((i) => i.code === "SOON-2")).toMatchObject({ siteName: "Obrador 1", daysLeft: 4 });
+      expect(all.items.find((i) => i.code === "SOON-2")).toMatchObject({ siteName: "Obrador 1", daysLeft: diffDays(TODAY, addMonths(soonerPerformedAt, 6)) });
 
       const inSite = await upcomingInstrumentDues(a, { siteId: siteA2, limit: 50 }, db, TODAY);
       expect(inSite.items.map((i) => i.code)).toEqual(["SOON-2"]);
