@@ -22,7 +22,8 @@
     "db:recalc-findings": "tsx scripts/recalc-finding-statuses.ts",
     "db:studio": "prisma studio",
     "job:due-scan": "tsx scripts/due-scan.ts",
-    "wt:setup": "node scripts/wt-setup.mjs"
+    "wt:setup": "node scripts/wt-setup.mjs",
+    "db:seed:revision": "tsx scripts/demo-seed/index.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
