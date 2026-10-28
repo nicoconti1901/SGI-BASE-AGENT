@@ -65,7 +65,7 @@ test("importa extintores, registra una inspección no apta desde el celular y re
   await page.goto(`/t/${slug}/inspections/new?q=${prefix}-01`);
   await page.getByRole("button", { name: `Inspeccionar ${prefix}-01` }).click();
   await expect(page.getByRole("heading", { name: `${prefix}-01`, level: 2 })).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText("0 de 11")).toBeVisible();
+  await expect(page.getByText("1 de 12")).toBeVisible();
 
   // Sin scroll horizontal y con botones de al menos 48 px.
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -76,7 +76,7 @@ test("importa extintores, registra una inspección no apta desde el celular y re
   const conformButtons = page.getByRole("button", { name: "Conforme", exact: true });
   const total = await conformButtons.count();
   for (let i = 0; i < total; i++) await conformButtons.nth(i).click();
-  await expect(page.getByText("11 de 11")).toBeVisible();
+  await expect(page.getByText("12 de 12")).toBeVisible();
 
   const seal = page.getByRole("article", { name: "Precinto y pasador de seguridad intactos" });
   await seal.getByRole("button", { name: "No conforme" }).click();
