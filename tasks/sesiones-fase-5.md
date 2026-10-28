@@ -50,7 +50,7 @@ Los slices se nombran como en cada SPEC (S1…S11 en inspecciones; 16.x, 17.x, 1
 | Accidentabilidad | 17.1 dominio e índices, 17.2 ficha de accidente · 17.3 exposición mensual, 17.4 tablero de índices · 17.5 exportación CSV, resumen imprimible y guía | #13, #24, #28 |
 | Proveedores | 19.1 dominio, 19.2 registro, lista, importación y aprobados · 19.3 criterios con versiones, evaluación y documentos · 19.4 reevaluación y evaluación inicial pendiente (solo críticos, #31) · 19.5 hallazgos, comunicaciones, evolución y guía | #14, #19, #30, #31 |
 | Capacitaciones | 20.1 dominio y consulta agregada, 20.2 cursos y editor de la matriz · 20.3 sesiones y registros · 20.4 seguimiento por sede y persona · 20.5 avisos por persona, eficacia y plan anual · 20.6 habilitación para tareas críticas | #12, #18, #22 |
-| Inspecciones | S1 dominio, S2 activos y vencimientos de extintores, S3 registro de la inspección en el celular · S4–S5 consecuencias y lista con contadores · S6 editor de plantillas, guía y e2e del extintor no apto | #15, #17, #29 |
+| Inspecciones | S1 dominio, S2 activos y vencimientos de extintores, S3 registro de la inspección en el celular · S4–S5 consecuencias y lista con contadores · S6 editor de plantillas, guía y e2e del extintor no apto · S7 obradores y S9 arneses y cabos de vida · S8 vehículos livianos · S10 equipos y vehículos pesados con izaje · S11 auditoría de seguridad en campo con meta por sede | #15, #17, #29, #33, #34, #38, #39 |
 | Calibraciones | 16.1 dominio y modelo, 16.2 registro y lista de equipos de medición con semáforo · 16.3 carga por puntos, 16.4 vencimientos y evaluación de impacto, 16.5 prueba funcional, tablero y guía | #20, #25 |
 
 ## Lo que falta, en orden
@@ -59,10 +59,6 @@ Una fila = una sesión. Dos filas con el mismo número de ventana pueden correr 
 
 | Ventana | Sesión | Qué entrega | Depende de | Tamaño |
 |---|---|---|---|---|
-| ahora | `/integrar 33` | Inspecciones S7 (obradores) y S9 (arneses): PR abierto en **borrador** con CI verde; hay que marcarlo «ready» | — | XS |
-| ahora | `/integrar 34` | Inspecciones S8 (vehículos livianos): PR abierto en **borrador** con CI verde; va después de #33 (2 conflictos aditivos en `asset-types/index.ts` y `templates/index.ts`) | #33 | XS |
-| 7 | `/modulo inspecciones S10` | Equipos y vehículos pesados (izaje) | S6, 20.6 | M |
-| 8 | `/modulo inspecciones S11` | Auditoría de seguridad en campo | S6, 16.x, 20.6 | M |
 | 9 | Checkpoint E | Flujo completo del plan, privacidad y permisos por rol, revisión humana | Todo lo anterior | M |
 | 10 | **Seguridad vial bajo ISO 39001** (módulo propio) | Se define como norma y módulo aparte: investigación y SPEC nuevos partiendo del borrador (#32), aprobación del PO y recién después `/modulo seguridad-vial …` | Todo lo anterior terminado | L |
 
