@@ -98,11 +98,18 @@ describe("plantillas precargadas", () => {
       expect(validateTemplate(template, samples)).toEqual([]);
     });
   }
-  it("T1 tiene 15 ítems y los automáticos apuntan a vencimientos del tipo", () => {
+  it("T1 tiene 16 ítems y los automáticos apuntan a vencimientos del tipo", () => {
     const t1 = getDefaultTemplate("extinguisher_periodic")!;
-    expect(t1.items).toHaveLength(15);
+    expect(t1.items).toHaveLength(16);
     const kinds = new Set(getAssetType("extinguisher").dueKinds({ ...valid, agent: "co2", hoseWithValve: true }).map((d) => d.kind));
     for (const item of t1.items.filter((i) => i.autoSource)) expect(kinds.has(item.autoSource!.dueKind)).toBe(true);
+  });
+  it("RE 01 PE 05: la notificación a la jefatura de obra es un texto opcional que no puntúa", () => {
+    const t1 = getDefaultTemplate("extinguisher_periodic")!;
+    const notice = t1.items.find((i) => i.code === "notice_site_management")!;
+    expect(notice).toMatchObject({ kind: "text", required: false, naAllowed: false, photoOnNc: false });
+    expect(t1.items[t1.items.length - 1]).toBe(notice);
+    expect(applicableItems(t1.items, { asset: { agent: "abc", onWheels: true } }).filter((i) => i.kind === "check")).toHaveLength(14);
   });
   it("el manómetro no aplica a CO₂ y el peso de la carga solo a CO₂", () => {
     const t1 = getDefaultTemplate("extinguisher_periodic")!;

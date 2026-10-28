@@ -68,7 +68,7 @@ describe.skipIf(!hasDatabase)("activos de inspecciones (integración)", () => {
     expect(templates.map((t) => t.key).sort()).toEqual(DEFAULT_TEMPLATES.map((t) => t.key).sort());
     for (const t of templates) expect(t.versions).toHaveLength(1);
     const extinguisher = templates.find((t) => t.key === "extinguisher_periodic")!;
-    expect(extinguisher.versions[0].items).toHaveLength(15);
+    expect(extinguisher.versions[0].items).toHaveLength(16);
     expect(extinguisher.activeVersionId).toBe(extinguisher.versions[0].id);
     expect(extinguisher).toMatchObject({ intervalUnit: "months", intervalValue: 1, canReinstate: true, retireOnUnfit: false, findingOnCritical: false });
   });

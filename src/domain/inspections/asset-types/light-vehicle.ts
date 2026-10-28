@@ -33,6 +33,7 @@ export const lightVehicleAttributes = z.object({
   initialOdometerKm: z.number({ error: "Indicá los km" }).int("Indicá km enteros").min(0, "No puede ser negativo").max(5_000_000, "El valor parece demasiado alto").optional(),
   hasRollbar: z.boolean().default(false),
   hasSatelliteMonitoring: z.boolean().default(false),
+  hasHydraulicCrane: z.boolean().default(false),
 });
 export type LightVehicleAttributes = z.infer<typeof lightVehicleAttributes>;
 
@@ -122,6 +123,7 @@ export const LIGHT_VEHICLE_TYPE = {
     { key: "initialOdometerKm", label: "Odómetro inicial (km)", type: "number", required: false, min: 0, step: 1, hint: "Opcional. Los controles piden el odómetro y avisan si baja." },
     { key: "hasRollbar", label: "Tiene barra o jaula antivuelco", type: "boolean", required: false },
     { key: "hasSatelliteMonitoring", label: "Tiene monitoreo satelital", type: "boolean", required: false },
+    { key: "hasHydraulicCrane", label: "Tiene hidrogrúa", type: "boolean", required: false, hint: "Suma al control mensual el aceite hidráulico, el engrase y el canasto de la hidrogrúa." },
   ],
   csvAttributes,
   csvDueDates: [

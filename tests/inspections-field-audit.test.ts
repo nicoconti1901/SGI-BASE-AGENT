@@ -36,14 +36,35 @@ describe("auditoría de campo: plantilla", () => {
 
   it("con las tres tareas especiales sigue por debajo de 25 ítems puntuables", () => {
     const all = applicableItems(FIELD_AUDIT.items, { context: auditContext(["height", "confined_space", "lifting"]) });
-    expect(all.filter((i) => i.kind === "check")).toHaveLength(16);
-    expect(all.length).toBeLessThanOrEqual(25);
+    expect(all.filter((i) => i.kind === "check")).toHaveLength(22);
+    expect(all.filter((i) => i.kind === "check").length).toBeLessThanOrEqual(25);
+    expect(applicableItems(FIELD_AUDIT.items, { context: auditContext([]) }).filter((i) => i.kind === "check")).toHaveLength(16);
   });
 
-  it("las observaciones son texto y no puntúan", () => {
+  it("los datos y las observaciones son texto y no puntúan", () => {
     const texts = FIELD_AUDIT.items.filter((i) => i.kind === "text");
-    expect(texts.map((i) => i.code)).toEqual(["notes_unsafe", "notes_positive"]);
+    expect(texts.map((i) => i.code)).toEqual(["people_count", "people_reaction", "notes_unsafe", "notes_immediate_action", "notes_prevent_repeat", "notes_positive"]);
     expect(texts.every((i) => !i.required)).toBe(true);
+  });
+
+  it("RE 01 PE 07: el EPP se revisa por zona del cuerpo, no con un ítem genérico", () => {
+    const codes = FIELD_AUDIT.items.map((i) => i.code);
+    expect(codes).not.toContain("people_ppe");
+    expect(codes).toEqual(expect.arrayContaining(["ppe_head_face", "ppe_hearing_respiratory", "ppe_hands_body_feet"]));
+    expect(FIELD_AUDIT.items.filter((i) => i.section === "Equipo de protección personal")).toHaveLength(3);
+  });
+
+  it("RE 01 PE 07: cubre procedimientos, herramientas y posiciones de riesgo sin repetir el orden del frente", () => {
+    const byCode = Object.fromEntries(FIELD_AUDIT.items.map((i) => [i.code, i]));
+    expect(byCode.proc_known_followed).toMatchObject({ kind: "check", criticality: "major" });
+    expect(byCode.cond_tools.text).toMatch(/herramientas y equipos/i);
+    expect(FIELD_AUDIT.items.filter((i) => i.section === "Posiciones de las personas").map((i) => i.code)).toEqual(["pos_struck_trapped", "pos_falls_strain", "pos_energy_substances"]);
+    expect(FIELD_AUDIT.items.filter((i) => /orden|despejad|limpi/i.test(i.text) && i.kind === "check").map((i) => i.code)).toEqual(["cond_front"]);
+  });
+
+  it("el resultado positivo/negativo de la planilla lo da el motor: una posición con riesgo eléctrico o de sustancias es crítica", () => {
+    expect(FIELD_AUDIT.items.find((i) => i.code === "pos_energy_substances")!.criticality).toBe("critical");
+    expect(FIELD_AUDIT.items.find((i) => i.code === "ppe_head_face")!.criticality).toBe("critical");
   });
 
   it("reconoce solo las tareas especiales conocidas", () => {

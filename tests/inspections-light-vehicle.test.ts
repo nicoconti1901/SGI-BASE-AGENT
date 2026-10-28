@@ -14,6 +14,7 @@ import type { EvalAnswer, EvalItem, TemplateItemDef } from "@/domain/inspections
 
 const plain = { plate: "AB123CD", hasRollbar: false, hasSatelliteMonitoring: false };
 const full = { plate: "AB123CD", hasRollbar: true, hasSatelliteMonitoring: true };
+const crane = { ...full, hasHydraulicCrane: true };
 const TODAY = "2026-10-26";
 
 function evalItems(items: TemplateItemDef[], dueDates: { kind: string; dueAt: string }[]): EvalItem[] {
@@ -51,7 +52,7 @@ describe("tipo de activo: vehículo liviano", () => {
   it("acepta un vehículo válido y normaliza el dominio", () => {
     const parsed = lightVehicleAttributes.parse({ plate: " ab-123 cd ", brand: "Toyota", model: "Hilux", year: 2021, initialOdometerKm: 45000 });
     expect(parsed.plate).toBe("AB123CD");
-    expect(parsed).toMatchObject({ hasRollbar: false, hasSatelliteMonitoring: false });
+    expect(parsed).toMatchObject({ hasRollbar: false, hasSatelliteMonitoring: false, hasHydraulicCrane: false });
     expect(normalizePlate("abc 123")).toBe("ABC123");
   });
 
@@ -182,11 +183,33 @@ describe("T6 inspección mensual, vehículos livianos", () => {
   });
 
   it("no pasa de 25 ítems aplicables en el peor caso y se valida sola", () => {
-    expect(validateTemplate(t, [plain, full])).toEqual([]);
-    const worst = applicableItems(t.items, { asset: full }).filter((i) => i.kind !== "reading");
-    expect(worst.length).toBeLessThanOrEqual(25);
-    expect(worst).toHaveLength(16);
-    expect(applicableItems(t.items, { asset: plain }).filter((i) => i.kind !== "reading")).toHaveLength(14);
+    expect(validateTemplate(t, [plain, full, crane])).toEqual([]);
+    const count = (asset: Record<string, unknown>) => applicableItems(t.items, { asset }).filter((i) => i.kind !== "reading").length;
+    expect(count(crane)).toBeLessThanOrEqual(25);
+    expect(count(crane)).toBe(25);
+    expect(count(full)).toBe(22);
+    expect(count(plain)).toBe(20);
+  });
+
+  it("suma lo que pide la planilla RE 02 PE 12: documentación, chapa, engrase y equipamiento de obra", () => {
+    const codes = applicableItems(t.items, { asset: plain }).map((i) => i.code);
+    expect(codes).toEqual(expect.arrayContaining(["docs_credential", "docs_registration", "mech_body_plates", "mech_grease", "kit_site_gear", "kit_site_signs"]));
+    const byCode = Object.fromEntries(t.items.map((i) => [i.code, i]));
+    // Documentos sin vencimiento en el sistema: los verifica el inspector, nunca son críticos en la planilla.
+    expect(byCode.docs_registration.criticality).toBe("major");
+    expect(byCode.docs_credential.criticality).toBe("minor");
+    expect(t.items.filter((i) => i.criticality === "critical").map((i) => i.code)).toEqual(["docs_insurance", "docs_rto", "safety_brakes_steering", "safety_tires", "safety_belts"]);
+  });
+
+  it("la sección de hidrogrúa solo aplica a vehículos que la tienen", () => {
+    const cranes = ["crane_hydraulic", "crane_grease", "crane_basket"];
+    const codes = (asset: Record<string, unknown>) => applicableItems(t.items, { asset }).map((i) => i.code);
+    for (const code of cranes) expect(codes(plain)).not.toContain(code);
+    expect(codes(crane)).toEqual(expect.arrayContaining(cranes));
+  });
+
+  it("no repite el control de fluidos: un solo ítem cubre niveles, pérdidas y sistema hidráulico", () => {
+    expect(t.items.filter((i) => i.section === "Mecánica" && /nivel|fluido|hidr/i.test(i.text)).map((i) => i.code)).toEqual(["mech_levels"]);
   });
 
   it("la barra antivuelco y el monitoreo satelital solo aplican si el vehículo los tiene", () => {

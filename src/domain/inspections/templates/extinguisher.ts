@@ -1,4 +1,4 @@
-import { checkItem, type TemplateDefinition } from "./types";
+import { checkItem, textItem, type TemplateDefinition } from "./types";
 
 const loc = "Ubicación";
 const state = "Estado";
@@ -58,5 +58,6 @@ export const EXTINGUISHER_PERIODIC: TemplateDefinition = {
     }),
     checkItem("docs_tag", docs, "Tarjeta o etiqueta de control colocada", "minor"),
     checkItem("fit_agent", "Adecuación", "Agente y potencial adecuados al riesgo del sector", "major"),
+    textItem("notice_site_management", "Cierre", "Notificación a la jefatura de obra", "Anotá a quién avisaste de las no conformidades y cuándo (RE 01 PE 05). Si todo está conforme, dejalo vacío."),
   ],
 };

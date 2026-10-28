@@ -509,7 +509,7 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
   - Vencimientos: **carga (anual)** y **prueba hidráulica (cada 5 años)**.
   - Control **mensual** (IRAM 3517-2): acceso libre y señalización, presión en zona verde o peso del CO₂, precinto y pasador, manguera y boquilla, cilindro sin golpes ni corrosión, tarjeta de control legible, altura de montaje, carga y PH vigentes.
   - No apto: presión, precinto, cilindro dañado, carga o PH vencidos → retiro y reemplazo.
-- [ ] 15.8 (S7, PR #33 abierto en borrador, CI verde, falta marcar «ready» y `/integrar`; arneses S9 en el mismo PR) **Zona de obradores**
+- [x] 15.8 (hecho 2026-10-27, PR #33, S7) **Zona de obradores**
   - Inspección de área (sede de tipo obrador o un sector), **semanal**.
   - Orden y limpieza; delimitación y señalización.
   - Instalación eléctrica: tablero con tapa y disyuntor, puesta a tierra, sin empalmes precarios.
@@ -517,14 +517,14 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
   - Sustancias peligrosas: hojas de seguridad (FDS), rotulado, contención secundaria.
   - Residuos (14001): separación por tipo, recipientes identificados. Kit antiderrame.
   - Sanitarios y agua potable, botiquín, plan de emergencia y punto de encuentro, iluminación, cerco y accesos.
-- [ ] 15.9 **Equipos / vehículos pesados** (grúa, hidrogrúa, retroexcavadora, pala, camión, autoelevador)
+- [x] 15.9 (hecho 2026-10-27, PR #38, S10) **Equipos / vehículos pesados** (grúa, hidrogrúa, retroexcavadora, pala, camión, autoelevador)
   - Activo: dominio o n.° interno, tipo, marca/modelo/año, propio o de contratista, horómetro u odómetro.
   - Vencimientos: seguro, VTV/RTO si circula, **certificación de izaje**, service.
   - **Control previo al uso, diario** (lo hace el operador) + **inspección mensual** (la hace SST).
   - Ítems: pérdidas y niveles, frenos, dirección, luces y balizas, alarma de retroceso, bocina, cinturón, estructura antivuelco y contra caída de objetos (ROPS/FOPS), espejos, neumáticos u orugas, extintor, calzas.
   - Elementos de izaje: eslingas, grilletes, ganchos con traba, limitador de carga. Documentación a bordo.
   - **Operador habilitado** (se cruza con la Task 20 cuando exista).
-- [ ] 15.10 **Vehículos livianos**
+- [x] 15.10 (hecho 2026-10-27, PR #34, S8) **Vehículos livianos**
   - Activo: dominio, marca/modelo/año, propio, alquilado o de contratista, conductor asignado, km.
   - Vencimientos: VTV/RTO, seguro, service, monitoreo satelital.
   - **Control previo al uso** + **inspección mensual**.
@@ -532,7 +532,7 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
   - Kit: matafuego vigente, balizas, botiquín, chaleco. Barra o jaula antivuelco si corresponde.
   - Documentación del vehículo y licencia del conductor.
   - **Lectura del odómetro**, que alimenta los km de la Task 18.
-- [ ] 15.11 **Auditoría de seguridad en campo**
+- [x] 15.11 (hecho 2026-10-27, PR #39, S11) **Auditoría de seguridad en campo**
   - Sobre un frente de trabajo: sede + tarea + contratista (opcional) + supervisor. Programa con meta de auditorías por sede y por mes.
   - Documentación de la tarea: permiso de trabajo y análisis de trabajo seguro (ATS/AST) firmados y difundidos, charla previa.
   - Personas: EPP adecuado y en uso, personal habilitado para la tarea (se cruza con la Task 20).
@@ -543,7 +543,7 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
     - izaje: plan de izaje y rigger.
   - Ambiente (derrames, residuos); actos inseguros y observaciones positivas.
   - Salida: puntaje % y cumplimiento del programa por sede.
-- [ ] 15.12 **Arneses y cabos de vida**
+- [x] 15.12 (hecho 2026-10-27, PR #33, S9) **Arneses y cabos de vida**
   - Activo: tipo (arnés de cuerpo completo, cabo simple o doble con absorbedor, cabo de posicionamiento, retráctil, mosquetón), marca/modelo, serie, norma, **fecha de fabricación**, **vida útil** (la del fabricante; default configurable), persona asignada.
   - Inspección periódica registrada: default **cada 6 meses**, configurable.
   - Ítems: etiqueta legible; cintas sin cortes, quemaduras ni daño químico; costuras; indicador de caída o absorbedor sin activar; hebillas y argollas D; ganchos con traba; sin nudos.

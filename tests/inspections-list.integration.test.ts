@@ -39,7 +39,7 @@ describe.skipIf(!hasDatabase)("lista, contadores y exportación de inspecciones 
   async function inspect(assetId: string, who: string, nonconform: string[] = []) {
     const { id } = await startInspection({ tenantId: a, actorUserId: who, assetId });
     const view = (await getInspectionView(a, id))!;
-    for (const row of view.items.filter((i) => !i.answer.autoDerived)) {
+    for (const row of view.items.filter((i) => !i.answer.autoDerived && i.item.kind === "check")) {
       const bad = nonconform.includes(row.item.code);
       await saveAnswer({ tenantId: a, actorUserId: who, canEditOthers: false, inspectionId: id, itemId: row.item.id, patch: { value: bad ? "nonconform" : "conform", ...(bad ? { comment: "Mal" } : {}) } });
       if (bad && row.item.photoOnNc) await addInspectionPhoto({ tenantId: a, actorUserId: who, canEditOthers: false, inspectionId: id, itemId: row.item.id, fileName: "f.jpg", contentType: "image/jpeg", body: Buffer.from("jpeg"), storage });

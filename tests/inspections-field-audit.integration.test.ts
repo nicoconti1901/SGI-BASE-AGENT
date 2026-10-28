@@ -64,13 +64,13 @@ describe.skipIf(!hasDatabase)("auditoría de seguridad en campo (integración)",
     const inspection = await db.inspection.findUniqueOrThrow({ where: { id: plain.id }, include: { answers: true, template: true } });
     expect(inspection).toMatchObject({ assetId: null, siteId: site, jobTaskId: taskA, contractorName: "Montajes SA", supervisorPersonId: supervisorA, status: "draft", specialTasks: [] });
     expect(inspection.template.key).toBe("field_audit");
-    expect(inspection.answers).toHaveLength(12); // 10 puntuables + 2 de texto
+    expect(inspection.answers).toHaveLength(22); // 16 puntuables + 6 de texto
 
     const site2 = await newSite("Con especiales");
     const full = await startFieldAudit({ tenantId: a, actorUserId: inspector, siteId: site2, specialTasks: ["height", "confined_space", "lifting", "height"] });
     const withAll = await db.inspection.findUniqueOrThrow({ where: { id: full.id }, include: { answers: true } });
     expect(withAll.specialTasks).toEqual(["height", "confined_space", "lifting"]);
-    expect(withAll.answers).toHaveLength(18);
+    expect(withAll.answers).toHaveLength(28);
   });
 
   it("el borrador se retoma: dos pedidos a la vez abren uno solo", async () => {
@@ -100,7 +100,7 @@ describe.skipIf(!hasDatabase)("auditoría de seguridad en campo (integración)",
     expect(first.alreadyClosed).toBe(false);
     expect(again.alreadyClosed).toBe(true);
     const inspection = await db.inspection.findUniqueOrThrow({ where: { id } });
-    expect(inspection).toMatchObject({ status: "closed", result: "fit", actionId: null, findingId: null, applicableCount: 10, nonconformCount: 0 });
+    expect(inspection).toMatchObject({ status: "closed", result: "fit", actionId: null, findingId: null, applicableCount: 16, nonconformCount: 0 });
     expect(await db.inspectionPlan.count({ where: { tenantId: a, siteId: site } })).toBe(0);
     expect(await db.dueItem.count({ where: { tenantId: a, siteId: site } })).toBe(0);
   });
@@ -111,7 +111,7 @@ describe.skipIf(!hasDatabase)("auditoría de seguridad en campo (integración)",
     await fill(id, ["height_harness", "docs_talk"]);
     await Promise.all([close(id), close(id)]);
     const inspection = await db.inspection.findUniqueOrThrow({ where: { id }, include: { action: true, finding: true } });
-    expect(inspection).toMatchObject({ result: "unfit", nonconformCount: 2, applicableCount: 12 });
+    expect(inspection).toMatchObject({ result: "unfit", nonconformCount: 2, applicableCount: 18 });
     expect(inspection.action).toMatchObject({ ownerUserId: inspector });
     expect(inspection.finding).toMatchObject({ origin: "inspection" });
     expect(inspection.finding!.description).toContain("Arnés y cabo");
