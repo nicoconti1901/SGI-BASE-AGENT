@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { scanDueReminders } from "@/lib/automation";
 import { reconcileSafely } from "@/lib/training-followup";
 import { syncExposureDueItemsSafely } from "@/lib/safety-exposure";
+import { syncKmDueItemsSafely } from "@/lib/road-safety";
 
 type ScanOptions = NonNullable<Parameters<typeof scanDueReminders>[0]>;
 
@@ -15,12 +16,13 @@ type ScanOptions = NonNullable<Parameters<typeof scanDueReminders>[0]>;
 export async function reconcileModuleDueItems(options: { db?: PrismaClient; tenantId?: string; now?: Date } = {}) {
   const db = options.db ?? prisma;
   const activations = await db.tenantModuleActivation.findMany({
-    where: { moduleKey: { in: ["training", "safety_stats"] }, enabled: true, ...(options.tenantId ? { tenantId: options.tenantId } : {}) },
+    where: { moduleKey: { in: ["training", "safety_stats", "road_safety"] }, enabled: true, ...(options.tenantId ? { tenantId: options.tenantId } : {}) },
     select: { tenantId: true, moduleKey: true },
   });
   for (const { tenantId, moduleKey } of activations) {
     // Cubre cambios que otro módulo hizo sin avisar; es idempotente.
     if (moduleKey === "training") await reconcileSafely(tenantId, { now: options.now }, db);
+    else if (moduleKey === "road_safety") await syncKmDueItemsSafely(tenantId, db);
     else await syncExposureDueItemsSafely(tenantId, db);
   }
   return activations.length;
