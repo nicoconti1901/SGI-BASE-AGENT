@@ -1,5 +1,6 @@
 "use server";
 
+import { ALL_STANDARDS } from "@/domain/ims/catalog";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAppSessionContext } from "@/lib/session";
@@ -42,7 +43,7 @@ import type { ProposedFinding } from "@/domain/audits/extraction";
 
 export type AuditActionState = { error?: string; issues?: string[]; ok?: string };
 
-const STANDARDS: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
+const STANDARDS: readonly AuditStandard[] = ALL_STANDARDS;
 const MODES: AuditMode[] = ["onsite", "remote", "hybrid"];
 const EXTERNAL_TYPES: ExternalAuditType[] = [
   "certification_initial",

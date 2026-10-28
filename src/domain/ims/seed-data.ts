@@ -1,5 +1,6 @@
 import {
   buildClauseKey,
+  UNVERIFIED_TAG,
   type CatalogRequirement,
   type IsoStandardCode,
 } from "@/domain/ims/catalog";
@@ -242,10 +243,46 @@ const ISO45001_ROWS: ClauseRow[] = [
   { code: "10.3", title: "Mejora continua", summary: "Mejorar continuamente la idoneidad y eficacia del SG-SST.", tags: ["mejora"] },
 ];
 
+/**
+ * ISO 39001 (seguridad vial). Ninguna cláusula está verificada contra el texto oficial
+ * (RESEARCH-road-safety §1.1, SPEC-road-safety D1): solo primer nivel (4 a 10) y las subcláusulas
+ * con título visto en fuentes secundarias. Los resúmenes son paráfrasis propia. El tag `sin-verificar`
+ * lo retira el PO cuando confirme el índice contra la norma licenciada.
+ */
+const ISO39001_ROWS: ClauseRow[] = [
+  { code: "4", title: "Contexto de la organización", summary: "Entender el contexto de la organización en relación con la seguridad vial.", tags: ["contexto"] },
+  { code: "4.1", title: "Comprender la organización y su contexto", summary: "Determinar las cuestiones internas y externas que afectan la seguridad vial.", tags: ["contexto"] },
+  { code: "4.2", title: "Necesidades y expectativas de las partes interesadas", summary: "Identificar las partes interesadas y lo que esperan en materia de seguridad vial.", tags: ["contexto", "partes-interesadas"] },
+  { code: "5", title: "Liderazgo", summary: "Compromiso de la dirección con la seguridad vial.", tags: ["liderazgo"] },
+  { code: "5.1", title: "Liderazgo y compromiso", summary: "La dirección demuestra liderazgo y compromiso con el sistema de seguridad vial.", tags: ["liderazgo"] },
+  { code: "6", title: "Planificación", summary: "Planificar el sistema: riesgos viales, factores de desempeño y objetivos.", tags: ["planificacion", "objetivos"] },
+  { code: "7", title: "Apoyo", summary: "Recursos, competencia, comunicación e información documentada para el sistema.", tags: ["recursos", "competencia"] },
+  { code: "8", title: "Operación", summary: "Planificar y controlar las operaciones que afectan la seguridad vial.", tags: ["operacion"] },
+  { code: "8.1", title: "Planificación y control operacional", summary: "Controlar la flota, los conductores y los viajes de la organización.", tags: ["operacion", "flota"] },
+  { code: "8.2", title: "Preparación y respuesta ante emergencias", summary: "Estar preparados para responder ante un siniestro vial.", tags: ["emergencias"] },
+  { code: "9", title: "Evaluación del desempeño", summary: "Medir y evaluar el desempeño de seguridad vial.", tags: ["indicadores"] },
+  { code: "9.1", title: "Seguimiento, medición, análisis y evaluación", summary: "Medir los factores de desempeño de seguridad vial y analizar los resultados.", tags: ["indicadores"] },
+  { code: "10", title: "Mejora", summary: "Corregir y mejorar el sistema de seguridad vial.", tags: ["mejora"] },
+  { code: "10.1", title: "No conformidad y acción correctiva", summary: "Tratar las no conformidades y los siniestros con acciones correctivas.", tags: ["nc", "mejora"] },
+  { code: "10.2", title: "Mejora continua", summary: "Mejorar continuamente la idoneidad y eficacia del sistema.", tags: ["mejora"] },
+];
+
+/** Opt-in: nunca esencial ni "escalable", para no entrar en la plantilla de una empresa nueva (D4). */
+const ISO39001_REQUIREMENTS: CatalogRequirement[] = ISO39001_ROWS.map((row) => ({
+  standard: "ISO39001",
+  clauseCode: row.code,
+  clauseKey: buildClauseKey("ISO39001", row.code),
+  title: row.title,
+  summary: row.summary,
+  essential: false,
+  tags: [...row.tags, "vial", UNVERIFIED_TAG],
+}));
+
 export const ESSENTIAL_CATALOG_SEED: CatalogRequirement[] = [
   ...mapStandard("ISO9001", ISO9001_ROWS, ["calidad"], PRIMERIZAS_9001),
   ...mapStandard("ISO14001", ISO14001_ROWS, ["ambiente"], PRIMERIZAS_14001),
   ...mapStandard("ISO45001", ISO45001_ROWS, ["sst"], PRIMERIZAS_45001),
+  ...ISO39001_REQUIREMENTS,
 ];
 
 export function catalogStats(requirements: CatalogRequirement[] = ESSENTIAL_CATALOG_SEED) {
@@ -268,6 +305,10 @@ export function catalogStats(requirements: CatalogRequirement[] = ESSENTIAL_CATA
       ISO45001: {
         total: byStandard("ISO45001").length,
         essential: byStandard("ISO45001").filter((r) => r.essential).length,
+      },
+      ISO39001: {
+        total: byStandard("ISO39001").length,
+        essential: byStandard("ISO39001").filter((r) => r.essential).length,
       },
     },
   };

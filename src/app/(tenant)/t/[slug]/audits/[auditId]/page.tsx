@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAudit } from "@/lib/audits";
 import { listTenantMemberOptions } from "@/lib/findings";
+import { listOfferedStandards } from "@/lib/ims-catalog";
 import { planReadinessIssues, startReadinessIssues } from "@/domain/audits/lifecycle";
 import { canExecuteAudit } from "@/domain/audits/checklist";
 import { getChecklist, listChecklistCandidates } from "@/lib/audit-checklist";
@@ -48,14 +49,15 @@ export default async function AuditDetailPage({
 }) {
   const { slug, auditId } = await params;
   const { ctx, tenant, canPlan, canApprove } = await loadAuditsAccess(slug);
-  const [audit, members, checklist] = await Promise.all([
+  const [audit, members, checklist, standards] = await Promise.all([
     getAudit(tenant.id, auditId),
     listTenantMemberOptions(tenant.id),
     getChecklist(tenant.id, auditId),
+    listOfferedStandards(tenant.id),
   ]);
   if (!audit) notFound();
   if (audit.kind === "external") {
-    return <ExternalAuditView slug={slug} tenantId={tenant.id} audit={audit} canPlan={canPlan} />;
+    return <ExternalAuditView slug={slug} tenantId={tenant.id} audit={audit} canPlan={canPlan} standards={standards} />;
   }
   const candidates =
     canPlan && (audit.status === "planned" || audit.status === "prepared")
@@ -150,6 +152,7 @@ export default async function AuditDetailPage({
           <AuditPlanForm
             slug={slug}
             auditId={audit.id}
+            standards={standards}
             members={members.map((m) => ({ id: m.id, name: m.name }))}
             defaults={{
               title: audit.title,

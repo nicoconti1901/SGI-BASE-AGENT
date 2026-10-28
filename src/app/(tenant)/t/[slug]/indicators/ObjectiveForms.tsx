@@ -32,7 +32,6 @@ export const saveChanges =
 export const secondary =
   "self-start rounded-md border border-[var(--color-line)] px-4 py-2 text-sm font-medium disabled:opacity-60";
 
-const STANDARDS: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
 
 export type MemberOption = { id: string; name: string };
 
@@ -113,7 +112,15 @@ export type ObjectiveDefaults = {
   plan: string;
 };
 
-function ObjectiveFields({ members, defaults }: { members: MemberOption[]; defaults?: ObjectiveDefaults }) {
+function ObjectiveFields({
+  members,
+  defaults,
+  standards,
+}: {
+  members: MemberOption[];
+  defaults?: ObjectiveDefaults;
+  standards: AuditStandard[];
+}) {
   return (
     <>
       <Field label="Objetivo" hint="Ej.: Reducir los reclamos de clientes a menos del 2 % de los pedidos.">
@@ -121,7 +128,7 @@ function ObjectiveFields({ members, defaults }: { members: MemberOption[]; defau
       </Field>
       <fieldset className="flex flex-wrap gap-4 text-sm">
         <legend className="mb-1 font-medium">Normas</legend>
-        {STANDARDS.map((s) => (
+        {standards.map((s) => (
           <label key={s} className="flex items-center gap-2">
             <input type="checkbox" name="standards" value={s} defaultChecked={defaults?.standards.includes(s)} />
             {AUDIT_STANDARD_LABELS[s]}
@@ -149,13 +156,21 @@ function ObjectiveFields({ members, defaults }: { members: MemberOption[]; defau
   );
 }
 
-export function CreateObjectiveForm({ slug, members }: { slug: string; members: MemberOption[] }) {
+export function CreateObjectiveForm({
+  slug,
+  members,
+  standards,
+}: {
+  slug: string;
+  members: MemberOption[];
+  standards: AuditStandard[];
+}) {
   const [state, action, pending] = useActionState(createObjectiveAction.bind(null, slug), initial);
   const form = useKeepInputs(action, state);
     return (
     <form {...form} className="flex flex-col gap-4">
       <Feedback state={state} />
-      <ObjectiveFields members={members} />
+      <ObjectiveFields members={members} standards={standards} />
       <button type="submit" disabled={pending} className={primary}>
         {pending ? "Creando…" : "Crear y agregar indicadores"}
       </button>
@@ -168,11 +183,13 @@ export function EditObjectiveForm({
   objectiveId,
   members,
   defaults,
+  standards,
 }: {
   slug: string;
   objectiveId: string;
   members: MemberOption[];
   defaults: ObjectiveDefaults;
+  standards: AuditStandard[];
 }) {
   const [state, action, pending] = useActionState(
     updateObjectiveAction.bind(null, slug, objectiveId),
@@ -181,7 +198,7 @@ export function EditObjectiveForm({
   const form = useKeepInputs(action, state);
     return (
     <form {...form} className="flex flex-col gap-4">
-      <ObjectiveFields members={members} defaults={defaults} />
+      <ObjectiveFields members={members} defaults={defaults} standards={standards} />
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={saveChanges}>
         {pending ? "Guardando…" : "Guardar cambios"}

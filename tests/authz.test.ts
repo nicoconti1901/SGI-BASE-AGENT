@@ -7,6 +7,20 @@ import {
 } from "@/domain/identity/authz";
 import { canManageHealthData, canReportIncident, canViewHealthData } from "@/domain/safety-stats/access";
 
+describe("seguridad vial (SPEC-road-safety D24)", () => {
+  it("manage_road_safety: solo administrador y responsable de proceso", () => {
+    expect(canTenantRole("tenant_admin", "manage_road_safety")).toBe(true);
+    expect(canTenantRole("process_owner", "manage_road_safety")).toBe(true);
+    expect(canTenantRole("contributor", "manage_road_safety")).toBe(false);
+    expect(canTenantRole("viewer", "manage_road_safety")).toBe(false);
+  });
+
+  it("el colaborador registra el evento vial con «write»", () => {
+    expect(canTenantRole("contributor", "write")).toBe(true);
+    expect(canTenantRole("viewer", "write")).toBe(false);
+  });
+});
+
 describe("tenant authz policy", () => {
   it("viewer cannot mutate", () => {
     expect(canTenantRole("viewer", "read")).toBe(true);

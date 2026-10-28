@@ -18,6 +18,7 @@ import {
 } from "@/domain/audits/lifecycle";
 import {
   AUDIT_REPORT_ENTITY_TYPE,
+  AUDIT_STANDARD_LABELS,
   AUDIT_EXTERNAL_RESPONSE_ENTITY_TYPE,
   AUDIT_START_ENTITY_TYPE,
   AUDIT_START_LEAD_DAYS,
@@ -27,8 +28,20 @@ import {
   type AuditStatus,
   type ExternalAuditType,
 } from "@/domain/audits/types";
+import { findUnofferedStandards } from "@/lib/ims-catalog";
 
 /** Error de negocio con lista de lo que falta, para mostrarla tal cual en la UI. */
+async function assertStandardsOffered(
+  tenantId: string,
+  standards: AuditStandard[],
+  db: PrismaClient,
+): Promise<void> {
+  const unoffered = await findUnofferedStandards(tenantId, standards, db);
+  if (unoffered.length > 0) {
+    throw new AuditGateError([`La organización no adoptó ${unoffered.map((s) => AUDIT_STANDARD_LABELS[s]).join(", ")}`]);
+  }
+}
+
 export class AuditGateError extends Error {
   constructor(readonly issues: string[]) {
     super(issues.join(" · "));
@@ -234,6 +247,7 @@ export async function saveAuditPlan(
   }
   const plan = input.plan;
   if (!plan.title.trim()) throw new AuditGateError(["Poné un título a la auditoría"]);
+  await assertStandardsOffered(input.tenantId, plan.standards, db);
   if (plan.auditees.some((a) => a.userId && !a.area.trim())) {
     throw new AuditGateError(["Indicá el área o proceso de cada persona auditada"]);
   }
@@ -489,6 +503,7 @@ export async function createExternalAudit(
   db: PrismaClient = prisma,
 ) {
   assertExternalDraft(input.draft);
+  await assertStandardsOffered(input.tenantId, input.draft.standards, db);
   const year = input.draft.plannedStart.getUTCFullYear();
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -532,6 +547,7 @@ export async function saveExternalAudit(
     throw new AuditGateError(["No se puede editar una auditoría externa cancelada"]);
   }
   assertExternalDraft(input.draft);
+  await assertStandardsOffered(input.tenantId, input.draft.standards, db);
   const updated = await db.audit.update({ where: { id: audit.id }, data: externalData(input.draft) });
   await syncExternalResponseDue(updated, db);
   return updated;

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listObjectives } from "@/lib/objectives";
+import { ALL_STANDARDS } from "@/domain/ims/catalog";
 import { listTenantMemberOptions } from "@/lib/findings";
 import { aggregateStatus, dashboardCounts, pendingLoad } from "@/domain/indicators/rules";
 import {
@@ -22,7 +23,7 @@ import {
   EntityRow,
 } from "@/components/ui";
 
-const STANDARD_ORDER: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
+const STANDARD_ORDER: AuditStandard[] = [...ALL_STANDARDS];
 
 export default async function IndicatorsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

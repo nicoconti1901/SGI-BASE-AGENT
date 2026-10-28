@@ -22,6 +22,8 @@ enum IsoStandard {
   ISO9001
   ISO14001
   ISO45001
+  /// Opt-in por empresa (SPEC-road-safety D2/D4). Requisitos con tag `sin-verificar`.
+  ISO39001
 }
 
 enum GapStatus {
@@ -1384,6 +1386,8 @@ enum IncidentClassification {
   lost_time
   fatal
   occupational_disease
+  /// Evento vial solo con daño material (SPEC-road-safety D9): no entra en IF, IG ni II.
+  property_damage_only
 }
 
 /// El hecho: visible para quien ve el Hallazgo. Las columnas derivadas (occurredOn, periodMonth,

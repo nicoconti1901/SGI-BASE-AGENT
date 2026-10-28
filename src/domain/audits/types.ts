@@ -1,6 +1,8 @@
 /** Auditorías internas integradas — ISO 9001/14001/45001 §9.2, guía ISO 19011:2026. */
 
-export type AuditStandard = "ISO9001" | "ISO14001" | "ISO45001";
+import type { IsoStandardCode } from "@/domain/ims/catalog";
+
+export type AuditStandard = IsoStandardCode;
 
 export type AuditProgramStatus = "draft" | "approved" | "closed";
 
@@ -69,6 +71,7 @@ export const AUDIT_STANDARD_LABELS: Record<AuditStandard, string> = {
   ISO9001: "ISO 9001",
   ISO14001: "ISO 14001",
   ISO45001: "ISO 45001",
+  ISO39001: "ISO 39001",
 };
 
 /** Severidad que se guarda en Finding.severity para NC de auditoría. */

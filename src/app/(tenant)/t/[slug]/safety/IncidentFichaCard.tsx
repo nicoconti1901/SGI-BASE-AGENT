@@ -23,6 +23,7 @@ const CHIP: Record<IncidentClassification, ChipStatus> = {
   lost_time: "danger",
   fatal: "overdue",
   occupational_disease: "warning",
+  property_damage_only: "info",
 };
 
 const day = (d: Date | null) => (d ? d.toISOString().slice(0, 10).split("-").reverse().join("/") : "—");

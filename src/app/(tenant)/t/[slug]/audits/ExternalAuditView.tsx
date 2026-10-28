@@ -6,6 +6,7 @@ import {
   AUDIT_STATUS_LABELS,
   EXTERNAL_AUDIT_TYPE_LABELS,
   FINDING_SEVERITY_LABELS,
+  type AuditStandard,
 } from "@/domain/audits/types";
 import { FINDING_STATUS_LABELS, FINDING_TYPE_LABELS } from "@/domain/findings/types";
 import {
@@ -24,11 +25,13 @@ export async function ExternalAuditView({
   tenantId,
   audit,
   canPlan,
+  standards,
 }: {
   slug: string;
   tenantId: string;
   audit: ExternalAudit;
   canPlan: boolean;
+  standards: AuditStandard[];
 }) {
   const findings = await prisma.finding.findMany({
     where: { tenantId, auditId: audit.id },
@@ -69,6 +72,7 @@ export async function ExternalAuditView({
           <ExternalAuditPlanForm
             slug={slug}
             auditId={audit.id}
+            standards={standards}
             defaults={{
               title: audit.title,
               externalBody: audit.externalBody ?? "",

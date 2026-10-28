@@ -1,4 +1,26 @@
-export type IsoStandardCode = "ISO9001" | "ISO14001" | "ISO45001";
+export type IsoStandardCode = "ISO9001" | "ISO14001" | "ISO45001" | "ISO39001";
+
+/** Normas que toda empresa recibe en su plantilla inicial. */
+export const BASE_STANDARDS: readonly IsoStandardCode[] = ["ISO9001", "ISO14001", "ISO45001"];
+
+/** Normas que ninguna empresa recibe sin activarlas (SPEC-road-safety D4). */
+export const OPT_IN_STANDARDS: readonly IsoStandardCode[] = ["ISO39001"];
+
+/** Todas las normas del catálogo, en el orden en que se muestran. */
+export const ALL_STANDARDS: readonly IsoStandardCode[] = [...BASE_STANDARDS, ...OPT_IN_STANDARDS];
+
+/** Marca de los requisitos cuya numeración no se confirmó contra la norma licenciada (SPEC-road-safety D1). */
+export const UNVERIFIED_TAG = "sin-verificar";
+
+export function isOptInStandard(standard: IsoStandardCode): boolean {
+  return OPT_IN_STANDARDS.includes(standard);
+}
+
+/** Normas que se ofrecen a una empresa: las base y, solo si la adoptó, cada norma opt-in. */
+export function offeredStandards(adopted: Iterable<IsoStandardCode>): IsoStandardCode[] {
+  const set = new Set(adopted);
+  return ALL_STANDARDS.filter((s) => !isOptInStandard(s) || set.has(s));
+}
 
 export type CatalogRequirement = {
   standard: IsoStandardCode;

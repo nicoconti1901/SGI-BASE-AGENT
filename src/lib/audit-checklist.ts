@@ -13,10 +13,11 @@ import {
 } from "@/domain/audits/checklist";
 import { assertValidItemResult, findingFromItemResult } from "@/domain/audits/lifecycle";
 import type { AuditItemResult, AuditStandard } from "@/domain/audits/types";
+import { ALL_STANDARDS } from "@/domain/ims/catalog";
 import { AuditGateError } from "@/lib/audits";
 
 const MAX_EVIDENCE_BYTES = 15 * 1024 * 1024;
-const STANDARD_ORDER: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
+const STANDARD_ORDER: AuditStandard[] = [...ALL_STANDARDS];
 /** Las preguntas propias van después de los requisitos del catálogo. */
 const CUSTOM_ORDER_BASE = 10_000;
 

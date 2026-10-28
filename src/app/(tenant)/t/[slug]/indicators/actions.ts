@@ -1,5 +1,6 @@
 "use server";
 
+import { ALL_STANDARDS } from "@/domain/ims/catalog";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -33,7 +34,7 @@ import type {
 
 export type IndicatorActionState = { error?: string; issues?: string[]; ok?: string };
 
-const STANDARDS: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
+const STANDARDS: readonly AuditStandard[] = ALL_STANDARDS;
 const DIRECTIONS: IndicatorDirection[] = ["higher_better", "lower_better"];
 const FREQUENCIES: IndicatorFrequency[] = ["monthly", "quarterly", "semiannual", "annual"];
 const KINDS: IndicatorKind[] = ["leading", "lagging"];

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { listTenantMemberOptions } from "@/lib/findings";
+import { listOfferedStandards } from "@/lib/ims-catalog";
 import { CreateObjectiveForm } from "@/app/(tenant)/t/[slug]/indicators/ObjectiveForms";
 import { loadIndicatorsAccess } from "@/app/(tenant)/t/[slug]/indicators/access";
 
@@ -8,7 +9,7 @@ export default async function NewObjectivePage({ params }: { params: Promise<{ s
   const { slug } = await params;
   const { tenant, canManage } = await loadIndicatorsAccess(slug);
   if (!canManage) redirect(`/t/${slug}/indicators`);
-  const members = await listTenantMemberOptions(tenant.id);
+  const [members, standards] = await Promise.all([listTenantMemberOptions(tenant.id), listOfferedStandards(tenant.id)]);
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
@@ -22,7 +23,7 @@ export default async function NewObjectivePage({ params }: { params: Promise<{ s
           indicadores con los que se mide.
         </p>
       </div>
-      <CreateObjectiveForm slug={slug} members={members.map((m) => ({ id: m.id, name: m.name }))} />
+      <CreateObjectiveForm slug={slug} members={members.map((m) => ({ id: m.id, name: m.name }))} standards={standards} />
     </div>
   );
 }

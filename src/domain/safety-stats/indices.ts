@@ -175,6 +175,7 @@ function emptyRawCounts(): RawCounts {
     lost_time: 0,
     fatal: 0,
     occupational_disease: 0,
+    property_damage_only: 0,
     lostDays: 0,
   };
 }

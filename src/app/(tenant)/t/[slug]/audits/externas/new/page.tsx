@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { listOfferedStandards } from "@/lib/ims-catalog";
 import { CreateExternalAuditForm } from "@/app/(tenant)/t/[slug]/audits/ExternalAuditForms";
 import { loadAuditsAccess } from "@/app/(tenant)/t/[slug]/audits/access";
 
 export default async function NewExternalAuditPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { canPlan } = await loadAuditsAccess(slug);
+  const { tenant, canPlan } = await loadAuditsAccess(slug);
   if (!canPlan) redirect(`/t/${slug}/audits`);
+  const standards = await listOfferedStandards(tenant.id);
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
@@ -22,7 +24,7 @@ export default async function NewExternalAuditPage({ params }: { params: Promise
           cobertura, pero podés cargar sus hallazgos para tratarlos como cualquier otro.
         </p>
       </div>
-      <CreateExternalAuditForm slug={slug} />
+      <CreateExternalAuditForm slug={slug} standards={standards} />
     </div>
   );
 }

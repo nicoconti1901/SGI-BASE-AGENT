@@ -18,7 +18,7 @@ import {
 } from "@/app/(tenant)/t/[slug]/safety/IncidentFields";
 import {
   CLASSIFICATION_LABELS,
-  INCIDENT_CLASSIFICATIONS,
+  LABOR_CLASSIFICATIONS,
   type IncidentClassification,
 } from "@/domain/safety-stats/types";
 
@@ -133,7 +133,7 @@ export function FollowUpForm({
           onChange={(e) => setClassification(e.target.value as IncidentClassification)}
           className={INPUT_CLASS}
         >
-          {INCIDENT_CLASSIFICATIONS.map((c) => (
+          {LABOR_CLASSIFICATIONS.map((c) => (
             <option key={c} value={c}>
               {CLASSIFICATION_LABELS[c]}
             </option>

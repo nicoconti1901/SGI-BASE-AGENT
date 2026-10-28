@@ -161,11 +161,13 @@ export function AuditPlanForm({
   auditId,
   members,
   defaults,
+  standards,
 }: {
   slug: string;
   auditId: string;
   members: MemberOption[];
   defaults: PlanDefaults;
+  standards: AuditStandard[];
 }) {
   const [state, action, pending] = useActionState(
     saveAuditPlanAction.bind(null, slug, auditId),
@@ -202,7 +204,7 @@ export function AuditPlanForm({
       <fieldset className="flex flex-col gap-2 text-sm">
         <legend className="mb-1 font-medium">Normas (criterios)</legend>
         <div className="flex flex-wrap gap-4">
-          {(Object.keys(AUDIT_STANDARD_LABELS) as AuditStandard[]).map((s) => (
+          {standards.map((s) => (
             <label key={s} className="flex items-center gap-2">
               <input type="checkbox" name="standards" value={s} defaultChecked={defaults.standards.includes(s)} />
               {AUDIT_STANDARD_LABELS[s]}

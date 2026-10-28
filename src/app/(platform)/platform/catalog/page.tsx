@@ -2,15 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { listCatalogRequirements } from "@/lib/ims-catalog";
-import type { IsoStandardCode } from "@/domain/ims/catalog";
+import { ALL_STANDARDS, type IsoStandardCode } from "@/domain/ims/catalog";
 import { prisma } from "@/lib/db";
 
-const STANDARDS: Array<IsoStandardCode | "ALL"> = [
-  "ALL",
-  "ISO9001",
-  "ISO14001",
-  "ISO45001",
-];
+const STANDARDS: Array<IsoStandardCode | "ALL"> = ["ALL", ...ALL_STANDARDS];
 
 type SearchParams = Promise<{ standard?: string; essential?: string }>;
 
@@ -37,12 +32,7 @@ export default async function PlatformCatalogPage({
 
   const params = await searchParams;
   const standardParam = params.standard;
-  const standard =
-    standardParam === "ISO9001" ||
-    standardParam === "ISO14001" ||
-    standardParam === "ISO45001"
-      ? standardParam
-      : undefined;
+  const standard = ALL_STANDARDS.find((s) => s === standardParam);
   const essentialOnly = params.essential === "1";
 
   const [requirements, totals] = await Promise.all([
