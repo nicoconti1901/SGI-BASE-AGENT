@@ -5,6 +5,7 @@ import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { prisma } from "@/lib/db";
 import { labelGapStatus, type RequirementStatus } from "@/domain/assessment/gap";
 import { ModulesSection } from "./ModulesSection";
+import { OptInStandardsSection } from "./OptInStandardsSection";
 
 type Params = Promise<{ slug: string }>;
 
@@ -88,6 +89,7 @@ export default async function TenantDetailPage({ params }: { params: Params }) {
       </div>
 
       <ModulesSection slug={tenant.slug} tenantId={tenant.id} />
+      <OptInStandardsSection slug={tenant.slug} tenantId={tenant.id} />
 
       <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]">
         <table className="w-full text-left text-sm">

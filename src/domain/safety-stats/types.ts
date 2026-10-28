@@ -13,8 +13,17 @@ export const INCIDENT_CLASSIFICATIONS = [
   "lost_time",
   "fatal",
   "occupational_disease",
+  "property_damage_only",
 ] as const;
 export type IncidentClassification = (typeof INCIDENT_CLASSIFICATIONS)[number];
+
+/**
+ * Clasificaciones que ofrece el alta laboral. `property_damage_only` es solo del evento vial
+ * (SPEC-road-safety D9): no entra en IF, IG ni II y no se elige desde la ficha laboral.
+ */
+export const LABOR_CLASSIFICATIONS: readonly IncidentClassification[] = INCIDENT_CLASSIFICATIONS.filter(
+  (c) => c !== "property_damage_only",
+);
 
 export const CLASSIFICATION_LABELS: Record<IncidentClassification, string> = {
   near_miss: "Casi accidente",
@@ -23,6 +32,7 @@ export const CLASSIFICATION_LABELS: Record<IncidentClassification, string> = {
   lost_time: "Con baja",
   fatal: "Fatal",
   occupational_disease: "Enfermedad profesional",
+  property_damage_only: "Solo daño material",
 };
 
 /** Ayuda breve para el alta: la pregunta que se hace quien carga el hecho. */
@@ -33,6 +43,7 @@ export const CLASSIFICATION_HINTS: Record<IncidentClassification, string> = {
   lost_time: "La persona no pudo trabajar al día siguiente o más.",
   fatal: "Hubo una muerte.",
   occupational_disease: "Enfermedad atribuida al trabajo.",
+  property_damage_only: "Evento vial sin lesionados, solo daño en vehículos o bienes.",
 };
 
 /** Clasificaciones con lesión o enfermedad: piden persona afectada. */

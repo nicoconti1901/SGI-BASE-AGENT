@@ -24,7 +24,8 @@ export type AuthzAction =
   | "import_assets"
   | "manage_inspection_templates"
   | "release_assets"
-  | "manage_calibration";
+  | "manage_calibration"
+  | "manage_road_safety";
 
 /**
  * Política documentada (Task 6):
@@ -50,6 +51,8 @@ export type AuthzAction =
  *   importar activos y editar plantillas, solo el admin. Registrar inspecciones usa «write».
  * - Equipos de medición (SPEC-calibration): configurar el equipo (regla, EMP, intervalos), anular registros y completar
  *   evaluaciones de impacto (`manage_calibration`) admin y responsable de proceso. Cargar calibraciones usa «write».
+ * - Seguridad vial (SPEC-road-safety D24): ver conductores, cargar km, reinicios y ajustes (`manage_road_safety`) admin y
+ *   responsable de proceso. Registrar el evento vial usa «write».
  */
 const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
   viewer: ["read"],
@@ -71,6 +74,7 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "manage_assets",
     "release_assets",
     "manage_calibration",
+    "manage_road_safety",
   ],
   tenant_admin: [
     "read",
@@ -97,6 +101,7 @@ const ROLE_PERMISSIONS: Record<TenantRole, AuthzAction[]> = {
     "manage_inspection_templates",
     "release_assets",
     "manage_calibration",
+    "manage_road_safety",
   ],
 };
 

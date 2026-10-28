@@ -10,7 +10,7 @@ import {
   CLASSIFICATION_HINTS,
   CLASSIFICATION_LABELS,
   EMPLOYER_LABELS,
-  INCIDENT_CLASSIFICATIONS,
+  LABOR_CLASSIFICATIONS,
   INJURY_CLASSIFICATIONS,
   MATERIAL_AGENTS,
   NATURES_OF_INJURY,
@@ -119,7 +119,7 @@ export function FactFields({
             onChange={(e) => change(e.target.value as IncidentClassification)}
             className={INPUT_CLASS}
           >
-            {INCIDENT_CLASSIFICATIONS.map((c) => (
+            {LABOR_CLASSIFICATIONS.map((c) => (
               <option key={c} value={c}>
                 {CLASSIFICATION_LABELS[c]}
               </option>

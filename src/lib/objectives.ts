@@ -13,9 +13,21 @@ import {
   type IndicatorFrequency,
   type IndicatorKind,
 } from "@/domain/indicators/types";
-import type { AuditStandard } from "@/domain/audits/types";
+import { AUDIT_STANDARD_LABELS, type AuditStandard } from "@/domain/audits/types";
+import { findUnofferedStandards } from "@/lib/ims-catalog";
 
 /** Error de negocio con la lista de lo que falta, para mostrarla tal cual en la UI. */
+async function assertStandardsOffered(
+  tenantId: string,
+  standards: AuditStandard[],
+  db: Db,
+): Promise<void> {
+  const unoffered = await findUnofferedStandards(tenantId, standards, db);
+  if (unoffered.length > 0) {
+    throw new ObjectiveGateError([`La organización no adoptó ${unoffered.map((s) => AUDIT_STANDARD_LABELS[s]).join(", ")}`]);
+  }
+}
+
 export class ObjectiveGateError extends Error {
   constructor(readonly issues: string[]) {
     super(issues.join(" · "));
@@ -135,6 +147,7 @@ export async function createObjective(
 ) {
   const issues = objectiveIssues(input.draft);
   if (issues.length > 0) throw new ObjectiveGateError(issues);
+  await assertStandardsOffered(input.tenantId, input.draft.standards, db);
   await assertMembers(input.tenantId, [input.draft.ownerUserId], db);
   const year = new Date().getUTCFullYear();
 
@@ -176,6 +189,7 @@ export async function updateObjective(
   const objective = await findActiveObjective(input.tenantId, input.objectiveId, db);
   const issues = objectiveIssues(input.draft);
   if (issues.length > 0) throw new ObjectiveGateError(issues);
+  await assertStandardsOffered(input.tenantId, input.draft.standards, db);
   await assertMembers(input.tenantId, [input.draft.ownerUserId], db);
   return db.objective.update({ where: { id: objective.id }, data: objectiveData(input.draft) });
 }

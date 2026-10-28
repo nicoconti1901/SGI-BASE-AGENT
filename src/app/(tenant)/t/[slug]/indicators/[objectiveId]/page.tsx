@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getObjective } from "@/lib/objectives";
 import { listTenantMemberOptions } from "@/lib/findings";
+import { listOfferedStandards } from "@/lib/ims-catalog";
 import { AUDIT_STANDARD_LABELS } from "@/domain/audits/types";
 import {
   DIRECTION_LABELS,
@@ -31,9 +32,10 @@ export default async function ObjectivePage({
 }) {
   const { slug, objectiveId } = await params;
   const { tenant, canManage } = await loadIndicatorsAccess(slug);
-  const [objective, members] = await Promise.all([
+  const [objective, members, standards] = await Promise.all([
     getObjective(tenant.id, objectiveId),
     listTenantMemberOptions(tenant.id),
+    listOfferedStandards(tenant.id),
   ]);
   if (!objective) notFound();
 
@@ -65,6 +67,7 @@ export default async function ObjectivePage({
           <EditObjectiveForm
             slug={slug}
             objectiveId={objective.id}
+            standards={standards}
             members={options}
             defaults={{
               title: objective.title,

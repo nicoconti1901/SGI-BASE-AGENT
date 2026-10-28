@@ -1,3 +1,5 @@
+import { isOptInStandard, type IsoStandardCode } from "@/domain/ims/catalog";
+
 export type TenantSize = "small" | "medium" | "large";
 export type TenantActivity =
   | "manufactura"
@@ -70,12 +72,14 @@ export function assertValidSlug(slug: string): void {
 export function selectRequirementIdsForTemplate(input: {
   size: TenantSize;
   activity: TenantActivity;
-  catalog: Array<{ id: string; essential: boolean; tags: string[] }>;
+  catalog: Array<{ id: string; standard?: IsoStandardCode; essential: boolean; tags: string[] }>;
 }): string[] {
   const rules = templateSelectionRules(input);
   const selected = new Set<string>();
 
   for (const requirement of input.catalog) {
+    // Las normas opt-in (ISO 39001) no entran en la plantilla ni por tamaño ni por actividad.
+    if (requirement.standard && isOptInStandard(requirement.standard)) continue;
     if (requirement.essential && rules.includeAllEssential) {
       selected.add(requirement.id);
       continue;

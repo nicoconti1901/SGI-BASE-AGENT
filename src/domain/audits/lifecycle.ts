@@ -1,3 +1,4 @@
+import { ALL_STANDARDS } from "@/domain/ims/catalog";
 import {
   AUDIT_REPORT_GRACE_DAYS,
   AUDIT_STATUS_LABELS,
@@ -170,7 +171,7 @@ export function computeCoverage(
       )
       .map((i) => i.tenantRequirementId as string),
   );
-  const standards: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
+  const standards: AuditStandard[] = [...ALL_STANDARDS];
   return standards
     .map((standard) => {
       const reqs = requirements.filter((r) => r.standard === standard);

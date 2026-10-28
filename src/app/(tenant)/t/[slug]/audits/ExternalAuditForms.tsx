@@ -34,7 +34,6 @@ const saveChanges =
 const complete =
   "self-start rounded-md bg-[var(--color-success)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)] disabled:opacity-60";
 
-const STANDARDS: AuditStandard[] = ["ISO9001", "ISO14001", "ISO45001"];
 const FINDING_RESULTS: AuditItemResult[] = ["nc_major", "nc_minor", "observation", "improvement"];
 
 
@@ -51,7 +50,7 @@ export type ExternalDefaults = {
   plannedEnd: string;
 };
 
-function ExternalFields({ defaults }: { defaults?: ExternalDefaults }) {
+function ExternalFields({ defaults, standards }: { defaults?: ExternalDefaults; standards: AuditStandard[] }) {
   return (
     <>
       <Field label="Título" hint="Ej.: Auditoría de recertificación ISO 9001">
@@ -87,7 +86,7 @@ function ExternalFields({ defaults }: { defaults?: ExternalDefaults }) {
       </div>
       <fieldset className="flex flex-wrap gap-4 text-sm">
         <legend className="mb-1 font-medium">Normas</legend>
-        {STANDARDS.map((s) => (
+        {standards.map((s) => (
           <label key={s} className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -114,13 +113,13 @@ function ExternalFields({ defaults }: { defaults?: ExternalDefaults }) {
   );
 }
 
-export function CreateExternalAuditForm({ slug }: { slug: string }) {
+export function CreateExternalAuditForm({ slug, standards }: { slug: string; standards: AuditStandard[] }) {
   const [state, action, pending] = useActionState(createExternalAuditAction.bind(null, slug), initial);
   const actionForm = useKeepInputs(action, state);
   return (
     <form {...actionForm} className="flex flex-col gap-4">
       <Feedback state={state} />
-      <ExternalFields />
+      <ExternalFields standards={standards} />
       <button type="submit" disabled={pending} className={primary}>
         {pending ? "Creando…" : "Crear auditoría externa"}
       </button>
@@ -132,10 +131,12 @@ export function ExternalAuditPlanForm({
   slug,
   auditId,
   defaults,
+  standards,
 }: {
   slug: string;
   auditId: string;
   defaults: ExternalDefaults;
+  standards: AuditStandard[];
 }) {
   const [state, action, pending] = useActionState(
     saveExternalAuditAction.bind(null, slug, auditId),
@@ -144,7 +145,7 @@ export function ExternalAuditPlanForm({
   const actionForm = useKeepInputs(action, state);
   return (
     <form {...actionForm} className="flex flex-col gap-4">
-      <ExternalFields defaults={defaults} />
+      <ExternalFields defaults={defaults} standards={standards} />
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={saveChanges}>
         {pending ? "Guardando…" : "Guardar cambios"}
