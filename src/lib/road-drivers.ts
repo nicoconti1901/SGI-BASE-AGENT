@@ -1,7 +1,9 @@
 /**
  * Conductores habilitados (SPEC-road-safety.md, 18.4, D20): licencia vigente más manejo defensivo vigente.
- * El manejo defensivo sale de la tarea de conducción que elige la empresa (Task 20, `isQualifiedForTask`). La
- * lista con nombres es de quien gestiona la seguridad vial (D24); el resto recibe solo el resumen.
+ * Conductor es una marca de la persona que se gestiona acá (`RoadDriver`, con el vencimiento de su licencia). El
+ * manejo defensivo sale de los cursos obligatorios de la tarea de conducción que elige la empresa (Task 20,
+ * `isQualifiedForTask`, que no exige que la tarea esté asignada). La lista con nombres es de quien gestiona la
+ * seguridad vial (D24); el resto recibe solo el resumen.
  */
 import type { PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
@@ -14,7 +16,7 @@ import type { IsoDay } from "@/domain/safety-stats/types";
 
 type Db = PrismaClient;
 
-/** Tope de conductores que se evalúan por empresa: son personas con la tarea de conducción asignada. */
+/** Tope de conductores que se evalúan por empresa. */
 export const DRIVERS_LIMIT = 500;
 
 const dayDate = (day: IsoDay) => new Date(`${day}T00:00:00.000Z`);
@@ -55,22 +57,46 @@ export async function setDriverTask(input: { tenantId: string; actor: RoadUser; 
   });
 }
 
-/** Carga o cambia el vencimiento de la licencia de una persona de la empresa; `null` la borra. */
+/** Marca a una persona activa de la empresa como conductor. Es idempotente: si ya lo era, no cambia nada. */
+export async function addDriver(input: { tenantId: string; actor: RoadUser; personId: string }, db: Db = prisma) {
+  requireManager(input.actor);
+  const { tenantId, personId } = input;
+  const person = await db.person.findFirst({ where: { id: personId, tenantId, status: "active" }, select: { id: true, name: true } });
+  if (!person) throw new RoadSafetyError("La persona no es de la empresa o está dada de baja");
+  if (await db.roadDriver.findUnique({ where: { personId }, select: { id: true } })) return;
+  await db.$transaction(async (tx) => {
+    await tx.roadDriver.create({ data: { tenantId, personId, actorUserId: input.actor.userId } });
+    await tx.masterDataAudit.create({
+      data: { tenantId, entityType: "road_driver", entityId: personId, action: "create", actorUserId: input.actor.userId, summary: `Alta de conductor: ${person.name}` },
+    });
+  });
+}
+
+/** Saca la marca de conductor (y con ella el vencimiento de la licencia cargado). */
+export async function removeDriver(input: { tenantId: string; actor: RoadUser; personId: string }, db: Db = prisma) {
+  requireManager(input.actor);
+  const { tenantId, personId } = input;
+  await db.$transaction(async (tx) => {
+    const { count } = await tx.roadDriver.deleteMany({ where: { tenantId, personId } });
+    if (count === 0) return;
+    await tx.masterDataAudit.create({
+      data: { tenantId, entityType: "road_driver", entityId: personId, action: "update", actorUserId: input.actor.userId, summary: "Baja de la marca de conductor" },
+    });
+  });
+}
+
+/** Carga o cambia el vencimiento de la licencia de un conductor; `null` lo quita (queda sin licencia cargada). */
 export async function saveDriverLicense(input: { tenantId: string; actor: RoadUser; personId: string; expiresOn: IsoDay | null }, db: Db = prisma) {
   requireManager(input.actor);
   const { tenantId, personId, expiresOn } = input;
   if (expiresOn !== null && !isIsoDay(expiresOn)) throw new RoadSafetyError("Fecha de vencimiento inválida");
-  const person = await db.person.findFirst({ where: { id: personId, tenantId }, select: { id: true } });
-  if (!person) throw new RoadSafetyError("La persona no es de la empresa");
+  const driver = await db.roadDriver.findFirst({ where: { tenantId, personId }, select: { id: true } });
+  if (!driver) throw new RoadSafetyError("La persona no está marcada como conductor");
   await db.$transaction(async (tx) => {
-    if (expiresOn === null) await tx.driverLicense.deleteMany({ where: { tenantId, personId } });
-    else {
-      await tx.driverLicense.upsert({
-        where: { personId },
-        create: { tenantId, personId, expiresOn: dayDate(expiresOn), actorUserId: input.actor.userId },
-        update: { expiresOn: dayDate(expiresOn), actorUserId: input.actor.userId },
-      });
-    }
+    await tx.roadDriver.update({
+      where: { id: driver.id },
+      data: { licenseExpiresOn: expiresOn ? dayDate(expiresOn) : null, actorUserId: input.actor.userId },
+    });
     await tx.masterDataAudit.create({
       data: {
         tenantId,
@@ -94,35 +120,35 @@ export type DriverRow = {
 };
 
 /**
- * Evalúa a las personas activas con la tarea de conducción asignada. Sin tarea elegida no hay conductores que
- * evaluar: `configured` es falso y el tablero lo dice en lugar de mostrar 0.
+ * Evalúa a los conductores activos. Sin tarea de conducción elegida (`configured` falso) nadie puede probar el
+ * manejo defensivo: todos quedan no habilitados con ese motivo, y el tablero lo dice en lugar de mostrar 0.
  */
 export async function loadDriverEligibility(tenantId: string, today: IsoDay, db: Db = prisma) {
   const task = await getDriverTask(tenantId, db);
-  if (!task) return { configured: false as const, task: null, rows: [] as DriverRow[], truncated: false };
-
-  const assigned = await db.personJobTask.findMany({
-    where: { tenantId, jobTaskId: task.id, person: { status: "active" } },
-    select: { person: { select: { id: true, name: true, employeeCode: true, driverLicense: { select: { expiresOn: true } } } } },
+  const drivers = await db.roadDriver.findMany({
+    where: { tenantId, person: { status: "active" } },
+    select: { licenseExpiresOn: true, person: { select: { id: true, name: true, employeeCode: true } } },
     orderBy: { person: { name: "asc" } },
     take: DRIVERS_LIMIT + 1,
   });
-  const truncated = assigned.length > DRIVERS_LIMIT;
-  const people = assigned.slice(0, DRIVERS_LIMIT).map((a) => a.person);
+  const truncated = drivers.length > DRIVERS_LIMIT;
+  const shown = drivers.slice(0, DRIVERS_LIMIT);
 
   const qualifications = new Map<string, { qualified: boolean; hasRequirements: boolean }>();
-  for (let i = 0; i < people.length; i += QUALIFICATION_MAX_PEOPLE) {
-    const chunk = people.slice(i, i + QUALIFICATION_MAX_PEOPLE).map((p) => p.id);
-    const result = await getTaskQualifications(tenantId, chunk, task.id, { today }, db);
-    for (const [id, q] of result ?? []) qualifications.set(id, { qualified: q.qualified, hasRequirements: q.hasRequirements });
+  if (task) {
+    for (let i = 0; i < shown.length; i += QUALIFICATION_MAX_PEOPLE) {
+      const chunk = shown.slice(i, i + QUALIFICATION_MAX_PEOPLE).map((d) => d.person.id);
+      const result = await getTaskQualifications(tenantId, chunk, task.id, { today }, db);
+      for (const [id, q] of result ?? []) qualifications.set(id, { qualified: q.qualified, hasRequirements: q.hasRequirements });
+    }
   }
 
-  const rows: DriverRow[] = people.map((p) => {
-    const licenseExpiresOn = p.driverLicense ? isoOf(p.driverLicense.expiresOn) : null;
-    const { enabled, blockers } = driverEligibility({ licenseExpiresOn, qualification: qualifications.get(p.id) ?? null }, today);
-    return { personId: p.id, employeeCode: p.employeeCode, name: p.name, licenseExpiresOn, enabled, blockers };
+  const rows: DriverRow[] = shown.map((d) => {
+    const licenseExpiresOn = d.licenseExpiresOn ? isoOf(d.licenseExpiresOn) : null;
+    const { enabled, blockers } = driverEligibility({ licenseExpiresOn, qualification: task ? (qualifications.get(d.person.id) ?? null) : null }, today);
+    return { personId: d.person.id, employeeCode: d.person.employeeCode, name: d.person.name, licenseExpiresOn, enabled, blockers };
   });
-  return { configured: true as const, task, rows, truncated };
+  return { configured: task !== null, task, rows, truncated };
 }
 
 /** Resumen sin nombres para el tablero: lo ven todos los roles. */

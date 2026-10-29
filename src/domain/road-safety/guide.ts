@@ -44,7 +44,7 @@ export const ROAD_GUIDE_SECTIONS: RoadGuideSection[] = [
     id: "habilitados",
     title: "Conductores habilitados",
     paragraphs: [
-      "Un conductor está habilitado cuando tiene la licencia vigente y el curso de manejo defensivo vigente. La fecha de vencimiento de la licencia la carga la empresa; el sistema no la valida contra ninguna jurisdicción. El curso sale de la tarea de conducción que la empresa elige en los ajustes, con sus cursos obligatorios en Capacitaciones.",
+      "Un conductor es una persona que el administrador o el responsable de proceso marca como tal en la pestaña Conductores. Está habilitado cuando tiene la licencia vigente y el curso de manejo defensivo vigente. La fecha de vencimiento de la licencia la carga la empresa; el sistema no la valida contra ninguna jurisdicción. El curso sale de la tarea de conducción que la empresa elige en los ajustes, con sus cursos obligatorios en Capacitaciones; si no se eligió ninguna tarea, o la tarea no exige ningún curso, nadie queda habilitado.",
     ],
   },
   {

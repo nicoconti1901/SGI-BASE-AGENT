@@ -133,6 +133,10 @@ describe("driverEligibility (AR-17)", () => {
     });
   });
 
+  it("sin tarea de conducción elegida no hay con qué probar el manejo defensivo", () => {
+    expect(driverEligibility({ licenseExpiresOn: "2027-12-31", qualification: null }, today)).toEqual({ enabled: false, blockers: ["task_not_chosen"] });
+  });
+
   it("junta todos los motivos", () => {
     expect(driverEligibility({ licenseExpiresOn: "2027-01-01", qualification: { qualified: false, hasRequirements: true } }, today).blockers).toEqual(["license_expired", "training_missing"]);
   });

@@ -84,30 +84,35 @@ export function breakdownRoadEvents(events: readonly RoadEventFacts[]) {
 
 // ─── Conductor habilitado (D20, AR-17) ──────────────────────────────────────
 
-export type DriverBlocker = "license_missing" | "license_expired" | "training_missing" | "task_without_course";
+export type DriverBlocker = "license_missing" | "license_expired" | "task_not_chosen" | "training_missing" | "task_without_course";
 
 export const DRIVER_BLOCKER_LABELS: Record<DriverBlocker, string> = {
   license_missing: "Sin licencia cargada",
   license_expired: "Licencia vencida",
+  task_not_chosen: "Falta elegir la tarea de conducción en Ajustes",
   training_missing: "Falta el manejo defensivo vigente",
   task_without_course: "La tarea de conducción no exige ningún curso",
 };
 
 export type DriverEligibilityInput = {
   licenseExpiresOn: IsoDay | null;
-  /** Habilitación de la persona para la tarea de conducción (Task 20); `null` si no se pudo calcular. */
+  /**
+   * Habilitación de la persona para la tarea de conducción que eligió la empresa (Task 20, no depende de que
+   * la tarea esté asignada); `null` si todavía no se eligió ninguna tarea.
+   */
   qualification: { qualified: boolean; hasRequirements: boolean } | null;
 };
 
 /**
- * Habilitado = licencia vigente (hasta su vencimiento, inclusive) **y** manejo defensivo vigente. Si la tarea
- * no exige ningún curso, no hay con qué probar el manejo defensivo: no habilita.
+ * Habilitado = licencia vigente (hasta su vencimiento, inclusive) **y** manejo defensivo vigente. Sin tarea de
+ * conducción elegida, o si la tarea no exige ningún curso, no hay con qué probar el manejo defensivo: no habilita.
  */
 export function driverEligibility(input: DriverEligibilityInput, today: IsoDay): { enabled: boolean; blockers: DriverBlocker[] } {
   const blockers: DriverBlocker[] = [];
   if (input.licenseExpiresOn === null) blockers.push("license_missing");
   else if (input.licenseExpiresOn < today) blockers.push("license_expired");
-  if (!input.qualification || !input.qualification.hasRequirements) blockers.push("task_without_course");
+  if (!input.qualification) blockers.push("task_not_chosen");
+  else if (!input.qualification.hasRequirements) blockers.push("task_without_course");
   else if (!input.qualification.qualified) blockers.push("training_missing");
   return { enabled: blockers.length === 0, blockers };
 }

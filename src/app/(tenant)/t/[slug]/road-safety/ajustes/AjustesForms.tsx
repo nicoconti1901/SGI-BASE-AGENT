@@ -79,7 +79,7 @@ export function DriverTaskForm({ slug, canManage, tasks, current }: { slug: stri
 
   return (
     <div className="flex flex-col gap-3">
-      <Field label="Tarea de conducción" hint="La que tienen asignada quienes manejan por la empresa. Sin tarea elegida, el tablero no mide los conductores habilitados.">
+      <Field label="Tarea de conducción" hint="Sus cursos obligatorios (Capacitaciones) prueban el manejo defensivo. Sin tarea elegida, ningún conductor queda habilitado.">
         <select value={jobTaskId} disabled={!canManage} onChange={(e) => setJobTaskId(e.target.value)} className={INPUT_CLASS}>
           <option value="">Sin elegir</option>
           {tasks.map((t) => (

@@ -177,10 +177,10 @@ export default async function RoadSafetyDashboardPage({ params, searchParams }: 
             title="Conductores habilitados"
             value={mid.drivers.total === 0 ? "Sin datos" : `${mid.drivers.enabled} de ${mid.drivers.total}`}
             help={
-              !mid.drivers.configured
-                ? "Elegí la tarea de conducción en Ajustes para medirlo."
-                : mid.drivers.total === 0
-                  ? "Nadie tiene asignada la tarea de conducción."
+              mid.drivers.total === 0
+                ? "Todavía no hay conductores marcados."
+                : !mid.drivers.configured
+                  ? "Falta elegir la tarea de conducción en Ajustes: sin ella nadie queda habilitado."
                   : "Con licencia vigente y manejo defensivo vigente."
             }
           />

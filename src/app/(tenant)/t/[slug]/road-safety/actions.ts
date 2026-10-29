@@ -7,7 +7,7 @@ import { getMembership } from "@/lib/identity";
 import { getEnabledModulesCached } from "@/lib/modules";
 import { canManageRoadSafety } from "@/domain/road-safety/access";
 import { RoadSafetyError, addOdometerReset, getRoadSafetySettings, saveSpeedingPeriod, saveVehicleKm, updateRoadSafetySettings, type RoadUser } from "@/lib/road-safety";
-import { saveDriverLicense, setDriverTask } from "@/lib/road-drivers";
+import { addDriver, removeDriver, saveDriverLicense, setDriverTask } from "@/lib/road-drivers";
 
 type Gate = { ok: false; error: string } | { ok: true; tenant: { id: string }; actor: RoadUser };
 
@@ -61,7 +61,22 @@ export async function saveSpeedingAction(slug: string, input: { assetId: string;
   }
 }
 
-/** Vencimiento de la licencia de una persona; `null` la quita. */
+/** Marca a una persona como conductor, o le saca la marca. */
+export async function setDriverAction(slug: string, input: { personId: string; isDriver: boolean }): Promise<RoadActionResult> {
+  const access = await gate(slug);
+  if (!access.ok) return access;
+  try {
+    const args = { tenantId: access.tenant.id, actor: access.actor, personId: input.personId };
+    if (input.isDriver) await addDriver(args);
+    else await removeDriver(args);
+    revalidatePath(`/t/${slug}/road-safety`, "layout");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: failure(error) };
+  }
+}
+
+/** Vencimiento de la licencia de un conductor; `null` la quita. */
 export async function saveLicenseAction(slug: string, input: { personId: string; expiresOn: string | null }): Promise<RoadActionResult> {
   const access = await gate(slug);
   if (!access.ok) return access;

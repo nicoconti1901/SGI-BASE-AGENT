@@ -3,7 +3,7 @@ import { PrismaClient, type TenantRole } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
 import { createJobPosition, createJobTask, createPerson, createSite } from "@/lib/masterdata";
 import { createCourse } from "@/lib/training-config";
-import { getDriverSummary, getDriverTask, listDrivers, saveDriverLicense, setDriverTask } from "@/lib/road-drivers";
+import { addDriver, getDriverSummary, getDriverTask, listDrivers, removeDriver, saveDriverLicense, setDriverTask } from "@/lib/road-drivers";
 import { RoadSafetyError, saveSpeedingPeriod, type RoadUser } from "@/lib/road-safety";
 import { createAsset } from "@/lib/assets";
 
@@ -49,7 +49,7 @@ describe.skipIf(!hasDatabase)("seguridad vial: conductores habilitados (integrac
     taskA = (await createJobTask({ tenantId: a, actorUserId: actors.admin.userId, name: "Conducir vehículos" })).id;
     taskB = (await createJobTask({ tenantId: b, actorUserId: actors.adminB.userId, name: "Conducir vehículos" })).id;
     const mk = async (code: string, name: string, tenantId = a, siteId = site, positionId = pos, userId = actors.admin.userId) =>
-      (await createPerson({ tenantId, actorUserId: userId, employeeCode: code, name, siteId, positionId, jobTaskIds: [tenantId === a ? taskA : taskB] })).id;
+      (await createPerson({ tenantId, actorUserId: userId, employeeCode: code, name, siteId, positionId })).id;
     people.ok = await mk("1", "Ana Habilitada");
     people.expired = await mk("2", "Beto Vencido");
     people.noCourse = await mk("3", "Cora Sin Curso");
@@ -87,8 +87,26 @@ describe.skipIf(!hasDatabase)("seguridad vial: conductores habilitados (integrac
     await db.$disconnect();
   });
 
-  it("sin tarea de conducción elegida no hay conductores que evaluar", async () => {
+  it("sin conductores marcados no hay nada que evaluar", async () => {
     expect(await getDriverSummary(a, today, db)).toMatchObject({ configured: false, total: 0, pct: null });
+  });
+
+  it("marcar conductor es de quien gestiona, de personas activas de la empresa, e idempotente", async () => {
+    await expect(addDriver({ tenantId: a, actor: actors.contributor, personId: people.ok }, db)).rejects.toThrow(/gestionar/);
+    await expect(addDriver({ tenantId: a, actor: actors.superuser, personId: people.ok }, db)).rejects.toThrow(/gestionar/);
+    await expect(addDriver({ tenantId: a, actor: actors.admin, personId: personB }, db)).rejects.toThrow(/empresa/);
+    for (const id of [people.ok, people.expired, people.noCourse, people.noLicense]) await addDriver({ tenantId: a, actor: actors.admin, personId: id }, db);
+    await addDriver({ tenantId: a, actor: actors.admin, personId: people.ok }, db);
+    expect(await db.roadDriver.count({ where: { tenantId: a } })).toBe(4);
+    expect(await db.masterDataAudit.count({ where: { tenantId: a, entityType: "road_driver", entityId: people.ok } })).toBe(1);
+    await expect(saveDriverLicense({ tenantId: a, actor: actors.admin, personId: personB, expiresOn: "2028-01-31" }, db)).rejects.toThrow(/conductor/);
+  });
+
+  it("sin tarea de conducción elegida nadie queda habilitado y el motivo lo dice", async () => {
+    const summary = await getDriverSummary(a, today, db);
+    expect(summary).toMatchObject({ configured: false, total: 4, enabled: 0, pct: 0 });
+    const { rows } = await listDrivers({ tenantId: a, actor: actors.admin, today }, db);
+    expect(rows.every((r) => r.blockers.includes("task_not_chosen"))).toBe(true);
   });
 
   it("elegir la tarea es de quien gestiona y solo vale una tarea de la empresa", async () => {
@@ -112,6 +130,8 @@ describe.skipIf(!hasDatabase)("seguridad vial: conductores habilitados (integrac
     expect(by(people.noCourse)).toMatchObject({ enabled: false, blockers: ["training_missing"] });
     expect(by(people.noLicense)).toMatchObject({ enabled: false, blockers: ["license_missing"] });
     expect(rows.some((r) => r.personId === personB)).toBe(false);
+    // El manejo defensivo se evalúa aunque nadie tenga la tarea asignada: alcanza con marcar al conductor.
+    expect(await db.personJobTask.count({ where: { tenantId: a, jobTaskId: taskA } })).toBe(0);
   });
 
   it("el resumen del tablero no lleva nombres y la lista queda registrada", async () => {
@@ -126,11 +146,19 @@ describe.skipIf(!hasDatabase)("seguridad vial: conductores habilitados (integrac
     await saveDriverLicense({ tenantId: a, actor: actors.admin, personId: people.noLicense, expiresOn: "2028-01-31" }, db);
     expect(await getDriverSummary(a, today, db)).toMatchObject({ enabled: 2 });
     await saveDriverLicense({ tenantId: a, actor: actors.admin, personId: people.noLicense, expiresOn: null }, db);
-    expect(await db.driverLicense.count({ where: { personId: people.noLicense } })).toBe(0);
+    expect((await db.roadDriver.findUniqueOrThrow({ where: { personId: people.noLicense } })).licenseExpiresOn).toBeNull();
     expect(await db.masterDataAudit.count({ where: { tenantId: a, entityType: "driver_license", entityId: people.noLicense } })).toBe(2);
-    await expect(saveDriverLicense({ tenantId: a, actor: actors.admin, personId: personB, expiresOn: "2028-01-31" }, db)).rejects.toThrow(/empresa/);
+    await expect(saveDriverLicense({ tenantId: a, actor: actors.admin, personId: personB, expiresOn: "2028-01-31" }, db)).rejects.toThrow(/conductor/);
     await expect(saveDriverLicense({ tenantId: a, actor: actors.admin, personId: people.ok, expiresOn: "31/12/2027" }, db)).rejects.toThrow(/inválida/);
     await expect(saveDriverLicense({ tenantId: a, actor: actors.contributor, personId: people.ok, expiresOn: "2028-01-31" }, db)).rejects.toThrow(/gestionar/);
+  });
+
+  it("sacar la marca de conductor quita a la persona del tablero y deja registro", async () => {
+    await expect(removeDriver({ tenantId: a, actor: actors.contributor, personId: people.noLicense }, db)).rejects.toThrow(/gestionar/);
+    await removeDriver({ tenantId: a, actor: actors.admin, personId: people.noLicense }, db);
+    expect(await getDriverSummary(a, today, db)).toMatchObject({ total: 3 });
+    expect(await db.roadDriver.count({ where: { personId: people.noLicense } })).toBe(0);
+    await removeDriver({ tenantId: a, actor: actors.admin, personId: people.noLicense }, db);
   });
 
   it("los excesos de velocidad se cargan por vehículo y mes cerrado, solo quien gestiona", async () => {
