@@ -23,7 +23,13 @@ export default async function RoadSafetyLayout({ children, params }: LayoutProps
           ) : null
         }
       />
-      <SafetyTabs tabs={[{ href: `${base}/km`, label: "Km del mes" }]} />
+      <SafetyTabs
+        tabs={[
+          { href: base, label: "Tablero" },
+          { href: `${base}/km`, label: "Km del mes" },
+          { href: `${base}/guia`, label: "Guía" },
+        ]}
+      />
       {children}
     </PageFrame>
   );

@@ -395,6 +395,58 @@ export async function getKmGrid(tenantId: string, month: MonthKey, db: Db = pris
 }
 
 /**
+ * Estado y km de cada vehículo en cada mes de `months` (consecutivos, el último es el más reciente): lo que
+ * usa el tablero. Un vehículo cuenta en los meses en que ya existía y no estaba dado de baja. `rateEventCounts`
+ * trae los eventos de la tasa por «activo|mes» para marcar km = 0 con eventos como inconsistente.
+ */
+export async function getFleetVehicleMonths(
+  tenantId: string,
+  months: readonly MonthKey[],
+  rateEventCounts: ReadonlyMap<string, number>,
+  db: Db = prisma,
+): Promise<{ vehicleMonths: VehicleMonthRow[]; vehicles: FleetVehicle[] }> {
+  if (months.length === 0) return { vehicleMonths: [], vehicles: [] };
+  const first = months[0];
+  const last = months[months.length - 1];
+  const vehicles = await db.asset.findMany({
+    where: {
+      tenantId,
+      typeKey: { in: FLEET_KM_TYPE_KEYS },
+      createdAt: { lt: nextMonthStart(last) },
+      OR: [{ status: { not: "retired" } }, { retiredAt: { gte: monthDate(first) } }],
+    },
+    select: { id: true, code: true, description: true, createdAt: true, retiredAt: true },
+    orderBy: { code: "asc" },
+    take: 500,
+  });
+  const ids = vehicles.map((v) => v.id);
+  const [odometers, periods] = await Promise.all([
+    loadOdometers(db, tenantId, ids, nextMonthStart(last)),
+    ids.length === 0
+      ? []
+      : db.vehicleKmPeriod.findMany({
+          where: { tenantId, assetId: { in: ids }, periodMonth: { gte: monthDate(first), lte: monthDate(last) } },
+          select: { assetId: true, periodMonth: true, km: true, source: true },
+        }),
+  ]);
+  const storedBy = new Map(periods.map((p) => [`${p.assetId}|${p.periodMonth.toISOString().slice(0, 7)}`, p]));
+  const vehicleMonths: VehicleMonthRow[] = [];
+  for (const v of vehicles) {
+    for (const month of months) {
+      if (v.createdAt >= nextMonthStart(month) || (v.retiredAt && v.retiredAt < monthDate(month))) continue;
+      const key = `${v.id}|${month}`;
+      const computed = computeVehicleMonthKm({ month, readings: odometers.readings.get(v.id) ?? [], resets: odometers.resets.get(v.id) ?? [] });
+      const stored = storedBy.get(key);
+      const final = classifyVehicleMonth({ computed, stored: stored ? { km: stored.km, source: stored.source } : null, rateEvents: rateEventCounts.get(key) ?? 0 });
+      vehicleMonths.push({ assetId: v.id, month, state: final.state, km: final.km });
+    }
+  }
+  return { vehicleMonths, vehicles: vehicles.map(({ id, code, description }) => ({ id, code, description })) };
+}
+
+export type VehicleMonthRow = { assetId: string; month: MonthKey; state: VehicleMonthState; km: number | null };
+
+/**
  * Confirma el km calculado de un vehículo y mes (sin `km`) o lo carga/pisa a mano (con `km` y motivo
  * obligatorio, D13). Deja el valor calculado como referencia y registra el cambio.
  */
