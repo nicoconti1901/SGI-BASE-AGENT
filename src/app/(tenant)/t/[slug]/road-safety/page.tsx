@@ -173,6 +173,17 @@ export default async function RoadSafetyDashboardPage({ params, searchParams }: 
             value={mid.fleet.total === 0 ? "Sin datos" : `${mid.fleet.upToDate} de ${mid.fleet.total}`}
             help={mid.fleet.overdue.length === 0 ? "Hoy; un vehículo sin inspección cuenta como vencido." : `Vencidos o sin inspección: ${mid.fleet.overdue.slice(0, 5).map((v) => v.code).join(", ")}${mid.fleet.overdue.length > 5 ? "…" : ""}.`}
           />
+          <StatCard
+            title="Conductores habilitados"
+            value={mid.drivers.total === 0 ? "Sin datos" : `${mid.drivers.enabled} de ${mid.drivers.total}`}
+            help={
+              !mid.drivers.configured
+                ? "Elegí la tarea de conducción en Ajustes para medirlo."
+                : mid.drivers.total === 0
+                  ? "Nadie tiene asignada la tarea de conducción."
+                  : "Con licencia vigente y manejo defensivo vigente."
+            }
+          />
           <StatCard title="Denuncia realizada" value={mid.eventCount === 0 ? "Sin datos" : `${mid.reportFiledCount} de ${mid.eventCount}`} help="Hechos con la denuncia del siniestro presentada." />
           <StatCard
             title="Excesos de velocidad"

@@ -6,6 +6,7 @@ import {
   clauseSummary,
   enabledModuleKeys,
   tenantNavSections,
+  type ModuleDefinition,
 } from "@/domain/modules/catalog";
 import { ESSENTIAL_CATALOG_SEED } from "@/domain/ims/seed-data";
 
@@ -41,12 +42,29 @@ describe("catálogo de módulos", () => {
   });
 
   it("una activación pisa el valor por defecto, pero un planificado nunca se activa", () => {
-    const enabled = enabledModuleKeys([
-      { moduleKey: "risks", enabled: false },
-      { moduleKey: "road_safety", enabled: true },
-    ]);
-    expect(enabled.has("risks")).toBe(false);
-    expect(enabled.has("road_safety")).toBe(false);
+    // Ya no queda ningún módulo planificado en el catálogo: se agrega uno temporal para probar la regla.
+    const catalog = MODULE_CATALOG as ModuleDefinition[];
+    const future = { key: "future_module", label: "Futuro", section: "sst", path: "future", clauses: [], status: "planned", defaultEnabled: false } as unknown as ModuleDefinition;
+    catalog.push(future);
+    try {
+      const enabled = enabledModuleKeys([
+        { moduleKey: "risks", enabled: false },
+        { moduleKey: "future_module", enabled: true },
+      ]);
+      expect(enabled.has("risks")).toBe(false);
+      expect(enabled.has("future_module" as never)).toBe(false);
+    } finally {
+      catalog.splice(catalog.indexOf(future), 1);
+    }
+  });
+
+  it("seguridad vial está disponible, apagada por defecto, y mapea a ISO 39001 sin dejar la 45001", () => {
+    const road = MODULE_CATALOG.find((m) => m.key === "road_safety");
+    expect(road).toMatchObject({ status: "available", defaultEnabled: false });
+    expect(road?.clauses).toContainEqual({ standard: "ISO45001", clause: "9.1.1" });
+    expect(road?.clauses.filter((c) => c.standard === "ISO39001").map((c) => c.clause)).toEqual(["8.1", "9.1", "10.1"]);
+    expect(enabledModuleKeys([]).has("road_safety")).toBe(false);
+    expect(enabledModuleKeys([{ moduleKey: "road_safety", enabled: true }]).has("road_safety")).toBe(true);
   });
 
   it("Usuarios no se puede desactivar", () => {

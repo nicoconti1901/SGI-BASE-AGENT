@@ -102,8 +102,14 @@ export const MODULE_CATALOG: readonly ModuleDefinition[] = [
     label: "Seguridad vial",
     section: "sst",
     path: "road-safety",
-    clauses: [{ standard: "ISO45001", clause: "9.1.1" }],
-    status: "planned",
+    // ISO 39001 (D5): operación, evaluación del desempeño y mejora; las cláusulas del catálogo siguen «sin verificar» (D1).
+    clauses: [
+      { standard: "ISO39001", clause: "8.1" },
+      { standard: "ISO39001", clause: "9.1" },
+      { standard: "ISO39001", clause: "10.1" },
+      { standard: "ISO45001", clause: "9.1.1" },
+    ],
+    status: "available",
     defaultEnabled: false,
   },
   { key: "master_data", label: "Datos maestros", section: "people", path: "master-data", clauses: [], status: "available", defaultEnabled: true },
