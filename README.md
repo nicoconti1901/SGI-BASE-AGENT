@@ -122,7 +122,7 @@ Los permisos son `manage_master_data` y `assign_job_tasks` en `src/domain/identi
 - **Task 11c** — hecha: objetivos e indicadores con carga por período, análisis de desvío, tablero con tendencias y guía (`/t/[slug]/indicators`).  
 - **Task 11d** — hecha: auditorías externas con informe PDF adjunto, hallazgos manuales y extracción con IA con revisión humana (ver `SPEC-external-audits.md`; requiere `ANTHROPIC_API_KEY`).  
 - **Task 12+** — portal cliente / dashboards / E2E.  
-- **Fase 5** — operación SST, proveedores y competencia (Tasks 14–20, ver `tasks/todo.md`). Hechas la Task 14 (datos maestros) y la Task 20 (capacitaciones); en curso 15 (inspecciones: motor, extintores, consecuencias, lista y editor de plantillas, obradores, arneses y cabos de vida, vehículos livianos y pesados con izaje, y auditoría de seguridad en campo), 16 (equipos de medición: carga de calibraciones, evaluación de impacto y prueba funcional) y 18 (seguridad vial: diferida; se definirá al final como módulo propio bajo la ISO 39001). Hechas también la 17 (accidentabilidad: ficha, exposición, tablero, exportación y resumen imprimible) y la 19 (proveedores: registro, evaluación, reevaluación, hallazgos y comunicaciones).
+- **Fase 5** — operación SST, proveedores y competencia (Tasks 14–20, ver `tasks/todo.md`). Hechas la Task 14 (datos maestros) y la Task 20 (capacitaciones); en curso 15 (inspecciones: motor, extintores, consecuencias, lista y editor de plantillas, obradores, arneses y cabos de vida, vehículos livianos y pesados con izaje, y auditoría de seguridad en campo) y 16 (equipos de medición: carga de calibraciones, evaluación de impacto y prueba funcional). Hechas también la 17 (accidentabilidad: ficha, exposición, tablero, exportación y resumen imprimible), la 18 (seguridad vial bajo ISO 39001: hecho de tránsito con su detalle vial, km por vehículo y mes, tablero de tasas por millón de km, conductores habilitados, ajustes y guía; las cláusulas de ISO 39001 del catálogo siguen «sin verificar») y la 19 (proveedores: registro, evaluación, reevaluación, hallazgos y comunicaciones).
 
 ---
 
@@ -300,7 +300,7 @@ El menú de cada empresa se agrupa por secciones y muestra solo los módulos act
 |---|---|---|
 | Cumplimiento | Documentos · Auditorías internas y externas | §7.5 · §9.2 |
 | Mejora | Hallazgos · Riesgos y oportunidades · Objetivos e indicadores | §10.2 · §6.1 · §6.2 y §9.1 |
-| Operación SST | Inspecciones, equipos de medición, accidentabilidad y seguridad vial (Fase 5, planificados) | 45001 §8.1 y §9.1.1 · 9001 §7.1.5.2 · 45001 §10.2 |
+| Operación SST | Inspecciones, equipos de medición, accidentabilidad y seguridad vial (Fase 5; la seguridad vial es opt-in por empresa y su norma, ISO 39001, también) | 45001 §8.1 y §9.1.1 · 9001 §7.1.5.2 · 45001 §10.2 · 39001 §8.1, §9.1 y §10.1 (sin verificar) |
 | Personas y terceros | Datos maestros · Capacitaciones (matriz, registro, cumplimiento, eficacia, plan anual y habilitaciones) · Proveedores (Fase 5) | §7.2–7.3 · 9001 §8.4 |
 | Administración | Automatizaciones · Usuarios | — |
 

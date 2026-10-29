@@ -672,13 +672,13 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 
 ## Task 18: seguridad vial — estadística propia y separada
 
-> **DIFERIDA (decisión del PO, 2026-10-27).** Se retoma al final, cuando todo lo pendiente de la Fase 5 esté terminado, y se define como un módulo particular bajo la **ISO 39001** (norma propia en el catálogo ISO). El alcance de abajo es el original; `RESEARCH-road-safety.md` y `SPEC-road-safety.md` (PR #32) son borradores de insumo y se reescriben desde ese enfoque antes de aprobar nada. Mientras tanto `road_safety` queda `planned` en el catálogo.
+> **Hecha (2026-10-29), módulo propio bajo la ISO 39001.** El PO adelantó la tarea y aprobó `SPEC-road-safety.md` el 2026-10-28 (D1–D26). El alcance de abajo es el original; el vigente es el del SPEC. `road_safety` pasó a `available` en 18.4. Pendiente del PO: confirmar el índice de cláusulas de ISO 39001 contra la norma licenciada (hasta entonces llevan el tag `sin-verificar`).
 
 **Description:** Módulo y tablero **propios** de seguridad vial (referencias: ISO 39001 e indicadores del estilo IOGP), separados de la accidentabilidad general. Cubre todos los eventos viales: con o sin lesión, en misión o in itinere, y los que solo dejan daño material. Los índices se calculan sobre los **km recorridos** por la flota. Reutiliza la ficha de accidente (marcada como vial) y el registro de vehículos de la Task 15.
 
 **Sub-tareas:**
-- [ ] 18.0 SPEC `SPEC-road-safety.md` aprobado por el PO (tipos de evento, índices, de dónde salen los km, qué cuenta también en la estadística general)
-- [ ] 18.1 Dominio + Prisma:
+- [x] 18.0 (hecho 2026-10-28, PR #44: `ISO39001` como norma opt-in, `manage_road_safety`, `property_damage_only`) SPEC `SPEC-road-safety.md` aprobado por el PO (tipos de evento, índices, de dónde salen los km, qué cuenta también en la estadística general)
+- [x] 18.1 (hecho 2026-10-29, PR #45) Dominio + Prisma:
   - `RoadEventDetail` 1:1 con un `IncidentRecord` vial: vehículo, conductor, en misión o in itinere, tipo de evento (choque con otro vehículo o con un objeto fijo, vuelco, despiste, atropello, incidente sin daño), camino (asfalto, ripio, tierra), luz y clima, uso del cinturón, velocidad estimada, daños materiales, lesionados, causa principal.
   - `VehicleKmPeriod`: vehículo × mes, con los km y su origen (`manual` u `odometer`).
   - `SpeedingPeriod`, opcional: excesos de velocidad por vehículo o conductor, cargados a mano. La integración con el monitoreo satelital (vía n8n) queda fuera de alcance.
@@ -688,17 +688,17 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
     - vuelcos por millón de km;
     - eventos por conductor;
     - % de la flota con la inspección al día.
-- [ ] 18.2 Registro:
+- [x] 18.2 (hecho 2026-10-29, PR #45) Registro:
   - evento vial desde el alta de un incidente (un paso más), incluidos los que solo tienen daño material;
   - carga mensual de km por vehículo, precargada con las lecturas de odómetro de 15.9 / 15.10;
   - `DueItem` mensual de carga de km.
-- [ ] 18.3 Tablero `/road-safety`, separado del general:
+- [x] 18.3 (hecho 2026-10-29, PR #46) Tablero `/road-safety`, separado del general:
   - índices del mes, acumulado y últimos 12 meses;
   - desgloses por sede, tipo de vehículo, tipo de evento, y en misión frente a in itinere;
   - conductores con eventos repetidos y excesos de velocidad;
   - flota con documentación o inspección vencida;
   - exportación.
-- [ ] 18.4 Conductor habilitado (licencia vigente + curso de manejo defensivo vigente, cruzado con la Task 20) en la ficha del vehículo y en el evento; guía, menú, e2e
+- [x] 18.4 (hecho 2026-10-29, PR #46: pantalla de conductores con licencia y tarea de conducción elegida en Ajustes, en lugar de la ficha del vehículo y del evento; excesos de velocidad por vehículo; `road_safety` disponible) Conductor habilitado (licencia vigente + curso de manejo defensivo vigente, cruzado con la Task 20); guía, menú, e2e
 
 **Acceptance criteria:**
 - [ ] El tablero vial está separado del general y tiene su propia entrada en el menú
