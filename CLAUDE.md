@@ -106,7 +106,7 @@ New worktrees branch from `origin/main`, so they only get these scripts and hook
 
 **Hooks (`.claude/settings.json`):**
 - `guard-git`: destructive git or Prisma commands (`checkout --`, `restore`, `reset --hard`, `clean -f`, `push --force`, `branch -D`, `migrate reset`…) require user confirmation.
-- `verify-on-stop`: when an agent or subagent stops with uncommitted code changes, it runs `tsc`, `eslint` on the changed files and `vitest`; if any fails, the agent must fix it before finishing (up to 3 attempts). If Postgres is down it only warns.
+- `verify-on-stop`: when an agent or subagent stops with uncommitted code changes, it runs `tsc`, `eslint` on the changed files and `vitest`; if any fails, the agent must fix it before finishing (up to 3 attempts). If Postgres is down, or the worktree database does not exist or is not migrated, it only warns. While `npm run wt:setup` runs it writes `.wt-setup.lock` and the hook skips the checks (its vitest would lock the Prisma engine on Windows and hit a half-built database).
 
 ## Archived Claude skills (token savings)
 

@@ -5,7 +5,7 @@
 // Se escribe en Node sin dependencias porque corre antes de `npm ci`.
 import { execSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import net from "node:net";
 import path from "node:path";
@@ -18,12 +18,16 @@ function git(cmd) {
   return execSync(`git ${cmd}`, { cwd, encoding: "utf8" }).trim();
 }
 
-function run(cmd) {
-  console.log(`\n> ${cmd}`);
-  const result = spawnSync(cmd, { cwd, stdio: "inherit", shell: true });
-  if (result.status !== 0) {
-    console.error(`\nFalló: ${cmd}`);
-    process.exit(result.status ?? 1);
+function run(cmd, { attempts = 1, hint } = {}) {
+  for (let attempt = 1; ; attempt++) {
+    console.log(`\n> ${cmd}${attempt > 1 ? ` (intento ${attempt} de ${attempts})` : ""}`);
+    const result = spawnSync(cmd, { cwd, stdio: "inherit", shell: true });
+    if (result.status === 0) return;
+    if (attempt >= attempts) {
+      console.error(`\nFalló: ${cmd}${hint ? `\n${hint}` : ""}`);
+      process.exit(result.status ?? 1);
+    }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5000);
   }
 }
 
@@ -90,6 +94,12 @@ if (worktreeRoot !== path.resolve(cwd)) {
   process.exit(1);
 }
 
+// Mientras exista, el hook verify-on-stop no corre la verificación: su vitest bloquearía el motor de Prisma
+// (EPERM en Windows al regenerar) y sus tests chocarían con una base a medio crear o recién borrada.
+const lockPath = path.join(worktreeRoot, ".wt-setup.lock");
+writeFileSync(lockPath, `${process.pid}\n`);
+process.on("exit", () => rmSync(lockPath, { force: true }));
+
 const rawName = args.find((a) => !a.startsWith("--")) ?? path.basename(worktreeRoot);
 const name = rawName.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 40);
 if (!name) {
@@ -115,7 +125,10 @@ if (new URL(adminUrl).pathname.slice(1) === database) {
 }
 
 if (!existsSync(path.join(worktreeRoot, "node_modules"))) run("npm ci");
-run("npx prisma generate");
+run("npx prisma generate", {
+  attempts: 3,
+  hint: "Si dice EPERM, otro proceso de este worktree usa el motor de Prisma (vitest, next dev o prisma studio): cerralo y repetí.",
+});
 
 const { PrismaClient } = createRequire(path.join(worktreeRoot, "package.json"))("@prisma/client");
 const admin = new PrismaClient({ datasourceUrl: adminUrl });
