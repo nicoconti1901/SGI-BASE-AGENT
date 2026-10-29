@@ -17,6 +17,7 @@ import { isFindingType, type FindingDraft, type MeasureKind, type RootCauseAnaly
 import { createInitialWhyStep } from "@/domain/findings/five-whys";
 import { getEnabledModulesCached } from "@/lib/modules";
 import { createIncidentWithFinding, hasIncidentRecord } from "@/lib/safety-stats";
+import { hasRoadForm, parseRoadForm } from "@/app/(tenant)/t/[slug]/road-safety/form";
 import { parseFactForm, parseHealthForm } from "@/app/(tenant)/t/[slug]/safety/form";
 
 export type FindingActionState = {
@@ -122,6 +123,8 @@ export async function startFindingAction(
       const membership = await getMembership(auth.ctx.userId, auth.tenant.id);
       const health = parseHealthForm(formData);
       const hasHealth = Object.values(health).some(Boolean);
+      // Detalle vial: solo con Seguridad vial activa; si el formulario lo trae, viaja en la misma transacción.
+      const road = hasRoadForm(formData) && (await getEnabledModulesCached(auth.tenant.id)).has("road_safety") ? parseRoadForm(formData) : null;
       const { finding } = await createIncidentWithFinding({
         tenantId: auth.tenant.id,
         actor: { userId: auth.ctx.userId, role: membership?.role, isPlatformSuperuser: auth.ctx.isPlatformSuperuser },
@@ -129,6 +132,7 @@ export async function startFindingAction(
         description: String(formData.get("description") ?? ""),
         fact: parseFactForm(formData),
         health: hasHealth ? health : null,
+        road,
       });
       revalidatePath(`/t/${slug}/findings`);
       revalidatePath(`/t/${slug}/safety`);

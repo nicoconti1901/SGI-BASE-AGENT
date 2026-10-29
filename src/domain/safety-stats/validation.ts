@@ -16,6 +16,8 @@ export type Validation = { errors: FieldErrors; warnings: string[] };
 export type IncidentFactInput = {
   classification: IncidentClassification;
   inItinere: boolean;
+  /** Hecho de tránsito: «solo daño material» lo exige (SPEC-road-safety D9). */
+  isRoad?: boolean;
   restrictedWork: boolean;
   occurredAt: Date;
   now: Date;
@@ -49,6 +51,10 @@ export function validateIncident(input: IncidentFactInput): Validation {
       input.classification === "near_miss"
         ? "Un casi accidente no puede ser en el trayecto al trabajo"
         : "Una enfermedad profesional no puede ser en el trayecto al trabajo";
+  }
+
+  if (input.classification === "property_damage_only" && input.isRoad === false) {
+    errors.classification = "«Solo daño material» es propio de un hecho de tránsito: marcalo como tal";
   }
 
   if (input.restrictedWork && input.classification !== "no_lost_time") {

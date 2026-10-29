@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Field, HintCallout, INPUT_CLASS } from "@/components/ui";
 import { PersonPicker } from "@/components/pickers/PersonPicker";
 import type { PersonOption } from "@/components/pickers/picker-actions";
+import { RoadFields, type RoadVehicleOption } from "@/app/(tenant)/t/[slug]/road-safety/RoadFields";
+import { ROAD_CLASSIFICATIONS } from "@/domain/road-safety/types";
 import {
   ACCIDENT_FORMS,
   BODY_PARTS,
@@ -75,18 +77,31 @@ export function FactFields({
   showDays,
   lockClassification,
   onClassificationChange,
+  roadEnabled,
+  onRoadChange,
 }: {
   sites: SiteOption[];
   defaults?: FactDefaults;
   showDays: boolean;
   lockClassification?: boolean;
   onClassificationChange?: (c: IncidentClassification) => void;
+  /** Seguridad vial activa: un hecho de tránsito ofrece «Solo daño material» y precarga forma y agente. */
+  roadEnabled?: boolean;
+  onRoadChange?: (isRoad: boolean) => void;
 }) {
   const [classification, setClassification] = useState<IncidentClassification>(defaults.classification ?? "near_miss");
+  const [isRoad, setIsRoad] = useState(Boolean(defaults.isRoad));
   const change = (c: IncidentClassification) => {
     setClassification(c);
     onClassificationChange?.(c);
   };
+  const changeRoad = (value: boolean) => {
+    setIsRoad(value);
+    onRoadChange?.(value);
+    if (!value && classification === "property_damage_only") change("near_miss");
+  };
+  const roadStep = Boolean(roadEnabled) && isRoad;
+  const classifications = roadStep ? ROAD_CLASSIFICATIONS : LABOR_CLASSIFICATIONS;
 
   return (
     <fieldset className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
@@ -119,7 +134,7 @@ export function FactFields({
             onChange={(e) => change(e.target.value as IncidentClassification)}
             className={INPUT_CLASS}
           >
-            {LABOR_CLASSIFICATIONS.map((c) => (
+            {classifications.map((c) => (
               <option key={c} value={c}>
                 {CLASSIFICATION_LABELS[c]}
               </option>
@@ -144,7 +159,7 @@ export function FactFields({
             Fue en el trayecto de ida o vuelta al trabajo
           </label>
           <label className="flex items-center gap-2">
-            <input type="checkbox" name="fact_isRoad" defaultChecked={defaults.isRoad} className={checkboxClass} />
+            <input type="checkbox" name="fact_isRoad" checked={isRoad} onChange={(e) => changeRoad(e.target.checked)} className={checkboxClass} />
             Fue un hecho de tránsito
           </label>
           {classification === "no_lost_time" ? (
@@ -158,10 +173,24 @@ export function FactFields({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Forma del accidente" required>
-          <OptionSelect name="fact_accidentForm" options={ACCIDENT_FORMS} defaultValue={defaults.accidentForm} required placeholder="Elegí la forma" />
+          <OptionSelect
+            key={`form-${roadStep}`}
+            name="fact_accidentForm"
+            options={ACCIDENT_FORMS}
+            defaultValue={defaults.accidentForm ?? (roadStep ? "traffic" : undefined)}
+            required
+            placeholder="Elegí la forma"
+          />
         </Field>
         <Field label="Agente" hint="Lo que causó o se vio involucrado en la lesión." required>
-          <OptionSelect name="fact_materialAgent" options={MATERIAL_AGENTS} defaultValue={defaults.materialAgent} required placeholder="Elegí el agente" />
+          <OptionSelect
+            key={`agent-${roadStep}`}
+            name="fact_materialAgent"
+            options={MATERIAL_AGENTS}
+            defaultValue={defaults.materialAgent ?? (roadStep ? "vehicle" : undefined)}
+            required
+            placeholder="Elegí el agente"
+          />
         </Field>
       </div>
 
@@ -256,18 +285,29 @@ export function NewIncidentFields({
   slug,
   sites,
   canManageHealth,
+  road,
 }: {
   slug: string;
   sites: SiteOption[];
   canManageHealth: boolean;
+  /** Presente solo si Seguridad vial está activa: agrega el paso «Detalle del hecho de tránsito». */
+  road?: { vehicles: RoadVehicleOption[] };
 }) {
   const [classification, setClassification] = useState<IncidentClassification>("near_miss");
+  const [isRoad, setIsRoad] = useState(false);
   return (
     <div className="flex flex-col gap-4">
       <HintCallout>
         Es el paso «Ficha de accidente». Evitá escribir diagnósticos en el título o la descripción: los ve toda la empresa.
       </HintCallout>
-      <FactFields sites={sites} showDays={canManageHealth} onClassificationChange={setClassification} />
+      <FactFields
+        sites={sites}
+        showDays={canManageHealth}
+        onClassificationChange={setClassification}
+        roadEnabled={Boolean(road)}
+        onRoadChange={setIsRoad}
+      />
+      {road && isRoad ? <RoadFields slug={slug} vehicles={road.vehicles} /> : null}
       {canManageHealth ? (
         <HealthFields slug={slug} classification={classification} />
       ) : (

@@ -1,6 +1,7 @@
 import { Prisma, type PersonEmployer, type PrismaClient, type TenantRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { closeDueItemsForEntity, upsertOpenDueItemForEntity } from "@/lib/automation";
+import { insertRoadDetail, prepareRoadDetail, type RoadEventDetailInput } from "@/lib/road-safety";
 import { canManageHealthData, canReportIncident, canViewHealthData, type SafetyActor } from "@/domain/safety-stats/access";
 import type { EventAggregate, ExposureRow, OpenCaseAggregate } from "@/domain/safety-stats/indices";
 import { deriveEventPeriod, localDay } from "@/domain/safety-stats/period";
@@ -186,6 +187,8 @@ export async function createIncidentWithFinding(
     description: string;
     fact: IncidentFactInput;
     health?: IncidentHealthInput | null;
+    /** Detalle vial (SPEC-road-safety): solo en un hecho de tránsito, se guarda junto con la ficha. */
+    road?: RoadEventDetailInput | null;
     now?: Date;
   },
   db: Db = prisma,
@@ -210,6 +213,8 @@ export async function createIncidentWithFinding(
     cap: settings.lostDaysCap,
     chargePct: fact.chargePct,
   });
+  if (input.road && !fact.isRoad) throw new SafetyStatsError("El detalle vial solo va en un hecho de tránsito");
+  const road = input.road ? await prepareRoadDetail(db, tenantId, fact.classification, input.road) : null;
 
   let personWarning: string | null = null;
   if (input.health) {
@@ -300,6 +305,7 @@ export async function createIncidentWithFinding(
         summary: "Alta de la ficha de salud",
       });
     }
+    if (road) await insertRoadDetail(tx, { tenantId, incidentRecordId: record.id, actorUserId: actor.userId, data: road });
     return { finding, record };
   });
 
@@ -529,6 +535,9 @@ export async function updateIncidentFact(
     chargePct: Number(record.chargePct),
   };
   const warnings = validateFact(next, now, settings.lostDaysCap);
+  if (!next.isRoad && (await db.roadEventDetail.count({ where: { tenantId, incidentRecordId: record.id } })) > 0) {
+    throw new SafetyStatsError("El hecho tiene detalle vial: no se puede quitar la marca de hecho de tránsito");
+  }
   const site = await requireActiveSite(db, tenantId, next.siteId);
   const period = deriveEventPeriod(next.occurredAt);
   const severity = resolveSeverity({

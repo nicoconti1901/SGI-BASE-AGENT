@@ -143,6 +143,11 @@ model Tenant {
   exposurePeriods       ExposurePeriod[]
   exposureRevisions     ExposureRevision[]
   safetySettings        SafetyStatsSettings?
+  roadEventDetails      RoadEventDetail[]
+  vehicleKmPeriods      VehicleKmPeriod[]
+  odometerResets        VehicleOdometerReset[]
+  speedingPeriods       SpeedingPeriod[]
+  roadSafetySettings    RoadSafetySettings?
   safetyIndicatorLinks  SafetyIndicatorLink[]
   sites                 Site[]
   jobPositions          JobPosition[]
@@ -1288,38 +1293,40 @@ model JobTask {
 /// Quién: nómina propia y de contratistas. No necesariamente usa el sistema (`userId` opcional).
 /// Sin datos de salud. La baja es lógica: nunca se borra el historial.
 model Person {
-  id                    String           @id @default(cuid())
+  id                    String            @id @default(cuid())
   tenantId              String
   employeeCode          String
   name                  String
   documentId            String?
   userId                String?
-  employer              PersonEmployer   @default(own)
+  employer              PersonEmployer    @default(own)
   contractorName        String?
   siteId                String
   positionId            String
   hiredAt               DateTime?
   /// Desde cuándo está en el puesto actual. NULL = desde el ingreso. Solo cambia al cambiar de puesto.
   positionSince         DateTime?
-  status                PersonStatus     @default(active)
+  status                PersonStatus      @default(active)
   inactiveAt            DateTime?
   /// Contratista del que depende (módulo Proveedores). `contractorName` sigue siendo el texto libre.
   supplierId            String?
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
-  supplier              Supplier?        @relation(fields: [supplierId], references: [id], onDelete: SetNull)
-  tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  site                  Site             @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  supplier              Supplier?         @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  tenant                Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site                  Site              @relation("PersonBaseSite", fields: [siteId], references: [id], onDelete: Restrict)
   incidentHealths       IncidentHealth[]
-  position              JobPosition      @relation(fields: [positionId], references: [id], onDelete: Restrict)
-  user                  User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  roadEventsDriven      RoadEventDetail[]
+  speedingPeriods       SpeedingPeriod[]
+  position              JobPosition       @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  user                  User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   extraSites            PersonSite[]
   jobTasks              PersonJobTask[]
   dueItems              DueItem[]
   trainingRecords       TrainingRecord[]
   assignedAssets        Asset[]
   performedInspections  Inspection[]
-  supervisedInspections Inspection[]     @relation("InspectionSupervisor")
+  supervisedInspections Inspection[]      @relation("InspectionSupervisor")
 
   @@unique([tenantId, employeeCode])
   @@unique([tenantId, userId])
@@ -1425,6 +1432,7 @@ model IncidentRecord {
   site             Site                   @relation(fields: [siteId], references: [id], onDelete: Restrict)
   health           IncidentHealth?
   followUps        IncidentFollowUp[]
+  roadDetail       RoadEventDetail?
 
   @@index([tenantId, periodMonth, siteId])
   @@index([tenantId, classification])
@@ -2286,6 +2294,11 @@ model Asset {
   refForRecords     CalibrationRecord[]    @relation("CalibrationReferenceStandard")
   impacts           ImpactAssessment[]
   shipments         InstrumentShipment[]
+  // Task 18 (seguridad vial): vehículos de la flota.
+  roadEvents        RoadEventDetail[]
+  kmPeriods         VehicleKmPeriod[]
+  odometerResets    VehicleOdometerReset[]
+  speedingPeriods   SpeedingPeriod[]
 
   @@unique([tenantId, code])
   @@index([tenantId, typeKey, status])
@@ -2904,4 +2917,196 @@ model InspectionTarget {
   @@index([tenantId, templateId])
   @@index([siteId])
   @@map("inspection_target")
+}
+
+// ─── Seguridad vial (Task 18, ISO 39001) — SPEC-road-safety.md ─────────────
+// El evento vial es un IncidentRecord con `isRoad` más un detalle 1:1 (RoadEventDetail). Las fechas
+// calendario (@db.Date) viajan como medianoche UTC. Los CHECK (km ≥ 0, internados ≤ lesionados, velocidad
+// 0–250, motivo obligatorio en km manual, mes en día 1) viven solo en el SQL de la migración.
+
+enum RoadVehicleKind {
+  own
+  contractor
+  private
+  none
+}
+
+enum RoadEventType {
+  collision_vehicle
+  collision_fixed_object
+  rollover
+  run_off_road
+  pedestrian_cyclist
+  other
+}
+
+enum RoadSurface {
+  dry
+  wet
+  ice_snow
+  gravel_dirt
+  other
+  unknown
+}
+
+enum RoadLight {
+  day
+  dusk_dawn
+  night_lit
+  night_dark
+  unknown
+}
+
+enum RoadWeather {
+  clear
+  rain
+  fog
+  wind
+  snow_ice
+  unknown
+}
+
+enum RoadSeatbelt {
+  all
+  some_not
+  none
+  not_applicable
+  unknown
+}
+
+enum RoadPropertyDamage {
+  none
+  minor
+  major
+}
+
+enum RoadMainCause {
+  speed
+  fatigue_distraction
+  alcohol_drugs
+  mechanical
+  road_conditions
+  other_driver
+  weather
+  other
+  undetermined
+}
+
+enum VehicleKmSource {
+  odometer
+  manual
+}
+
+/// Detalle vial del evento (1:1 con una ficha `isRoad`). La persona lesionada sigue en IncidentHealth.
+model RoadEventDetail {
+  id                String             @id @default(cuid())
+  tenantId          String
+  incidentRecordId  String             @unique
+  vehicleKind       RoadVehicleKind
+  /// Obligatorio si `own` (se valida en el dominio y con CHECK).
+  assetId           String?
+  vehicleLabel      String?
+  driverPersonId    String?
+  eventType         RoadEventType
+  roadSurface       RoadSurface        @default(unknown)
+  light             RoadLight          @default(unknown)
+  weather           RoadWeather        @default(unknown)
+  seatbelt          RoadSeatbelt       @default(unknown)
+  estimatedSpeedKmh Int?               @db.SmallInt
+  propertyDamage    RoadPropertyDamage @default(none)
+  injuredCount      Int                @default(0) @db.SmallInt
+  hospitalizedCount Int                @default(0) @db.SmallInt
+  fatalCount        Int                @default(0) @db.SmallInt
+  mainCause         RoadMainCause      @default(undetermined)
+  reportFiled       Boolean            @default(false)
+  reportRef         String?
+  createdByUserId   String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  incidentRecord    IncidentRecord     @relation(fields: [incidentRecordId], references: [id], onDelete: Cascade)
+  asset             Asset?             @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  driver            Person?            @relation(fields: [driverPersonId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, assetId])
+  @@index([tenantId, driverPersonId])
+  @@map("road_event_detail")
+}
+
+/// Km recorridos por vehículo y mes. Sin fila no hay dato confirmado: la grilla lo calcula de los odómetros.
+model VehicleKmPeriod {
+  id           String          @id @default(cuid())
+  tenantId     String
+  assetId      String
+  periodMonth  DateTime        @db.Date
+  km           Int
+  source       VehicleKmSource
+  /// Lo que daban los odómetros cuando se pisó a mano (queda como referencia).
+  computedKm   Int?
+  manualReason String?
+  confirmedAt  DateTime?
+  actorUserId  String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  asset        Asset           @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, assetId, periodMonth])
+  @@index([tenantId, periodMonth])
+  @@map("vehicle_km_period")
+}
+
+/// Reinicio o cambio de tablero del odómetro: corta la serie sin estimar km (D14).
+model VehicleOdometerReset {
+  id          String   @id @default(cuid())
+  tenantId    String
+  assetId     String
+  effectiveOn DateTime @db.Date
+  reason      String
+  actorUserId String?
+  createdAt   DateTime @default(now())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@unique([assetId, effectiveOn])
+  @@index([tenantId, assetId])
+  @@map("vehicle_odometer_reset")
+}
+
+/// Excesos de velocidad cargados a mano por mes (D21); por conductor solo con el ajuste prendido.
+model SpeedingPeriod {
+  id          String   @id @default(cuid())
+  tenantId    String
+  assetId     String
+  personId    String?
+  /// Vacío = total del vehículo; con conductor lleva su id (evita el NULL en el índice único).
+  personKey   String   @default("")
+  periodMonth DateTime @db.Date
+  count       Int
+  note        String?
+  actorUserId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  person      Person?  @relation(fields: [personId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, assetId, periodMonth, personKey])
+  @@index([tenantId, periodMonth])
+  @@map("speeding_period")
+}
+
+/// Ajustes de la empresa (uno por tenant). Sin fila valen los valores por defecto del dominio.
+model RoadSafetySettings {
+  id                 String   @id @default(cuid())
+  tenantId           String   @unique
+  minExposureKm      Int      @default(100000)
+  repeatThreshold    Int      @default(2)
+  repeatWindowMonths Int      @default(12)
+  speedingPerDriver  Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("road_safety_settings")
 }
