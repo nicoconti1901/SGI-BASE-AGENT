@@ -1,5 +1,6 @@
 import { loadRoadAccess } from "@/app/(tenant)/t/[slug]/road-safety/access";
 import { KmGrid, ResetForm, type KmRow } from "@/app/(tenant)/t/[slug]/road-safety/km/KmGrid";
+import { SpeedingForm } from "@/app/(tenant)/t/[slug]/road-safety/km/SpeedingForm";
 import { getKmGrid } from "@/lib/road-safety";
 import { shiftMonth, monthLabel } from "@/domain/safety-stats/exposure-import";
 import { localDay } from "@/domain/safety-stats/period";
@@ -67,6 +68,12 @@ export default async function KmPage({ params, searchParams }: { params: Promise
           </>
         )}
       </SectionBlock>
+
+      {canManage && rows.length > 0 ? (
+        <SectionBlock title="Excesos de velocidad" what={`Si la empresa los mide, cargá los de ${monthLabel(month)} por vehículo. Aparecen en los resultados intermedios del tablero.`}>
+          <SpeedingForm slug={slug} month={month} vehicles={rows.map((r) => ({ id: r.assetId, code: r.code }))} />
+        </SectionBlock>
+      ) : null}
 
       {canManage && rows.length > 0 ? (
         <SectionBlock title="Reinicio de odómetro" what="Si un vehículo cambió de tablero o se reinició el odómetro, marcalo para que los km no se calculen como una resta imposible.">

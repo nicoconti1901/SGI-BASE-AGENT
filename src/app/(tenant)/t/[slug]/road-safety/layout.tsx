@@ -7,7 +7,7 @@ import { requireModuleForSlug } from "@/lib/modules";
 export default async function RoadSafetyLayout({ children, params }: LayoutProps<"/t/[slug]/road-safety">) {
   const { slug } = await params;
   await requireModuleForSlug(slug, "road_safety");
-  const { canReport } = await loadRoadAccess(slug);
+  const { canReport, canManage } = await loadRoadAccess(slug);
   const base = `/t/${slug}/road-safety`;
   return (
     <PageFrame>
@@ -23,7 +23,15 @@ export default async function RoadSafetyLayout({ children, params }: LayoutProps
           ) : null
         }
       />
-      <SafetyTabs tabs={[{ href: `${base}/km`, label: "Km del mes" }]} />
+      <SafetyTabs
+        tabs={[
+          { href: base, label: "Tablero" },
+          { href: `${base}/km`, label: "Km del mes" },
+          ...(canManage ? [{ href: `${base}/conductores`, label: "Conductores" }] : []),
+          { href: `${base}/ajustes`, label: "Ajustes" },
+          { href: `${base}/guia`, label: "Guía" },
+        ]}
+      />
       {children}
     </PageFrame>
   );

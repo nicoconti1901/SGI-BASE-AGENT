@@ -148,6 +148,7 @@ model Tenant {
   odometerResets        VehicleOdometerReset[]
   speedingPeriods       SpeedingPeriod[]
   roadSafetySettings    RoadSafetySettings?
+  roadDrivers           RoadDriver[]
   safetyIndicatorLinks  SafetyIndicatorLink[]
   sites                 Site[]
   jobPositions          JobPosition[]
@@ -1284,6 +1285,7 @@ model JobTask {
   people               PersonJobTask[]
   trainingRequirements TrainingRequirement[]
   inspections          Inspection[]
+  roadSafetySettings   RoadSafetySettings[]
 
   @@unique([tenantId, name])
   @@index([tenantId, active])
@@ -1318,6 +1320,7 @@ model Person {
   incidentHealths       IncidentHealth[]
   roadEventsDriven      RoadEventDetail[]
   speedingPeriods       SpeedingPeriod[]
+  roadDriver            RoadDriver?
   position              JobPosition       @relation(fields: [positionId], references: [id], onDelete: Restrict)
   user                  User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   extraSites            PersonSite[]
@@ -3104,9 +3107,30 @@ model RoadSafetySettings {
   repeatThreshold    Int      @default(2)
   repeatWindowMonths Int      @default(12)
   speedingPerDriver  Boolean  @default(false)
+  /// Tarea de conducción (Task 20) cuyos cursos obligatorios definen el manejo defensivo vigente (D20).
+  driverTaskId       String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  driverTask         JobTask? @relation(fields: [driverTaskId], references: [id], onDelete: SetNull)
 
   @@map("road_safety_settings")
+}
+
+/// Persona marcada como conductor (D20, decisión del PO): una fila por conductor, con el vencimiento de su
+/// licencia, que carga la empresa y no se valida por jurisdicción. Sin vencimiento cargado no está habilitado.
+model RoadDriver {
+  id               String    @id @default(cuid())
+  tenantId         String
+  personId         String
+  licenseExpiresOn DateTime? @db.Date
+  actorUserId      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  tenant           Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  person           Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([personId])
+  @@index([tenantId, licenseExpiresOn])
+  @@map("road_driver")
 }

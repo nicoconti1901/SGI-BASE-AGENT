@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
 import { getEnabledModules, ModuleActivationError, setModuleEnabled } from "@/lib/modules";
+import { MODULE_CATALOG, type ModuleDefinition } from "@/domain/modules/catalog";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
@@ -37,7 +38,15 @@ describe.skipIf(!hasDatabase)("módulos por empresa (integration)", () => {
 
   it("rechaza desactivar Usuarios, activar un módulo planificado o una clave desconocida", async () => {
     await expect(setModuleEnabled({ tenantId: a, moduleKey: "users", enabled: false, actorUserId: null }, db)).rejects.toBeInstanceOf(ModuleActivationError);
-    await expect(setModuleEnabled({ tenantId: a, moduleKey: "road_safety", enabled: true, actorUserId: null }, db)).rejects.toBeInstanceOf(ModuleActivationError);
+    // Ya no queda ningún módulo planificado en el catálogo: se agrega uno temporal para probar la regla.
+    const catalog = MODULE_CATALOG as ModuleDefinition[];
+    const future = { key: "future_module", label: "Futuro", section: "sst", path: "future", clauses: [], status: "planned", defaultEnabled: false } as unknown as ModuleDefinition;
+    catalog.push(future);
+    try {
+      await expect(setModuleEnabled({ tenantId: a, moduleKey: "future_module", enabled: true, actorUserId: null }, db)).rejects.toBeInstanceOf(ModuleActivationError);
+    } finally {
+      catalog.splice(catalog.indexOf(future), 1);
+    }
     await expect(setModuleEnabled({ tenantId: a, moduleKey: "nope", enabled: true, actorUserId: null }, db)).rejects.toBeInstanceOf(ModuleActivationError);
   });
 });
