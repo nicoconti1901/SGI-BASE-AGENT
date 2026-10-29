@@ -373,7 +373,8 @@ describe.skipIf(!hasDatabase)("proveedores: persistencia y aislamiento", () => {
         red: all.filter((s) => supplierSemaphore(s.status, s.attentionAt, s.missingRequiredDocs, TODAY) === "red"),
         amber: all.filter((s) => supplierSemaphore(s.status, s.attentionAt, s.missingRequiredDocs, TODAY) === "amber"),
         unrated: all.filter((s) => s.status === "potential"),
-        approved: all.filter((s) => isEnabled(s.status, s.missingBlockingDocs, s.blockingDocExpiresAt, TODAY)),
+        // «Aprobados vigentes»: solo aprobados (no «con condiciones») y habilitados.
+        approved: all.filter((s) => s.status === "approved" && isEnabled(s.status, s.missingBlockingDocs, s.blockingDocExpiresAt, TODAY)),
       };
       const ids = async (view: SupplierView) =>
         (await db.supplier.findMany({ where: { tenantId: t, ...supplierViewWhere(view, TODAY) }, select: { id: true } })).map((s) => s.id).sort();
@@ -437,7 +438,8 @@ describe.skipIf(!hasDatabase)("proveedores: persistencia y aislamiento", () => {
       expect(list.excludedForDocs).toBe(2); // 013 (falta documento) y 015 (vencido)
       const names = list.entries.map((e) => e.legalName);
       expect(names).toEqual([...names].sort((x, y) => x.localeCompare(y, "es")));
-      expect(list.entries.find((e) => e.legalName === "Proveedor 008")?.withConditions).toBe(true);
+      expect(list.entries.every((e) => e.status === "approved")).toBe(true);
+      expect(list.entries.find((e) => e.legalName === "Proveedor 008")).toBeUndefined(); // con condiciones
 
       await recordApprovedListExport({ tenantId: t, actorUserId: actor, count: list.entries.length, excluded: list.excludedForDocs, format: "csv" });
       const log = await db.masterDataAudit.findFirstOrThrow({ where: { tenantId: t, entityType: "supplier", action: "export" } });

@@ -22,7 +22,7 @@ const sup = (over: Partial<ApprovedListSupplier>): ApprovedListSupplier => ({
 });
 
 describe("buildApprovedList", () => {
-  it("incluye aprobados y condicionales habilitados, ordenados por razón social, y cuenta aparte los excluidos por documentación", () => {
+  it("incluye solo aprobados habilitados (no los condicionales), ordenados por razón social, y cuenta aparte los excluidos por documentación", () => {
     const list = buildApprovedList(
       [
         sup({ id: "1", legalName: "Zeta SA" }),
@@ -36,11 +36,9 @@ describe("buildApprovedList", () => {
       ],
       now,
     );
-    expect(list.entries.map((e) => e.id)).toEqual(["2", "8", "1"]);
+    expect(list.entries.map((e) => e.id)).toEqual(["8", "1"]);
     expect(list.excludedForDocs).toBe(2);
     expect(list.generatedAt).toEqual(now);
-    expect(list.entries[0]).toMatchObject({ withConditions: true });
-    expect(list.entries[2]).toMatchObject({ withConditions: false });
   });
 
   it("un contratista con ART vencida no figura aunque tenga 95 puntos; con ART vigente vuelve a figurar", () => {
@@ -53,7 +51,7 @@ describe("buildApprovedList", () => {
 
 describe("approvedListToCsv", () => {
   it("UTF-8 con BOM, fecha, quién la generó, columnas y pie con los que no figuran", () => {
-    const list = buildApprovedList([sup({ legalName: 'Ferretería "El Clavo"; SA', status: "conditional", criticality: "critical" })], now);
+    const list = buildApprovedList([sup({ legalName: 'Ferretería "El Clavo"; SA', criticality: "critical" })], now);
     const csv = approvedListToCsv(list, { tenantName: "Acme", generatedBy: "Ana Pérez", generatedAt: new Date("2026-10-21T15:30:00Z") });
     expect(csv.startsWith("﻿")).toBe(true);
     expect(csv).toContain("Lista de aprobados");
@@ -61,7 +59,7 @@ describe("approvedListToCsv", () => {
     expect(csv).toContain("21/10/2026 12:30");
     expect(csv).toContain("Ana Pérez");
     expect(csv).toContain("Razón social;CUIT;Tipo;Rubro;Criticidad;Estado;Próxima reevaluación");
-    expect(csv).toContain('"Ferretería ""El Clavo""; SA";20-12345678-6;Servicio;Mantenimiento;Crítico;Con condiciones;21/10/2028');
+    expect(csv).toContain('"Ferretería ""El Clavo""; SA";20-12345678-6;Servicio;Mantenimiento;Crítico;Aprobado;21/10/2028');
     expect(csv).toContain("0 no figuran por documentación vencida o faltante");
   });
 

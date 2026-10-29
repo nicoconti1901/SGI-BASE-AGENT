@@ -21,7 +21,7 @@ export default async function ApprovedListPage({ params }: { params: Promise<{ s
       <PageHeader
         eyebrow="Proveedores · ISO 9001 §8.4.1"
         title="Lista de aprobados"
-        purpose="Los proveedores que hoy se pueden usar: aprobados o con condiciones, y con su documentación al día."
+        purpose="Los proveedores que hoy se pueden usar: aprobados y con su documentación al día. Los «con condiciones» no figuran."
         actions={
           <>
             <a href={`${base}/approved/export`} className={buttonClass("primary")}>
@@ -67,7 +67,7 @@ export default async function ApprovedListPage({ params }: { params: Promise<{ s
                     <td className="px-4 py-3">{SUPPLIER_TYPE_LABELS[e.type]}</td>
                     <td className="px-4 py-3">{SUPPLIER_CRITICALITY_LABELS[e.criticality]}</td>
                     <td className="px-4 py-3">
-                      <StatusChip status={e.withConditions ? "warning" : "ok"} label={e.withConditions ? "Con condiciones" : "Aprobado"} />
+                      <StatusChip status="ok" label="Aprobado" />
                     </td>
                     <td className="px-4 py-3 tabular-nums">{e.nextEvaluationDueAt ? dmy(e.nextEvaluationDueAt) : "—"}</td>
                   </tr>

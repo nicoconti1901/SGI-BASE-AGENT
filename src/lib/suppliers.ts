@@ -533,9 +533,10 @@ export function supplierViewWhere(view: SupplierView, today: Date): Prisma.Suppl
   }
 }
 
+/** «Aprobados vigentes»: solo los aprobados (decisión del PO, 2026-10-29), no los «con condiciones», y con la documentación al día. */
 function enabledWhere(today: Date): Prisma.SupplierWhereInput {
   return {
-    status: { in: ACTIVE_STATUSES },
+    status: "approved",
     missingBlockingDocs: 0,
     OR: [{ blockingDocExpiresAt: null }, { blockingDocExpiresAt: { gte: today } }],
   };
