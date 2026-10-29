@@ -698,7 +698,7 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
   - conductores con eventos repetidos y excesos de velocidad;
   - flota con documentación o inspección vencida;
   - exportación.
-- [x] 18.4 (hecho 2026-10-29, PR #46: pantalla de conductores con licencia y tarea de conducción elegida en Ajustes, en lugar de la ficha del vehículo y del evento; excesos de velocidad por vehículo; `road_safety` disponible) Conductor habilitado (licencia vigente + curso de manejo defensivo vigente, cruzado con la Task 20); guía, menú, e2e
+- [x] 18.4 (hecho 2026-10-29, PR #46: conductor como marca de la persona (decisión del PO) gestionada en la pestaña Conductores con el vencimiento de su licencia, y tarea de conducción elegida en Ajustes para el manejo defensivo, en lugar de la ficha del vehículo y del evento; excesos de velocidad por vehículo; `road_safety` disponible) Conductor habilitado (licencia vigente + curso de manejo defensivo vigente, cruzado con la Task 20); guía, menú, e2e
 
 **Acceptance criteria:**
 - [ ] El tablero vial está separado del general y tiene su propia entrada en el menú
