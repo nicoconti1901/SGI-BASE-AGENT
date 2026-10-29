@@ -2,6 +2,7 @@ import type { z } from "zod";
 import { EXTINGUISHER_TYPE } from "./extinguisher";
 import { FALL_PROTECTION_TYPE } from "./fall-protection";
 import { HEAVY_EQUIPMENT_TYPE } from "./heavy-equipment";
+import { LIFTING_GEAR_TYPE } from "./lifting-gear";
 import { MEASURING_EQUIPMENT_TYPE } from "./measuring-equipment";
 import { LIGHT_VEHICLE_TYPE } from "./light-vehicle";
 
@@ -70,6 +71,7 @@ export const ASSET_TYPES = {
   fall_protection: FALL_PROTECTION_TYPE,
   light_vehicle: LIGHT_VEHICLE_TYPE,
   heavy_equipment: HEAVY_EQUIPMENT_TYPE,
+  lifting_gear: LIFTING_GEAR_TYPE,
 } as const satisfies Record<string, AssetTypeDef>;
 
 export type AssetTypeKey = keyof typeof ASSET_TYPES;
