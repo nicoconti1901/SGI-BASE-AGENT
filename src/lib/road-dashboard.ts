@@ -5,6 +5,7 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { FLEET_KM_TYPE_KEYS, getFleetVehicleMonths, getRoadSafetySettings, type RoadUser } from "@/lib/road-safety";
+import { getDriverSummary } from "@/lib/road-drivers";
 import { canManageRoadSafety } from "@/domain/road-safety/access";
 import {
   breakdownRoadEvents,
@@ -120,6 +121,8 @@ export type RoadDashboard = {
   intermediate: ReturnType<typeof intermediateFactors> & {
     fleet: { total: number; upToDate: number; overdue: { id: string; code: string }[] };
     speeding: { total: number; loadedMonths: number };
+    /** Conductores habilitados (D20): solo el resumen, sin nombres. */
+    drivers: { configured: boolean; taskName: string | null; total: number; enabled: number; pct: number | null };
   };
   breakdown: {
     byType: { key: string; label: string; count: number }[];
@@ -167,13 +170,14 @@ export async function getRoadDashboard(
   const windowEvents = events12.filter((e) => windowMonths.has(e.month));
   const result = aggregateRoadWindow({ months: window.months, vehicleMonths, events: events12, minExposureKm: settings.minExposureKm });
 
-  const [fleet, speeding, review] = await Promise.all([
+  const [fleet, speeding, drivers, review] = await Promise.all([
     loadFleetCompliance(db, tenantId, today),
     db.speedingPeriod.aggregate({
       where: { tenantId, periodMonth: { gte: monthDate(window.months[0]), lte: monthDate(window.months[window.months.length - 1]) } },
       _sum: { count: true },
       _count: { _all: true },
     }),
+    getDriverSummary(tenantId, today, db),
     canSeeDrivers ? loadReviewList(db, tenantId, actor, allEvents, settings, anchor) : Promise.resolve(null),
   ]);
 
@@ -196,6 +200,7 @@ export async function getRoadDashboard(
       ...intermediateFactors({ events: windowEvents }),
       fleet: { total: fleet.total, upToDate: fleet.upToDate, overdue: fleet.overdue },
       speeding: { total: speeding._sum.count ?? 0, loadedMonths: speeding._count._all },
+      drivers,
     },
     breakdown: {
       byType: label(breakdown.byType, labelRoadEventType),

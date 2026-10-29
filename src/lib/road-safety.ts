@@ -595,3 +595,41 @@ export async function syncKmDueItemsSafely(tenantId: string, db: Db = prisma): P
   }
 }
 
+// ─── Excesos de velocidad (D21) ─────────────────────────────────────────────
+
+/**
+ * Carga a mano los excesos de velocidad de un vehículo en un mes cerrado (sin integración satelital). Es el
+ * total del vehículo: el desglose por conductor queda detrás de un ajuste apagado (D21).
+ */
+export async function saveSpeedingPeriod(
+  input: { tenantId: string; actor: RoadUser; assetId: string; month: MonthKey; count: number; note?: string | null; today?: IsoDay },
+  db: Db = prisma,
+) {
+  const { tenantId, actor, assetId, month, count } = input;
+  requireManager(actor);
+  const today = input.today ?? localDay(new Date());
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new RoadSafetyError("Mes inválido");
+  if (!isKmMonthClosed(month, today)) throw new RoadSafetyError("El mes todavía no cerró: cargá los excesos cuando termine");
+  if (!Number.isInteger(count) || count < 0 || count > 100_000) throw new RoadSafetyError("Los excesos son una cantidad entera, 0 o más");
+  const asset = await db.asset.findFirst({ where: { id: assetId, tenantId, typeKey: { in: FLEET_KM_TYPE_KEYS } }, select: { id: true } });
+  if (!asset) throw new RoadSafetyError("El vehículo no es de la flota de la empresa");
+  const note = (input.note ?? "").trim() || null;
+  return db.$transaction(async (tx) => {
+    const key = { tenantId, assetId, periodMonth: monthDate(month), personKey: "" };
+    const row = await tx.speedingPeriod.upsert({
+      where: { tenantId_assetId_periodMonth_personKey: key },
+      create: { ...key, count, note, actorUserId: actor.userId },
+      update: { count, note, actorUserId: actor.userId },
+    });
+    await audit(tx, {
+      tenantId,
+      entityType: "road_speeding",
+      entityId: row.id,
+      action: "update",
+      actorUserId: actor.userId,
+      summary: `Excesos de velocidad de ${monthLabel(month)}: ${count}`,
+    });
+    return row;
+  });
+}
+
