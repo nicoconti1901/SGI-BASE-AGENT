@@ -248,6 +248,9 @@ const ISO45001_ROWS: ClauseRow[] = [
  * (RESEARCH-road-safety §1.1, SPEC-road-safety D1): solo primer nivel (4 a 10) y las subcláusulas
  * con título visto en fuentes secundarias. Los resúmenes son paráfrasis propia. El tag `sin-verificar`
  * lo retira el PO cuando confirme el índice contra la norma licenciada.
+ * Revisado el 2026-10-29 contra lo público (fichas de ISO, AFNOR y EVS: sin índice): confirman la edición
+ * ISO 39001:2012 (con la enmienda Amd 1:2024) y la estructura de alto nivel, cláusulas 4 a 10, pero ninguna
+ * fuente pública da las subcláusulas. Por eso el tag se mantiene.
  */
 const ISO39001_ROWS: ClauseRow[] = [
   { code: "4", title: "Contexto de la organización", summary: "Entender el contexto de la organización en relación con la seguridad vial.", tags: ["contexto"] },

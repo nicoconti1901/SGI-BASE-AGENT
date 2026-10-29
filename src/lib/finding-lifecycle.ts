@@ -4,6 +4,7 @@ import {
   closeDueItemsForEntity,
   upsertOpenDueItemForEntity,
 } from "@/lib/automation";
+import { FOLLOW_UP_DUE_ENTITY_TYPE } from "@/lib/safety-stats";
 import {
   FINDING_VERIFICATION_ENTITY_TYPE,
   VERIFICATION_RESULT_LABELS,
@@ -361,7 +362,7 @@ export async function rescheduleVerification(
   );
 }
 
-/** Anular con motivo (R7). Los vencimientos de medidas y verificación se cierran. */
+/** Anular con motivo (R7). Los vencimientos de medidas, verificación y seguimiento de días perdidos se cierran. */
 export async function cancelFinding(
   input: { tenantId: string; findingId: string; actorUserId: string; reason: string },
   db: PrismaClient = prisma,
@@ -391,6 +392,11 @@ export async function cancelFinding(
   }
   await closeDueItemsForEntity(
     { tenantId: input.tenantId, entityType: FINDING_VERIFICATION_ENTITY_TYPE, entityId: finding.id },
+    db,
+  );
+  // Accidentabilidad: el caso anulado sale de los conteos y su «Actualizar días perdidos» deja de vencer.
+  await closeDueItemsForEntity(
+    { tenantId: input.tenantId, entityType: FOLLOW_UP_DUE_ENTITY_TYPE, entityId: finding.id },
     db,
   );
   if (finding.status !== "draft") {

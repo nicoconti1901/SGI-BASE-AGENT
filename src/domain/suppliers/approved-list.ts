@@ -24,25 +24,23 @@ export type ApprovedListSupplier = {
   blockingDocExpiresAt: Date | null;
 };
 
-export type ApprovedListEntry = ApprovedListSupplier & { withConditions: boolean };
-
 export type ApprovedList = {
   generatedAt: Date;
-  entries: ApprovedListEntry[];
-  /** Aprobados o condicionales que no figuran por documentación vencida o faltante. */
+  entries: ApprovedListSupplier[];
+  /** Aprobados que no figuran por documentación vencida o faltante. */
   excludedForDocs: number;
 };
 
 const byName = (a: { legalName: string }, b: { legalName: string }) =>
   a.legalName.localeCompare(b.legalName, "es", { sensitivity: "base" });
 
-/** Aprobados y condicionales habilitados, por razón social; los que quedan afuera por documentación se cuentan aparte. */
+/** Solo los aprobados (no los «con condiciones», decisión del PO 2026-10-29) y habilitados, por razón social; los que quedan afuera por documentación se cuentan aparte. */
 export function buildApprovedList(suppliers: readonly ApprovedListSupplier[], now: Date): ApprovedList {
-  const candidates = suppliers.filter((s) => s.status === "approved" || s.status === "conditional");
+  const candidates = suppliers.filter((s) => s.status === "approved");
   const enabled = candidates.filter((s) => isEnabled(s.status, s.missingBlockingDocs, s.blockingDocExpiresAt, now));
   return {
     generatedAt: now,
-    entries: enabled.sort(byName).map((s) => ({ ...s, withConditions: s.status === "conditional" })),
+    entries: enabled.sort(byName),
     excludedForDocs: candidates.length - enabled.length,
   };
 }

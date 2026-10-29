@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaClient, type TenantRole } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
 import { createJobPosition, createPerson, createSite } from "@/lib/masterdata";
+import { cancelFinding } from "@/lib/finding-lifecycle";
 import {
   SafetyStatsError,
   addIncidentFollowUp,
@@ -317,6 +318,17 @@ describe.skipIf(!hasDatabase)("accidentabilidad: persistencia", () => {
     expect(ficha?.followUps.map((f) => f.classification)).toEqual(["lost_time", "lost_time", "lost_time", "no_lost_time"]);
     expect(ficha?.followUps[0]).toMatchObject({ lostDays: 23, returnToWorkDate: new Date("2026-03-29T00:00:00.000Z") });
     expect(ficha?.followUps.at(-1)?.note).toBe("Alta de la ficha");
+  });
+
+  it("anular el Hallazgo cierra el vencimiento de seguimiento y el caso sale de los conteos", async () => {
+    const { finding } = await newIncident(a, actors.admin, { classification: "lost_time" }, "Caso a anular");
+    const openDue = () => db.dueItem.findMany({ where: { tenantId: a, entityType: "incident_followup", entityId: finding.id, status: "open" } });
+    expect(await openDue()).toHaveLength(1);
+
+    await cancelFinding({ tenantId: a, findingId: finding.id, actorUserId: actors.admin.userId, reason: "Cargado por error" }, db);
+
+    expect(await openDue()).toHaveLength(0);
+    expect((await db.dueItem.findMany({ where: { tenantId: a, entityType: "incident_followup", entityId: finding.id } })).map((d) => d.status)).not.toContain("open");
   });
 
   it("reglas de dominio en el alta: reintegro anterior, in itinere con casi accidente y fecha futura", async () => {
