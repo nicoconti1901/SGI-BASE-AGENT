@@ -472,6 +472,24 @@ Política: `retireOnUnfit` (un no apto pasa a dado de baja; no hay liberación).
 
 No apto: cualquier ítem crítico no conforme. Consecuencia: **baja definitiva**; acción "destruir el equipo y adjuntar la foto"; sin próxima inspección.
 
+### Planillas del PO incorporadas (carpeta `src/5. Registros en blanco/`)
+
+El PO pidió el 2026-10-29 adecuar todas las plantillas a las planillas de su sistema, con libertad para agregar o quitar lo que convenga. Resultado por planilla:
+
+| Planilla | Plantilla | Estado |
+|---|---|---|
+| RE 01 PE 05 Inspección de extintores | `extinguisher_periodic` | Incorporada (PR #43) |
+| RE 01 PE 06 Segregación de residuos | `waste_segregation` | Incorporada (PR #43) |
+| RE 01 PE 07 Inspección de seguridad general | `field_audit` | Incorporada (PR #43) |
+| RE 02 PE 12 Control de vehículos | `light_pre_use` / `light_periodic` | Incorporada (PR #43) |
+| RE 01 PE 12 Control de máquinas y herramientas | `machinery_tools` (área, mensual) | Nueva: listado en texto y criterios comunes por criticidad |
+| RE 03 PE 12 Control de elementos de izaje | tipo de activo `lifting_gear` y `lifting_gear_periodic` (trimestral) | Nueva: la certificación es el vencimiento bloqueante |
+| RG 02 PG 10 Registro de simulacro | `emergency_drill` (área, anual) | Nueva: la planilla califica B/R/M; acá conforme / no conforme |
+
+No se convierten en plantillas, por no ser listas de control de conforme / no conforme: los protocolos de medición y ensayo de obra (RE 04 PE 02 control dimensional de fundaciones, RE 05 PE 02 pintura y revestimiento, RE 06 PE 02 montaje de estructuras, RE 07 PE 02 tendido de línea aérea, RE 08 PE 02 megado, RE 09 PE 02 puesta a tierra). Piden valores medidos (milímetros, ohm, megaohm, tensión de tendido) con tolerancia y firma del profesional. Quedan para un módulo propio de registros de ensayo. Las planillas de personal, compras, sueldos y planificación tampoco son inspecciones.
+
+Los ítems de las tres plantillas nuevas son una propuesta: la planilla del PO es un formulario en blanco y los criterios los armó el equipo. Los revisa el administrador junto con el resto del anexo.
+
 ## Aprobación
 
 - [x] Aprobado por el PO el 2026-10-21, con las recomendaciones del borrador
