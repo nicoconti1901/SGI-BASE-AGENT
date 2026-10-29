@@ -22,7 +22,8 @@ test("el superusuario activa y desactiva módulos de una empresa", async ({ page
 
   const modules = page.getByRole("region", { name: "Módulos de la empresa" }).or(page.locator("section", { hasText: "Módulos de la empresa" }));
   await expect(modules.getByText("§6.1 (9001 · 14001 · 45001)")).toBeVisible();
-  await expect(modules.getByText("Próximamente").first()).toBeVisible();
+  // Seguridad vial ya está disponible (18.4): se puede activar desde la plataforma.
+  await expect(modules.getByRole("button", { name: "Activar Seguridad vial", exact: true })).toBeVisible();
   await expect(modules.getByRole("button", { name: "Desactivar Usuarios" })).toHaveCount(0);
 
   // Menú agrupado de la empresa.
