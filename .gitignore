@@ -52,3 +52,8 @@ node_modules/
 
 # Lock de scripts/wt-setup.mjs mientras prepara la base del worktree
 .wt-setup.lock
+
+# Material de referencia local: normas ISO (copyright) y planillas del PO.
+# No se publican: el repo es público.
+/src/lib/ISO/
+/src/5. Registros en blanco/
