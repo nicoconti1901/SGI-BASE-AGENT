@@ -15,17 +15,31 @@ let input = {};
 try {
   input = JSON.parse(readFileSync(0, "utf8"));
 } catch {}
-const cwd = input.cwd || process.cwd();
+let cwd = input.cwd || process.cwd();
 
 function git(cmd) {
   return execSync(`git ${cmd}`, { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 }
 
+const warn = (message) => {
+  process.stdout.write(JSON.stringify({ systemMessage: message }));
+  process.exit(0);
+};
+
 let status;
 try {
+  // Las rutas de `git status` son relativas a la raíz: los comandos corren desde ahí aunque la sesión esté en una subcarpeta.
+  cwd = git("rev-parse --show-toplevel").trim();
   status = git("status --porcelain=v1 --untracked-files=all");
 } catch {
   process.exit(0);
+}
+
+// wt:setup está creando, migrando o borrando la base: verificar ahora daría fallas falsas y su vitest
+// bloquearía el motor de Prisma que el setup regenera. Un lock de más de 30 minutos es de un setup que murió.
+const setupLock = path.join(cwd, ".wt-setup.lock");
+if (existsSync(setupLock) && Date.now() - statSync(setupLock).mtimeMs < 30 * 60_000) {
+  warn("Verificación pospuesta: npm run wt:setup está corriendo en este worktree. Volvé a correr los checks cuando termine.");
 }
 const changed = status
   .split("\n")
@@ -80,14 +94,13 @@ if (failed.length === 0) {
 }
 
 const tail = (text, lines) => text.trim().split("\n").slice(-lines).join("\n");
-const dbDown = failed.some((r) => /P1001|Can't reach database server|ECONNREFUSED.*5432/.test(r.out));
-if (dbDown) {
-  process.stdout.write(
-    JSON.stringify({
-      systemMessage: "Verificación incompleta: Postgres no responde (npm run db:up). No se pudieron correr los tests de integración.",
-    }),
-  );
-  process.exit(0);
+const vitestOnly = failed.length === 1 && failed[0].name === "vitest";
+if (failed.some((r) => /P1001|Can't reach database server|ECONNREFUSED.*5432/.test(r.out))) {
+  warn("Verificación incompleta: Postgres no responde (npm run db:up). No se pudieron correr los tests de integración.");
+}
+// Base del worktree inexistente o sin migrar: es el entorno, no el código. Si tsc y eslint pasaron, no se bloquea.
+if (vitestOnly && /P1003|P2021|Database `[^`]+` does not exist|does not exist in the current database/.test(failed[0].out)) {
+  warn("Verificación incompleta: la base del worktree no existe o no está migrada (npm run wt:setup). tsc y eslint pasaron; los tests de integración no se corrieron.");
 }
 
 const blocks = state.fingerprint === fingerprint ? (state.blocks ?? 0) + 1 : 1;

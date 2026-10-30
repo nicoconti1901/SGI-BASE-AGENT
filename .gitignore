@@ -49,3 +49,6 @@ next-env.d.ts
 node_modules/
 /playwright/.cache/
 /playwright/.auth/
+
+# Lock de scripts/wt-setup.mjs mientras prepara la base del worktree
+.wt-setup.lock
