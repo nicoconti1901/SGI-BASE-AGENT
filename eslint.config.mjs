@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "playwright-report/**",
     "test-results/**",
+    // Worktrees locales de agentes: son copias del repo.
+    ".claude/worktrees/**",
   ]),
 ]);
 
