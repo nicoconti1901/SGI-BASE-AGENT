@@ -2,7 +2,7 @@ import { computeLostDays, deriveEventPeriod, localDateTimeToInstant } from "@/do
 import type { EventAggregate, ExposureRow, OpenCaseAggregate } from "@/domain/safety-stats/indices";
 import type { EmployerKind, IncidentClassification } from "@/domain/safety-stats/types";
 
-/** Conjunto de referencia del SPEC (SPEC-accident-stats.md § Dataset), calculado a mano. */
+/** Conjunto de referencia del SPEC (docs/specs/SPEC-accident-stats.md § Dataset), calculado a mano. */
 export const SITE_A = "site-a";
 export const SITE_B = "site-b";
 

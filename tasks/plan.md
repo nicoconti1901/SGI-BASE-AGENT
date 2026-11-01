@@ -121,7 +121,7 @@ Plan ready for human review before `/build`.
 
 ## Addendum: Task 11 — Riesgos y oportunidades (Nivel 2) — 2026-09-26
 
-SPEC aprobado: `SPEC-risks-opportunities.md`. Implementado como slices verticales:
+SPEC aprobado: `docs/specs/SPEC-risks-opportunities.md`. Implementado como slices verticales:
 
 1. Domain + Prisma (`Risk`, `Opportunity`, assessments versionados, `Action`/`ActionLink`/`ActionAttachment`)
 2. Action compartida con DueItem (`operational_action`); completar ≠ efectividad
@@ -214,7 +214,7 @@ Task 14 datos maestros (sedes, personas, puestos, tareas)
 
 ### Base común (Task 14b, 2026-10-20)
 
-Decisiones del PO y reglas para construir los módulos en paralelo (`SPEC-fase5-fundacion.md`):
+Decisiones del PO y reglas para construir los módulos en paralelo (`docs/specs/SPEC-fase5-fundacion.md`):
 
 | Decisión | Elección |
 |---|---|

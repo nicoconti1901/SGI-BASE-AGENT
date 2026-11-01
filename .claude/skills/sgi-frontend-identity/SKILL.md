@@ -26,6 +26,8 @@ Shared UI primitives in `src/components/ui/*`: P0 (PageFrame, PageHeader, StatTi
    Guarded by "only references design tokens that exist" in `tests/design-tokens.test.ts`.
 2. **Banned looks:** purple/violet SaaS accents, cream + terracotta editorial, glassmorphism,
    gradients as decoration, pill-shaped everything, emoji as icons, oversized hero sections.
+   **Only exception: the Hub layer** (see "Hub" below) — glow, rings, metal rims and circuit traces
+   live only inside `HubStage`, never on content pages.
    `tests/design-tokens.test.ts` guards part of this — keep it green and extend it when adding tokens.
 3. **One dominant accent per theme** (`--color-accent*`: cobalt in Light A, cyan in Dark A). One primary
    action per view uses it (`Button` primary); secondary is outline/text. Text on solid fills
@@ -63,7 +65,42 @@ Shared UI primitives in `src/components/ui/*`: P0 (PageFrame, PageHeader, StatTi
 - Guidance over emptiness: empty states explain what the thing is and the next step,
   in the ink-muted tone, with a link/action — never just "No hay datos".
 - Status chips: `<StatusChip status="ok|warning|danger|pending|overdue|info">`: soft fill + border + icon + mono uppercase label; pending is dashed, overdue is solid. Legacy `tone`/`className` still work.
-- Tenant home leads with the horizontal `DashboardStrip` (KPIs + compliance bar + `DueRail` of `DueCard`s); sticky and compacts on scroll at ≥1024px.
+- `DashboardStrip` / `DueRail` remain for module pages that need a sticky KPI strip; the tenant home no longer uses them (see Hub).
+
+## Shell and navigation (progressive entry)
+
+- No sidebar. `AppShell` = persona bar (h-1) + one header: hex mark + tenant, **trail** `Inicio › Módulo › Pantalla`
+  (`ShellTrail`, `nav aria-label="Ruta"`, computed by `crumbsFor` in `domain/modules/hub.ts`), persona chip,
+  name, "Puede editar / Solo lectura", theme, sign out. Platform keeps horizontal tabs (`navItems`, `nav "Principal"`).
+- Tenant navigation is progressive: **Inicio** (`/t/[slug]`, modules grouped by area, `nav "Principal"`, one
+  `role="group"` per area) → **module hub** (`/t/[slug]/m/[path]`, its screens) → **screen** (existing pages).
+  A module with only one visible screen opens directly (no hub). Read-only users don't get `write` screens.
+- Screens per module, their hints, icons and the `dueTypes` that feed the module's small dashboard live in
+  `MODULE_HUB` (`src/domain/modules/hub.ts`). A new screen = one entry there; `tests/modules-hub.test.ts`
+  fails if it points to a page that doesn't exist. Screen names never repeat the module name
+  ("Registro de riesgos", not "Riesgos y oportunidades").
+
+## Hub (the one expressive layer)
+
+- `HubStage` (`components/hub/HubStage.tsx`): the same high-contrast cobalt console in **both** themes
+  (`--color-hub-*`: stage, panel, row, row-hover, ink, ink-muted, line, focus, glow), dot grid, orbit rings and
+  circuit traces (decorative SVG, `aria-hidden`). Nothing on the stage moves by itself (no looping animation, WCAG 2.2.2).
+  One per page: it hosts the SVG gradients the hexagons use.
+- **Home = `AreaGrid`** (`components/hub/AreaGrid.tsx`, styles `.sgi-area*` / `.sgi-guide*` in `globals.css`), accessibility first:
+  one panel per area (`role="group"`, h2 + tagline, number chip, 3px top band in `--color-area-<section>`), a **list**
+  of module links (icon, label 14px sentence case, mono detail, chevron; min 52px tall; focus = 3px `--color-hub-focus`)
+  and a small decorative **orbit guide** (`aria-hidden`, `orbitPoints` in `orbit.ts`) whose dot lights up when its row
+  has hover or focus. Narrow panels drop the orbit and keep the list. The grid never leaves an area alone at full
+  width: with five areas the third (Operación SST) is the tall column (`"a b c" / "d e c"` desktop, `"a b" / "c d" / "c e"`
+  tablet); with three, the third spans the row only on tablet. Tab order always follows the catalog.
+- Area colors (`--color-area-compliance|improvement|sst|people|admin`) are for grouping only, never for state, and
+  always come with the area number and name.
+- Module hubs (`/t/[slug]/m/[module]`) keep `HexTile` (flat-top glass hexagon, metal rim, `HubIcon`, uppercase label,
+  mono detail; focus = rim lit in `--color-hub-glow`, hover lift `motion-safe`) on `HexBus` (tiles joined by the
+  green/blue cable). `HubSteps`: "01 Elegí el módulo → 02 Elegí qué hacer".
+- Text on the stage uses `--color-hub-ink` / `--color-hub-ink-muted`; semantic state colors never go on the stage.
+- Small dashboard = `TelemetryPanel` (`components/hub/Telemetry.tsx`) on normal theme surfaces, labelled "Solo referencia":
+  `TelemetryCounts`, `ComplianceBar`, `DueMiniList` (max 3 items). It informs; the work happens inside modules.
 
 ## Forms
 

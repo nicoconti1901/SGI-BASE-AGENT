@@ -1,6 +1,6 @@
 /**
  * Guía breve de proveedores. Base: ISO 9001 §8.4 (8.4.1 a 8.4.3), ISO 14001 §8.1 e ISO 45001 §8.1.4.
- * Ver SPEC-suppliers.md y RESEARCH-suppliers.md.
+ * Ver docs/specs/SPEC-suppliers.md y docs/research/RESEARCH-suppliers.md.
  */
 export type SupplierGuideSection = {
   id: string;

@@ -26,7 +26,7 @@ test("el superusuario activa y desactiva módulos de una empresa", async ({ page
   await expect(modules.getByRole("button", { name: "Activar Seguridad vial", exact: true })).toBeVisible();
   await expect(modules.getByRole("button", { name: "Desactivar Usuarios" })).toHaveCount(0);
 
-  // Menú agrupado de la empresa.
+  // Inicio de la empresa: módulos agrupados por área.
   await page.goto(`/t/${slug}`);
   const nav = page.getByRole("navigation", { name: "Principal" });
   const mejora = nav.getByRole("group", { name: "Mejora" });
@@ -50,5 +50,6 @@ test("el superusuario activa y desactiva módulos de una empresa", async ({ page
   await expect(modules.getByRole("button", { name: "Desactivar Riesgos y oportunidades" })).toBeVisible({ timeout: 20_000 });
   const back = await page.goto(`/t/${slug}/risks`);
   expect(back?.status()).toBe(200);
+  await page.goto(`/t/${slug}`);
   await expect(mejora.getByRole("link", { name: "Riesgos y oportunidades" })).toBeVisible();
 });

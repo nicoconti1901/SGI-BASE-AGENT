@@ -190,17 +190,17 @@ describe("tenant panel adopts ui primitives", () => {
 
   it("home page imports shared page/list primitives", () => {
     const source = readFileSync(panelPage, "utf8");
+    // Inicio = hub de módulos + tablero chico de referencia.
     for (const symbol of [
       "PageFrame",
       "PageHeader",
-      "DashboardStrip",
-      "StripKpis",
-      "DueRail",
-      "DueCard",
-      "StatTile",
-      "StatusChip",
-      "EmptyState",
-      "SectionBlock",
+      "HubStage",
+      "HubSteps",
+      "AreaGrid",
+      "TelemetryPanel",
+      "TelemetryCounts",
+      "ComplianceBar",
+      "DueMiniList",
     ]) {
       expect(source).toContain(symbol);
     }

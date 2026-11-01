@@ -22,7 +22,7 @@ import {
 } from "@/domain/findings/types";
 
 /**
- * Ciclo de vida del hallazgo (Task 10d) — SPEC-findings-lifecycle.md.
+ * Ciclo de vida del hallazgo (Task 10d) — docs/specs/SPEC-findings-lifecycle.md.
  * Cada cambio de estado pasa por `changeStatus`, que deja el evento de historial.
  */
 

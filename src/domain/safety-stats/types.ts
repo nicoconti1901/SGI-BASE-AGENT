@@ -1,5 +1,5 @@
 /**
- * Accidentabilidad (Task 17, SPEC-accident-stats.md): tipos y listas.
+ * Accidentabilidad (Task 17, docs/specs/SPEC-accident-stats.md): tipos y listas.
  * Las listas son propias y cortas, en código (D16): no equivalen a la tabla oficial de la SRT.
  */
 

@@ -1,5 +1,5 @@
 /**
- * Exportación y resumen de accidentabilidad (SPEC-accident-stats.md, slice 17.5). Todo se agrega en la base
+ * Exportación y resumen de accidentabilidad (docs/specs/SPEC-accident-stats.md, slice 17.5). Todo se agrega en la base
  * (`groupBy`) y siempre filtra por `tenantId`. Los totales no llevan nombres; el CSV de casos sí, así que solo
  * lo recibe quien puede ver las fichas de salud (nunca el personal de plataforma) y deja registro (quién, cuándo).
  */

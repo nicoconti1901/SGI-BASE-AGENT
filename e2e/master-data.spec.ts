@@ -12,7 +12,10 @@ test("el administrador da de alta, edita, da de baja y reactiva una sede", async
   const renamed = `${name} norte`;
   await quickLogin(page, /Ana Administración/);
 
+  // Ingreso progresivo: módulo → pantalla.
   await page.getByRole("link", { name: "Datos maestros" }).click();
+  await expect(page).toHaveURL(/\/t\/tisico\/m\/master-data$/, { timeout: 30_000 });
+  await page.getByRole("navigation", { name: "Pantallas de Datos maestros" }).getByRole("link", { name: /^Personas/ }).click();
   await expect(page).toHaveURL(/\/t\/tisico\/master-data\/people$/, { timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "Datos maestros", level: 1 })).toBeVisible();
   await page.getByRole("link", { name: "Sedes", exact: true }).click();

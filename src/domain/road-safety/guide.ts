@@ -1,5 +1,5 @@
 /**
- * Guía breve de seguridad vial (SPEC-road-safety.md § Qué ve el cliente). Las cláusulas de ISO 39001 del
+ * Guía breve de seguridad vial (docs/specs/SPEC-road-safety.md § Qué ve el cliente). Las cláusulas de ISO 39001 del
  * catálogo figuran «sin verificar» hasta que el PO las confirme contra la norma licenciada (D1).
  */
 export type RoadGuideSection = {

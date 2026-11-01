@@ -8,7 +8,7 @@ import type {
 } from "@/domain/safety-stats/types";
 
 /**
- * Índices de siniestralidad (SPEC-accident-stats.md § Fórmulas).
+ * Índices de siniestralidad (docs/specs/SPEC-accident-stats.md § Fórmulas).
  * Reciben filas ya agregadas por la base, nunca eventos. Siempre se suman numeradores y
  * denominadores de la ventana antes de dividir; la división y el redondeo usan enteros
  * (BigInt) para no arrastrar errores de punto flotante.

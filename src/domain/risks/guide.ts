@@ -7,7 +7,7 @@ import type { SourceKind } from "@/domain/risks/types";
  * Base: ISO 9001:2026 §4.1, §4.2, §6.1 (6.1.1 / 6.1.2 / 6.1.3), §9.1.3, §9.3;
  * ISO 31000:2018 (definición de riesgo, proceso de identificación);
  * IEC 31010:2019 (técnicas de apreciación); ISO/IAF APG "Risk-based thinking".
- * Ver RESEARCH-risks-opportunities.md para el ledger de fuentes.
+ * Ver docs/research/RESEARCH-risks-opportunities.md para el ledger de fuentes.
  */
 
 export const GUIDE_DEFINITIONS = {

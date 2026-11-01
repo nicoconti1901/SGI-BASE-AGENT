@@ -19,7 +19,7 @@ Esta sesión construye **solo esos slices** de **ese módulo** y termina con un 
 Leé, en este orden y nada más:
 
 1. `AGENTS.md` y `CLAUDE.md`. Next.js 16 cambió: antes de escribir código de Next consultá `node_modules/next/dist/docs/`.
-2. `SPEC-fase5-fundacion.md` (reglas comunes).
+2. `docs/specs/SPEC-fase5-fundacion.md` (reglas comunes).
 3. **Solo las secciones del SPEC del módulo que hacen falta para tus slices**: Objective, Decisiones, el modelo de dominio de lo que vas a tocar, Permisos, "Qué ve el cliente", los Acceptance tests que citan tus slices y el "Plan vertical". Usá `grep -n "^## \|^### "` para ubicarlas. `RESEARCH-*.md` solo si necesitás una fuente puntual.
 4. El código existente del módulo (lo que ya está en `main`) y un módulo de referencia del mismo estilo: `src/domain/masterdata`, `src/lib/masterdata.ts`, `src/app/(tenant)/t/[slug]/master-data`.
 5. Para UI: `.claude/skills/sgi-frontend-identity/SKILL.md`, `src/components/ui/` y los tokens de `src/styles/tokens.css`.

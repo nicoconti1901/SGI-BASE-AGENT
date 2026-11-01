@@ -7,6 +7,8 @@
  * Selected with <html data-theme="light|dark">. Every container and control keeps
  * a visible border in both themes; state is never conveyed by color alone.
  * Avoid: purple SaaS, cream+terracotta editorial, glassmorphism, decorative gradients.
+ * Exception — Hub (home + ingreso a módulos): a dark console stage in both themes
+ * (`--color-hub-*`) is the one place for glow, rings, metal rims and circuit traces.
  */
 
 /* ── Theme-independent ─────────────────────────────────────────────── */
@@ -94,6 +96,28 @@
   --color-member-rail: #12353a;
   --color-member-rail-ink: #e8f4f3;
 
+  /* Hub — escenario de ingreso a módulos: consola cobalto de alto contraste, la misma en los dos temas */
+  --color-hub-stage: #040914;
+  --color-hub-panel: #07102a;
+  --color-hub-row: #0a1430;
+  --color-hub-row-hover: #15265a;
+  --color-hub-ink: #ffffff;
+  --color-hub-ink-muted: #c9d4ec;
+  --color-hub-line: #4a64a8;
+  --color-hub-focus: #ffffff;
+  --color-hub-glow: #93b6ff;
+  --color-hub-glow-2: #35d6a4;
+  --color-hub-face: #0c1838;
+  --color-hub-metal: #d5e0f5;
+  --color-hub-metal-dark: #4f6290;
+
+  /* Un color por área del inicio, sobre la consola (texto oscuro encima ≥ 9:1, íconos sobre fila ≥ 8:1) */
+  --color-area-compliance: #93b6ff;
+  --color-area-improvement: #5fe8cc;
+  --color-area-sst: #ffc960;
+  --color-area-people: #c4ea7e;
+  --color-area-admin: #c7d0e0;
+
   /* Typography */
   --font-display: var(--font-sgi-display-light), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-sgi-sans), "Segoe UI", sans-serif;
@@ -160,6 +184,26 @@
   --color-persona-member-soft: #0b2a27;
   --color-member-rail: #0c2a2e;
   --color-member-rail-ink: #e8f4f3;
+
+  --color-hub-stage: #040914;
+  --color-hub-panel: #07102a;
+  --color-hub-row: #0a1430;
+  --color-hub-row-hover: #15265a;
+  --color-hub-ink: #ffffff;
+  --color-hub-ink-muted: #c9d4ec;
+  --color-hub-line: #4a64a8;
+  --color-hub-focus: #ffffff;
+  --color-hub-glow: #93b6ff;
+  --color-hub-glow-2: #4ade9a;
+  --color-hub-face: #06111a;
+  --color-hub-metal: #c3d0e0;
+  --color-hub-metal-dark: #33435a;
+
+  --color-area-compliance: #93b6ff;
+  --color-area-improvement: #5fe8cc;
+  --color-area-sst: #ffc960;
+  --color-area-people: #c4ea7e;
+  --color-area-admin: #c7d0e0;
 
   --font-display: var(--font-sgi-display-dark), ui-sans-serif, system-ui, sans-serif;
 

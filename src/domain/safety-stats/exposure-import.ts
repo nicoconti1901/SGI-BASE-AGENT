@@ -1,6 +1,6 @@
 /**
  * Exposición mensual (horas trabajadas y dotación) por sede y grupo: importación por CSV y avisos de carga
- * (SPEC-accident-stats.md, slice 17.3). Funciones puras: no leen la base ni el reloj.
+ * (docs/specs/SPEC-accident-stats.md, slice 17.3). Funciones puras: no leen la base ni el reloj.
  * Columnas del CSV: sede, mes, empresa, horas, dotacion. Reimportar el mismo archivo no cambia nada.
  */
 import { cleanName, normalizeKey, parseCsv, parseDateCell } from "@/domain/masterdata/roster";

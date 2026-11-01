@@ -6,7 +6,8 @@ import { getAppSessionContext } from "@/lib/session";
 import { getMembership, setActiveTenantForSession } from "@/lib/identity";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getEnabledModulesCached } from "@/lib/modules";
-import { tenantNavSections } from "@/domain/modules/catalog";
+import { trailIndex } from "@/domain/modules/hub";
+import { canTenantRole } from "@/domain/identity/authz";
 
 export default async function TenantLayout({
   children,
@@ -44,11 +45,13 @@ export default async function TenantLayout({
     });
   }
 
+  const canWrite = canTenantRole(membership?.role, "write", { isPlatformSuperuser: ctx.isPlatformSuperuser });
+
   return (
     <AppShell
       identity={buildShellIdentity(ctx, membership?.role)}
       contextLabel={tenant.name}
-      navSections={tenantNavSections(slug, await getEnabledModulesCached(tenant.id))}
+      trail={trailIndex(slug, await getEnabledModulesCached(tenant.id), canWrite)}
       backLink={
         ctx.isPlatformSuperuser
           ? { href: "/platform/tenants", label: "Volver a plataforma" }

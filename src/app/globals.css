@@ -44,6 +44,385 @@ summary:focus-visible,
   animation-delay: calc(var(--sgi-i, 0) * 30ms);
 }
 
+/* ── Hub: ingreso por módulos ──────────────────────────────────────────
+ * Única capa con brillo, anillos y bordes metálicos (ver tokens.css).
+ * El escenario es una consola oscura en ambos temas; el resto de la página sigue el tema.
+ */
+.sgi-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-hub-glow) 30%, transparent);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(ellipse 75% 60% at 50% 105%, color-mix(in srgb, var(--color-hub-glow) 22%, transparent), transparent 70%),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--color-hub-glow) 18%, transparent) 1px, transparent 0) 0 0 / 22px 22px,
+    var(--color-hub-stage);
+  color: var(--color-hub-ink);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-hub-ink) 12%, transparent);
+}
+
+.sgi-stage-art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Anillos y trazas quietos: nada se mueve solo más de 5 s junto al contenido (WCAG 2.2.2). */
+.sgi-trace {
+  stroke-dasharray: 28 572;
+}
+
+/* Conducto: dos cables (verde y azul) a la altura de los vértices de cada fila de hexágonos. */
+.sgi-bus {
+  --hex-w: 9rem;
+  --bus-gap: 1.25rem;
+  display: inline-flex;
+  max-width: 100%;
+  align-self: flex-start;
+  flex-wrap: wrap;
+  column-gap: 1.5rem;
+  row-gap: var(--bus-gap);
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(50% - 4px),
+    color-mix(in srgb, var(--color-hub-glow-2) 75%, transparent) calc(50% - 4px) calc(50% - 2px),
+    transparent calc(50% - 2px) calc(50% + 2px),
+    color-mix(in srgb, var(--color-hub-glow) 85%, transparent) calc(50% + 2px) calc(50% + 4px),
+    transparent calc(50% + 4px)
+  );
+  background-size: 100% calc(var(--hex-w) * 0.87 + var(--bus-gap));
+  background-position: 0 calc(var(--bus-gap) / -2);
+}
+
+.sgi-bus[data-size="lg"] {
+  --hex-w: 9rem;
+}
+
+@media (min-width: 640px) {
+  .sgi-bus {
+    --hex-w: 9.75rem;
+    column-gap: 1.75rem;
+  }
+
+  .sgi-bus[data-size="lg"] {
+    --hex-w: 11.5rem;
+  }
+}
+
+/* Hexágono de vidrio con aro metálico: el foco se marca con el aro encendido (el contorno rectangular se apaga). */
+.sgi-hex {
+  position: relative;
+  display: grid;
+  width: var(--hex-w, 9.75rem);
+  aspect-ratio: 200 / 174;
+  place-items: center;
+  container-type: inline-size;
+  color: var(--color-hub-ink);
+  text-align: center;
+  transition: transform var(--duration-med) var(--ease-out);
+}
+
+/* El cuerpo del nombre escala con el hexágono (cqi = 1% de su ancho). */
+.sgi-hex-label {
+  font-size: min(8cqi, 0.875rem);
+  letter-spacing: 0.07em;
+}
+
+.sgi-hex-label[data-fit="md"] {
+  font-size: min(7.4cqi, 0.8125rem);
+  letter-spacing: 0.05em;
+}
+
+.sgi-hex-label[data-fit="sm"] {
+  font-size: min(6.8cqi, 0.75rem);
+  letter-spacing: 0.02em;
+}
+
+.sgi-hex:focus-visible {
+  outline: none;
+}
+
+.sgi-hex-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 8px 14px rgb(0 0 0 / 45%));
+  transition: filter var(--duration-med) var(--ease-out);
+}
+
+.sgi-hex-rim {
+  fill: url(#sgi-hub-glass);
+  stroke: url(#sgi-hub-metal);
+  stroke-width: 5;
+  transition: stroke var(--duration-fast) var(--ease-out);
+}
+
+.sgi-hex-inner {
+  fill: none;
+  stroke: var(--color-hub-glow);
+  stroke-opacity: 0.35;
+  stroke-width: 1;
+  transition: stroke-opacity var(--duration-fast) var(--ease-out);
+}
+
+.sgi-hex-sheen {
+  fill: url(#sgi-hub-sheen);
+}
+
+.sgi-hex:hover .sgi-hex-shape,
+.sgi-hex:focus-visible .sgi-hex-shape {
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--color-hub-glow) 65%, transparent))
+    drop-shadow(0 8px 14px rgb(0 0 0 / 45%));
+}
+
+.sgi-hex:hover .sgi-hex-inner,
+.sgi-hex:focus-visible .sgi-hex-inner {
+  stroke-opacity: 1;
+}
+
+.sgi-hex:focus-visible .sgi-hex-rim {
+  stroke: var(--color-hub-glow);
+  stroke-width: 7;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sgi-hex:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.sgi-hex-port {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 2px;
+  background: linear-gradient(var(--color-hub-metal), var(--color-hub-metal-dark));
+}
+
+.sgi-hex-port[data-side="l"] {
+  left: -7px;
+}
+
+.sgi-hex-port[data-side="r"] {
+  right: -7px;
+}
+
+/* ── Inicio: un panel por área, órbita guía + lista ────────────────────
+ * La lista es lo que se lee y se toca; la órbita es un mapa decorativo (aria-hidden) que marca
+ * el módulo con mouse o foco. La grilla nunca deja un área sola a todo el ancho: con cinco áreas
+ * la tercera (Operación SST, la de más módulos) es la columna alta; con tres, la tercera se
+ * ensancha en tablet. El orden del teclado es siempre el del catálogo.
+ */
+.sgi-hub-areas {
+  container: sgi-hub / inline-size;
+}
+
+.sgi-areas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.125rem;
+}
+
+@container sgi-hub (min-width: 40rem) {
+  .sgi-areas:not([data-count="1"]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sgi-areas[data-count="3"] > :nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .sgi-areas[data-count="5"] {
+    grid-template-areas: "a b" "c d" "c e";
+  }
+
+  .sgi-areas[data-count="5"] > :nth-child(1) { grid-area: a; }
+  .sgi-areas[data-count="5"] > :nth-child(2) { grid-area: b; }
+  .sgi-areas[data-count="5"] > :nth-child(3) { grid-area: c; }
+  .sgi-areas[data-count="5"] > :nth-child(4) { grid-area: d; }
+  .sgi-areas[data-count="5"] > :nth-child(5) { grid-area: e; }
+
+  /* Columna alta: la órbita va arriba, más grande, y la lista debajo. */
+  .sgi-areas[data-count="5"] > :nth-child(3) .sgi-area-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sgi-areas[data-count="5"] > :nth-child(3) .sgi-guide {
+    display: block;
+    width: 10.5rem;
+    margin-inline: auto;
+  }
+}
+
+@container sgi-hub (min-width: 62.5rem) {
+  .sgi-areas[data-count="3"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sgi-areas[data-count="3"] > :nth-child(3) {
+    grid-column: auto;
+  }
+
+  .sgi-areas[data-count="5"] {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 0.9fr);
+    grid-template-areas: "a b c" "d e c";
+  }
+}
+
+.sgi-area {
+  --sgi-area: var(--color-hub-glow);
+  container: sgi-area / inline-size;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem 1rem;
+  border: 1px solid var(--color-hub-line);
+  border-top: 3px solid var(--sgi-area);
+  border-radius: var(--radius-lg);
+  background: var(--color-hub-panel);
+}
+
+.sgi-area[data-area="compliance"] { --sgi-area: var(--color-area-compliance); }
+.sgi-area[data-area="improvement"] { --sgi-area: var(--color-area-improvement); }
+.sgi-area[data-area="sst"] { --sgi-area: var(--color-area-sst); }
+.sgi-area[data-area="people"] { --sgi-area: var(--color-area-people); }
+.sgi-area[data-area="admin"] { --sgi-area: var(--color-area-admin); }
+
+.sgi-area-num {
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--sgi-area);
+  color: var(--color-hub-stage);
+}
+
+.sgi-area-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.sgi-area-list > li + li {
+  margin-top: 0.5rem;
+}
+
+.sgi-guide {
+  position: relative;
+  display: none;
+  width: 7.25rem;
+  aspect-ratio: 1;
+}
+
+/* Panel angosto: solo la lista. Desde 328px aparece la órbita al lado; desde 600px la lista va en dos columnas. */
+@container sgi-area (min-width: 20.5rem) {
+  .sgi-area-body {
+    grid-template-columns: 7.25rem minmax(0, 1fr);
+  }
+
+  .sgi-guide {
+    display: block;
+  }
+}
+
+@container sgi-area (min-width: 37.5rem) {
+  .sgi-area-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .sgi-area-list > li + li {
+    margin-top: 0;
+  }
+}
+
+.sgi-area-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.5625rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--sgi-area) 85%, var(--color-hub-row));
+  border-radius: var(--radius-md);
+  background: var(--color-hub-row);
+  color: var(--color-hub-ink);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.sgi-area-row:hover {
+  background: var(--color-hub-row-hover);
+}
+
+.sgi-area-row:focus-visible {
+  outline: 3px solid var(--color-hub-focus);
+  outline-offset: 3px;
+}
+
+.sgi-area-icon {
+  color: var(--sgi-area);
+}
+
+.sgi-guide-ring {
+  fill: none;
+  stroke: color-mix(in srgb, var(--sgi-area) 55%, var(--color-hub-panel));
+  stroke-width: 1;
+  stroke-dasharray: 1.5 5;
+}
+
+.sgi-guide-spoke {
+  stroke: color-mix(in srgb, var(--sgi-area) 35%, var(--color-hub-panel));
+  stroke-width: 1.2;
+}
+
+.sgi-guide-core,
+.sgi-guide-dot {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--sgi-area);
+  transform: translate(-50%, -50%);
+}
+
+.sgi-guide-core {
+  top: 50%;
+  left: 50%;
+  width: 31%;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--sgi-area) 60%, var(--color-hub-panel));
+  background: color-mix(in srgb, var(--sgi-area) 16%, var(--color-hub-panel));
+}
+
+.sgi-guide-dot {
+  width: 24%;
+  aspect-ratio: 1;
+  border: 1.5px solid color-mix(in srgb, var(--sgi-area) 85%, var(--color-hub-row));
+  background: var(--color-hub-row);
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.sgi-area:has(.sgi-area-row[data-i="0"]:is(:hover, :focus-visible)) .sgi-guide-dot[data-i="0"],
+.sgi-area:has(.sgi-area-row[data-i="1"]:is(:hover, :focus-visible)) .sgi-guide-dot[data-i="1"],
+.sgi-area:has(.sgi-area-row[data-i="2"]:is(:hover, :focus-visible)) .sgi-guide-dot[data-i="2"],
+.sgi-area:has(.sgi-area-row[data-i="3"]:is(:hover, :focus-visible)) .sgi-guide-dot[data-i="3"],
+.sgi-area:has(.sgi-area-row[data-i="4"]:is(:hover, :focus-visible)) .sgi-guide-dot[data-i="4"],
+.sgi-area:has(.sgi-area-row[data-i="5"]:is(:hover, :focus-visible)) .sgi-guide-dot[data-i="5"] {
+  background: color-mix(in srgb, var(--sgi-area) 30%, var(--color-hub-row));
+  transform: translate(-50%, -50%) scale(1.3);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sgi-enter {
     animation: none;

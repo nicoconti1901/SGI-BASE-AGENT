@@ -1,5 +1,5 @@
 /**
- * Tablero de accidentabilidad (SPEC-accident-stats.md, slice 17.4). Todo se agrega en la base (`groupBy`) y se
+ * Tablero de accidentabilidad (docs/specs/SPEC-accident-stats.md, slice 17.4). Todo se agrega en la base (`groupBy`) y se
  * calcula con las funciones puras del dominio; nunca se traen eventos a memoria. Siempre filtra por `tenantId`.
  * El tablero solo lee la meta de un Indicador vinculado: no escribe mediciones.
  */

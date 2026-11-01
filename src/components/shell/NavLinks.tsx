@@ -2,52 +2,37 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { NavSection } from "@/domain/modules/catalog";
+import type { NavItem } from "@/components/shell/nav-config";
 
-export function NavLinks({ sections }: { sections: readonly NavSection[] }) {
+/** Pestañas horizontales del encabezado. El primer ítem es la raíz: solo activo en coincidencia exacta. */
+export function NavLinks({ items }: { items: readonly NavItem[] }) {
   const pathname = usePathname();
-  // El primer item es la raíz de la sección: solo activo en coincidencia exacta.
-  const rootHref = sections[0]?.items[0]?.href;
+  const rootHref = items[0]?.href;
   const isActive = (href: string) =>
-    href === rootHref ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+    href === rootHref
+      ? pathname === href
+      : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <>
-      {sections.map((section, index) => {
-        const headingId = section.label ? `nav-seccion-${index}` : undefined;
+    <ul className="flex gap-1 overflow-x-auto">
+      {items.map((item) => {
+        const active = isActive(item.href);
         return (
-          <div
-            key={section.label ?? `sin-rotulo-${index}`}
-            role={section.label ? "group" : undefined}
-            aria-labelledby={headingId}
-            className={`flex flex-col gap-1 ${index > 0 ? "mt-3" : ""}`}
-          >
-            {section.label ? (
-              <p
-                id={headingId}
-                className="px-3 pb-1 font-[family-name:var(--font-mono)] text-[11px] font-semibold uppercase tracking-[0.12em] opacity-60"
-              >
-                {section.label}
-              </p>
-            ) : null}
-            {section.items.map((item) => {
-              const active = isActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium transition duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10 hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                    active ? "bg-white/15 opacity-100" : "opacity-80"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
+          <li key={item.href} className="shrink-0">
+            <Link
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={`inline-flex h-11 items-center border-b-2 px-3 text-sm font-medium transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                active
+                  ? "border-[var(--color-accent)] text-[var(--color-ink)]"
+                  : "border-transparent text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
+              }`}
+            >
+              {item.label}
+            </Link>
+          </li>
         );
       })}
-    </>
+    </ul>
   );
 }

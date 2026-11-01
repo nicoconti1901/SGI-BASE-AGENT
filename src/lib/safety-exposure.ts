@@ -1,5 +1,5 @@
 /**
- * Exposición mensual por sede y grupo (SPEC-accident-stats.md, slice 17.3): carga de horas trabajadas y
+ * Exposición mensual por sede y grupo (docs/specs/SPEC-accident-stats.md, slice 17.3): carga de horas trabajadas y
  * dotación, importación por CSV con vista previa, correcciones con motivo (`ExposureRevision`) y un aviso
  * (`DueItem`) por sede y mes hasta que se cargan los dos grupos.
  * Todo está acotado por `tenantId`; cada carga o corrección deja registro en `MasterDataAudit`.

@@ -1,6 +1,6 @@
 /**
  * Guía breve de accidentabilidad. Base: ISO 45001 §9.1.1, §10.2 y §9.3; definiciones de la OIT y de la SRT.
- * Ver RESEARCH-accident-stats.md y SPEC-accident-stats.md.
+ * Ver docs/research/RESEARCH-accident-stats.md y docs/specs/SPEC-accident-stats.md.
  */
 export type SafetyGuideSection = {
   id: string;

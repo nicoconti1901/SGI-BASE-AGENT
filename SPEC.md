@@ -183,7 +183,7 @@ Detalle fino por módulo se abrirá en `SPEC-<module-id>.md`. Resumen de contrat
 | `assessment-gap` | Formulario/backoffice para que el superusuario cargue gap y docs existentes |
 | `document-control` | CRUD docs, versión, vigencia, vínculo a requisito; keep/replace/create |
 | `automation-offers` | Catálogo de ofertas (nativo + integración); motor de **due dates / seguimientos / indicadores**; activación por tenant |
-| `operations-core` | Hallazgos unificados + medidas; riesgos; auditorías; indicadores — ver `SPEC-findings.md` |
+| `operations-core` | Hallazgos unificados + medidas; riesgos; auditorías; indicadores — ver `docs/specs/SPEC-findings.md` |
 | `client-portal` | Shell UI moderno; navegación SGI; dashboards de vencimientos y estado de requisitos |
 
 ---

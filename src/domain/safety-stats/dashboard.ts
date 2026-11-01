@@ -1,5 +1,5 @@
 /**
- * Tablero de accidentabilidad (SPEC-accident-stats.md, slice 17.4): ventanas de tiempo, grupos a mostrar,
+ * Tablero de accidentabilidad (docs/specs/SPEC-accident-stats.md, slice 17.4): ventanas de tiempo, grupos a mostrar,
  * explicación de los «sin datos», meta de un Indicador y bloques horarios. Funciones puras.
  */
 import { monthLabel, shiftMonth } from "./exposure-import";

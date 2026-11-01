@@ -1,5 +1,5 @@
 /**
- * Seguridad vial (Task 18, SPEC-road-safety.md): registro del evento vial, km por vehículo y mes, reinicios
+ * Seguridad vial (Task 18, docs/specs/SPEC-road-safety.md): registro del evento vial, km por vehículo y mes, reinicios
  * de odómetro y avisos mensuales. Todo lleva `tenantId`; los permisos se verifican acá, no solo en la UI.
  */
 import type { Prisma, PrismaClient } from "@prisma/client";

@@ -1,5 +1,5 @@
 /**
- * Seguridad vial (Task 18, SPEC-road-safety.md): listas y ajustes. Las listas viven en código, como las de
+ * Seguridad vial (Task 18, docs/specs/SPEC-road-safety.md): listas y ajustes. Las listas viven en código, como las de
  * accidentabilidad; coinciden con los enums de Prisma. Los valores de superficie, luz y clima son propios
  * y cortos (el SPEC no los fija).
  */
