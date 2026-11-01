@@ -52,6 +52,7 @@ Each kind of task has exactly one owner. Never run two skills/agents that cover 
 | Branch + commits + README + push + merge | `/publicar-cambios` |
 | Build slices of a Fase 5 module (one session per module) | `/modulo <módulo> <slices>` — plan and table in `tasks/sesiones-fase-5.md` |
 | Integrate a module PR into main | `/integrar <PR>` |
+| Incorporar cliente: evaluar su documentación, recrear en nuestro formato, codificar, Manual del SGI, plan de carga | `/incorporar-cliente <slug>` (skills evaluar-documentacion-cliente, recrear-documento-sgi, codificacion-documental, manual-sgi; subagentes `analista-documental`, `redactor-sgi`, `auditor-sgi`; reglas en `.claude/rules/incorporacion-clientes.md`) |
 
 ### Intent → owner (examples)
 | User says (examples) | Take |
@@ -68,6 +69,7 @@ Each kind of task has exactly one owner. Never run two skills/agents that cover 
 | "UI / copy / look & feel / restyle / identity" | `/ui` |
 | "publicá / commit / push / merge" | `/publicar-cambios` |
 | "riesgos / oportunidades / ISO 9001 6.1" | riesgos-oportunidades |
+| "nuevo cliente / adecuar documentación / manual del SGI / codificar registros / ampliar a ISO 14001" | `/incorporar-cliente <slug> [fase \| ampliar <norma>]` |
 
 ## Model routing (no Auto)
 
@@ -85,6 +87,7 @@ Do **not** rely on Auto model selection. Prefer an explicit model. Default the m
 | `/webperf`, `/ui`, Vercel rule lookups | Sonnet | Load 1–3 rule files only |
 | `/publicar-cambios` | Sonnet | Haiku only for small, single-topic changes; the skill's rules (read each diff, never discard changes) still apply |
 | Renames, changelog, "dónde está X" | Haiku | Switch session to Haiku for that task if available |
+| `/incorporar-cliente` | Opus (alto) for coverage/codification decisions and the Manual; Sonnet for the rest; Haiku for exports | Per-phase table in the skill; `analista-documental`/`redactor-sgi` medium, `auditor-sgi` high |
 
 **Subagent models:** keep pinned in each agent's frontmatter (`model: sonnet`). Do not spawn Opus subagents by default — escalate the main session instead when the table says Opus.
 
@@ -98,7 +101,7 @@ Run several agents at once only with `isolation: "worktree"`, one module per wor
 
 1. First command inside the worktree: `npm run wt:setup -- <nombre>`. It runs `npm ci`, creates the database `sgi_wt_<nombre>`, writes a `.env` with that database and its own `PORT`, and applies migrations and seeds. Never point a worktree at `sgi_base`.
 2. Dev server: `npm run dev -- -p $PORT` (Next does not read `PORT` from `.env`). Playwright already uses the `.env` port.
-3. Migrations in a module branch touch only that module's tables. Changes to shared models (`Finding`, `DueItem`, `Tenant`, `authz.ts`) go in a serial "foundation" PR first. Each Fase 5 module only edits its own entry in `src/domain/modules/catalog.ts` (`status: "planned"` → `"available"`), links findings from its own tables (`Finding.origin` + FK on the module side) and uses `Action` for follow-ups (see `SPEC-fase5-fundacion.md`).
+3. Migrations in a module branch touch only that module's tables. Changes to shared models (`Finding`, `DueItem`, `Tenant`, `authz.ts`) go in a serial "foundation" PR first. Each Fase 5 module only edits its own entry in `src/domain/modules/catalog.ts` (`status: "planned"` → `"available"`), links findings from its own tables (`Finding.origin` + FK on the module side) and uses `Action` for follow-ups (see `docs/specs/SPEC-fase5-fundacion.md`).
 4. Integrate one PR at a time: rebase on `main`, `npx prisma migrate dev` to check for drift, full suite, review, publish.
 5. When done: `npm run wt:setup -- <nombre> --drop` deletes the database.
 

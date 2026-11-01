@@ -57,3 +57,7 @@ node_modules/
 # No se publican: el repo es público.
 /src/lib/ISO/
 /src/5. Registros en blanco/
+
+# Documentación de clientes: confidencial y el repo es público. Solo se versiona el README.
+/clientes/*
+!/clientes/README.md
