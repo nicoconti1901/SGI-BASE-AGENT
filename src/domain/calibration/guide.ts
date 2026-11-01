@@ -1,6 +1,6 @@
 /**
  * Guía breve de equipos de medición. Base: ISO 9001 §7.1.5 (7.1.5.1 y 7.1.5.2), ISO 14001 §9.1.1 e ISO 45001 §9.1.1.
- * Ver RESEARCH-calibration.md y SPEC-calibration.md.
+ * Ver docs/research/RESEARCH-calibration.md y docs/specs/SPEC-calibration.md.
  */
 export type CalibrationGuideSection = {
   id: string;
@@ -70,5 +70,5 @@ export const CALIBRATION_GUIDE_REFERENCES = [
   "ISO 9001 §7.1.5.1 (generalidades) y §7.1.5.2 (trazabilidad de las mediciones)",
   "ISO 14001 §9.1.1 e ISO 45001 §9.1.1 (seguimiento y medición)",
   "ISO/IEC 17025 §7.8.6 (declaraciones de conformidad) y JCGM 106 (reglas de decisión)",
-  "Documentos internos del proyecto: RESEARCH-calibration.md y SPEC-calibration.md",
+  "Documentos internos del proyecto: docs/research/RESEARCH-calibration.md y docs/specs/SPEC-calibration.md",
 ];

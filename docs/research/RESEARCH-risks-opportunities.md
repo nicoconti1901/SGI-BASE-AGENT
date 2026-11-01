@@ -203,4 +203,4 @@ Incluye: discovery desde fuente/proceso, canvas riesgo y oportunidad separados, 
 
 Excluye del primer corte: heat map como home, FMEA obligatorio, multi-sede avanzada, portfolio ERM, AI que decide.
 
-Borrador de SPEC: `SPEC-risks-opportunities.md`.
+Borrador de SPEC: `docs/specs/SPEC-risks-opportunities.md`.

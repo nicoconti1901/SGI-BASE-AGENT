@@ -2,7 +2,7 @@ import type { TenantRole } from "@prisma/client";
 import { canTenantRole } from "@/domain/identity/authz";
 
 /**
- * Quién hace qué con las fichas de accidente (SPEC-accident-stats.md § Permisos por rol).
+ * Quién hace qué con las fichas de accidente (docs/specs/SPEC-accident-stats.md § Permisos por rol).
  * Decisión del PO (D10): todos los roles de la empresa ven las fichas de salud, sin permiso aparte.
  * D13: el superusuario de plataforma no las ve ni las edita, aunque `canTenantRole` le abra todo.
  */

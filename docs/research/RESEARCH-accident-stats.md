@@ -2,7 +2,7 @@
 
 **Estado:** Task 17.0 — investigación
 **Fecha:** 2026-10-21
-**Alcance:** definiciones y fórmulas de los índices de siniestralidad, clasificación de eventos, in itinere, contratistas, privacidad de datos de salud y anti-patrones de estadística. Insumo de `SPEC-accident-stats.md`.
+**Alcance:** definiciones y fórmulas de los índices de siniestralidad, clasificación de eventos, in itinere, contratistas, privacidad de datos de salud y anti-patrones de estadística. Insumo de `docs/specs/SPEC-accident-stats.md`.
 **Aviso:** no es asesoramiento legal ni técnico. Todo lo marcado C debe validarlo un profesional de Higiene y Seguridad (y un abogado, en lo de datos personales) antes de fijarse como regla.
 
 **Escala de confianza:** **A** = confirmado en la fuente (la leí en esta investigación). **B** = práctica habitual o fuente secundaria. **C** = no verificado, validar con un profesional.
@@ -24,11 +24,11 @@
 
 | Requisito (paráfrasis) | Implicación en producto | Conf. | Fuente |
 |---|---|---|---|
-| §9.1.1: determinar qué se mide, métodos, cuándo se mide y cuándo se analiza y evalúa; conservar información documentada | Cada índice tiene fórmula y base visibles; el período de carga es mensual | B | Proyecto: `RESEARCH-indicators.md` §A; texto oficial ISO de pago: no pude abrirlo (HTTP 403) |
+| §9.1.1: determinar qué se mide, métodos, cuándo se mide y cuándo se analiza y evalúa; conservar información documentada | Cada índice tiene fórmula y base visibles; el período de carga es mensual | B | Proyecto: `docs/research/RESEARCH-indicators.md` §A; texto oficial ISO de pago: no pude abrirlo (HTTP 403) |
 | La norma **no prescribe** índices concretos (IF, IG, TRIR…) | La organización elige y documenta su fórmula; por eso la base y el cargo son configurables y se muestran | B | Idem; verificar contra el texto oficial |
-| §10.2: reaccionar, evaluar con participación de los trabajadores la necesidad de acción, determinar causas, revisar riesgos, implementar la acción, **revisar su eficacia** | El accidente es un Hallazgo con 5 Porqués, medidas y verificación de eficacia (Tasks 10b–10d); la estadística no reemplaza esto | B | [ecesis — 45001 Incident and Corrective Action](https://www.ecesis.net/ISO-45001/Incident-and-Corrective-Action.aspx), [presencis — 45001 art. 10.2](https://cdn.presencis.com/regulations/iso-45001/article-10.2/); proyecto: `RESEARCH-findings-lifecycle.md` |
+| §10.2: reaccionar, evaluar con participación de los trabajadores la necesidad de acción, determinar causas, revisar riesgos, implementar la acción, **revisar su eficacia** | El accidente es un Hallazgo con 5 Porqués, medidas y verificación de eficacia (Tasks 10b–10d); la estadística no reemplaza esto | B | [ecesis — 45001 Incident and Corrective Action](https://www.ecesis.net/ISO-45001/Incident-and-Corrective-Action.aspx), [presencis — 45001 art. 10.2](https://cdn.presencis.com/regulations/iso-45001/article-10.2/); proyecto: `docs/research/RESEARCH-findings-lifecycle.md` |
 | "Incidente" en 45001 abarca el suceso con o sin lesión (el casi accidente es un incidente) | La clasificación incluye casi accidente y primeros auxilios aunque no entren en los índices | B | Conocimiento de la norma; definición 3.x no verificada contra el texto oficial |
-| Combinar indicadores reactivos (accidentes) y proactivos (inspecciones, capacitaciones) | El tablero ofrece vincular un Indicador de la Task 11c; no se presenta como único termómetro del SGI | B | `RESEARCH-indicators.md` §B |
+| Combinar indicadores reactivos (accidentes) y proactivos (inspecciones, capacitaciones) | El tablero ofrece vincular un Indicador de la Task 11c; no se presenta como único termómetro del SGI | B | `docs/research/RESEARCH-indicators.md` §B |
 
 ---
 
@@ -254,7 +254,7 @@ Principios que salen de la Ley 25.326 (§2.3) aplicados al producto:
 | 18 | ecesis / presencis — ISO 45001 10.2 | https://www.ecesis.net/ISO-45001/Incident-and-Corrective-Action.aspx | pasos de 10.2 | B |
 | 19 | Res. SRT 700/2000 | https://fio.unicen.edu.ar/usuario/segumar/Laura/material/LEGISLACI%d3N/Resoluci%f3n%20SRT%20700-00.pdf | in itinere excluido (visto en resumen) | B |
 | 20 | Plantilla de denuncia ART | https://forms-legal.com/argentina/employment/forms/formulario-art-denuncia-accidente-trabajo-argentina | plazo de 24 h (no es norma) | C |
-| 21 | Proyecto | `RESEARCH-indicators.md`, `RESEARCH-findings-lifecycle.md` | 9.1.1, 10.2 | B |
+| 21 | Proyecto | `docs/research/RESEARCH-indicators.md`, `docs/research/RESEARCH-findings-lifecycle.md` | 9.1.1, 10.2 | B |
 
 ---
 

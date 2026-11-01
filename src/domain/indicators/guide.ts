@@ -1,6 +1,6 @@
 /**
  * Guía breve de objetivos e indicadores. Base: ISO 9001:2026 §6.2 y §9.1,
- * ISO 14001:2015 §6.2 y §9.1, ISO 45001:2018 §6.2 y §9.1. Ver RESEARCH-indicators.md.
+ * ISO 14001:2015 §6.2 y §9.1, ISO 45001:2018 §6.2 y §9.1. Ver docs/research/RESEARCH-indicators.md.
  */
 export type IndicatorGuideSection = {
   id: string;

@@ -1,5 +1,5 @@
 /**
- * Tablero de seguridad vial (SPEC-road-safety.md, slices 18.3 y 18.4): serie mensual, estado de la
+ * Tablero de seguridad vial (docs/specs/SPEC-road-safety.md, slices 18.3 y 18.4): serie mensual, estado de la
  * exposición, desgloses, habilitación del conductor y exportaciones. Funciones puras: reciben lo que
  * ya trajo la base.
  */

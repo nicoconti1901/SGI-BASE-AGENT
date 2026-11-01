@@ -1,8 +1,8 @@
 # Spec: `road-safety` — Seguridad vial bajo ISO 39001 (Task 18)
 
 Estado: **APROBADO por el PO el 2026-10-28** con los defaults D1–D26 (reescritura del borrador del PR #32). **Excepción: el índice de cláusulas de ISO 39001 sigue sin verificar**; el tag `sin-verificar` (D1) no se retira hasta que el PO lo confirme contra la norma licenciada.
-Investigación y fuentes: `RESEARCH-road-safety.md` ("R§" apunta a esa sección; marcas A/B/C). **Ninguna cláusula de ISO 39001 está verificada contra el texto oficial** (R§1.1): donde este SPEC nombra una cláusula, lo dice.
-Se apoya en `SPEC-accident-stats.md` (ficha de accidente), `SPEC-inspections.md` (vehículos, odómetro), `SPEC-master-data.md`, `SPEC-training.md`, `SPEC-findings.md`, `SPEC-risks-opportunities.md` y `SPEC-audits.md`.
+Investigación y fuentes: `docs/research/RESEARCH-road-safety.md` ("R§" apunta a esa sección; marcas A/B/C). **Ninguna cláusula de ISO 39001 está verificada contra el texto oficial** (R§1.1): donde este SPEC nombra una cláusula, lo dice.
+Se apoya en `docs/specs/SPEC-accident-stats.md` (ficha de accidente), `docs/specs/SPEC-inspections.md` (vehículos, odómetro), `docs/specs/SPEC-master-data.md`, `docs/specs/SPEC-training.md`, `docs/specs/SPEC-findings.md`, `docs/specs/SPEC-risks-opportunities.md` y `docs/specs/SPEC-audits.md`.
 
 ## Qué cambia respecto del borrador del PR #32
 
@@ -44,7 +44,7 @@ Que una empresa que adopta ISO 39001 gestione la seguridad vial de su flota con 
 | D6 | Evento vial en las tasas | Todo evento de la flota **en misión**, con vehículo propio o de contratista, cuya clasificación **no** sea `near_miss` (con o sin lesión, daño material, fatal) | Contar el incidente sin daño inflaría la tasa; va aparte (R§3, R§5.1) |
 | D7 | Base de las tasas | **Por 1.000.000 de km** (eventos, con lesionados, vuelcos). La base va en la etiqueta y el export. No se calcula tasa de muertes por 100 millones | Unidad IOGP (R§3). Muertes y lesionados graves se muestran como conteo (R§1) |
 | D8 | Lesión grave | **Requirió internación** (`hospitalizedCount`); se cuentan personas | No hay definición local única (R§3, C): validar |
-| D9 | Daño material solo | Valor `property_damage_only` en `IncidentClassification` (migración propia, foundation 18.0). No entra en IF, IG, II | Ya previsto en `SPEC-accident-stats.md` |
+| D9 | Daño material solo | Valor `property_damage_only` en `IncidentClassification` (migración propia, foundation 18.0). No entra en IF, IG, II | Ya previsto en `docs/specs/SPEC-accident-stats.md` |
 | D10 | Incidente sin daño | `near_miss` con `isRoad = true`; no entra en las tasas, tarjeta propia | Evita un tipo paralelo |
 | D11 | Controla / influye | `inItinere = true` y vehículos `private` / `none` van en la sección "Fuera del control de la empresa": cuentan como evento, no entran en tasas por km | R§1, R§5.3 |
 | D12 | Km: fuente | Km del mes = lectura de cierre menos la del mes anterior; entre lecturas separadas por meses sin lectura, reparto **proporcional a los días** (mayor resto). Sin lectura utilizable = "sin dato" | R§4 (reparto B: validar) |

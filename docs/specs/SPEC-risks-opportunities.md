@@ -2,7 +2,7 @@
 
 **Estado:** Aprobado (madurez MVP = **Nivel 2 Controlado** — PO 2026-09-26)  
 **Fecha:** 2026-09-26  
-**Norma baseline:** ISO 9001:2026 §6.1 (paráfrasis; ver `RESEARCH-risks-opportunities.md`)  
+**Norma baseline:** ISO 9001:2026 §6.1 (paráfrasis; ver `docs/research/RESEARCH-risks-opportunities.md`)  
 **Fuera de alcance:** ISO 45001 hazard/OH&S risk · ERM genérico · heat map como pantalla principal · FMEA obligatorio  
 
 ---
@@ -208,7 +208,7 @@ Formulario de 40 campos · heat map home · oportunidad = riesgo verde · auto-c
 
 ## Technical notes
 
-- Spec de investigación: `RESEARCH-risks-opportunities.md`  
+- Spec de investigación: `docs/research/RESEARCH-risks-opportunities.md`  
 - Dominio previsto: `src/domain/risks/`, `src/domain/opportunities/`, acciones compartidas  
 - Implementación solo tras **aprobación** de esta SPEC  
 

@@ -1,5 +1,5 @@
 /**
- * Exportación de accidentabilidad (SPEC-accident-stats.md, slice 17.5): CSV agregado por sede y mes con
+ * Exportación de accidentabilidad (docs/specs/SPEC-accident-stats.md, slice 17.5): CSV agregado por sede y mes con
  * numeradores, denominadores y estado, y CSV de casos. Funciones puras: reciben lo que ya agregó la base.
  * Sin exposición, el índice sale vacío; nunca 0 (D8). Los accidentes in itinere van en su columna (D6).
  */

@@ -1,6 +1,6 @@
 # Spec: `safety-stats` — Estadísticas de accidentabilidad (Task 17)
 
-Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador; D10 y D12 cambiados, ver "Decisiones del PO"). Investigación y fuentes en `RESEARCH-accident-stats.md` (las referencias "R§" apuntan a esa sección). Se apoya en `SPEC-master-data.md` (sedes, personas), `SPEC-findings-lifecycle.md` (el accidente es un Hallazgo) y `SPEC-fase5-fundacion.md` (módulo activable, `DueItem`, `Action`). Base de la Task 18 (seguridad vial).
+Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador; D10 y D12 cambiados, ver "Decisiones del PO"). Investigación y fuentes en `docs/research/RESEARCH-accident-stats.md` (las referencias "R§" apuntan a esa sección). Se apoya en `docs/specs/SPEC-master-data.md` (sedes, personas), `docs/specs/SPEC-findings-lifecycle.md` (el accidente es un Hallazgo) y `docs/specs/SPEC-fase5-fundacion.md` (módulo activable, `DueItem`, `Action`). Base de la Task 18 (seguridad vial).
 
 ## Objective
 
@@ -221,7 +221,7 @@ Acción nueva en `src/domain/identity/authz.ts` (hoy no existe ninguna de SST): 
 - El `viewer` y el `contributor` ven la ficha de salud en solo lectura: sin botones de edición.
 - El superusuario de plataforma no ve fichas de salud por defecto (D13).
 - Cada alta, edición, reclasificación, consulta de la ficha de salud, carga o corrección de exposición, cambio de acceso y export de casos deja registro (quién, cuándo, qué), con el mecanismo de auditoría de datos maestros.
-- Los eventos de `Finding` (publicar, cerrar, anular) siguen las reglas de `SPEC-findings-lifecycle.md` sin cambios.
+- Los eventos de `Finding` (publicar, cerrar, anular) siguen las reglas de `docs/specs/SPEC-findings-lifecycle.md` sin cambios.
 
 ## Qué ve el cliente
 

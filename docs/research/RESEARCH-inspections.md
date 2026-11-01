@@ -1,6 +1,6 @@
 # Research: inspecciones (Task 15)
 
-Fecha: 2026-10-21. Insumo del `SPEC-inspections.md`. Es una investigación funcional y normativa, **no asesoramiento profesional**: todo lo marcado [C] debe validarlo un profesional de Higiene y Seguridad (HyS) matriculado antes de usarlo como plantilla de producción.
+Fecha: 2026-10-21. Insumo del `docs/specs/SPEC-inspections.md`. Es una investigación funcional y normativa, **no asesoramiento profesional**: todo lo marcado [C] debe validarlo un profesional de Higiene y Seguridad (HyS) matriculado antes de usarlo como plantilla de producción.
 
 ## 0. Cómo leer este documento
 
@@ -40,7 +40,7 @@ Las normas ISO **no fijan frecuencias ni listas de control**: la organización l
 | ISO 14001 §8.1 y §9.1.1 | Controlar operacionalmente los aspectos ambientales significativos y hacer seguimiento y medición | Ítems ambientales (residuos, derrames, sustancias) en la plantilla del obrador | [C] |
 | ISO 9001 §7.1.3 | Determinar, proveer y mantener la infraestructura (edificios, equipos, recursos de transporte) | Mantenimiento y estado de equipos y vehículos | [C] |
 
-Cláusulas para la entrada del catálogo de módulos (existen en el catálogo sembrado, verificado con el comando del encargo): `ISO45001:8.1`, `ISO45001:9.1.1`, `ISO14001:9.1.1` (las actuales), más `ISO45001:6.1.2`, `ISO14001:8.1` y `ISO9001:7.1.3`. Ver `SPEC-inspections.md`.
+Cláusulas para la entrada del catálogo de módulos (existen en el catálogo sembrado, verificado con el comando del encargo): `ISO45001:8.1`, `ISO45001:9.1.1`, `ISO14001:9.1.1` (las actuales), más `ISO45001:6.1.2`, `ISO14001:8.1` y `ISO9001:7.1.3`. Ver `docs/specs/SPEC-inspections.md`.
 
 ## 3. Marco legal argentino transversal
 

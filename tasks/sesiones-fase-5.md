@@ -33,12 +33,12 @@ Cuando el PR esté abierto y con CI en verde, en otra sesión: `/integrar <núme
 
 | Módulo (`/modulo …`) | SPEC | Nombre de entorno | Rama | Clave en el catálogo |
 |---|---|---|---|---|
-| `inspecciones` | `SPEC-inspections.md` | `insp` | `feat/inspecciones-<slices>` | `inspections` |
-| `calibraciones` | `SPEC-calibration.md` | `cal` | `feat/calibraciones-<slices>` | `instruments` |
-| `accidentabilidad` | `SPEC-accident-stats.md` | `acc` | `feat/accidentabilidad-<slices>` | `safety_stats` |
-| `proveedores` | `SPEC-suppliers.md` | `prov` | `feat/proveedores-<slices>` | `suppliers` |
-| `capacitaciones` | `SPEC-training.md` | `cap` | `feat/capacitaciones-<slices>` | `training` |
-| `seguridad-vial` (ver abajo) | `SPEC-road-safety.md` (aprobado 2026-10-28; 18.0 es un PR serial, no `/modulo`) | `vial` | `feat/seguridad-vial-<slices>` | `road_safety` |
+| `inspecciones` | `docs/specs/SPEC-inspections.md` | `insp` | `feat/inspecciones-<slices>` | `inspections` |
+| `calibraciones` | `docs/specs/SPEC-calibration.md` | `cal` | `feat/calibraciones-<slices>` | `instruments` |
+| `accidentabilidad` | `docs/specs/SPEC-accident-stats.md` | `acc` | `feat/accidentabilidad-<slices>` | `safety_stats` |
+| `proveedores` | `docs/specs/SPEC-suppliers.md` | `prov` | `feat/proveedores-<slices>` | `suppliers` |
+| `capacitaciones` | `docs/specs/SPEC-training.md` | `cap` | `feat/capacitaciones-<slices>` | `training` |
+| `seguridad-vial` (ver abajo) | `docs/specs/SPEC-road-safety.md` (aprobado 2026-10-28; 18.0 es un PR serial, no `/modulo`) | `vial` | `feat/seguridad-vial-<slices>` | `road_safety` |
 
 Los slices se nombran como en cada SPEC (S1…S11 en inspecciones; 16.x, 17.x, 19.x, 20.x en el resto).
 
@@ -62,7 +62,7 @@ Una fila = una sesión. Dos filas con el mismo número de ventana pueden correr 
 |---|---|---|---|---|
 | 9 | Checkpoint E | Flujo completo del plan, privacidad y permisos por rol, revisión humana | Todo lo anterior | M |
 
-**Seguridad vial (decisión del PO, 2026-10-28; hecha el 2026-10-29):** el PO aprobó `SPEC-road-safety.md` (ISO 39001 como norma propia, D1–D26 con sus defaults) y adelantó el módulo; se entregó en cuatro PR (fundación 18.0, 18.1 y 18.2, 18.3 y 18.4). **Ninguna cláusula de ISO 39001 está verificada**: los requisitos se cargan con el tag `sin-verificar` y el PO lo retira cuando confirme el índice contra la norma licenciada.
+**Seguridad vial (decisión del PO, 2026-10-28; hecha el 2026-10-29):** el PO aprobó `docs/specs/SPEC-road-safety.md` (ISO 39001 como norma propia, D1–D26 con sus defaults) y adelantó el módulo; se entregó en cuatro PR (fundación 18.0, 18.1 y 18.2, 18.3 y 18.4). **Ninguna cláusula de ISO 39001 está verificada**: los requisitos se cargan con el tag `sin-verificar` y el PO lo retira cuando confirme el índice contra la norma licenciada.
 
 Después de cada ventana, un PR chico de documentación actualiza `tasks/todo.md` y el README con lo entregado (lo hace la sesión de `/integrar`, no las de módulo).
 
@@ -73,7 +73,7 @@ Surgieron en los reportes de los agentes; cada una tiene un default aplicado.
 - **Accidentabilidad (decidida por el PO el 2026-10-29):** al anular un hallazgo, el caso sale de los conteos y su vencimiento «Actualizar días perdidos» se cierra en el momento (`cancelFinding`). Falta la revisión profesional de la Ley 25.326.
 - **Proveedores (decididas por el PO el 2026-10-27):** la evaluación inicial pendiente solo para críticos (también al importar CSV) y el cierre del plan de mejora no pasa a ser un vencimiento real. El 2026-10-29 decidió que «aprobados vigentes» (franja de conteos, lista de aprobados y su CSV) son solo los aprobados habilitados: los «con condiciones» no figuran. El responsable de un proveedor es opcional en el servicio y el formulario lo propone.
 - **Capacitaciones:** el PO aprobó el 2026-10-29 las cuatro etiquetas de confianza del catálogo sugerido ("En la norma", "Tema en la norma", "Práctica habitual", "A validar"). Las vigencias siguen necesitando la revisión de un profesional.
-- **Inspecciones:** el PO aprobó las plantillas como default (decisión 20 de `SPEC-inspections.md`, 2026-10-27). No autoriza activar el módulo en ningún cliente.
+- **Inspecciones:** el PO aprobó las plantillas como default (decisión 20 de `docs/specs/SPEC-inspections.md`, 2026-10-27). No autoriza activar el módulo en ningún cliente.
 - **Seguridad vial (decididas por el PO el 2026-10-29):** el conductor es una marca de la persona (vive en el módulo, en la pestaña Conductores, con el vencimiento de su licencia) y una tarea de conducción sin curso obligatorio no habilita a nadie. Opcional a futuro: mostrar la marca en la ficha de la persona de Datos maestros. Con `road_safety` disponible ya no queda ningún módulo `planned` en el catálogo.
 - **Antes de activar en clientes:** inspecciones (plantillas y criticidades), capacitaciones (vigencias), proveedores (pesos y documentos) y accidentabilidad (Ley 25.326) necesitan la revisión de un profesional, tal como indican sus SPEC. El PO decidió el 2026-10-29 que la revisión la hace el administrador.
 - **Seguridad vial (2026-10-29):** el PO aprobó los defaults de lesión grave (D8), poca exposición (D16), reparto por días (D12) y datos de conductores (D21/D24/D26). El índice de cláusulas de ISO 39001 sigue sin verificar: la búsqueda pública (fichas de ISO, AFNOR, EVS) confirma la edición ISO 39001:2012 con la enmienda Amd 1:2024 y las cláusulas 4 a 10, pero no publica las subcláusulas. El tag `sin-verificar` queda hasta contrastar con la norma licenciada. Falta además el abogado para el borrado de datos (D26) y la base legal (Ley 25.326).

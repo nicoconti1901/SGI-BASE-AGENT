@@ -74,7 +74,7 @@ export function validateTemplateForPublish(
   return errors.length === 0 ? { ok: true } : { ok: false, errors };
 }
 
-// ─── Plantillas v1 (RESEARCH-suppliers.md §C): propuesta de partida, a validar con un auditor ───
+// ─── Plantillas v1 (docs/research/RESEARCH-suppliers.md §C): propuesta de partida, a validar con un auditor ───
 
 type CriterionBase = Omit<TemplateCriterionInput, "weight" | "excluding" | "allowNA" | "basic">;
 

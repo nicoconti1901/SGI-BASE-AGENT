@@ -2,7 +2,7 @@
 
 **Estado:** Aprobado (PO 2026-09-27)
 **Fecha:** 2026-09-27
-**Normas:** ISO 9001:2026, ISO 14001:2015, ISO 45001:2018 §9.2 · guía ISO 19011:2026 (ver `RESEARCH-audits.md`)
+**Normas:** ISO 9001:2026, ISO 14001:2015, ISO 45001:2018 §9.2 · guía ISO 19011:2026 (ver `docs/research/RESEARCH-audits.md`)
 **Fuera de alcance:** auditorías a proveedores (2.ª parte) · seguimiento de auditorías de certificación (3.ª parte) · registro de competencias/formación de auditores · muestreo estadístico · indicadores (Task 11c)
 
 ---

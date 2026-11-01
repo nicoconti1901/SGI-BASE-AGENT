@@ -2,7 +2,7 @@
 
 **Estado:** Aprobado (PO 2026-09-27)
 **Fecha:** 2026-09-27
-**Normas:** ISO 9001:2026 / 14001:2015 / 45001:2018 §6.2 y §9.1 (ver `RESEARCH-indicators.md`)
+**Normas:** ISO 9001:2026 / 14001:2015 / 45001:2018 §6.2 y §9.1 (ver `docs/research/RESEARCH-indicators.md`)
 **Fuera de alcance:** importación CSV · API para n8n · fórmulas calculadas automáticamente desde otros módulos · revisión por la dirección (se alimenta después)
 
 ---

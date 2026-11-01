@@ -2,7 +2,7 @@
  * Catálogo sugerido de cursos (SPEC-training, decisión 11): plantillas en código, no datos del cliente.
  * Nada se activa sin que el cliente lo elija y todas las vigencias son editables.
  *
- * Fuente y nivel de confianza de cada fila: RESEARCH-training.md §7. Las vigencias NO son asesoramiento
+ * Fuente y nivel de confianza de cada fila: docs/research/RESEARCH-training.md §7. Las vigencias NO son asesoramiento
  * legal y están pendientes de validar por un profesional de Higiene y Seguridad (§10).
  */
 import type { IsoStandardCode } from "@/domain/ims/catalog";

@@ -1,5 +1,5 @@
 /**
- * Tablero de seguridad vial (SPEC-road-safety.md, 18.3): junta eventos, km y flota de la empresa y arma lo
+ * Tablero de seguridad vial (docs/specs/SPEC-road-safety.md, 18.3): junta eventos, km y flota de la empresa y arma lo
  * que muestra `/road-safety`. Los nombres de los conductores solo salen para quien gestiona el módulo (D24).
  */
 import type { Prisma, PrismaClient } from "@prisma/client";

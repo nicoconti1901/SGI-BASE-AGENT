@@ -1,6 +1,6 @@
 # Research: capacitaciones, competencia y toma de conciencia (Task 20)
 
-Fecha de la investigación: 2026-10-21. Insumo del `SPEC-training.md`.
+Fecha de la investigación: 2026-10-21. Insumo del `docs/specs/SPEC-training.md`.
 
 **Escala de confianza usada en todo el documento**
 - **A. Confirmado en fuente**: lo dice la norma o una resolución, y se leyó el texto (oficial o reproducción fiel). Se cita la URL.

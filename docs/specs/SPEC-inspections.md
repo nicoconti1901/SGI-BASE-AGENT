@@ -1,6 +1,6 @@
 # Spec: `inspections` — Motor de inspecciones y registro de activos (Task 15)
 
-Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador). Depende de la Task 14 (datos maestros) y de la base común de la Fase 5 (`SPEC-fase5-fundacion.md`). Investigación normativa en `RESEARCH-inspections.md`; las marcas [A] / [B] / [C] de este documento remiten a su sección 0.
+Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador). Depende de la Task 14 (datos maestros) y de la base común de la Fase 5 (`docs/specs/SPEC-fase5-fundacion.md`). Investigación normativa en `docs/research/RESEARCH-inspections.md`; las marcas [A] / [B] / [C] de este documento remiten a su sección 0.
 
 ## Objective
 
@@ -250,7 +250,7 @@ Cada slice termina con `tsc`, `eslint` y `vitest` en verde. El orden está pensa
 
 ## Anexo: plantillas precargadas
 
-Criticidad: **C** crítico, **M** mayor, **m** menor. Respuesta: check = conforme / no conforme / N/A, salvo que se indique. Fuente: [A] confirmado, [B] práctica, [C] a validar (ver `RESEARCH-inspections.md`). Todo lo de este anexo es una **propuesta que debe revisar un profesional de HyS**. Un ítem marcado *auto* lo deriva el sistema.
+Criticidad: **C** crítico, **M** mayor, **m** menor. Respuesta: check = conforme / no conforme / N/A, salvo que se indique. Fuente: [A] confirmado, [B] práctica, [C] a validar (ver `docs/research/RESEARCH-inspections.md`). Todo lo de este anexo es una **propuesta que debe revisar un profesional de HyS**. Un ítem marcado *auto* lo deriva el sistema.
 
 ### Resumen de frecuencias y vencimientos
 

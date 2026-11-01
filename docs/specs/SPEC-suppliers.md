@@ -1,6 +1,6 @@
 # Spec: `suppliers` — Evaluación de proveedores (Task 19)
 
-Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador). Investigación: `RESEARCH-suppliers.md` (cada afirmación lleva su marca de confianza (a)/(b)/(c)).
+Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador). Investigación: `docs/research/RESEARCH-suppliers.md` (cada afirmación lleva su marca de confianza (a)/(b)/(c)).
 Normas: ISO 9001 §8.4 (8.4.1, 8.4.2, 8.4.3) · ISO 14001 §8.1 · ISO 45001 §8.1.4 (8.1.4.2 contratistas, 8.1.4.3 tercerización).
 Depende de: Task 14 (Sede, Persona), Task 14b (`DueItem` con dueño/sede/persona, `Finding.origin = supplier` reservado, catálogo de módulos), Task 10 (Finding), Task 11 (Action).
 
@@ -313,7 +313,7 @@ Portal o autoservicio del proveedor · módulo de compras, órdenes de compra y 
 
 ## Plan vertical (Task 19)
 
-Una sola regla de integración: cada slice es un PR; los cambios en modelos compartidos (valor `supplier_evaluation` en `ActionLinkTarget`, `Person.supplierId`) van **solos y primero** en 19.1, aditivos, para no pisar a otros módulos de la Fase 5 (ver `SPEC-fase5-fundacion.md`). El módulo cambia en el catálogo de `planned` a `available` al terminar 19.2 (con `defaultEnabled: false`); `Finding.origin = supplier` ya está reservado.
+Una sola regla de integración: cada slice es un PR; los cambios en modelos compartidos (valor `supplier_evaluation` en `ActionLinkTarget`, `Person.supplierId`) van **solos y primero** en 19.1, aditivos, para no pisar a otros módulos de la Fase 5 (ver `docs/specs/SPEC-fase5-fundacion.md`). El módulo cambia en el catálogo de `planned` a `available` al terminar 19.2 (con `defaultEnabled: false`); `Finding.origin = supplier` ya está reservado.
 
 | Slice | Entrega | Tamaño |
 |---|---|---|

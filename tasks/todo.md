@@ -214,7 +214,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ## Task 10b: findings — dominio + persistencia + publish
 
-**Description:** Implementar `SPEC-findings.md`: Finding tipado, 5 Porqués con causa raíz obligatoria, medidas con owner usuario, notificados, DueItems al publicar. Refactor/reemplazo del modelo NC de Task 10.
+**Description:** Implementar `docs/specs/SPEC-findings.md`: Finding tipado, 5 Porqués con causa raíz obligatoria, medidas con owner usuario, notificados, DueItems al publicar. Refactor/reemplazo del modelo NC de Task 10.
 
 **Acceptance criteria:**
 - [x] Dominio: tipos, gates de publicación, 5 Whys (confirm root cause)
@@ -253,7 +253,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ## Task 10d: findings — lógica de estados del hallazgo
 
-**Description:** Ciclo de vida real del hallazgo según §10.2 (9001/14001/45001) y la guía ISO/TC 176 APG: estados derivados de las medidas, **verificación de eficacia** antes de cerrar NC e incidentes, anulación y reapertura con motivo, e historial. Research: `RESEARCH-findings-lifecycle.md`. SPEC: `SPEC-findings-lifecycle.md` (aprobado PO 2026-09-27).
+**Description:** Ciclo de vida real del hallazgo según §10.2 (9001/14001/45001) y la guía ISO/TC 176 APG: estados derivados de las medidas, **verificación de eficacia** antes de cerrar NC e incidentes, anulación y reapertura con motivo, e historial. Research: `docs/research/RESEARCH-findings-lifecycle.md`. SPEC: `docs/specs/SPEC-findings-lifecycle.md` (aprobado PO 2026-09-27).
 
 **Decisiones PO (2026-09-27):** verificación obligatoria para NC e incidente · plazo 30 días editable (antes, con motivo) · verifica admin o responsable de proceso independiente (excepción justificada) · anula y reabre solo el admin.
 
@@ -271,7 +271,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ## Task 11: operations-core — riesgos y oportunidades (ISO 9001:2026)
 
-**Description:** Módulo de **riesgos** y **oportunidades** del SGC según ISO 9001:2026 (6.1.1–6.1.3), con objetos semánticos separados, acciones/efectividad, revisión y evidencia. **No** es un registro genérico ni matriz obligatoria. Investigación: `RESEARCH-risks-opportunities.md`. SPEC: `SPEC-risks-opportunities.md` (Nivel 2 aprobado PO 2026-09-26).
+**Description:** Módulo de **riesgos** y **oportunidades** del SGC según ISO 9001:2026 (6.1.1–6.1.3), con objetos semánticos separados, acciones/efectividad, revisión y evidencia. **No** es un registro genérico ni matriz obligatoria. Investigación: `docs/research/RESEARCH-risks-opportunities.md`. SPEC: `docs/specs/SPEC-risks-opportunities.md` (Nivel 2 aprobado PO 2026-09-26).
 
 **Acceptance criteria:**
 - [x] Informe de investigación + SPEC Nivel 2 aprobado
@@ -301,7 +301,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ## Task 11b: operations-core — auditorías internas integradas (9001/14001/45001)
 
-**Description:** Ciclo completo de auditoría interna: programa anual → plan (objetivo, alcance, criterios) → lista de verificación desde el catálogo del tenant → hallazgos que crean `Finding` → informe → cierre, con cobertura del programa. Research: `RESEARCH-audits.md`. SPEC: `SPEC-audits.md` (aprobado PO 2026-09-27).
+**Description:** Ciclo completo de auditoría interna: programa anual → plan (objetivo, alcance, criterios) → lista de verificación desde el catálogo del tenant → hallazgos que crean `Finding` → informe → cierre, con cobertura del programa. Research: `docs/research/RESEARCH-audits.md`. SPEC: `docs/specs/SPEC-audits.md` (aprobado PO 2026-09-27).
 
 **Decisiones PO (2026-09-27):** auditorías antes que indicadores · integrada 9001/14001/45001 · ciclo completo · SPEC antes de construir.
 
@@ -328,7 +328,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 - Reutilizar: `Finding` (con origen auditoría externa), storage para el informe, cobertura del programa (opcional).
 - Riesgos: calidad de extracción según formato de cada organismo; datos sensibles del informe; costo por documento.
 
-**Decisiones PO (2026-09-29):** extracción con LLM de Anthropic + revisión humana obligatoria · avanzar primero modelo + adjunto, extracción después. SPEC: `SPEC-external-audits.md`.
+**Decisiones PO (2026-09-29):** extracción con LLM de Anthropic + revisión humana obligatoria · avanzar primero modelo + adjunto, extracción después. SPEC: `docs/specs/SPEC-external-audits.md`.
 
 **Sub-tareas:**
 - [x] 11d.1 Modelo (`Audit.kind`, tipo, auditor, resultado, plazo de respuesta → DueItem), sección en `/audits`, fuera de programa/cobertura/indicadores
@@ -342,7 +342,7 @@ Mark tasks `[x]` only after acceptance criteria and verification pass.
 
 ## Task 11c (hecha): operations-core — objetivos e indicadores (9001/14001/45001)
 
-**Description:** Objetivos del SGI (§6.2) con indicadores medibles (§9.1): carga manual por período, estado determinista (en meta / alerta / fuera de meta), análisis obligatorio de desvíos con camino a Hallazgos y Riesgos, vencimientos de carga y tablero. Research: `RESEARCH-indicators.md`. SPEC: `SPEC-indicators.md` (aprobado PO 2026-09-27).
+**Description:** Objetivos del SGI (§6.2) con indicadores medibles (§9.1): carga manual por período, estado determinista (en meta / alerta / fuera de meta), análisis obligatorio de desvíos con camino a Hallazgos y Riesgos, vencimientos de carga y tablero. Research: `docs/research/RESEARCH-indicators.md`. SPEC: `docs/specs/SPEC-indicators.md` (aprobado PO 2026-09-27).
 
 **Decisiones PO (2026-09-27):** objetivos con sus indicadores · carga manual por período · desvío = análisis + ofrecer hallazgo/riesgo · integrado 9001/14001/45001.
 
@@ -432,7 +432,7 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
 - Modelo `JobTask` (no `Task`) para no chocar con el vocabulario del plan.
 
 **Sub-tareas:**
-- [x] 14.0 SPEC `SPEC-master-data.md` aprobado por el PO 2026-10-01 (rotación entre sedes · DNI visible · el CSV puede crear sedes/puestos con confirmación)
+- [x] 14.0 SPEC `docs/specs/SPEC-master-data.md` aprobado por el PO 2026-10-01 (rotación entre sedes · DNI visible · el CSV puede crear sedes/puestos con confirmación)
 - [x] 14.1 (hecho 2026-10-01: migración `add_master_data`, `src/domain/masterdata/`, `src/lib/masterdata.ts`, permisos `manage_master_data` / `assign_job_tasks`, tests `masterdata*.test.ts`) Prisma + dominio: `Site` (nombre, tipo oficina/base/obrador/yacimiento/campamento/planta, dirección, activa), `JobPosition`, `JobTask` (flag `critical`), `Person` (legajo único por tenant, nombre, DNI?, empresa, sede, puesto, fecha de ingreso, estado), `PersonJobTask`; índices por `tenantId`; tests de aislamiento entre tenants y de unicidad
 - [x] 14.2 (hecho 2026-10-01: `/t/[slug]/master-data/{sites,positions,tasks}`, menú "Datos maestros", `e2e/master-data.spec.ts`) UI de alta, baja y modificación de sedes, puestos y tareas (`/t/[slug]/master-data/**`); no se puede dar de baja si hay dependientes activos
 - [x] 14.3 (hecho 2026-10-01: `/t/[slug]/master-data/people` lista con filtros · alta · ficha con edición/tareas/baja/historial · `people/import` con vista previa y confirmación de lo que se crea; e2e en `master-data.spec.ts`) Personas: alta, edición y baja; asignación de puesto, sede y tareas; **importación CSV de la nómina** con validación por fila, vista previa y reporte de errores; idempotente por legajo (reimportar actualiza, no duplica)
@@ -456,7 +456,7 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
 
 ## Task 14b: base común de la Fase 5 (hecha 2026-10-20)
 
-**Description:** Resolver en serie lo que comparten los módulos 15–20 antes de construirlos en paralelo. SPEC: `SPEC-fase5-fundacion.md` (decisiones del PO 2026-10-20).
+**Description:** Resolver en serie lo que comparten los módulos 15–20 antes de construirlos en paralelo. SPEC: `docs/specs/SPEC-fase5-fundacion.md` (decisiones del PO 2026-10-20).
 
 - [x] Módulo viejo de NC eliminado (código, tests, tablas `nonconformity` / `corrective_action`)
 - [x] `Finding.origin` (`manual`, `internal_audit`, `external_audit`, `indicator`; reservados `inspection`, `incident`, `supplier`) con backfill
@@ -487,7 +487,7 @@ Cada tarea arranca con research + SPEC aprobado por el PO (mismo patrón que 10d
 - Frecuencias configurables por tenant y por tipo (defaults abajo).
 
 **Sub-tareas — motor:**
-- [x] 15.0 (hecho 2026-10-21: `RESEARCH-inspections.md` y `SPEC-inspections.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `RESEARCH-inspections.md` / `SPEC-inspections.md` (normativa de referencia por tipo, frecuencias, ítems, reglas de resultado) aprobado por el PO
+- [x] 15.0 (hecho 2026-10-21: `docs/research/RESEARCH-inspections.md` y `docs/specs/SPEC-inspections.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `docs/research/RESEARCH-inspections.md` / `docs/specs/SPEC-inspections.md` (normativa de referencia por tipo, frecuencias, ítems, reglas de resultado) aprobado por el PO
 - [x] 15.1 (hecho 2026-10-22, PR #15) Dominio + Prisma:
   - `Asset`: tipo, código interno, sede, estado `in_service` / `out_of_service` / `retired`, atributos propios del tipo en JSON validado con zod, persona asignada.
   - `AssetDueDate`: vencimientos documentales por activo (carga, PH, VTV, seguro, certificación…).
@@ -589,7 +589,7 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 - **Fuera de tolerancia:** obliga a evaluar si siguen siendo válidas las mediciones hechas desde la última calibración apta, y a registrar la acción (un hallazgo si corresponde).
 
 **Sub-tareas:**
-- [x] 16.0 (hecho 2026-10-21: `RESEARCH-calibration.md` y `SPEC-calibration.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `SPEC-calibration.md` (magnitudes, intervalos, regla de decisión, estados, etiqueta de estado) aprobado por el PO
+- [x] 16.0 (hecho 2026-10-21: `docs/research/RESEARCH-calibration.md` y `docs/specs/SPEC-calibration.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `docs/specs/SPEC-calibration.md` (magnitudes, intervalos, regla de decisión, estados, etiqueta de estado) aprobado por el PO
 - [x] 16.1 (hecho 2026-10-23, PR #20) Dominio + Prisma:
   - `Asset` de tipo `measuring_equipment`, con atributos: magnitud, rango, resolución, EMP, uso crítico, si requiere calibración y/o verificación, e intervalos.
   - `CalibrationRecord`: tipo (calibración o verificación), fecha, laboratorio, n.° de certificado, acreditación; puntos con valor nominal, medido, error y U; resultado; certificado en PDF.
@@ -637,7 +637,7 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 - La ficha tiene datos de salud, que son **datos sensibles**: solo el tenant_admin y los process_owner con permiso de SST ven la persona y la lesión; el resto ve solo totales, sin nombres.
 
 **Sub-tareas:**
-- [x] 17.0 (hecho 2026-10-21: `RESEARCH-accident-stats.md` y `SPEC-accident-stats.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `RESEARCH-accident-stats.md` / `SPEC-accident-stats.md` (definiciones, índices, clasificación por forma del accidente, agente, naturaleza de la lesión y parte del cuerpo; privacidad) aprobado por el PO
+- [x] 17.0 (hecho 2026-10-21: `docs/research/RESEARCH-accident-stats.md` y `docs/specs/SPEC-accident-stats.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `docs/research/RESEARCH-accident-stats.md` / `docs/specs/SPEC-accident-stats.md` (definiciones, índices, clasificación por forma del accidente, agente, naturaleza de la lesión y parte del cuerpo; privacidad) aprobado por el PO
 - [x] 17.1 (hecho 2026-10-22, PR #13) Dominio + Prisma:
   - `IncidentRecord` 1:1 con `Finding`: clasificación, fecha y hora, sede, persona afectada, propio o contratista, in itinere, vial, forma del accidente, agente material, naturaleza de la lesión, parte del cuerpo, días perdidos, fecha del alta, n.° de denuncia a la ART.
   - `ExposurePeriod`: sede × mes × propio/contratista, con HHT y dotación promedio.
@@ -672,12 +672,12 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 
 ## Task 18: seguridad vial — estadística propia y separada
 
-> **Hecha (2026-10-29), módulo propio bajo la ISO 39001.** El PO adelantó la tarea y aprobó `SPEC-road-safety.md` el 2026-10-28 (D1–D26). El alcance de abajo es el original; el vigente es el del SPEC. `road_safety` pasó a `available` en 18.4. Pendiente del PO: confirmar el índice de cláusulas de ISO 39001 contra la norma licenciada (hasta entonces llevan el tag `sin-verificar`).
+> **Hecha (2026-10-29), módulo propio bajo la ISO 39001.** El PO adelantó la tarea y aprobó `docs/specs/SPEC-road-safety.md` el 2026-10-28 (D1–D26). El alcance de abajo es el original; el vigente es el del SPEC. `road_safety` pasó a `available` en 18.4. Pendiente del PO: confirmar el índice de cláusulas de ISO 39001 contra la norma licenciada (hasta entonces llevan el tag `sin-verificar`).
 
 **Description:** Módulo y tablero **propios** de seguridad vial (referencias: ISO 39001 e indicadores del estilo IOGP), separados de la accidentabilidad general. Cubre todos los eventos viales: con o sin lesión, en misión o in itinere, y los que solo dejan daño material. Los índices se calculan sobre los **km recorridos** por la flota. Reutiliza la ficha de accidente (marcada como vial) y el registro de vehículos de la Task 15.
 
 **Sub-tareas:**
-- [x] 18.0 (hecho 2026-10-28, PR #44: `ISO39001` como norma opt-in, `manage_road_safety`, `property_damage_only`) SPEC `SPEC-road-safety.md` aprobado por el PO (tipos de evento, índices, de dónde salen los km, qué cuenta también en la estadística general)
+- [x] 18.0 (hecho 2026-10-28, PR #44: `ISO39001` como norma opt-in, `manage_road_safety`, `property_damage_only`) SPEC `docs/specs/SPEC-road-safety.md` aprobado por el PO (tipos de evento, índices, de dónde salen los km, qué cuenta también en la estadística general)
 - [x] 18.1 (hecho 2026-10-29, PR #45) Dominio + Prisma:
   - `RoadEventDetail` 1:1 con un `IncidentRecord` vial: vehículo, conductor, en misión o in itinere, tipo de evento (choque con otro vehículo o con un objeto fijo, vuelco, despiste, atropello, incidente sin daño), camino (asfalto, ripio, tierra), luz y clima, uso del cinturón, velocidad estimada, daños materiales, lesionados, causa principal.
   - `VehicleKmPeriod`: vehículo × mes, con los km y su origen (`manual` u `odometer`).
@@ -737,7 +737,7 @@ Abarca a los contratistas (45001 §8.1.4.2) y a los proveedores con impacto ambi
 - Los criterios tienen versiones; cada evaluación guarda una copia fija de los que usó.
 
 **Sub-tareas:**
-- [x] 19.0 (hecho 2026-10-21: `RESEARCH-suppliers.md` y `SPEC-suppliers.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `SPEC-suppliers.md` aprobado por el PO
+- [x] 19.0 (hecho 2026-10-21: `docs/research/RESEARCH-suppliers.md` y `docs/specs/SPEC-suppliers.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `docs/specs/SPEC-suppliers.md` aprobado por el PO
 - [x] 19.1 (hecho 2026-10-22, PR #14) Dominio + Prisma:
   - `Supplier`: razón social, CUIT único por tenant, categoría o rubro, tipo (producto, servicio o contratista), criticidad, sedes a las que atiende, contacto, estado (`potential` / `approved` / `conditional` / `not_approved` / `inactive`).
   - `SupplierCriteriaTemplate` con versiones.
@@ -793,7 +793,7 @@ El estado se calcula a partir de la matriz y de los registros; nunca se marca a 
 - Si falta o venció un curso obligatorio de una tarea crítica, la persona queda **no habilitada** para esa tarea. Lo usan 15.9, 15.11 y 18.4.
 
 **Sub-tareas:**
-- [x] 20.0 (hecho 2026-10-21: `RESEARCH-training.md` y `SPEC-training.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `SPEC-training.md` aprobado por el PO
+- [x] 20.0 (hecho 2026-10-21: `docs/research/RESEARCH-training.md` y `docs/specs/SPEC-training.md`, aprobados por el PO con las recomendaciones del borrador) Research + SPEC `docs/specs/SPEC-training.md` aprobado por el PO
 - [x] 20.1 (hecho 2026-10-22, PR #12) Dominio + Prisma:
   - `Course`: nombre, tema, normas, modalidad, duración en horas, vigencia en meses, si requiere evaluar eficacia, instructor o proveedor.
   - `TrainingRequirement`: puesto **o** tarea × curso, obligatorio o no, días de gracia.

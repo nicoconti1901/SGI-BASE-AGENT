@@ -1,6 +1,6 @@
 # Spec: `calibration` — Equipos de medición y calibraciones (Task 16)
 
-Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador). Investigación de respaldo: `RESEARCH-calibration.md` (las referencias "R§" apuntan a sus secciones).
+Estado: **aprobado por el PO el 2026-10-21** (con las recomendaciones del borrador). Investigación de respaldo: `docs/research/RESEARCH-calibration.md` (las referencias "R§" apuntan a sus secciones).
 Depende de: Task 15.1–15.2 (`Asset`), Task 14 (`Site`, `Person`), base común de la Fase 5 (`DueItem`, `Action`, `Finding.origin`, catálogo de módulos).
 
 ## Objective

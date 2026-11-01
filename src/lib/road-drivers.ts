@@ -1,5 +1,5 @@
 /**
- * Conductores habilitados (SPEC-road-safety.md, 18.4, D20): licencia vigente más manejo defensivo vigente.
+ * Conductores habilitados (docs/specs/SPEC-road-safety.md, 18.4, D20): licencia vigente más manejo defensivo vigente.
  * Conductor es una marca de la persona que se gestiona acá (`RoadDriver`, con el vencimiento de su licencia). El
  * manejo defensivo sale de los cursos obligatorios de la tarea de conducción que elige la empresa (Task 20,
  * `isQualifiedForTask`, que no exige que la tarea esté asignada). La lista con nombres es de quien gestiona la

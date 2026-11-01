@@ -6,7 +6,7 @@ import {
 } from "@/domain/findings/types";
 
 /**
- * Ciclo de vida del hallazgo — SPEC-findings-lifecycle.md (§10.2 y guía
+ * Ciclo de vida del hallazgo — docs/specs/SPEC-findings-lifecycle.md (§10.2 y guía
  * ISO/TC 176 APG): cerrar exige eficacia verificada en NC e incidentes.
  */
 

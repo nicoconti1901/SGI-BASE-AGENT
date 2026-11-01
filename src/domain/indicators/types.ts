@@ -1,4 +1,4 @@
-/** Objetivos e indicadores del SGI — §6.2 y §9.1 (SPEC-indicators.md). */
+/** Objetivos e indicadores del SGI — §6.2 y §9.1 (docs/specs/SPEC-indicators.md). */
 
 export type IndicatorDirection = "higher_better" | "lower_better";
 export type IndicatorFrequency = "monthly" | "quarterly" | "semiannual" | "annual";

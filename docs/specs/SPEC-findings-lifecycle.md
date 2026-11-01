@@ -2,8 +2,8 @@
 
 **Estado:** Aprobado (PO 2026-09-27)
 **Fecha:** 2026-09-27
-**Normas:** ISO 9001 / 14001 / 45001 §10.2 · guía ISO/TC 176 APG (ver `RESEARCH-findings-lifecycle.md`)
-**Complementa:** `SPEC-findings.md` (alta, 5 Porqués, medidas, adjuntos)
+**Normas:** ISO 9001 / 14001 / 45001 §10.2 · guía ISO/TC 176 APG (ver `docs/research/RESEARCH-findings-lifecycle.md`)
+**Complementa:** `docs/specs/SPEC-findings.md` (alta, 5 Porqués, medidas, adjuntos)
 
 ---
 

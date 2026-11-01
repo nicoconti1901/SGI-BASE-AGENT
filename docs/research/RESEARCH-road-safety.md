@@ -1,8 +1,8 @@
 # Investigación: seguridad vial (ISO 39001) — Task 18
 
-**Estado:** Task 18.0 — investigación, revisada bajo el enfoque "ISO 39001 como norma propia" (PARA APROBAR junto con `SPEC-road-safety.md`)
+**Estado:** Task 18.0 — investigación, revisada bajo el enfoque "ISO 39001 como norma propia" (PARA APROBAR junto con `docs/specs/SPEC-road-safety.md`)
 **Fecha:** 2026-10-28 (revisión de la del 2026-10-27, PR #32)
-**Alcance:** qué pide ISO 39001, qué dice la normativa argentina de tránsito, cómo miden la siniestralidad vial las empresas (estilo IOGP), de dónde salen los km, privacidad y anti-patrones. Insumo de `SPEC-road-safety.md`.
+**Alcance:** qué pide ISO 39001, qué dice la normativa argentina de tránsito, cómo miden la siniestralidad vial las empresas (estilo IOGP), de dónde salen los km, privacidad y anti-patrones. Insumo de `docs/specs/SPEC-road-safety.md`.
 **Aviso:** no es asesoramiento legal ni técnico. Todo lo marcado C debe validarlo un profesional de Higiene y Seguridad (y un abogado, en lo de datos personales) antes de fijarse como regla.
 
 **Escala de confianza:** **A** = confirmado en la fuente consultada en esta investigación. **B** = práctica habitual o fuente secundaria (resumen, nota, listado). **C** = no verificado, validar con un profesional.
@@ -119,7 +119,7 @@
 2. **Mes sin km = cero:** falso. Es "sin dato", y los eventos de ese vehículo y mes salen de la tasa (como `missing` en la Task 17).
 3. **In itinere o vehículo particular en tasa por km:** no hay km de la flota. Cuentan como eventos pero **no** entran en las tasas por km; tarjeta aparte.
 4. **Evento sin vehículo cargado** (por ejemplo, peatón o vehículo del contratista): cuenta como evento, no en tasas por vehículo; se avisa.
-5. **Doble contabilidad con la Task 17:** un evento con lesión en jornada ya está en los índices laborales y aparece en ambos tableros; uno in itinere, solo en el vial (por diseño de la Task 17). El evento solo con daño material **no** entra en IF, IG ni II (`SPEC-accident-stats.md`, punto de extensión).
+5. **Doble contabilidad con la Task 17:** un evento con lesión en jornada ya está en los índices laborales y aparece en ambos tableros; uno in itinere, solo en el vial (por diseño de la Task 17). El evento solo con daño material **no** entra en IF, IG ni II (`docs/specs/SPEC-accident-stats.md`, punto de extensión).
 6. **Ranking de conductores:** muestra personas con nombre. Se limita a quien gestiona el módulo y se presenta como "para revisar", no como puntaje.
 7. **Vehículos de contratistas:** sus km no los carga la empresa. Quedan fuera de la tasa de flota salvo que el cliente los cargue a mano (decisión).
 
@@ -127,7 +127,7 @@
 
 ## 6. Preguntas abiertas para el PO y profesionales
 
-Ver "Decisiones a confirmar" en `SPEC-road-safety.md`. Pendientes de un profesional: definición de lesión grave, umbral de poca exposición, validez del reparto por días, base legal y consentimiento del tratamiento de excesos de velocidad por conductor, retención de datos, y la numeración de cláusulas ISO 39001 (§1.1, ninguna verificada).
+Ver "Decisiones a confirmar" en `docs/specs/SPEC-road-safety.md`. Pendientes de un profesional: definición de lesión grave, umbral de poca exposición, validez del reparto por días, base legal y consentimiento del tratamiento de excesos de velocidad por conductor, retención de datos, y la numeración de cláusulas ISO 39001 (§1.1, ninguna verificada).
 
 ## Fuentes
 
@@ -137,4 +137,4 @@ Ver "Decisiones a confirmar" en `SPEC-road-safety.md`. Pendientes de un profesio
 - Decreto 779/95 y modificaciones: [Expediente Legislatura de Jujuy](https://cdjujuy.gob.ar/wp-content/uploads/2026/05/Expt.410-x-2026.pdf) (fuente secundaria); no se leyó el texto del decreto.
 - [IOGP — Motor vehicle crash data 2008–2022](https://idms.iogp.org/Documents/1205) y [reportes publicados](https://www.iogp.org/blog/news/motor-vehicle-crash-data-reports-published/); IOGP Report 365 (Land transport safety recommended practice, no leído).
 - [AAIP — ubicación como dato personal (Ley 25.326)](https://www.argentina.gob.ar/node/195420).
-- Proyecto: `RESEARCH-accident-stats.md`, `SPEC-accident-stats.md`, `SPEC-inspections.md`, `tasks/todo.md` (Task 18).
+- Proyecto: `docs/research/RESEARCH-accident-stats.md`, `docs/specs/SPEC-accident-stats.md`, `docs/specs/SPEC-inspections.md`, `tasks/todo.md` (Task 18).

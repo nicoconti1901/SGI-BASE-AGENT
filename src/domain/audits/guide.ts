@@ -2,7 +2,7 @@ import type { AuditItemResult } from "@/domain/audits/types";
 
 /**
  * Guía breve de auditoría interna. Base: ISO 19011:2026 (cl. 5–7, Anexo A),
- * ISO 9001:2026 / 14001:2015 / 45001:2018 §9.2. Ver RESEARCH-audits.md.
+ * ISO 9001:2026 / 14001:2015 / 45001:2018 §9.2. Ver docs/research/RESEARCH-audits.md.
  */
 export type AuditGuideSection = {
   id: string;

@@ -63,13 +63,13 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 | **Medidas** | Owner del tenant, vencimiento → DueItem, **evidencia de archivo** para cerrar. |
 | **Bandeja** | Filtros, estado del hallazgo y de cada medida. |
 
-Rutas: `/t/[slug]/findings`. Spec: [`SPEC-findings.md`](./SPEC-findings.md).
+Rutas: `/t/[slug]/findings`. Spec: [`docs/specs/SPEC-findings.md`](./docs/specs/SPEC-findings.md).
 
-**Ciclo de vida (Task 10d):** Publicado → En curso (al iniciar o cerrar una medida) → En verificación (al cerrar la última; solo NC e incidentes) → Cerrado (con eficacia verificada). Una verificación no eficaz o una reapertura vuelve a En curso y exige una nueva medida correctiva. Anular y reabrir: solo el administrador, con motivo. Cada cambio queda en el historial. Spec: [`SPEC-findings-lifecycle.md`](./SPEC-findings-lifecycle.md).
+**Ciclo de vida (Task 10d):** Publicado → En curso (al iniciar o cerrar una medida) → En verificación (al cerrar la última; solo NC e incidentes) → Cerrado (con eficacia verificada). Una verificación no eficaz o una reapertura vuelve a En curso y exige una nueva medida correctiva. Anular y reabrir: solo el administrador, con motivo. Cada cambio queda en el historial. Spec: [`docs/specs/SPEC-findings-lifecycle.md`](./docs/specs/SPEC-findings-lifecycle.md).
 
 ### Riesgos y oportunidades — Nivel 2 Controlado ✅
 
-Módulo nuevo alineado a **ISO 9001:2026 §6.1** (riesgo ≠ oportunidad; no ERM genérico ni heat map como home). Spec: [`SPEC-risks-opportunities.md`](./SPEC-risks-opportunities.md). Research: [`RESEARCH-risks-opportunities.md`](./RESEARCH-risks-opportunities.md).
+Módulo nuevo alineado a **ISO 9001:2026 §6.1** (riesgo ≠ oportunidad; no ERM genérico ni heat map como home). Spec: [`docs/specs/SPEC-risks-opportunities.md`](./docs/specs/SPEC-risks-opportunities.md). Research: [`docs/research/RESEARCH-risks-opportunities.md`](./docs/research/RESEARCH-risks-opportunities.md).
 
 | Pieza | Qué hace |
 |---|---|
@@ -85,7 +85,7 @@ Rutas: `/t/[slug]/risks` (workspace), `/risks/explore` (descubrimiento), `/risks
 
 ### Auditorías internas integradas ✅ (Task 11b)
 
-Ciclo de auditoría interna para **ISO 9001:2026, ISO 14001:2015 e ISO 45001:2018 §9.2**, con ISO 19011 como guía. Una misma auditoría puede cubrir varias normas. Spec: [`SPEC-audits.md`](./SPEC-audits.md). Research: [`RESEARCH-audits.md`](./RESEARCH-audits.md).
+Ciclo de auditoría interna para **ISO 9001:2026, ISO 14001:2015 e ISO 45001:2018 §9.2**, con ISO 19011 como guía. Una misma auditoría puede cubrir varias normas. Spec: [`docs/specs/SPEC-audits.md`](./docs/specs/SPEC-audits.md). Research: [`docs/research/RESEARCH-audits.md`](./docs/research/RESEARCH-audits.md).
 
 | Pieza | Qué hace | Estado |
 |---|---|---|
@@ -101,7 +101,7 @@ Rutas: `/t/[slug]/audits` (programa y listado), `/audits/new` (planificación), 
 
 ### Datos maestros — sedes, personas, puestos y tareas ✅ (Task 14)
 
-Base común de las inspecciones, capacitaciones y estadísticas de la Fase 5. Rutas: `/t/[slug]/master-data/{people,sites,positions,tasks}` y `/people/import`. Spec: [`SPEC-master-data.md`](./SPEC-master-data.md).
+Base común de las inspecciones, capacitaciones y estadísticas de la Fase 5. Rutas: `/t/[slug]/master-data/{people,sites,positions,tasks}` y `/people/import`. Spec: [`docs/specs/SPEC-master-data.md`](./docs/specs/SPEC-master-data.md).
 
 - **Persona ≠ usuario.** La nómina propia y de contratistas no necesita cuenta; `userId` es opcional. Cada persona tiene un puesto, una **sede base**, **sedes adicionales** (si rota) y tareas. Sin datos de salud. El DNI es visible para todos los roles de la empresa.
 - **Baja lógica.** Una sede, puesto o tarea no se da de baja si tiene personas activas (el mensaje las nombra). Una persona de baja no aparece en los selectores pero conserva su historial.
@@ -120,7 +120,7 @@ Los permisos son `manage_master_data` y `assign_job_tasks` en `src/domain/identi
 ### Qué sigue
 
 - **Task 11c** — hecha: objetivos e indicadores con carga por período, análisis de desvío, tablero con tendencias y guía (`/t/[slug]/indicators`).  
-- **Task 11d** — hecha: auditorías externas con informe PDF adjunto, hallazgos manuales y extracción con IA con revisión humana (ver `SPEC-external-audits.md`; requiere `ANTHROPIC_API_KEY`).  
+- **Task 11d** — hecha: auditorías externas con informe PDF adjunto, hallazgos manuales y extracción con IA con revisión humana (ver `docs/specs/SPEC-external-audits.md`; requiere `ANTHROPIC_API_KEY`).  
 - **Task 12+** — portal cliente / dashboards / E2E.  
 - **Fase 5** — operación SST, proveedores y competencia (Tasks 14–20, ver `tasks/todo.md`). Hechas la Task 14 (datos maestros) y la Task 20 (capacitaciones); en curso 15 (inspecciones: motor, extintores, consecuencias, lista y editor de plantillas, obradores, arneses y cabos de vida, vehículos livianos y pesados con izaje, y auditoría de seguridad en campo) y 16 (equipos de medición: carga de calibraciones, evaluación de impacto y prueba funcional). Hechas también la 17 (accidentabilidad: ficha, exposición, tablero, exportación y resumen imprimible), la 18 (seguridad vial bajo ISO 39001: hecho de tránsito con su detalle vial, km por vehículo y mes, tablero de tasas por millón de km, conductores habilitados, ajustes y guía; las cláusulas de ISO 39001 del catálogo siguen «sin verificar») y la 19 (proveedores: registro, evaluación, reevaluación, hallazgos y comunicaciones).
 
@@ -149,7 +149,7 @@ El alta directa de riesgo queda como **atajo secundario**; el flujo pensado para
 
 Tipos de archivo admitidos (hallazgos y acciones): PDF, PNG/JPEG, Word, texto · máx. 15 MB (`serverActions.bodySizeLimit` = 16 MB en `next.config.ts`).
 
-Detalle de producto del módulo: [`SPEC-findings.md`](./SPEC-findings.md).
+Detalle de producto del módulo: [`docs/specs/SPEC-findings.md`](./docs/specs/SPEC-findings.md).
 
 ---
 
@@ -274,11 +274,14 @@ La cabecera muestra siempre la persona, el rol, si puede editar y **Cerrar sesi�
 
 ```text
 ├── SPEC.md                 # Spec de producto / MVP (aprobada)
-├── SPEC-findings.md        # Hallazgos
-├── SPEC-risks-opportunities.md
-├── RESEARCH-risks-opportunities.md
 ├── CAPABILITY-MAP.md       # Módulos y orden de build
-├── tasks/                  # plan.md + todo.md
+├── docs/
+│   ├── specs/              # Una SPEC-<módulo>.md por módulo
+│   └── research/           # Una RESEARCH-<módulo>.md por módulo
+├── tasks/                  # plan, todo, pendientes y sesiones de la Fase 5
+├── clientes/               # Documentación de clientes (local, no se versiona)
+├── scripts/                # Jobs, seeds de demo y alta de worktrees
+├── n8n/                    # Workflow del escaneo de vencimientos
 ├── docker-compose.yml      # Postgres + MinIO local
 ├── prisma/                 # Schema, migraciones y seed
 ├── src/
@@ -311,12 +314,12 @@ Los vencimientos de todos los módulos se avisan con un resumen diario por perso
 ## Specs de módulo
 
 - [`SPEC.md`](./SPEC.md) — producto / MVP  
-- [`SPEC-findings.md`](./SPEC-findings.md) — hallazgos, 5 Porqués, medidas, adjuntos, bandeja  
-- [`SPEC-risks-opportunities.md`](./SPEC-risks-opportunities.md) — riesgos y oportunidades ISO 9001:2026  
-- [`RESEARCH-risks-opportunities.md`](./RESEARCH-risks-opportunities.md) — ledger de investigación normativa  
-- [`SPEC-master-data.md`](./SPEC-master-data.md) — sedes, personas, puestos y tareas (base de la Fase 5)  
-- [`SPEC-audits.md`](./SPEC-audits.md) — auditorías internas integradas 9001 / 14001 / 45001  
-- [`RESEARCH-audits.md`](./RESEARCH-audits.md) — investigación normativa de auditorías (ISO 19011)  
+- [`docs/specs/SPEC-findings.md`](./docs/specs/SPEC-findings.md) — hallazgos, 5 Porqués, medidas, adjuntos, bandeja  
+- [`docs/specs/SPEC-risks-opportunities.md`](./docs/specs/SPEC-risks-opportunities.md) — riesgos y oportunidades ISO 9001:2026  
+- [`docs/research/RESEARCH-risks-opportunities.md`](./docs/research/RESEARCH-risks-opportunities.md) — ledger de investigación normativa  
+- [`docs/specs/SPEC-master-data.md`](./docs/specs/SPEC-master-data.md) — sedes, personas, puestos y tareas (base de la Fase 5)  
+- [`docs/specs/SPEC-audits.md`](./docs/specs/SPEC-audits.md) — auditorías internas integradas 9001 / 14001 / 45001  
+- [`docs/research/RESEARCH-audits.md`](./docs/research/RESEARCH-audits.md) — investigación normativa de auditorías (ISO 19011)  
 
 ## Contribución y flujo con el agente
 
@@ -359,8 +362,8 @@ Repositorio privado / de producto. Uso interno del proyecto SGI Base salvo acuer
 
 - Repositorio: [github.com/nicoconti1901/SGI-BASE-AGENT](https://github.com/nicoconti1901/SGI-BASE-AGENT)
 - Spec: [`SPEC.md`](./SPEC.md)
-- Hallazgos: [`SPEC-findings.md`](./SPEC-findings.md)
-- Riesgos y oportunidades: [`SPEC-risks-opportunities.md`](./SPEC-risks-opportunities.md)
+- Hallazgos: [`docs/specs/SPEC-findings.md`](./docs/specs/SPEC-findings.md)
+- Riesgos y oportunidades: [`docs/specs/SPEC-risks-opportunities.md`](./docs/specs/SPEC-risks-opportunities.md)
 - Capability map: [`CAPABILITY-MAP.md`](./CAPABILITY-MAP.md)
 - Plan: [`tasks/plan.md`](./tasks/plan.md)
 - Tareas: [`tasks/todo.md`](./tasks/todo.md)
