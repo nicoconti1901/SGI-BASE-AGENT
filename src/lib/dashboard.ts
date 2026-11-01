@@ -17,6 +17,54 @@ export type TenantDashboard = {
   dueCounts: { overdue: number; soon: number; open: number };
 };
 
+type ShownDueItem = {
+  id: string;
+  title: string;
+  entityType: string;
+  entityId: string | null;
+  dueAt: Date;
+  leadDays: number;
+};
+
+/** Etiqueta, destino y semáforo de cada vencimiento; resuelve el padre cuando la ruta de detalle lo pide. */
+async function toDueViews(
+  shown: ShownDueItem[],
+  tenantId: string,
+  now: Date,
+  slug: string,
+  db: PrismaClient,
+) {
+  const idsOf = (type: string) =>
+    shown.flatMap((i) => (i.entityType === type && i.entityId ? [i.entityId] : []));
+  const [indicators, measures] = await Promise.all([
+    db.indicator.findMany({
+      where: { tenantId, id: { in: idsOf(INDICATOR_MEASUREMENT_ENTITY_TYPE) } },
+      select: { id: true, objectiveId: true },
+    }),
+    db.findingMeasure.findMany({
+      where: { tenantId, id: { in: idsOf(FINDING_MEASURE_ENTITY_TYPE) } },
+      select: { id: true, findingId: true },
+    }),
+  ]);
+  const objectiveByIndicator = new Map(indicators.map((i) => [i.id, i.objectiveId]));
+  const findingByMeasure = new Map(measures.map((m) => [m.id, m.findingId]));
+
+  return shown.map((item) => {
+    const parent = item.entityId
+      ? {
+          objectiveId: objectiveByIndicator.get(item.entityId),
+          findingId: findingByMeasure.get(item.entityId),
+        }
+      : {};
+    return {
+      id: item.id,
+      title: item.title,
+      dueAt: item.dueAt,
+      ...describeDueItem(item, slug, now, item.leadDays, parent),
+    };
+  });
+}
+
 /** Datos del panel de una empresa: cumplimiento de requisitos y próximos vencimientos. */
 export async function getTenantDashboard(
   tenantId: string,
@@ -33,46 +81,71 @@ export async function getTenantDashboard(
       where: open,
       orderBy: { dueAt: "asc" },
       take: DUE_LIST_SIZE,
-      select: { id: true, title: true, entityType: true, entityId: true, dueAt: true, leadDays: true },
+      select: {
+        id: true,
+        title: true,
+        entityType: true,
+        entityId: true,
+        dueAt: true,
+        leadDays: true,
+      },
     }),
     db.dueItem.count({ where: { ...open, dueAt: { lt: now } } }),
     db.dueItem.count({ where: { ...open, dueAt: { gte: now }, remindAt: { lte: now } } }),
     db.dueItem.count({ where: open }),
   ]);
 
-  const idsOf = (type: string) =>
-    shown.flatMap((i) => (i.entityType === type && i.entityId ? [i.entityId] : []));
-  const [indicators, measures] = await Promise.all([
-    db.indicator.findMany({
-      where: { tenantId, id: { in: idsOf(INDICATOR_MEASUREMENT_ENTITY_TYPE) } },
-      select: { id: true, objectiveId: true },
-    }),
-    db.findingMeasure.findMany({
-      where: { tenantId, id: { in: idsOf(FINDING_MEASURE_ENTITY_TYPE) } },
-      select: { id: true, findingId: true },
-    }),
-  ]);
-  const objectiveByIndicator = new Map(indicators.map((i) => [i.id, i.objectiveId]));
-  const findingByMeasure = new Map(measures.map((m) => [m.id, m.findingId]));
-
-  const views = shown.map((item) => {
-    const parent = item.entityId
-      ? {
-          objectiveId: objectiveByIndicator.get(item.entityId),
-          findingId: findingByMeasure.get(item.entityId),
-        }
-      : {};
-    return {
-      id: item.id,
-      title: item.title,
-      dueAt: item.dueAt,
-      ...describeDueItem(item, slug, now, item.leadDays, parent),
-    };
-  });
+  const views = await toDueViews(shown, tenantId, now, slug, db);
 
   return {
-    compliance: summarizeCompliance(requirements.map((r) => r.status as RequirementStatus)),
+    compliance: summarizeCompliance(
+      requirements.map((r) => r.status as RequirementStatus),
+    ),
     dueItems: views,
+    dueCounts: { overdue, soon, open: openCount },
+  };
+}
+
+const MODULE_DUE_LIST_SIZE = 3;
+
+export type ModuleTelemetry = Pick<TenantDashboard, "dueItems" | "dueCounts">;
+
+/** Tablero chico de un módulo: sus vencimientos abiertos (por entityType) y los tres más próximos. */
+export async function getModuleTelemetry(
+  tenantId: string,
+  entityTypes: readonly string[],
+  now: Date,
+  slug: string,
+  db: PrismaClient = prisma,
+): Promise<ModuleTelemetry> {
+  if (entityTypes.length === 0) {
+    return { dueItems: [], dueCounts: { overdue: 0, soon: 0, open: 0 } };
+  }
+  const open = {
+    tenantId,
+    status: "open" as const,
+    entityType: { in: [...entityTypes] },
+  };
+  const [shown, overdue, soon, openCount] = await Promise.all([
+    db.dueItem.findMany({
+      where: open,
+      orderBy: { dueAt: "asc" },
+      take: MODULE_DUE_LIST_SIZE,
+      select: {
+        id: true,
+        title: true,
+        entityType: true,
+        entityId: true,
+        dueAt: true,
+        leadDays: true,
+      },
+    }),
+    db.dueItem.count({ where: { ...open, dueAt: { lt: now } } }),
+    db.dueItem.count({ where: { ...open, dueAt: { gte: now }, remindAt: { lte: now } } }),
+    db.dueItem.count({ where: open }),
+  ]);
+  return {
+    dueItems: await toDueViews(shown, tenantId, now, slug, db),
     dueCounts: { overdue, soon, open: openCount },
   };
 }

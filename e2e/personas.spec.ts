@@ -22,16 +22,16 @@ test("administrador de empresa va directo a su empresa", async ({ page }) => {
   await quickLogin(page, /Ana Administración/);
   await expect(page).toHaveURL(/\/t\/tisico$/);
   await expect(page.getByRole("banner").getByText("Administrador de la empresa")).toBeVisible();
-  // Panel: cumplimiento + vencimientos, y navegación por teclado al menú principal.
+  // Inicio: un panel por área con la lista de módulos + tablero chico, y navegación por teclado entre módulos.
   await expect(page.getByRole("heading", { name: "Cumplimiento de requisitos" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Próximos vencimientos" })).toBeVisible();
   const nav = page.getByRole("navigation", { name: "Principal" });
   for (const name of ["Documentos", "Hallazgos", "Riesgos y oportunidades", "Auditorías", "Objetivos", "Automatizaciones"]) {
     await expect(nav.getByRole("link", { name })).toBeVisible();
   }
-  await nav.getByRole("link", { name: "Panel" }).focus();
+  await nav.getByRole("link", { name: "Documentos" }).focus();
   await page.keyboard.press("Tab");
-  await expect(nav.getByRole("link", { name: "Documentos" })).toBeFocused();
+  await expect(nav.getByRole("link", { name: "Auditorías" })).toBeFocused();
   // La plataforma es solo del superusuario: vuelve a su empresa.
   await page.goto("/platform");
   await expect(page).toHaveURL(/\/t\/tisico$/);

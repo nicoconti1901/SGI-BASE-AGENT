@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { NavLinks } from "@/components/shell/NavLinks";
+import { ShellTrail } from "@/components/shell/ShellTrail";
 import { SignOutButton } from "@/components/shell/SignOutButton";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { PERSONA_THEME, type NavItem } from "@/components/shell/nav-config";
-import type { NavSection } from "@/domain/modules/catalog";
+import type { TrailIndex } from "@/domain/modules/hub";
 import { StatusChip } from "@/components/ui";
 import { PERSONA_LABELS, type Persona } from "@/domain/identity/persona";
 
@@ -19,83 +20,86 @@ type AppShellProps = {
   identity: ShellIdentity;
   /** Dónde está parado el usuario: "Plataforma" o el nombre de la empresa. */
   contextLabel: string;
-  navSections: readonly NavSection[];
+  /** Pestañas fijas (plataforma). La empresa navega por el hub y la ruta. */
+  navItems?: readonly NavItem[];
+  /** Ruta Inicio › Módulo › Pantalla (empresa). */
+  trail?: TrailIndex;
   /** Salida a un nivel superior (ej. superusuario dentro de una empresa). */
   backLink?: NavItem;
   children: React.ReactNode;
 };
 
+function HexMark() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 28 24"
+      className="h-7 w-8 shrink-0 text-[var(--color-accent)]"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinejoin="round"
+    >
+      <path d="M7.5 1.5h13L27 12l-6.5 10.5h-13L1 12 7.5 1.5Z" />
+      <path d="M10 7.5h8l3 4.5-3 4.5h-8L7 12l3-4.5Z" strokeOpacity="0.55" />
+    </svg>
+  );
+}
+
 export function AppShell({
   identity,
   contextLabel,
-  navSections,
+  navItems,
+  trail,
   backLink,
   children,
 }: AppShellProps) {
   const theme = PERSONA_THEME[identity.persona];
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--color-canvas)] text-[var(--color-ink)] lg:flex-row">
-      <aside
-        className={`hidden w-64 shrink-0 flex-col border-r border-black/10 lg:flex ${theme.rail}`}
-        aria-label="Navegación"
-      >
-        <div className={`h-1.5 ${theme.accent}`} aria-hidden />
-        <div className="border-b border-white/10 px-5 py-6">
-          <Link href="/portal" className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight">
-            SGI Base
-          </Link>
-          <p className="mt-1 truncate text-sm font-semibold opacity-90" title={contextLabel}>
-            {contextLabel}
-          </p>
-        </div>
-        <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Principal">
-          {backLink ? (
-            <Link
-              href={backLink.href}
-              className="mb-2 rounded-[var(--radius-md)] border border-white/20 px-3 py-2 text-sm font-medium opacity-90 hover:bg-white/10"
-            >
-              ← {backLink.label}
-            </Link>
-          ) : null}
-          <NavLinks sections={navSections} />
-        </nav>
-        <div className="border-t border-white/10 px-5 py-4 text-xs opacity-60">
-          ISO 9001 · 14001 · 45001
-        </div>
-      </aside>
-
-      {/* Celular: el menú lateral pasa a una barra con un desplegable, para que el contenido use todo el ancho. */}
-      <div className={`lg:hidden ${theme.rail}`}>
-        <div className={`h-1.5 ${theme.accent}`} aria-hidden />
-        <details>
-          <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 py-2 text-sm font-semibold">
-            <span className="min-w-0 truncate">
-              SGI Base · {contextLabel}
+    <div className="flex min-h-screen flex-col bg-[var(--color-canvas)] text-[var(--color-ink)]">
+      <div className={`h-1 ${theme.accent}`} aria-hidden />
+      <header className="border-b border-[var(--color-line)] bg-[var(--color-surface)]">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-2.5 sm:px-6">
+          <Link
+            href={trail?.home ?? "/portal"}
+            className="flex min-w-0 items-center gap-2.5"
+          >
+            <HexMark />
+            <span className="min-w-0 leading-tight">
+              <span className="block font-[family-name:var(--font-display)] text-base font-semibold tracking-tight">
+                SGI Base
+              </span>
+              <span
+                className="block max-w-[14rem] truncate text-xs text-[var(--color-ink-muted)]"
+                title={contextLabel}
+              >
+                {contextLabel}
+              </span>
             </span>
-            <span className="rounded-[var(--radius-sm)] border border-white/20 px-3 py-1.5 text-xs">Menú</span>
-          </summary>
-          <nav className="flex flex-col gap-1 p-3" aria-label="Menú principal">
-            {backLink ? (
-              <Link href={backLink.href} className="mb-2 rounded-[var(--radius-md)] border border-white/20 px-3 py-2 text-sm font-medium opacity-90 hover:bg-white/10">
-                ← {backLink.label}
-              </Link>
-            ) : null}
-            <NavLinks sections={navSections} />
-          </nav>
-        </details>
-      </div>
+          </Link>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className={`h-1.5 ${theme.accent}`} aria-hidden />
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 sm:px-6">
-          <div className="flex min-w-0 flex-wrap items-center gap-3">
+          {backLink || trail ? (
+            <div className="order-last flex w-full min-w-0 items-center gap-3 border-t border-[var(--color-line)] pt-2">
+              {backLink ? (
+                <Link
+                  href={backLink.href}
+                  className="shrink-0 rounded-[var(--radius-md)] border border-[var(--color-line-strong)] px-2.5 py-1 text-xs font-medium text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
+                >
+                  ← {backLink.label}
+                </Link>
+              ) : null}
+              {trail ? <ShellTrail index={trail} /> : null}
+            </div>
+          ) : null}
+
+          <div className="order-1 flex w-full min-w-0 items-center gap-2 sm:order-none sm:ml-auto sm:w-auto sm:gap-3">
             <span
-              className={`rounded-[var(--radius-sm)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-on-solid)] ${theme.accent}`}
+              className={`whitespace-nowrap rounded-[var(--radius-sm)] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-on-solid)] ${theme.accent}`}
             >
               {PERSONA_LABELS[identity.persona]}
             </span>
-            <div className="min-w-0 leading-tight">
+            <div className="hidden min-w-0 leading-tight md:block">
               <p className="truncate text-sm font-semibold">{identity.name}</p>
               <p className="truncate text-xs text-[var(--color-ink-muted)]">
                 {identity.email} · {identity.roleLabel}
@@ -108,15 +112,23 @@ export function AppShell({
               />
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 sm:ml-0">
             <ThemeToggle />
             <SignOutButton />
           </div>
-        </header>
-        <main id="contenido-principal" className="flex-1 px-4 py-6 sm:px-6 sm:py-8">
-          {children}
-        </main>
-      </div>
+        </div>
+        {navItems ? (
+          <nav
+            aria-label="Principal"
+            className="border-t border-[var(--color-line)] px-4 sm:px-6"
+          >
+            <NavLinks items={navItems} />
+          </nav>
+        ) : null}
+      </header>
+      <main id="contenido-principal" className="flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        {children}
+      </main>
     </div>
   );
 }
