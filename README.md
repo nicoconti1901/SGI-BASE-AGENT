@@ -80,6 +80,8 @@ Módulo nuevo alineado a **ISO 9001:2026 §6.1** (riesgo ≠ oportunidad; no ERM
 | **Decisión** | Respuesta del riesgo / persecución de la oportunidad, con racional y responsable. |
 | **Acción compartida** | Modelo único (`Action`) vinculable a riesgo y/o oportunidad (y opcionalmente hallazgo). Completar ≠ efectividad; evidencia obligatoria para completar; DueItem al vencer. |
 | **Workspace** | Discovery · Decisions · Execution · Learning — la matriz no es la pantalla principal. |
+| **Quién implementa** | Si la respuesta (o el objetivo) está asignada a otra persona, solo ella o el superusuario pueden avanzarla; el resto la ve en solo lectura con lo que falta para cerrar. |
+| **Adjuntos** | Los archivos subidos se pueden quitar con confirmación (quedan en `AttachmentRemoval`) en hallazgos, acciones, auditorías, capacitaciones e inspecciones. |
 
 Rutas: `/t/[slug]/risks` (workspace), `/risks/new` y `/risks/opportunities/new` (altas), `/risks/[id]` y `/risks/opportunities/[id]` (fichas por etapa); `/risks/explore` redirige. Nav del portal: **Riesgos y oportunidades**.
 
