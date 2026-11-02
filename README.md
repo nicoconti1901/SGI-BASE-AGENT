@@ -59,8 +59,8 @@ Plan de implementación: ver [`tasks/plan.md`](./tasks/plan.md).
 | Pieza | Qué hace |
 |---|---|
 | **Entrada unificada** | Siempre se crea un **Hallazgo** (NC, observación, incidente u oportunidad de mejora). |
-| **Laboratorio 5 Porqués** | Hecho comprobado, checklist, **ramas** causales y material de apoyo industrial. |
-| **Medidas** | Owner del tenant, vencimiento → DueItem, **evidencia de archivo** para cerrar. |
+| **Laboratorio 5 Porqués** | Hecho comprobado, checklist, **factores** causales fijos según el tipo (incidente SST o las 6 M) y material de apoyo industrial. |
+| **Medidas** | Owner del tenant, vencimiento → DueItem, **evidencia de archivo** para cerrar; la cierra solo su responsable designado (o el superusuario). |
 | **Bandeja** | Filtros, estado del hallazgo y de cada medida. |
 
 Rutas: `/t/[slug]/findings`. Spec: [`docs/specs/SPEC-findings.md`](./docs/specs/SPEC-findings.md).
@@ -73,7 +73,7 @@ Módulo nuevo alineado a **ISO 9001:2026 §6.1** (riesgo ≠ oportunidad; no ERM
 
 | Pieza | Qué hace |
 |---|---|
-| **Explorar contexto** | Entrada principal: partís de una fuente (proceso, proveedor, hallazgo, cambio…) y decidís si nace riesgo, oportunidad, ambos o ninguno. |
+| **Alta guiada** | «Registrar riesgo» y «Registrar oportunidad» son altas separadas, por pasos guiados. |
 | **Riesgo** | Canvas causa → evento → efecto + controles existentes; lifecycle propio. |
 | **Oportunidad** | Hipótesis condición → circunstancia → beneficio; **no** es “riesgo positivo”. |
 | **Evaluación** | Default **cualitativo** (Bajo/Medio/Alto/Crítico); P×I disponible; cada assessment es una **versión nueva** (no se sobrescribe). |
@@ -81,7 +81,7 @@ Módulo nuevo alineado a **ISO 9001:2026 §6.1** (riesgo ≠ oportunidad; no ERM
 | **Acción compartida** | Modelo único (`Action`) vinculable a riesgo y/o oportunidad (y opcionalmente hallazgo). Completar ≠ efectividad; evidencia obligatoria para completar; DueItem al vencer. |
 | **Workspace** | Discovery · Decisions · Execution · Learning — la matriz no es la pantalla principal. |
 
-Rutas: `/t/[slug]/risks` (workspace), `/risks/explore` (descubrimiento), `/risks/[id]` y `/risks/opportunities/[id]` (fichas). Nav del portal: **Riesgos y oportunidades**.
+Rutas: `/t/[slug]/risks` (workspace), `/risks/new` y `/risks/opportunities/new` (altas), `/risks/[id]` y `/risks/opportunities/[id]` (fichas por etapa); `/risks/explore` redirige. Nav del portal: **Riesgos y oportunidades**.
 
 ### Auditorías internas integradas ✅ (Task 11b)
 
@@ -129,19 +129,19 @@ Los permisos son `manage_master_data` y `assign_job_tasks` en `src/domain/identi
 ## Riesgos y oportunidades en la práctica (guía rápida)
 
 1. En el portal, abrí **Riesgos y oportunidades** (o `/t/[slug]/risks`).
-2. Usá **Explorar contexto**: describí la fuente (ej. “Proveedor único de acero”) y marcá si creás riesgo, oportunidad o ambos.
+2. Usá **Registrar riesgo** o **Registrar oportunidad** y completá los pasos guiados (ej. “Proveedor único de acero”).
 3. En la ficha del riesgo, completá el canvas, registrá una evaluación cualitativa y la decisión de respuesta.
 4. Agregá **acciones** con responsable y vencimiento; adjuntá evidencia para completarlas; después registrá **efectividad** (distinto de “completada”).
 5. Volvé al workspace: las cuatro capas muestran qué falta descubrir, decidir, ejecutar o aprender (incluye señales *stale*).
 
-El alta directa de riesgo queda como **atajo secundario**; el flujo pensado para auditoría y uso diario es explorar la fuente primero.
+Cada ficha muestra las etapas completas como resumen y resalta lo que falta y quién debe completarlo.
 
 ---
 
 ## Hallazgos en la práctica (guía rápida)
 
 1. En la bandeja, usá **Crear hallazgo** (tipo + título preliminar).
-2. Completá el borrador: datos del hecho, **laboratorio 5 Porqués** (hecho verificable → ramas → confirmar causa raíz), medidas, notificados.
+2. Completá el borrador: datos del hecho, **laboratorio 5 Porqués** (hecho verificable → factores → confirmar causa raíz), medidas, notificados.
 3. Adjuntá documentación del hecho si hace falta (fotos / registros).
 4. **Publicá** → se crean DueItems y notificaciones.
 5. En la ficha, cada responsable **inicia** su medida y la cierra **adjuntando evidencia**.
