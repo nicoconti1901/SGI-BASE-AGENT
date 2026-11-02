@@ -107,7 +107,7 @@ export function FindingEditor({
   );
 
   const blockers = useMemo(() => {
-    if (!rca) return ["Confirmá la causa raíz en el laboratorio"];
+    if (!rca) return ["Confirmá la causa raíz en el análisis de causa"];
     return getPublishBlockers({
       type,
       title,

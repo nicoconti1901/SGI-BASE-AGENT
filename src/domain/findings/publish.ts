@@ -31,7 +31,7 @@ export function getPublishBlockers(draft: FindingDraft): string[] {
 
   if (draft.rca.status !== "confirmed" || !draft.rca.rootCause?.trim()) {
     blockers.push(
-      "Debés completar el laboratorio de 5 Porqués y confirmar la causa raíz",
+      "Debés completar el análisis de causa (5 Porqués) y confirmar la causa raíz",
     );
   }
 

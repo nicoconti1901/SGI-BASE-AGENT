@@ -96,7 +96,7 @@ test("seguridad vial: choque con daño material, km del mes, índice vial y sin 
     await page.getByLabel("Fue un hecho de tránsito").check();
     await page.getByLabel(/^¿Hubo lesión/).selectOption({ label: "Solo daño material" });
     await page.getByLabel(/^Vehículo de la flota/).selectOption({ label: `${code} · Camioneta de cuadrilla` });
-    await page.getByRole("button", { name: "Continuar al laboratorio" }).click();
+    await page.getByRole("button", { name: "Continuar al análisis de causa" }).click();
     await expect(page.getByRole("heading", { name: "Completar y publicar" })).toBeVisible({ timeout: 30_000 });
 
     // ── Km del mes: sin odómetros, se cargan a mano con motivo ─────────────

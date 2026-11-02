@@ -57,7 +57,7 @@ test("incidente: caída de operario desde andamio", async ({ page }) => {
       "Un operario de mantenimiento cayó desde el segundo cuerpo de un andamio tubular (aprox. 2,4 m) mientras pintaba la estructura del techo de la nave 2.",
     );
   await pause(page);
-  await page.getByRole("button", { name: "Continuar al laboratorio" }).click();
+  await page.getByRole("button", { name: "Continuar al análisis de causa" }).click();
   await expect(page.getByRole("heading", { name: "Completar y publicar" })).toBeVisible({ timeout: 20_000 });
   await pause(page);
 
@@ -66,7 +66,7 @@ test("incidente: caída de operario desde andamio", async ({ page }) => {
   await page.getByLabel("Origen").fill("Reporte del supervisor de turno — parte de accidente N.º 0142");
   await pause(page);
 
-  // 4. Laboratorio 5 Porqués — investigación previa
+  // 4. Análisis de causa con 5 Porqués — investigación previa
   for (const item of [
     "Tarea que se realizaba",
     "Quiénes estaban presentes",
