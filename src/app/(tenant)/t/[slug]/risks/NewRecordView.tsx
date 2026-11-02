@@ -52,7 +52,7 @@ export async function NewRecordView({
   return (
     <PageFrame>
       <PageHeader eyebrow={`ISO 9001 · §6.1 · ${kind === "risk" ? "Riesgo" : "Oportunidad"}`} title={copy.title} purpose={copy.purpose} />
-      <div className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-accent-soft)] px-4 py-3 text-sm text-[var(--color-accent-ink)]">
+      <div className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-accent-soft)] px-4 py-3 text-sm text-[var(--color-accent-ink)]">
         <p className="font-semibold">{def.formula}</p>
         <p>Ej.: {def.example}</p>
         <p className="text-[var(--color-ink-muted)]">

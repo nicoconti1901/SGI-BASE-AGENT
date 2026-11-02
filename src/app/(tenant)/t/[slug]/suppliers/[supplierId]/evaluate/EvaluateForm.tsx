@@ -137,7 +137,7 @@ export function EvaluateForm({
           <textarea name="comment" required minLength={3} rows={3} value={overall} onChange={(e) => setOverall(e.target.value)} placeholder="Ej.: Compra ocasional de insumos de librería; no afecta el producto ni la seguridad." className={INPUT_CLASS} />
         </Field>
       ) : (
-        <ol className="flex flex-col divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+        <ol className="flex flex-col divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
           {scoped.map((c, index) => {
             const score = scores[c.id] ?? "";
             const low = score === "1" || score === "2";

@@ -64,13 +64,13 @@ export default async function TenantAutomationsPlatformPage({
         <div className="flex flex-wrap gap-2">
           <Link
             href={`/t/${slug}/automations`}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
           >
             Vista cliente
           </Link>
           <Link
             href="/platform/automations"
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
           >
             Catálogo global
           </Link>
@@ -86,7 +86,7 @@ export default async function TenantAutomationsPlatformPage({
           return (
             <div
               key={offer.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] px-4 py-3"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] px-4 py-3"
             >
               <div>
                 <p className="font-medium">{offer.name}</p>
@@ -115,7 +115,7 @@ export default async function TenantAutomationsPlatformPage({
           {dueItems.map((item) => (
             <li
               key={item.id}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3 text-sm"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-3 text-sm"
             >
               <strong>{item.title}</strong> · {item.entityType} · vence{" "}
               {item.dueAt.toISOString().slice(0, 10)} · {item.status}
@@ -135,7 +135,7 @@ export default async function TenantAutomationsPlatformPage({
           {notifications.map((n) => (
             <li
               key={n.id}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3 text-sm"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-3 text-sm"
             >
               <p className="font-medium">{n.title}</p>
               <p className="text-[var(--color-ink-muted)]">{n.body}</p>

@@ -137,7 +137,7 @@ export function AssessmentSummary({
           <summary className="cursor-pointer text-[var(--color-accent)]">Evaluaciones anteriores ({older.length})</summary>
           <ul className="mt-2 flex flex-col gap-2">
             {older.map((a) => (
-              <li key={a.id} className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2">
+              <li key={a.id} className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2">
                 <span className="font-medium">Versión {a.version}</span> · {describe(a.method, a.resultJson)} ·{" "}
                 {new Date(a.assessedAt).toLocaleDateString("es-AR")}
                 <span className="block text-[var(--color-ink-muted)]">{a.rationale}</span>

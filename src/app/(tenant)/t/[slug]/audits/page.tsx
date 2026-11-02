@@ -75,7 +75,7 @@ export default async function AuditsPage({
 
       <section
         aria-label={`Programa ${year}`}
-        className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] px-5 py-4"
+        className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] px-5 py-4"
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
@@ -220,7 +220,7 @@ export default async function AuditsPage({
           <p>
             <Link
               href={`/t/${slug}/audits/externas/new`}
-              className="inline-block rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+              className="inline-block rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
             >
               Planificar auditoría externa
             </Link>

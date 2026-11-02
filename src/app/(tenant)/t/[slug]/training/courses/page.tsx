@@ -61,7 +61,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ slug: 
             next={canManage ? "registrá el primero arriba o importá una lista de cursos típicos más abajo." : "pedile a quien administra que los cargue."}
           />
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             {active.map((c) => (
               <CourseRow key={c.id} slug={slug} course={c} canManage={canManage} />
             ))}
@@ -71,7 +71,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ slug: 
 
       {inactive.length > 0 ? (
         <SectionBlock title={`Cursos dados de baja (${inactive.length})`} what="Conservan su historial pero no se pueden exigir ni registrar.">
-          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             {inactive.map((c) => (
               <CourseRow key={c.id} slug={slug} course={c} canManage={canManage} />
             ))}
@@ -129,7 +129,7 @@ function CourseRow({ slug, course, canManage }: { slug: string; course: CourseVi
       {canManage ? (
         <div className="flex flex-col gap-3">
           {course.active ? (
-            <details className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-sunken)]">
+            <details className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface-sunken)]">
               <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-[var(--color-accent)]">Editar {course.name}</summary>
               <div className="flex flex-col gap-4 border-t border-[var(--color-line)] p-3">
                 <CourseForm slug={slug} course={course} submitLabel="Guardar cambios" />

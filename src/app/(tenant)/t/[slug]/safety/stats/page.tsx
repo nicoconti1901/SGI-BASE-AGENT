@@ -185,7 +185,7 @@ export default async function SafetyStatsPage({ params, searchParams }: { params
           {dash.daysSince.length === 0 ? (
             <EmptyState what="No hay sedes activas." next="creá las sedes en Datos maestros." />
           ) : (
-            <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-line)] text-sm">
+            <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-card-line)] text-sm">
               {dash.daysSince.map((d) => (
                 <li key={d.siteId} className="flex items-center justify-between gap-3 px-4 py-3">
                   <span className="font-medium">{d.siteName}</span>
@@ -206,12 +206,12 @@ export default async function SafetyStatsPage({ params, searchParams }: { params
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionBlock title="Aparte de los índices" what="Estos casos no entran en IF, IG, II ni ID.">
           <dl className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] p-4">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] p-4">
               <dt className="text-sm text-[var(--color-ink-muted)]">En el trayecto al trabajo (in itinere)</dt>
               <dd className="font-[family-name:var(--font-display)] text-2xl font-semibold tabular-nums">{current.inItinere.cases}</dd>
               <dd className="text-xs text-[var(--color-ink-muted)]">{current.inItinere.lostDays.toLocaleString("es-AR")} día(s) de baja</dd>
             </div>
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] p-4">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] p-4">
               <dt className="text-sm text-[var(--color-ink-muted)]">Enfermedades profesionales</dt>
               <dd className="font-[family-name:var(--font-display)] text-2xl font-semibold tabular-nums">{raw.occupational_disease}</dd>
             </div>

@@ -35,7 +35,7 @@ export default async function RisksGuidePage({
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="rounded-[var(--radius-sm)] border border-[var(--color-line)] px-3 py-1 hover:border-[var(--color-accent)]"
+              className="rounded-[var(--radius-sm)] border border-[var(--color-card-line)] px-3 py-1 hover:border-[var(--color-accent)]"
             >
               {s.title}
             </a>
@@ -50,7 +50,7 @@ export default async function RisksGuidePage({
             return (
               <div
                 key={k}
-                className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5"
+                className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5"
               >
                 <h3 className="font-[family-name:var(--font-display)] text-xl">{d.title}</h3>
                 <p className="mt-2 text-sm">{d.text}</p>
@@ -70,7 +70,7 @@ export default async function RisksGuidePage({
       ))}
 
       <Section id="fuentes" title="Preguntas por tipo de fuente">
-        <dl className="divide-y divide-[var(--color-line)] rounded-md border border-[var(--color-line)]">
+        <dl className="divide-y divide-[var(--color-line)] rounded-md border border-[var(--color-card-line)]">
           {SOURCE_KINDS.map((k) => (
             <div key={k} className="grid gap-1 px-4 py-3 sm:grid-cols-[10rem_1fr]">
               <dt className="font-medium">{SOURCE_KIND_LABELS[k]}</dt>
@@ -88,7 +88,7 @@ export default async function RisksGuidePage({
       <Section id="etapas" title="Las 4 etapas del registro">
         <ol className="flex flex-col gap-3">
           {WORKSPACE_STAGES.map((st) => (
-            <li key={st.key} className="rounded-md border border-[var(--color-line)] px-4 py-3">
+            <li key={st.key} className="rounded-md border border-[var(--color-card-line)] px-4 py-3">
               <p className="font-medium">{st.title}</p>
               <p className="text-sm text-[var(--color-ink-muted)]">{st.what}</p>
               <p className="mt-1 text-sm">

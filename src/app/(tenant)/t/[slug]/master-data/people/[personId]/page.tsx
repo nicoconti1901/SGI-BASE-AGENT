@@ -110,7 +110,7 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
         {history.length === 0 ? (
           <p className="text-sm text-[var(--color-ink-muted)]">Todavía no hay cambios registrados.</p>
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             {history.map((h) => (
               <li key={h.id} className="flex flex-wrap justify-between gap-2 px-4 py-2.5 text-sm">
                 <span>{h.summary}</span>

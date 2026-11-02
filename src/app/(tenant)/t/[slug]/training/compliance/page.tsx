@@ -110,7 +110,7 @@ export default async function CompliancePage({ params, searchParams }: { params:
               Se muestran {MATRIX_MAX_COLUMNS} cursos. Filtrá por puesto o tarea para ver los demás, o exportá el CSV completo.
             </p>
           ) : null}
-          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">Cumplimiento de capacitaciones por persona y curso</caption>
               <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] text-xs text-[var(--color-ink-muted)]">

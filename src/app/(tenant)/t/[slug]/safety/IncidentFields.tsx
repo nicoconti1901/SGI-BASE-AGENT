@@ -104,7 +104,7 @@ export function FactFields({
   const classifications = roadStep ? ROAD_CLASSIFICATIONS : LABOR_CLASSIFICATIONS;
 
   return (
-    <fieldset className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+    <fieldset className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4">
       <legend className="px-1 font-[family-name:var(--font-display)] text-base font-semibold">¿Qué pasó?</legend>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Fecha y hora" required>
@@ -240,7 +240,7 @@ export function HealthFields({
 }) {
   const hasInjury = INJURY_CLASSIFICATIONS.includes(classification);
   return (
-    <fieldset className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+    <fieldset className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4">
       <legend className="px-1 font-[family-name:var(--font-display)] text-base font-semibold">¿A quién? ¿Qué lesión?</legend>
       <HintCallout>Datos de salud: los ven todos los usuarios de la empresa y cada consulta queda registrada.</HintCallout>
       <PersonPicker

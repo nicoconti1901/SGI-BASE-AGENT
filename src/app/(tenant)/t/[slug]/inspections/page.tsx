@@ -143,7 +143,7 @@ export default async function InspectionsPage({ params, searchParams }: { params
         due.items.length === 0 ? (
           <EmptyState what={view === "overdue" ? "No hay inspecciones vencidas." : "No hay inspecciones para los próximos 7 días."} next="todo está al día." />
         ) : (
-          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             <table className="w-full min-w-[40rem] text-left text-sm">
               <caption className="sr-only">{view === "overdue" ? "Inspecciones vencidas" : "Inspecciones próximas"}</caption>
               <thead className={THEAD}>
@@ -196,7 +196,7 @@ export default async function InspectionsPage({ params, searchParams }: { params
             action={filtered ? undefined : { href: `/t/${slug}/assets`, label: "Ir a Activos" }}
           />
         ) : (
-          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             <table className="w-full min-w-[40rem] text-left text-sm">
               <caption className="sr-only">Inspecciones de la empresa</caption>
               <thead className={THEAD}>

@@ -131,7 +131,7 @@ export function DraftEditor({
         </Field>
       </div>
 
-      <ol className="flex flex-col divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+      <ol className="flex flex-col divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
         {criteria.map((c, i) => (
           <li key={i} className="flex flex-col gap-3 p-4">
             <div className="grid gap-3 sm:grid-cols-[1fr_7rem_12rem]">

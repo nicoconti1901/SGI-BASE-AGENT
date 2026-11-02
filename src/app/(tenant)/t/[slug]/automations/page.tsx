@@ -58,7 +58,7 @@ export default async function TenantAutomationsPage({
         </div>
         <Link
           href={`/t/${slug}`}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
         >
           Volver al portal
         </Link>
@@ -72,7 +72,7 @@ export default async function TenantAutomationsPage({
           {offers.map((offer) => (
             <li
               key={offer.id}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3 text-sm"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-3 text-sm"
             >
               <strong>{offer.name}</strong>
               {" · "}
@@ -93,7 +93,7 @@ export default async function TenantAutomationsPage({
           {dueItems.filter((d) => d.status === "open").map((item) => (
             <li
               key={item.id}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3 text-sm"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-3 text-sm"
             >
               {item.title} · {item.dueAt.toISOString().slice(0, 10)}
               {item.lastReminderKind
@@ -117,7 +117,7 @@ export default async function TenantAutomationsPage({
           {notifications.map((n) => (
             <li
               key={n.id}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3 text-sm"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-3 text-sm"
             >
               <p className="font-medium">{n.title}</p>
               <p className="text-[var(--color-ink-muted)]">{n.body}</p>

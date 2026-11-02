@@ -23,7 +23,7 @@ export default async function LoginPage({
       </div>
 
       {ctx ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
           <span>
             Ya estás dentro como <strong>{ctx.email}</strong>
           </span>

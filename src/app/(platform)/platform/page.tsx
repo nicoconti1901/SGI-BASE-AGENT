@@ -48,7 +48,7 @@ export default async function PlatformHomePage() {
         {metrics.map((m) => (
           <div
             key={m.label}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-4 py-3"
           >
             <p className={`text-2xl font-semibold tabular-nums ${m.tone ?? ""}`}>{m.value}</p>
             <p className="text-xs text-[var(--color-ink-muted)]">{m.label}</p>
@@ -65,7 +65,7 @@ export default async function PlatformHomePage() {
             <Link
               key={s.href}
               href={s.href}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4 transition duration-[var(--duration-med)] ease-[var(--ease-out)] hover:border-[var(--color-accent)]"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4 transition duration-[var(--duration-med)] ease-[var(--ease-out)] hover:border-[var(--color-accent)]"
             >
               <h3 className="text-sm font-semibold">{s.title}</h3>
               <p className="mt-1 text-sm text-[var(--color-ink-muted)]">{s.body}</p>

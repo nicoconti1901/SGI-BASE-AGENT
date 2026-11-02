@@ -53,7 +53,7 @@ export function EvaluationsPanel({
       {rows.length === 0 ? (
         <EmptyState what="Todavía no se registró ninguna evaluación." />
       ) : (
-        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
           {rows.map((r) => (
             <li key={r.id} className={r.voidedAt ? "opacity-70" : undefined}>
               <Link
@@ -152,7 +152,7 @@ export function EvaluationsPanel({
           {selected.actions.length ? (
             <div>
               <h4 className="text-sm font-semibold">Plan de mejora</h4>
-              <ul className="mt-1 divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+              <ul className="mt-1 divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
                 {selected.actions.map((a) => (
                   <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
                     <span>
@@ -263,7 +263,7 @@ export function DocumentsPanel({
       {history.length > 0 ? (
         <details className="mt-6 text-sm">
           <summary className="cursor-pointer font-semibold">Historial de documentos ({history.length})</summary>
-          <ul className="mt-2 divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+          <ul className="mt-2 divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
             {history.map((h) => (
               <li key={h.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
                 <span className={h.voidedAt ? "line-through opacity-70" : undefined}>

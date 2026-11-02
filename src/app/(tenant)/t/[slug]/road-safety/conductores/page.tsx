@@ -47,7 +47,7 @@ export default async function RoadDriversPage({ params }: { params: Promise<{ sl
               {result.rows.filter((r) => r.enabled).length} de {result.rows.length} habilitados
             </p>
             {result.truncated ? <HintCallout>Se muestran los primeros 500 conductores.</HintCallout> : null}
-            <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+            <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
               <table className="w-full min-w-[40rem] text-left text-sm">
                 <caption className="sr-only">Conductores y su habilitación</caption>
                 <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">

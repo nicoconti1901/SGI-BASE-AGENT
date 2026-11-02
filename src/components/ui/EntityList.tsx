@@ -14,7 +14,7 @@ export function EntityList({
   return (
     <ul
       aria-label={ariaLabel}
-      className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]"
+      className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)]"
     >
       {children}
     </ul>

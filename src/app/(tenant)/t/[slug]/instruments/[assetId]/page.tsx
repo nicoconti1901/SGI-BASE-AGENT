@@ -47,7 +47,7 @@ const THEAD = "border-b border-[var(--color-line)] bg-[var(--color-surface-sunke
 
 function ChannelLine({ channel, rule }: { channel: Channel; rule: Parameters<typeof describeRule>[0] }) {
   return (
-    <li className="flex flex-col gap-0.5 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm">
+    <li className="flex flex-col gap-0.5 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm">
       <span className="font-medium">
         {channel.label} <span className="font-normal text-[var(--color-ink-muted)]">· rango {String(channel.rangeMin)} a {String(channel.rangeMax)} {channel.unit}</span>
         {channel.active ? null : <span className="ml-2 text-xs font-normal text-[var(--color-ink-muted)]">(inactivo)</span>}
@@ -173,7 +173,7 @@ export default async function InstrumentPage({
             </p>
           ) : null}
           {controlled ? (
-            <details className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4">
+            <details className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4">
               <summary className="cursor-pointer text-sm font-semibold">{openShipment ? "Registrar el regreso del laboratorio" : "Enviar a calibrar"}</summary>
               <div className="mt-3">
                 {openShipment ? <ReturnFromLabForm slug={slug} assetId={asset.id} today={todayIso()} /> : <SendToLabForm slug={slug} assetId={asset.id} today={todayIso()} />}
@@ -255,7 +255,7 @@ export default async function InstrumentPage({
         <SectionBlock title="Evaluaciones de impacto realizadas" what="Qué se decidió cuando el equipo estuvo fuera de tolerancia.">
           <ul className="flex flex-col gap-3">
             {completedAssessments.map((a) => (
-              <li key={a.id} className="flex flex-col gap-1 rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3 text-sm">
+              <li key={a.id} className="flex flex-col gap-1 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-3 text-sm">
                 <span className="font-medium">
                   {a.outcome ? IMPACT_OUTCOME_LABELS[a.outcome] : "—"}
                   <span className="ml-2 font-normal text-[var(--color-ink-muted)]">
@@ -294,7 +294,7 @@ export default async function InstrumentPage({
             {controlled ? "Todavía no se cargó ninguna calibración o verificación. Mientras tanto el equipo figura como sin calibración inicial." : "Este equipo no lleva calibración."}
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             <table className="w-full min-w-[50rem] text-left text-sm">
               <caption className="sr-only">Historial de calibraciones y verificaciones</caption>
               <thead className={THEAD}>
@@ -394,7 +394,7 @@ export default async function InstrumentPage({
       </SectionBlock>
 
       {canManage && !retired ? (
-        <details className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4">
+        <details className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4">
           <summary className="cursor-pointer text-sm font-semibold">Dar de baja el equipo</summary>
           <div className="mt-3">
             <RetireInstrumentForm slug={slug} assetId={asset.id} code={asset.code} />

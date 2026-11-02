@@ -20,7 +20,7 @@ export default async function IndicatorGuidePage({ params }: { params: Promise<{
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-1 hover:border-[var(--color-accent)]"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-1 hover:border-[var(--color-accent)]"
             >
               {s.title}
             </a>

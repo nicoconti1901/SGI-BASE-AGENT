@@ -17,7 +17,7 @@ export function FiveWhysSupportPanel() {
     INDUSTRIAL_CASE_STUDIES[0]!;
 
   return (
-    <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)]">
+    <div className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -113,7 +113,7 @@ export function FiveWhysSupportPanel() {
                 </button>
               ))}
             </div>
-            <div className="mt-3 space-y-2 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-3">
+            <div className="mt-3 space-y-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-3">
               <p>
                 <strong className="text-[var(--color-ink)]">Hecho:</strong>{" "}
                 {selected.fact}

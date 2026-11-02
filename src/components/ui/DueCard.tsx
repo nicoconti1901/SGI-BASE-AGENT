@@ -12,7 +12,7 @@ type DueCardProps = {
 };
 
 const CARD =
-  "flex w-[232px] shrink-0 snap-start flex-col gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] px-3 py-2.5";
+  "flex w-[232px] shrink-0 snap-start flex-col gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] px-3 py-2.5";
 
 const INTERACTIVE =
   "transition-[transform,border-color] duration-[var(--duration-med)] ease-[var(--ease-out)] hover:border-[var(--color-line-strong)] motion-safe:hover:-translate-y-0.5";

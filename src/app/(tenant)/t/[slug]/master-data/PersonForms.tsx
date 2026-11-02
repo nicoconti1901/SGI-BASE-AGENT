@@ -50,7 +50,7 @@ function Checks({ name, options, selected }: { name: string; options: (Option & 
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {options.map((o) => (
-        <label key={o.id} className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm">
+        <label key={o.id} className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm">
           <input type="checkbox" name={name} value={o.id} defaultChecked={selected.includes(o.id)} className="h-4 w-4 accent-[var(--color-accent)]" />
           <span>
             {o.name}

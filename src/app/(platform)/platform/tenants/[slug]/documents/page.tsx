@@ -84,19 +84,19 @@ export default async function TenantDocumentsPlatformPage({
         <div className="flex flex-wrap gap-2">
           <Link
             href={`/platform/tenants/${slug}/gap`}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
           >
             Gap
           </Link>
           <Link
             href={`/platform/tenants/${slug}`}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
           >
             Ficha
           </Link>
           <Link
             href={`/t/${slug}/documents`}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
           >
             Vista cliente
           </Link>
@@ -122,7 +122,7 @@ export default async function TenantDocumentsPlatformPage({
             {documents.map((doc) => (
               <li
                 key={doc.id}
-                className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] px-4 py-4"
+                className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] px-4 py-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>

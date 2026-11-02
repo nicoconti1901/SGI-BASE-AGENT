@@ -181,7 +181,7 @@ export function FindingEditor({
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5">
+      <section className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
         <h2 className="font-[family-name:var(--font-display)] text-xl">
           1. Datos del hecho
         </h2>
@@ -192,7 +192,7 @@ export function FindingEditor({
             disabled={typeLocked}
             title={typeLocked ? "Tiene ficha de accidente: no puede cambiar de tipo" : undefined}
             onChange={(e) => setType(e.target.value as FindingType)}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
           >
             {(Object.keys(FINDING_TYPE_LABELS) as FindingType[]).map((t) => (
               <option key={t} value={t}>
@@ -206,7 +206,7 @@ export function FindingEditor({
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
           />
         </label>
         <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
@@ -215,7 +215,7 @@ export function FindingEditor({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
           />
         </label>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -225,7 +225,7 @@ export function FindingEditor({
               type="date"
               value={detectedAt}
               onChange={(e) => setDetectedAt(e.target.value)}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
@@ -233,7 +233,7 @@ export function FindingEditor({
             <input
               value={source}
               onChange={(e) => setSource(e.target.value)}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
             />
           </label>
         </div>
@@ -256,7 +256,7 @@ export function FindingEditor({
         ) : null}
       </section>
 
-      <section className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5">
+      <section className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-[family-name:var(--font-display)] text-xl">
             3. Medidas (responsable = usuario)
@@ -276,7 +276,7 @@ export function FindingEditor({
                 },
               ])
             }
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-1.5 text-sm"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-1.5 text-sm"
           >
             Agregar medida
           </button>
@@ -284,7 +284,7 @@ export function FindingEditor({
         {measures.map((m, i) => (
           <div
             key={i}
-            className="grid gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-3 sm:grid-cols-2"
+            className="grid gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] p-3 sm:grid-cols-2"
           >
             <label className="flex flex-col gap-1 text-xs text-[var(--color-ink-muted)]">
               Tipo
@@ -296,7 +296,7 @@ export function FindingEditor({
                     prev.map((x, idx) => (idx === i ? { ...x, kind } : x)),
                   );
                 }}
-                className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-2 py-1.5 text-sm text-[var(--color-ink)]"
+                className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-2 py-1.5 text-sm text-[var(--color-ink)]"
               >
                 {(Object.keys(MEASURE_KIND_LABELS) as MeasureKind[]).map(
                   (k) => (
@@ -318,7 +318,7 @@ export function FindingEditor({
                     ),
                   )
                 }
-                className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-2 py-1.5 text-sm text-[var(--color-ink)]"
+                className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-2 py-1.5 text-sm text-[var(--color-ink)]"
               >
                 {members.map((member) => (
                   <option key={member.id} value={member.id}>
@@ -338,7 +338,7 @@ export function FindingEditor({
                     ),
                   )
                 }
-                className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-2 py-1.5 text-sm text-[var(--color-ink)]"
+                className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-2 py-1.5 text-sm text-[var(--color-ink)]"
               />
             </label>
             <label className="flex flex-col gap-1 text-xs text-[var(--color-ink-muted)]">
@@ -353,7 +353,7 @@ export function FindingEditor({
                     ),
                   )
                 }
-                className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-2 py-1.5 text-sm text-[var(--color-ink)]"
+                className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-2 py-1.5 text-sm text-[var(--color-ink)]"
               />
             </label>
             <label className="inline-flex items-center gap-2 text-xs text-[var(--color-ink-muted)]">
@@ -377,7 +377,7 @@ export function FindingEditor({
         ))}
       </section>
 
-      <section className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5">
+      <section className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
         <h2 className="font-[family-name:var(--font-display)] text-xl">
           4. Quién recibe la notificación
         </h2>
@@ -402,7 +402,7 @@ export function FindingEditor({
         </ul>
       </section>
 
-      <section className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4">
+      <section className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface)] p-4">
         <h3 className="font-medium">Revisión antes de publicar</h3>
         {blockers.length === 0 ? (
           <p className="mt-2 text-sm text-[var(--color-success)]">
@@ -423,7 +423,7 @@ export function FindingEditor({
           <button
             type="submit"
             disabled={savePending}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2.5 text-sm font-medium disabled:opacity-60"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2.5 text-sm font-medium disabled:opacity-60"
           >
             {savePending ? "Guardando…" : "Guardar borrador"}
           </button>

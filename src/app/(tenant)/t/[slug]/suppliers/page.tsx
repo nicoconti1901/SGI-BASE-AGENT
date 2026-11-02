@@ -214,7 +214,7 @@ export default async function SuppliersPage({ params, searchParams }: { params: 
                 action={{ href: href({ vista: "all", estado: "", criticidad: "", tipo: "", rubro: "", sede: "", nohab: "", q: "", pagina: undefined }), label: "Ver todos" }}
               />
             ) : (
-              <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+              <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
                 <table className="w-full min-w-[56rem] text-left text-sm">
                   <caption className="sr-only">Proveedores de la empresa</caption>
                   <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">

@@ -102,7 +102,7 @@ export default async function InstrumentsPage({ params, searchParams }: { params
           {upcoming.items.length === 0 ? (
             <p className="text-sm text-[var(--color-ink-muted)]">Ningún equipo vence en los próximos 30 días.</p>
           ) : (
-            <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-line)] text-sm">
+            <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-card-line)] text-sm">
               {upcoming.items.map((u) => (
                 <li key={u.assetId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2.5">
                   <span className="min-w-0">
@@ -168,7 +168,7 @@ export default async function InstrumentsPage({ params, searchParams }: { params
           action={canManage && !filtered ? { href: `${base}/new`, label: "Registrar equipo" } : undefined}
         />
       ) : (
-        <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+        <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
           <table className="w-full min-w-[52rem] text-left text-sm">
             <caption className="sr-only">Equipos de medición de la empresa</caption>
             <thead className={THEAD}>

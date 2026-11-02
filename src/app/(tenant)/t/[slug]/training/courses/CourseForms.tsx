@@ -188,7 +188,7 @@ export function SuggestedImport({ slug, suggestions }: { slug: string; suggestio
   const available = suggestions.filter((s) => !s.imported);
   return (
     <form {...keep} className="flex flex-col gap-3">
-      <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+      <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
         {suggestions.map((s) => (
           <li key={s.key} className="flex items-start gap-3 px-4 py-3">
             <input

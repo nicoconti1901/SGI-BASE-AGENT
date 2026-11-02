@@ -44,7 +44,7 @@ export function RecordFacts({ facts }: { facts: RecordFact[] }) {
 /** Tarjeta de registro: qué es, de qué se trata, sus datos clave y su estado, de un vistazo. */
 export function RecordCard({ href, kind, code, title, summary, facts, chip, children }: RecordItem) {
   return (
-    <li className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4 shadow-[var(--shadow-card)] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-[var(--color-line-strong)]">
+    <li className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4 shadow-[var(--shadow-card)] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-[var(--color-line-strong)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-center gap-2">

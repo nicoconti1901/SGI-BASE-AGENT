@@ -36,7 +36,7 @@ export function UploadDocumentForm({
     <form
       action={formAction}
       encType="multipart/form-data"
-      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]"
+      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Subir documento
@@ -52,7 +52,7 @@ export function UploadDocumentForm({
         <select
           name="documentId"
           defaultValue=""
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         >
           <option value="">— Crear documento nuevo —</option>
           {documents.map((doc) => (
@@ -68,7 +68,7 @@ export function UploadDocumentForm({
         <input
           name="title"
           required
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
 
@@ -77,7 +77,7 @@ export function UploadDocumentForm({
         <select
           name="fate"
           defaultValue="create"
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         >
           {(Object.keys(DOCUMENT_FATE_LABELS) as DocumentFate[]).map((fate) => (
             <option key={fate} value={fate}>
@@ -92,7 +92,7 @@ export function UploadDocumentForm({
         <select
           name="tenantRequirementId"
           defaultValue=""
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         >
           <option value="">— Sin vínculo —</option>
           {requirements.map((req) => (
@@ -110,7 +110,7 @@ export function UploadDocumentForm({
           type="file"
           required
           accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,application/pdf"
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
 
@@ -119,7 +119,7 @@ export function UploadDocumentForm({
         <input
           name="validUntil"
           type="date"
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
 
@@ -128,7 +128,7 @@ export function UploadDocumentForm({
         <textarea
           name="notes"
           rows={2}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
 

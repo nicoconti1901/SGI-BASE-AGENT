@@ -81,7 +81,6 @@ summary:focus-visible,
   --hex-w: 9rem;
   --bus-gap: 1.25rem;
   display: inline-flex;
-  max-width: 100%;
   align-self: flex-start;
   flex-wrap: wrap;
   column-gap: 1.5rem;
@@ -96,6 +95,9 @@ summary:focus-visible,
   );
   background-size: 100% calc(var(--hex-w) * 0.87 + var(--bus-gap));
   background-position: 0 calc(var(--bus-gap) / -2);
+  /* Ancho máximo = las columnas que corresponden; si no entran en pantalla, baja de a una fila. */
+  --bus-col-gap: 1.5rem;
+  max-width: min(100%, calc(var(--bus-cols, 4) * var(--hex-w) + (var(--bus-cols, 4) - 1) * var(--bus-col-gap)));
 }
 
 .sgi-bus[data-size="lg"] {
@@ -106,6 +108,7 @@ summary:focus-visible,
 @media (min-width: 640px) {
   .sgi-bus {
     --hex-w: 10.5rem;
+    --bus-col-gap: 1.75rem;
     column-gap: 1.75rem;
   }
 
@@ -437,4 +440,22 @@ summary:focus-visible,
     scroll-behavior: auto !important;
     transition-duration: var(--duration-instant) !important;
   }
+}
+
+
+/* Contenedor de formulario: fondo verde azulado, borde de 1,5 px y riel de 8 px a la izquierda.
+   Dentro, el "acento" pasa a ser el verde azulado: botones, foco y chips toman el color del formulario. */
+.sgi-form {
+  --color-accent: var(--color-form-rail);
+  --color-accent-hover: var(--color-form-rail-hover);
+  --color-accent-soft: color-mix(in srgb, var(--color-form-rail) 14%, transparent);
+  --color-accent-ink: var(--color-form-ink);
+  --color-accent-ring: color-mix(in srgb, var(--color-form-rail) 30%, transparent);
+  --color-on-solid: var(--color-form-on-rail);
+  --color-line-strong: var(--color-form-line);
+  background: var(--color-form-bg);
+  border: 1.5px solid var(--color-form-line);
+  border-left: 8px solid var(--color-form-rail);
+  border-radius: var(--radius-sm) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+  color: var(--color-ink);
 }

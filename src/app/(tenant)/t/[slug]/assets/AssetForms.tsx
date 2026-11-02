@@ -45,7 +45,7 @@ function AttributeInput({ field, value }: { field: AttributeField; value: unknow
   const hint = "hint" in field ? field.hint : undefined;
   if (field.type === "boolean") {
     return (
-      <label className="flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm">
+      <label className="flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm">
         <input type="checkbox" name={name} defaultChecked={value === true} className="h-4 w-4 accent-[var(--color-accent)]" />
         <span>{field.label}</span>
       </label>

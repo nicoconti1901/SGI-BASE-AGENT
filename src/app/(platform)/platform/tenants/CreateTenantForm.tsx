@@ -23,7 +23,7 @@ export function CreateTenantForm() {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]"
+      className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Nueva empresa (tenant)
@@ -44,7 +44,7 @@ export function CreateTenantForm() {
             setName(e.target.value);
             if (!slugTouched) setSlug(slugifyTenantName(e.target.value));
           }}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
           placeholder="Acme Sur S.A."
         />
       </label>
@@ -58,7 +58,7 @@ export function CreateTenantForm() {
             setSlugTouched(true);
             setSlug(e.target.value);
           }}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)]"
           placeholder="acme-sur"
         />
       </label>
@@ -70,7 +70,7 @@ export function CreateTenantForm() {
             name="size"
             required
             defaultValue="small"
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
           >
             <option value="small">Small — solo esenciales</option>
             <option value="medium">Medium — esenciales + actividad</option>
@@ -83,7 +83,7 @@ export function CreateTenantForm() {
             name="activity"
             required
             defaultValue="servicios"
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
           >
             <option value="manufactura">Manufactura</option>
             <option value="servicios">Servicios</option>

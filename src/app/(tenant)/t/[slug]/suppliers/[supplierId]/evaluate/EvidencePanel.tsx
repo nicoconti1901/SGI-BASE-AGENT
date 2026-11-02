@@ -42,7 +42,7 @@ export function EvidencePanel({
       {evidence.findings.length ? (
         <div>
           <p className="text-sm font-semibold">Hallazgos</p>
-          <ul className="mt-1 divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+          <ul className="mt-1 divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {evidence.findings.map((f) => (
               <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
                 <span>
@@ -62,7 +62,7 @@ export function EvidencePanel({
       {evidence.openActions.length ? (
         <div>
           <p className="text-sm font-semibold">Acciones abiertas</p>
-          <ul className="mt-1 divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+          <ul className="mt-1 divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {evidence.openActions.map((a) => (
               <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
                 <span>{a.title}</span>

@@ -68,7 +68,7 @@ export default async function FieldAuditPage({ params, searchParams }: { params:
               <legend className="text-sm font-semibold">Tareas especiales</legend>
               <div className="flex flex-wrap gap-3">
                 {Object.entries(SPECIAL_TASKS).map(([key, label]) => (
-                  <label key={key} className="flex min-h-12 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3">
+                  <label key={key} className="flex min-h-12 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3">
                     <input type="checkbox" name="specialTasks" value={key} className="h-5 w-5" />
                     {label}
                   </label>
@@ -100,7 +100,7 @@ export default async function FieldAuditPage({ params, searchParams }: { params:
         ) : (
           <ul className="flex flex-col gap-2">
             {program.sites.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-3">
+              <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-3">
                 <div className="min-w-0">
                   <p className="font-semibold">{s.name}</p>
                   <p className="text-sm text-[var(--color-ink-muted)]" data-testid={`program-${s.name}`}>

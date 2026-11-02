@@ -56,7 +56,7 @@ export function FindingsPanel({
       {rows.length === 0 ? (
         <EmptyState what="No hay hallazgos registrados para este proveedor." />
       ) : (
-        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
           {rows.map((r) => {
             const status = FINDING_STATUS[r.finding.status] ?? FINDING_STATUS.draft;
             return (
@@ -133,7 +133,7 @@ export function CommunicationsPanel({
       {rows.length === 0 ? (
         <EmptyState what="Todavía no se registró ninguna comunicación." />
       ) : (
-        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
           {rows.map((r) => (
             <li key={r.id} className="flex flex-col gap-1 px-4 py-3">
               <div className="flex flex-wrap items-center justify-between gap-2">

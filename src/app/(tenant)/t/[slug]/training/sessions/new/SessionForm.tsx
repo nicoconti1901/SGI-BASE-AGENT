@@ -215,7 +215,7 @@ export function SessionForm({ slug, today, courses, sites, positions, members, p
           </Field>
         </div>
 
-        <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-line)]">
+        <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
           <table className="w-full text-left text-sm">
             <caption className="sr-only">Personas que se pueden tildar como asistentes</caption>
             <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] text-xs text-[var(--color-ink-muted)]">

@@ -20,7 +20,7 @@ export function InviteMemberForm({ slug }: { slug: string }) {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]"
+      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Invitar usuario
@@ -35,7 +35,7 @@ export function InviteMemberForm({ slug }: { slug: string }) {
         <input
           name="name"
           required
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
@@ -44,7 +44,7 @@ export function InviteMemberForm({ slug }: { slug: string }) {
           name="email"
           type="email"
           required
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
@@ -54,7 +54,7 @@ export function InviteMemberForm({ slug }: { slug: string }) {
           type="password"
           required
           minLength={8}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
@@ -62,7 +62,7 @@ export function InviteMemberForm({ slug }: { slug: string }) {
         <select
           name="role"
           defaultValue="contributor"
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         >
           {TENANT_ROLE_OPTIONS.map((role) => (
             <option key={role} value={role}>

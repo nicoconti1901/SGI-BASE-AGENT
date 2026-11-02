@@ -76,7 +76,7 @@ export default async function PlatformCatalogPage({
         />
       </div>
 
-      <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4 shadow-[var(--shadow-soft)]">
+      <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4 shadow-[var(--shadow-soft)]">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs uppercase tracking-[0.18em] text-[var(--color-ink-subtle)]">
             Norma
@@ -96,7 +96,7 @@ export default async function PlatformCatalogPage({
                 className={`rounded-[var(--radius-md)] px-3 py-1.5 text-sm font-medium transition ${
                   active
                     ? "bg-[var(--color-accent)] text-[var(--color-on-solid)]"
-                    : "border border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-accent)]"
+                    : "border border-[var(--color-card-line)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-accent)]"
                 }`}
               >
                 {item === "ALL" ? "Todas" : item}
@@ -114,7 +114,7 @@ export default async function PlatformCatalogPage({
             className={`rounded-[var(--radius-md)] px-3 py-1.5 text-sm font-medium ${
               !essentialOnly
                 ? "bg-[var(--color-ink)] text-[var(--color-surface)]"
-                : "border border-[var(--color-line)] text-[var(--color-ink-muted)]"
+                : "border border-[var(--color-card-line)] text-[var(--color-ink-muted)]"
             }`}
           >
             Catálogo completo
@@ -124,7 +124,7 @@ export default async function PlatformCatalogPage({
             className={`rounded-[var(--radius-md)] px-3 py-1.5 text-sm font-medium ${
               essentialOnly
                 ? "bg-[var(--color-accent)] text-[var(--color-on-solid)]"
-                : "border border-[var(--color-line)] text-[var(--color-ink-muted)]"
+                : "border border-[var(--color-card-line)] text-[var(--color-ink-muted)]"
             }`}
           >
             Solo esenciales · empresas primerizas
@@ -138,7 +138,7 @@ export default async function PlatformCatalogPage({
           : `Mostrando ${requirements.length} requisitos del catálogo completo.`}
       </p>
 
-      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-soft)]">
+      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-soft)]">
         <table className="w-full border-collapse text-left text-sm">
           <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-subtle)]">
             <tr>

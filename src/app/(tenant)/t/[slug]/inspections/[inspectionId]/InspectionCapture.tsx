@@ -165,7 +165,7 @@ export function InspectionCapture(props: CaptureProps) {
   if (step === "review") {
     return (
       <div className="flex flex-col gap-5 pb-24">
-        <section aria-label="Resultado" className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5">
+        <section aria-label="Resultado" className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
           <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">Paso 3 · Revisar y cerrar</p>
           {derived?.result ? (
             <>
@@ -199,7 +199,7 @@ export function InspectionCapture(props: CaptureProps) {
         ) : null}
 
         {worst && proposedDue ? (
-          <section aria-label="Seguimiento" className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5">
+          <section aria-label="Seguimiento" className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] p-5">
             <div>
               <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">Qué se hace con lo que no cumplió</h3>
               <p className="text-sm text-[var(--color-ink-muted)]">

@@ -16,7 +16,7 @@ export function RunDueScanForm({ defaultSlug = "" }: { defaultSlug?: string }) {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5"
+      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Ejecutar scan de vencimientos
@@ -31,7 +31,7 @@ export function RunDueScanForm({ defaultSlug = "" }: { defaultSlug?: string }) {
           name="slug"
           defaultValue={defaultSlug}
           placeholder="ej. acme"
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
       {state.error ? (
@@ -70,7 +70,7 @@ export function ToggleOfferForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-1.5 text-sm font-medium disabled:opacity-60"
+        className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-1.5 text-sm font-medium disabled:opacity-60"
       >
         {pending ? "…" : active ? "Desactivar" : "Activar"}
       </button>
@@ -94,7 +94,7 @@ export function CreateDueItemForm({ slug }: { slug: string }) {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5"
+      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Crear vencimiento
@@ -104,7 +104,7 @@ export function CreateDueItemForm({ slug }: { slug: string }) {
         <input
           name="title"
           required
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
@@ -112,7 +112,7 @@ export function CreateDueItemForm({ slug }: { slug: string }) {
         <select
           name="entityType"
           defaultValue="document"
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         >
           <option value="document">document</option>
           <option value="action">action</option>
@@ -127,7 +127,7 @@ export function CreateDueItemForm({ slug }: { slug: string }) {
           type="date"
           required
           defaultValue={defaultDue}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
@@ -137,7 +137,7 @@ export function CreateDueItemForm({ slug }: { slug: string }) {
           type="number"
           min={0}
           defaultValue={7}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
       {state.error ? (

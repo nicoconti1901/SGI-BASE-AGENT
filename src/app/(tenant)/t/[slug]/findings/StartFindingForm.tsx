@@ -32,7 +32,7 @@ export function StartFindingForm({
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5"
+      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Nuevo hallazgo
@@ -47,7 +47,7 @@ export function StartFindingForm({
           name="type"
           value={type}
           onChange={(e) => setType(e.target.value as FindingType)}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         >
           {(Object.keys(FINDING_TYPE_LABELS) as FindingType[]).map((t) => (
             <option key={t} value={t}>
@@ -61,7 +61,7 @@ export function StartFindingForm({
         <input
           name="title"
           required
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
@@ -70,7 +70,7 @@ export function StartFindingForm({
           name="description"
           rows={2}
           required
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
       </label>
       {showFicha && incident ? (

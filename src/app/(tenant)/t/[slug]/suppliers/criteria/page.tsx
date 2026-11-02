@@ -165,7 +165,7 @@ export default async function SupplierCriteriaPage({ params, searchParams }: { p
 
           {versions.length > 1 || (versions.length === 1 && draft) ? (
             <SectionBlock title="Versiones" what="Cada evaluación guarda la versión con la que se hizo.">
-              <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+              <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
                 {versions.map((v) => (
                   <li key={v.id}>
                     <Link
@@ -198,7 +198,7 @@ export default async function SupplierCriteriaPage({ params, searchParams }: { p
             ) : (
               <ul className="flex flex-col gap-3">
                 {docTypes.map((t) => (
-                  <li key={t.id} className={`rounded-[var(--radius-md)] border border-[var(--color-line)] ${t.active ? "" : "opacity-70"}`}>
+                  <li key={t.id} className={`rounded-[var(--radius-md)] border border-[var(--color-card-line)] ${t.active ? "" : "opacity-70"}`}>
                     <details>
                       <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                         <span>

@@ -158,7 +158,7 @@ export default async function FindingsListPage({
       <section className="flex flex-col gap-4">
         <form
           method="get"
-          className="grid gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4 sm:grid-cols-4"
+          className="grid gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4 sm:grid-cols-4"
         >
           <div className="sm:col-span-2">
             <Field label="Buscar">
@@ -206,7 +206,7 @@ export default async function FindingsListPage({
             </button>
             <Link
               href={`/t/${slug}/findings`}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+              className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
             >
               Limpiar
             </Link>
@@ -237,7 +237,7 @@ export default async function FindingsListPage({
             }
           />
         ) : (
-          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)]">
             <table className="min-w-full border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-[var(--color-line)] bg-[var(--color-surface)] text-xs uppercase tracking-wide text-[var(--color-ink-subtle)]">
