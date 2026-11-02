@@ -90,7 +90,7 @@ test("accidente con baja, horas del mes, tablero, exportación, resumen y guía"
   await page.getByLabel(/^Fecha de reintegro/).fill(day(-1));
   await page.getByLabel(/^Persona afectada/).fill("Julia");
   await page.getByRole("option", { name: new RegExp(person) }).click();
-  await page.getByRole("button", { name: "Continuar al laboratorio" }).click();
+  await page.getByRole("button", { name: "Continuar al análisis de causa" }).click();
   await expect(page.getByRole("heading", { name: "Completar y publicar" })).toBeVisible({ timeout: 30_000 });
 
   await page.goto(`/t/${slug}/safety/exposure?mes=${month}`);

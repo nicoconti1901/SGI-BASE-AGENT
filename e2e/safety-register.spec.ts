@@ -89,7 +89,7 @@ test("registro de accidentes: alta, ficha de salud, seguimiento y lectura por ro
   await page.getByLabel(/^Agente/).selectOption({ label: "Piso, escalera o desnivel" });
   await expect(page.getByText("La persona afectada y la lesión las completa después")).toBeVisible();
   await expect(page.getByLabel(/^Persona afectada/)).toHaveCount(0);
-  await page.getByRole("button", { name: "Continuar al laboratorio" }).click();
+  await page.getByRole("button", { name: "Continuar al análisis de causa" }).click();
   await expect(page.getByRole("heading", { name: "Completar y publicar" })).toBeVisible({ timeout: 30_000 });
   const findingPath = new URL(page.url()).pathname.replace(/\/edit$/, "");
 

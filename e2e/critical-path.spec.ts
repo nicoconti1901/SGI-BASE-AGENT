@@ -91,13 +91,13 @@ test("se publica una NC con medida correctiva y el usuario ve el vencimiento en 
   await page.getByLabel("Tipo").selectOption({ label: "No conformidad" });
   await page.getByLabel("Título preliminar").fill(ncTitle);
   await page.getByLabel("Descripción preliminar").fill("Se detectó un registro de inspección sin firmar en el proceso de despacho.");
-  await page.getByRole("button", { name: "Continuar al laboratorio" }).click();
+  await page.getByRole("button", { name: "Continuar al análisis de causa" }).click();
   await expect(page.getByRole("heading", { name: "Completar y publicar" })).toBeVisible({ timeout: 20_000 });
 
   await page.getByLabel("Detectado el").fill(isoDaysFromNow(-1));
   await page.getByLabel("Origen").fill("Inspección interna e2e");
 
-  // Laboratorio de 5 Porqués: hechos, una rama de 3 niveles y causa raíz.
+  // Análisis de causa con 5 Porqués: hechos, una rama de 3 niveles y causa raíz.
   for (const item of [
     "Tarea que se realizaba",
     "Quiénes estaban presentes",
