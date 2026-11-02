@@ -5,6 +5,7 @@ import { listTenantMemberOptions } from "@/lib/findings";
 import { listOfferedStandards } from "@/lib/ims-catalog";
 import { AUDIT_STANDARD_LABELS } from "@/domain/audits/types";
 import { hasStructuredPlan, parsePlanSteps } from "@/domain/indicators/plan";
+import { canRunObjective, objectiveLockMessage } from "@/domain/indicators/ownership";
 import { statusBands } from "@/domain/indicators/bands";
 import {
   DIRECTION_LABELS,
@@ -37,7 +38,7 @@ export default async function ObjectivePage({
 }) {
   const { slug, objectiveId } = await params;
   const { listo, agregar } = await searchParams;
-  const { tenant, canManage } = await loadIndicatorsAccess(slug);
+  const { ctx, tenant, canWrite } = await loadIndicatorsAccess(slug);
   const [objective, members, standards] = await Promise.all([
     getObjective(tenant.id, objectiveId),
     listTenantMemberOptions(tenant.id),
@@ -48,17 +49,31 @@ export default async function ObjectivePage({
   const options = members.map((m) => ({ id: m.id, name: m.name }));
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "Sin asignar";
   const open = objective.status === "active";
-  const editable = canManage && open;
+  // Lo lleva su responsable (o el superusuario): quien lo creó y se lo asignó a otra persona lo ve, pero no lo mueve.
+  const runs = canRunObjective({
+    ownerUserId: objective.ownerUserId,
+    actorUserId: ctx.userId,
+    canWrite,
+    isPlatformSuperuser: ctx.isPlatformSuperuser,
+  });
+  const editable = runs && open;
+  const activeIndicators = objective.indicators.filter((i) => i.active);
+  const tally = { on_target: 0, alert: 0, off_target: 0, no_data: 0 };
+  for (const i of activeIndicators) tally[(i.measurements[0]?.status ?? "no_data") as keyof typeof tally] += 1;
+  const closeRemaining = [
+    ...(activeIndicators.length === 0 ? ["cargar al menos un indicador"] : []),
+    ...(tally.no_data > 0 && activeIndicators.length > 0 ? [`los primeros valores de ${tally.no_data} indicador${tally.no_data === 1 ? "" : "es"}`] : []),
+    `que ${nameOf(objective.ownerUserId)} lo cierre con su resultado (cumplido, no cumplido o cancelado) hasta el ${formatDate(objective.dueDate)}`,
+  ];
   const planSteps = parsePlanSteps(objective.planSteps);
   const plan = { steps: planSteps, resources: objective.planResources, evaluation: objective.planEvaluation };
-  const activeIndicators = objective.indicators.filter((i) => i.active).length;
   const justSaved = listo === "indicador";
   const listHref = `/t/${slug}/indicators`;
 
   const steps = [
     { label: "Objetivo", done: true },
-    { label: "Indicadores", done: activeIndicators > 0 },
-    { label: "Resumen", done: activeIndicators > 0 },
+    { label: "Indicadores", done: activeIndicators.length > 0 },
+    { label: "Resumen", done: activeIndicators.length > 0 },
   ];
 
   return (
@@ -101,6 +116,25 @@ export default async function ObjectivePage({
           </ol>
         ) : null}
       </header>
+
+      {open && !runs ? (
+        <section
+          role="note"
+          className="flex flex-col gap-1 rounded-[var(--radius-lg)] border border-[var(--color-info)] bg-[var(--color-info-soft)] p-5 text-sm"
+        >
+          <p className="font-semibold">Lo ves en solo lectura</p>
+          <p>{objectiveLockMessage(nameOf(objective.ownerUserId))}</p>
+          <p>
+            <span className="font-semibold">Estado actual:</span> vigente hasta el {formatDate(objective.dueDate)}.{" "}
+            {activeIndicators.length === 0
+              ? "Todavía no tiene indicadores."
+              : `${activeIndicators.length} indicador${activeIndicators.length === 1 ? "" : "es"}: ${tally.on_target} en meta, ${tally.alert} en alerta, ${tally.off_target} fuera de meta, ${tally.no_data} sin datos.`}
+          </p>
+          <p>
+            <span className="font-semibold">Para cerrarlo falta:</span> {closeRemaining.join(" · ")}.
+          </p>
+        </section>
+      ) : null}
 
       {justSaved ? (
         <section
@@ -211,7 +245,7 @@ export default async function ObjectivePage({
               return (
                 <li
                   key={i.id}
-                  className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4"
+                  className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">

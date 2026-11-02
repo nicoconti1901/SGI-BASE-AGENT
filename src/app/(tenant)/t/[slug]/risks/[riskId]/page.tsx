@@ -4,11 +4,13 @@ import { getAppSessionContext } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
+import { attachmentActorOf } from "@/lib/attachment-actor";
 import { getRisk, riskHealthSignals } from "@/lib/risks";
 import { listTenantMemberOptions } from "@/lib/findings";
 import { listActionsForTarget } from "@/lib/actions";
 import { RISK_STATUS_LABELS, SOURCE_KIND_LABELS } from "@/domain/risks/types";
 import type { RiskResponseDecision, RiskStatus } from "@/domain/risks/types";
+import { canImplement, implementationLockMessage, remainingStageLabels } from "@/domain/risks/ownership";
 import { riskProgress, type StageKey, type StageState } from "@/domain/risks/progress";
 import { RiskDetailForms } from "@/app/(tenant)/t/[slug]/risks/RiskDetailForms";
 import { LinkedActionsPanel } from "@/app/(tenant)/t/[slug]/risks/LinkedActionsPanel";
@@ -58,6 +60,18 @@ export default async function RiskDetailPage({ params }: { params: Params }) {
   });
   const stageStates = Object.fromEntries(progress.stages.map((s) => [s.key, s.state])) as Record<StageKey, StageState>;
   const nameOf = (id: string | null | undefined) => members.find((m) => m.id === id)?.name;
+  const canImplementNow = canImplement("risk", {
+    status,
+    ownerUserId: risk.responseOwnerUserId,
+    actorUserId: ctx.userId,
+    isPlatformSuperuser: ctx.isPlatformSuperuser,
+  });
+  const lockedNotice = canImplementNow
+    ? null
+    : {
+        message: implementationLockMessage("risk", nameOf(risk.responseOwnerUserId) ?? "Otra persona"),
+        remaining: remainingStageLabels(progress.stages),
+      };
   const responsible =
     progress.who === "owner"
       ? { name: nameOf(risk.responseOwnerUserId) ?? "Sin asignar", role: "Responsable de la respuesta" }
@@ -104,8 +118,9 @@ export default async function RiskDetailPage({ params }: { params: Params }) {
         nextStep={progress.nextStep}
         responsible={responsible}
         missing={progress.missing}
+        notice={lockedNotice}
       >
-        {canWrite && status !== "closed" ? (
+        {canWrite && canImplementNow && status !== "closed" ? (
           <StatusControls slug={slug} kind="risk" id={risk.id} advance={progress.advance} canClose />
         ) : null}
       </RecordStatusPanel>
@@ -114,7 +129,7 @@ export default async function RiskDetailPage({ params }: { params: Params }) {
         slug={slug}
         risk={{ ...risk, status }}
         members={members}
-        canWrite={canWrite}
+        canWrite={canWrite && canImplementNow}
         stages={stageStates}
       />
 
@@ -126,6 +141,8 @@ export default async function RiskDetailPage({ params }: { params: Params }) {
         members={members}
         actions={actions}
         canWrite={canWrite}
+        implementation={{ kind: "risk", status, ownerUserId: risk.responseOwnerUserId }}
+        actor={attachmentActorOf({ userId: ctx.userId, role: membership?.role, isPlatformSuperuser: ctx.isPlatformSuperuser })}
       />
     </div>
   );
