@@ -109,7 +109,7 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
               const dueIso = due ? isoFromDate(due.dueAt) : null;
               const state = due && dueIso ? DUE_CHIP[dueState({ dueAt: dueIso, leadDays: due.leadDays }, today)] : null;
               return (
-                <li key={kind} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+                <li key={kind} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <p className="font-semibold">{label}</p>
@@ -181,7 +181,7 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
         {inspections.length === 0 ? (
           <p className="text-sm text-[var(--color-ink-muted)]">Todavía no se inspeccionó este equipo.</p>
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {inspections.map((i) => (
               <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
                 <Link href={`/t/${slug}/inspections/${i.id}`} className="font-medium text-[var(--color-accent)] hover:underline">
@@ -195,7 +195,7 @@ export default async function AssetPage({ params }: { params: Promise<{ slug: st
       </SectionBlock>
 
       <SectionBlock title="Historial de estado" what="Por qué está como está y quién lo dijo.">
-        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
           {asset.statusEvents.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
               <span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
 import { useActionState, useState } from "react";
 import { useKeepInputs } from "@/lib/use-keep-inputs";
 import {
@@ -22,7 +23,7 @@ import {
 
 const initial: AuditActionState = {};
 const input =
-  "rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm";
+  "rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-sm";
 const primary =
   "self-start rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)] hover:bg-[var(--color-accent-hover)] disabled:opacity-60";
 const secondary =
@@ -77,7 +78,7 @@ export function ChecklistBuilder({
           const group = candidates.filter((c) => c.standard === std);
           const allOn = group.every((c) => selected.has(c.tenantRequirementId));
           return (
-            <fieldset key={std} className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-3">
+            <fieldset key={std} className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-3">
               <legend className="px-1 text-sm font-semibold">{AUDIT_STANDARD_LABELS[std]}</legend>
               <button
                 type="button"
@@ -138,7 +139,7 @@ function CustomQuestions({
     <div className="flex flex-col gap-2">
       <h3 className="text-sm font-semibold">Preguntas propias</h3>
       {items.length > 0 ? (
-        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
           {items.map((q) => (
             <li key={q.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
               <span>{q.question}</span>
@@ -207,7 +208,7 @@ export type RunnerItem = {
   findingId: string | null;
   /** Estado del hallazgo vinculado; publicado bloquea el cambio de resultado. */
   findingStatus: string | null;
-  attachments: { id: string; fileName: string }[];
+  attachments: { id: string; fileName: string; removable: boolean }[];
 };
 
 const RESULT_OPTIONS: AuditItemResult[] = [
@@ -364,13 +365,16 @@ function EvidenceFiles({
       {item.attachments.length > 0 ? (
         <ul className="flex flex-wrap gap-2">
           {item.attachments.map((a) => (
-            <li key={a.id}>
+            <li key={a.id} className="flex flex-wrap items-center gap-x-3">
               <a
                 href={`/api/audits/evidence/${a.id}/download`}
                 className="text-[var(--color-accent)] underline-offset-2 hover:underline"
               >
                 {a.fileName}
               </a>
+              {a.removable ? (
+                <RemoveAttachmentButton slug={slug} kind="audit_evidence" attachmentId={a.id} fileName={a.fileName} />
+              ) : null}
             </li>
           ))}
         </ul>

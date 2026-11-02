@@ -160,7 +160,7 @@ export function GuidedSteps({
           const isCurrent = i === current;
           const summary = done[i];
           const card = isCurrent
-            ? "border-[var(--color-accent)] shadow-[0_0_0_3px_var(--color-accent-ring)] p-5"
+            ? "sgi-form p-5"
             : summary
               ? "border-[var(--color-line)] px-4 py-3"
               : "border-dashed border-[var(--color-line-strong)] px-4 py-3";

@@ -168,7 +168,7 @@ export function TemplateEditor({ slug, templateId, initial, context, hasDefault,
         ) : (
           <p className="self-end text-sm text-[var(--color-ink-muted)]">Control previo al uso: se hace antes de cada uso, no tiene frecuencia.</p>
         )}
-        <label className="flex min-h-10 items-start gap-2 self-end rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm">
+        <label className="flex min-h-10 items-start gap-2 self-end rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm">
           <input type="checkbox" checked={findingOnCritical} onChange={(e) => setFindingOnCritical(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--color-accent)]" />
           <span>
             <span className="font-semibold">Abrir un hallazgo borrador</span> cuando haya una no conformidad crítica. La acción de seguimiento se crea siempre.
@@ -202,7 +202,7 @@ export function TemplateEditor({ slug, templateId, initial, context, hasDefault,
             const label = item.text.trim() || "Ítem nuevo";
             return (
               <li key={item.code}>
-                <article aria-label={label} className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4">
+                <article aria-label={label} className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4">
                   <header className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="font-[family-name:var(--font-mono)] tabular-nums text-[var(--color-ink-muted)]">{index + 1}.</span>
                     {isNew(item) ? <StatusChip status="info" label="Nuevo" /> : <span className="font-[family-name:var(--font-mono)] text-[var(--color-ink-muted)]">{item.code}</span>}

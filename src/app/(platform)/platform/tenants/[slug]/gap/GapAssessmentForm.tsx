@@ -82,7 +82,7 @@ export function GapAssessmentForm({
         </p>
       ) : null}
 
-      <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]">
+      <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)]">
         <table className="w-full min-w-[960px] text-left text-sm">
           <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-subtle)]">
             <tr>
@@ -118,7 +118,7 @@ export function GapAssessmentForm({
                     <select
                       name={`status_${row.id}`}
                       defaultValue={row.status}
-                      className="w-full min-w-[9rem] rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-2 py-1.5 text-[var(--color-ink)]"
+                      className="w-full min-w-[9rem] rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-2 py-1.5 text-[var(--color-ink)]"
                     >
                       {REQUIREMENT_STATUSES.map((status) => (
                         <option key={status} value={status}>
@@ -152,7 +152,7 @@ export function GapAssessmentForm({
                       defaultValue={row.notes ?? ""}
                       rows={2}
                       placeholder="Observaciones del diagnóstico…"
-                      className="w-full min-w-[12rem] rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-2 py-1.5 text-[var(--color-ink)]"
+                      className="w-full min-w-[12rem] rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-2 py-1.5 text-[var(--color-ink)]"
                     />
                   </td>
                 </tr>

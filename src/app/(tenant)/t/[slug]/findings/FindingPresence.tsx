@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
 import {
   MEASURE_KIND_LABELS,
   MEASURE_STATUS_LABELS,
@@ -84,9 +85,12 @@ export function MeasureStatusBadge({ status }: { status: string }) {
 export function AttachmentCard({
   attachment,
   tone = "default",
+  remove,
 }: {
   attachment: AttachmentView;
   tone?: "default" | "evidence";
+  /** Si se pasa, la tarjeta ofrece «Quitar» (ya controlado quién puede y si el registro lo permite). */
+  remove?: { slug: string; kind: "finding_doc" | "measure_evidence" };
 }) {
   const kind = fileKind(attachment.contentType, attachment.fileName);
   const when = formatWhen(attachment.createdAt);
@@ -95,7 +99,7 @@ export function AttachmentCard({
       ? "border-[var(--color-success)]/35 bg-[var(--color-success-soft)]/40"
       : "border-[var(--color-line)] bg-[var(--color-surface)]";
 
-  return (
+  const card = (
     <a
       href={`/api/findings/attachments/${attachment.id}/download`}
       className={`group flex items-start gap-3 rounded-[var(--radius-md)] border px-3 py-3 transition hover:border-[var(--color-accent)] hover:shadow-[var(--shadow-soft)] ${border}`}
@@ -128,6 +132,20 @@ export function AttachmentCard({
         </span>
       </span>
     </a>
+  );
+
+  if (!remove) return card;
+  return (
+    <div className="flex flex-col gap-1">
+      {card}
+      <RemoveAttachmentButton
+        slug={remove.slug}
+        kind={remove.kind}
+        attachmentId={attachment.id}
+        fileName={attachment.fileName}
+        className="self-end"
+      />
+    </div>
   );
 }
 
@@ -177,14 +195,14 @@ export function MeasureCardShell({
 
   return (
     <li
-      className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-soft)]"
+      className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-soft)]"
       style={{ borderLeftWidth: 4, borderLeftColor: tone.accentBar }}
     >
       <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <MeasureStatusBadge status={status} />
-            <span className="rounded-[var(--radius-sm)] border border-[var(--color-line)] px-2 py-0.5 text-xs font-medium text-[var(--color-ink-muted)]">
+            <span className="rounded-[var(--radius-sm)] border border-[var(--color-card-line)] px-2 py-0.5 text-xs font-medium text-[var(--color-ink-muted)]">
               {MEASURE_KIND_LABELS[kind]}
             </span>
             {linkedRootCause ? (

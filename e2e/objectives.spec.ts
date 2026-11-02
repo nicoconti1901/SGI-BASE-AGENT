@@ -27,7 +27,7 @@ test("el administrador crea un objetivo, le agrega un indicador y edita ambos", 
   await next.click();
   // Paso 2: quién y cuándo. El paso 1 queda como resumen.
   await expect(page.getByText("Paso 2 de 3")).toBeVisible();
-  await page.getByLabel("Responsable del objetivo").selectOption({ index: 1 });
+  await page.getByLabel("Responsable del objetivo").selectOption({ label: "Ana Administración" });
   await page.getByLabel("Fecha de cumplimiento").fill("2099-12-31");
   await next.click();
   // Paso 3: plan por filas.

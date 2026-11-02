@@ -64,25 +64,25 @@ export default async function TenantDetailPage({ params }: { params: Params }) {
         </Link>
         <Link
           href={`/platform/tenants/${tenant.slug}/documents`}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
         >
           Documentos
         </Link>
         <Link
           href={`/platform/tenants/${tenant.slug}/automations`}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
         >
           Automatizaciones
         </Link>
         <Link
           href={`/t/${tenant.slug}`}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
         >
           Abrir portal `/t/{tenant.slug}`
         </Link>
         <Link
           href="/platform/tenants"
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
         >
           Volver al listado
         </Link>
@@ -91,7 +91,7 @@ export default async function TenantDetailPage({ params }: { params: Params }) {
       <ModulesSection slug={tenant.slug} tenantId={tenant.id} />
       <OptInStandardsSection slug={tenant.slug} tenantId={tenant.id} />
 
-      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]">
+      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)]">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-subtle)]">
             <tr>

@@ -88,7 +88,7 @@ export function StatGrid({
   return (
     <section
       aria-label={ariaLabel}
-      className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-card)]"
+      className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-card)]"
     >
       <div
         className={`-mb-px -mr-px grid ${GRID_COLS[cols]} [&>*]:border-b [&>*]:border-r [&>*]:border-[var(--color-line)]`}

@@ -39,14 +39,13 @@ export const primary =
 export const saveChanges =
   "self-start rounded-md border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-4 py-2 text-sm font-medium text-[var(--color-accent)] disabled:opacity-60";
 export const secondary =
-  "self-start rounded-md border border-[var(--color-line)] px-4 py-2 text-sm font-medium disabled:opacity-60";
+  "self-start rounded-md border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium disabled:opacity-60";
 
 const chipButton =
   "rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] bg-[var(--color-surface-raised)] px-2 py-1 text-xs font-medium hover:border-[var(--color-accent)] hover:text-[var(--color-accent-ink)]";
 const radioCard =
   "flex cursor-pointer items-start gap-3 rounded-[var(--radius-md)] border border-[var(--color-line-strong)] bg-[var(--color-surface)] px-3 py-2.5 hover:border-[var(--color-accent)] has-[:checked]:border-[var(--color-accent)] has-[:checked]:bg-[var(--color-accent-soft)]";
-const group =
-  "flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5";
+const group = "sgi-form flex flex-col gap-4 p-5";
 const legend = "px-1 font-[family-name:var(--font-display)] text-lg";
 
 export type MemberOption = { id: string; name: string };
@@ -205,7 +204,7 @@ function PlanFields({ members, defaults }: { members: MemberOption[]; defaults?:
           {steps.map((step, i) => (
             <li
               key={i}
-              className="grid gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-3 sm:grid-cols-[1.5rem_minmax(0,1fr)_11rem_9.5rem_auto] sm:items-center"
+              className="grid gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] p-3 sm:grid-cols-[1.5rem_minmax(0,1fr)_11rem_9.5rem_auto] sm:items-center"
             >
               <span aria-hidden className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
                 {i + 1}
@@ -675,7 +674,7 @@ function IndicatorFields({
       {bands.length > 0 ? (
         <div
           aria-live="polite"
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2.5 text-sm"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2.5 text-sm"
         >
           <p className="text-xs font-semibold text-[var(--color-ink-muted)]">Así se va a ver cada valor cargado</p>
           <ul className="mt-1.5 flex flex-col gap-1">

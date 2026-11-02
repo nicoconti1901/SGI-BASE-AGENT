@@ -25,7 +25,7 @@ export function SectionBlock({
   return (
     <section
       id={id}
-      className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-card)] sm:p-6"
+      className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-card)] sm:p-6"
     >
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--color-line)] pb-3">
         <div className="min-w-0">

@@ -22,7 +22,7 @@ function PointsTable({ title, points }: { title: string; points: RecordDetail["p
   return (
     <div className="flex flex-col gap-2">
       <h3 className="text-sm font-semibold">{title}</h3>
-      <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+      <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <caption className="sr-only">{title}</caption>
           <thead className={THEAD}>
@@ -134,7 +134,7 @@ export default async function RecordPage({ params }: { params: Promise<{ slug: s
             today={todayIso()}
           />
         </SectionBlock>
-        <details className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4">
+        <details className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4">
           <summary className="cursor-pointer text-sm font-semibold">Descartar este borrador</summary>
           <div className="mt-3">
             <DiscardDraftForm slug={slug} assetId={assetId} recordId={record.id} />
@@ -208,7 +208,7 @@ export default async function RecordPage({ params }: { params: Promise<{ slug: s
         {record.notes ? <p className="text-sm text-[var(--color-ink-muted)]">{record.notes}</p> : null}
       </SectionBlock>
       {record.status === "closed" && canManage ? (
-        <details className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4">
+        <details className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4">
           <summary className="cursor-pointer text-sm font-semibold">Anular este registro</summary>
           <div className="mt-3">
             <VoidRecordForm slug={slug} assetId={assetId} recordId={record.id} />

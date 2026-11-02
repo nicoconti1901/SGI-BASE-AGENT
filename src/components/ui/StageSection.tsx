@@ -42,7 +42,7 @@ export function StageSection({
       : "border-dashed border-[var(--color-line-strong)]";
 
   return (
-    <section className={`flex flex-col gap-4 rounded-[var(--radius-lg)] border bg-[var(--color-surface-raised)] p-5 ${tone}`}>
+    <section className={`flex flex-col gap-4 rounded-[var(--radius-lg)] border bg-[var(--color-surface-raised)] p-5 ${tone} ${showForm ? "sgi-form" : ""}`}>
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-[family-name:var(--font-display)] text-xl">{title}</h2>
         <div className="flex items-center gap-2">

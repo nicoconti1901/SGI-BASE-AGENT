@@ -40,7 +40,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 function Collapsible({ summary, children }: { summary: string; children: React.ReactNode }) {
   return (
-    <details className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4">
+    <details className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] p-4">
       <summary className="cursor-pointer text-sm font-semibold text-[var(--color-accent)]">{summary}</summary>
       <div className="mt-4">{children}</div>
     </details>
@@ -167,7 +167,7 @@ export async function IncidentFichaCard({
       {ficha.healthVisible ? (
         <div className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-4">
           <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">Seguimiento</h3>
-          <ol className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+          <ol className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
             {followUps.map((f) => (
               <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
                 <span>

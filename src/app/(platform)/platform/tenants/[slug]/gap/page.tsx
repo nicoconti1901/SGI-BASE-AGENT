@@ -86,13 +86,13 @@ export default async function TenantGapPage({ params }: { params: Params }) {
         <div className="flex flex-wrap gap-2">
           <Link
             href={`/platform/tenants/${slug}`}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
           >
             Ficha del tenant
           </Link>
           <Link
             href={`/t/${slug}`}
-            className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+            className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
           >
             Portal cliente
           </Link>
@@ -114,7 +114,7 @@ export default async function TenantGapPage({ params }: { params: Params }) {
             {audits.map((audit) => (
               <li
                 key={audit.id}
-                className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm"
+                className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-4 py-3 text-sm"
               >
                 <p className="text-[var(--color-ink)]">
                   <strong>{audit.user.name}</strong> ·{" "}

@@ -16,7 +16,7 @@ export function TelemetryPanel({
   return (
     <section
       aria-label={title}
-      className={`overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-card)] ${className}`}
+      className={`overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-card)] ${className}`}
     >
       <header className="flex items-center justify-between gap-3 border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] px-4 py-2">
         <p className="font-[family-name:var(--font-mono)] text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-ink-muted)]">
@@ -102,7 +102,7 @@ export function ComplianceBar({
   return (
     <>
       <div
-        className="mt-2 flex h-2 overflow-hidden rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface-sunken)]"
+        className="mt-2 flex h-2 overflow-hidden rounded-[var(--radius-sm)] border border-[var(--color-card-line)] bg-[var(--color-surface-sunken)]"
         role="img"
         aria-label={`Distribución de ${total} requisitos por estado`}
       >

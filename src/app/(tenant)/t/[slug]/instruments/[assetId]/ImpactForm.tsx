@@ -7,7 +7,7 @@ import { completeImpactAction, type InstrumentActionState } from "@/app/(tenant)
 
 const initial: InstrumentActionState = {};
 const MAX_ACTIONS = 5;
-const radioRow = "flex min-h-10 items-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm";
+const radioRow = "flex min-h-10 items-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm";
 
 const OUTCOMES = [
   { value: "no_affected_results", label: "Las mediciones no se vieron afectadas", hint: "Con la justificación alcanza." },
@@ -48,7 +48,7 @@ export function ImpactForm({ slug, assetId, assessmentId, members, defaultOwnerI
       <Field label="Justificación de la decisión" required hint="Por qué concluís eso: qué revisaste y qué encontraste.">
         <textarea name="rationale" required minLength={10} rows={3} maxLength={2000} className={INPUT_CLASS} />
       </Field>
-      <label className="flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm">
+      <label className="flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm">
         <input type="checkbox" name="registerFinding" checked={affected || register} onChange={(e) => setRegister(e.target.checked)} disabled={affected} className="h-4 w-4 accent-[var(--color-accent)]" />
         <span>Registrar un hallazgo en borrador{affected ? " (se crea siempre cuando hubo mediciones afectadas)" : ""}</span>
       </label>
@@ -58,7 +58,7 @@ export function ImpactForm({ slug, assetId, assessmentId, members, defaultOwnerI
         <legend className="text-sm font-semibold">Acciones de seguimiento</legend>
         <p className="text-xs text-[var(--color-ink-muted)]">Repetir mediciones, reevaluar lo producido, avisar al cliente. Quedan en el seguimiento de acciones de la empresa.</p>
         {rows.map((row, index) => (
-          <div key={index} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] p-3">
+          <div key={index} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-3">
             <Field label={`Acción ${index + 1}: qué hay que hacer`} required>
               <input value={row.title} onChange={(e) => update(index, { title: e.target.value })} maxLength={200} className={INPUT_CLASS} />
             </Field>

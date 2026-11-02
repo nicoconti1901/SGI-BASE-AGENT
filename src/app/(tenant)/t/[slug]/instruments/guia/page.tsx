@@ -15,7 +15,7 @@ export default async function InstrumentsGuidePage({ params }: { params: Promise
         <h2 className="font-[family-name:var(--font-display)] text-3xl tracking-tight">Guía de equipos de medición</h2>
         <nav aria-label="Contenido" className="mt-4 flex flex-wrap gap-2 text-sm">
           {CALIBRATION_GUIDE_SECTIONS.map((s) => (
-            <a key={s.id} href={`#${s.id}`} className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-1 hover:border-[var(--color-accent)]">
+            <a key={s.id} href={`#${s.id}`} className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-1 hover:border-[var(--color-accent)]">
               {s.title}
             </a>
           ))}

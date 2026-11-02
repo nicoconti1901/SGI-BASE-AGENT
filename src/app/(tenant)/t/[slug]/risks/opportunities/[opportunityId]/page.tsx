@@ -4,6 +4,7 @@ import { getAppSessionContext } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
+import { attachmentActorOf } from "@/lib/attachment-actor";
 import {
   getOpportunity,
   opportunityHealthSignals,
@@ -19,6 +20,7 @@ import { OpportunityDetailForms } from "@/app/(tenant)/t/[slug]/risks/Opportunit
 import { LinkedActionsPanel } from "@/app/(tenant)/t/[slug]/risks/LinkedActionsPanel";
 import { RecordStatusPanel } from "@/app/(tenant)/t/[slug]/risks/RecordStatus";
 import { StatusControls } from "@/app/(tenant)/t/[slug]/risks/RecordParts";
+import { canImplement, implementationLockMessage, remainingStageLabels } from "@/domain/risks/ownership";
 import { opportunityProgress, type StageKey, type StageState } from "@/domain/risks/progress";
 
 type Params = Promise<{ slug: string; opportunityId: string }>;
@@ -70,6 +72,18 @@ export default async function OpportunityDetailPage({
   });
   const stageStates = Object.fromEntries(progress.stages.map((s) => [s.key, s.state])) as Record<StageKey, StageState>;
   const nameOf = (id: string | null | undefined) => members.find((m) => m.id === id)?.name;
+  const canImplementNow = canImplement("opportunity", {
+    status,
+    ownerUserId: opportunity.pursuitOwnerUserId,
+    actorUserId: ctx.userId,
+    isPlatformSuperuser: ctx.isPlatformSuperuser,
+  });
+  const lockedNotice = canImplementNow
+    ? null
+    : {
+        message: implementationLockMessage("opportunity", nameOf(opportunity.pursuitOwnerUserId) ?? "Otra persona"),
+        remaining: remainingStageLabels(progress.stages),
+      };
   const responsible =
     progress.who === "owner"
       ? { name: nameOf(opportunity.pursuitOwnerUserId) ?? "Sin asignar", role: "Responsable de llevarla adelante" }
@@ -117,8 +131,9 @@ export default async function OpportunityDetailPage({
         nextStep={progress.nextStep}
         responsible={responsible}
         missing={progress.missing}
+        notice={lockedNotice}
       >
-        {canWrite && status !== "closed" ? (
+        {canWrite && canImplementNow && status !== "closed" ? (
           <StatusControls slug={slug} kind="opportunity" id={opportunity.id} advance={progress.advance} canClose />
         ) : null}
       </RecordStatusPanel>
@@ -127,7 +142,7 @@ export default async function OpportunityDetailPage({
         slug={slug}
         opportunity={{ ...opportunity, status }}
         members={members}
-        canWrite={canWrite}
+        canWrite={canWrite && canImplementNow}
         stages={stageStates}
       />
 
@@ -139,6 +154,8 @@ export default async function OpportunityDetailPage({
         members={members}
         actions={actions}
         canWrite={canWrite}
+        implementation={{ kind: "opportunity", status, ownerUserId: opportunity.pursuitOwnerUserId }}
+        actor={attachmentActorOf({ userId: ctx.userId, role: membership?.role, isPlatformSuperuser: ctx.isPlatformSuperuser })}
       />
     </div>
   );

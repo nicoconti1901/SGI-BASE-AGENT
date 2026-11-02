@@ -135,7 +135,7 @@ export function RequirementGrid({
           {group.rows.length === 0 ? (
             <p className="text-sm text-[var(--color-ink-muted)]">Todavía no hay nada para mostrar acá. Cargalo en Datos maestros.</p>
           ) : (
-            <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+            <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
               <table className="w-full border-collapse text-sm">
                 <thead className="bg-[var(--color-surface-sunken)]">
                   <tr>

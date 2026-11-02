@@ -9,6 +9,7 @@ import { assertCanTenantRole } from "@/domain/identity/authz";
 import { createRisk, updateRiskCanvas, addRiskAssessment, setRiskResponseDecision, transitionRiskStatus } from "@/lib/risks";
 import { createOpportunity, updateOpportunityCanvas, addOpportunityAssessment, setOpportunityPursuitDecision, transitionOpportunityStatus } from "@/lib/opportunities";
 import { createAction, completeAction, recordActionEffectiveness } from "@/lib/actions";
+import { assertCanImplementAction, assertCanImplementTarget } from "@/lib/implementation-gate";
 import { uploadActionAttachment } from "@/lib/action-attachments";
 import { SOURCE_KINDS, type AssessmentMethod, type QualitativeLevel, type RiskResponseDecision, type SourceKind } from "@/domain/risks/types";
 import type { OpportunityPursuitDecision, OpportunityStatus } from "@/domain/opportunities/types";
@@ -209,6 +210,13 @@ export async function setRiskDecisionAction(
 
   const reviewRaw = String(formData.get("nextReviewAt") ?? "").trim();
   try {
+    await assertCanImplementTarget({
+      tenantId: gate.tenant.id,
+      kind: "risk",
+      targetId: riskId,
+      actorUserId: gate.ctx.userId,
+      isPlatformSuperuser: gate.ctx.isPlatformSuperuser,
+    });
     await setRiskResponseDecision({
       tenantId: gate.tenant.id,
       riskId,
@@ -235,6 +243,13 @@ export async function transitionRiskAction(
   if (!("tenant" in gate) || !gate.tenant) return { error: "Sesión inválida" };
 
   try {
+    await assertCanImplementTarget({
+      tenantId: gate.tenant.id,
+      kind: "risk",
+      targetId: riskId,
+      actorUserId: gate.ctx.userId,
+      isPlatformSuperuser: gate.ctx.isPlatformSuperuser,
+    });
     await transitionRiskStatus({
       tenantId: gate.tenant.id,
       riskId,
@@ -322,6 +337,13 @@ export async function setOpportunityDecisionAction(
 
   const reviewRaw = String(formData.get("nextReviewAt") ?? "").trim();
   try {
+    await assertCanImplementTarget({
+      tenantId: gate.tenant.id,
+      kind: "opportunity",
+      targetId: opportunityId,
+      actorUserId: gate.ctx.userId,
+      isPlatformSuperuser: gate.ctx.isPlatformSuperuser,
+    });
     await setOpportunityPursuitDecision({
       tenantId: gate.tenant.id,
       opportunityId,
@@ -351,6 +373,13 @@ export async function transitionOpportunityAction(
   if (!("tenant" in gate) || !gate.tenant) return { error: "Sesión inválida" };
 
   try {
+    await assertCanImplementTarget({
+      tenantId: gate.tenant.id,
+      kind: "opportunity",
+      targetId: opportunityId,
+      actorUserId: gate.ctx.userId,
+      isPlatformSuperuser: gate.ctx.isPlatformSuperuser,
+    });
     await transitionOpportunityStatus({
       tenantId: gate.tenant.id,
       opportunityId,
@@ -385,6 +414,15 @@ export async function createLinkedActionAction(
   const returnPath = String(formData.get("returnPath") ?? `/t/${slug}/risks`);
 
   try {
+    if (targetType === "risk" || targetType === "opportunity") {
+      await assertCanImplementTarget({
+        tenantId: gate.tenant.id,
+        kind: targetType,
+        targetId,
+        actorUserId: gate.ctx.userId,
+        isPlatformSuperuser: gate.ctx.isPlatformSuperuser,
+      });
+    }
     await createAction({
       tenantId: gate.tenant.id,
       createdByUserId: gate.ctx.userId,
@@ -422,6 +460,12 @@ export async function uploadActionEvidenceAction(
   }
 
   try {
+    await assertCanImplementAction({
+      tenantId: gate.tenant.id,
+      actionId: actionId,
+      actorUserId: gate.ctx.userId,
+      isPlatformSuperuser: gate.ctx.isPlatformSuperuser,
+    });
     const buffer = Buffer.from(await file.arrayBuffer());
     await uploadActionAttachment({
       tenantId: gate.tenant.id,
@@ -450,6 +494,12 @@ export async function completeActionAction(
   if (!("tenant" in gate) || !gate.tenant) return { error: "Sesión inválida" };
 
   try {
+    await assertCanImplementAction({
+      tenantId: gate.tenant.id,
+      actionId: actionId,
+      actorUserId: gate.ctx.userId,
+      isPlatformSuperuser: gate.ctx.isPlatformSuperuser,
+    });
     await completeAction({ tenantId: gate.tenant.id, actionId });
     revalidatePath(returnPath);
     revalidatePath(`/t/${slug}/risks`);
@@ -471,6 +521,12 @@ export async function recordEffectivenessAction(
 
   const returnPath = String(formData.get("returnPath") ?? `/t/${slug}/risks`);
   try {
+    await assertCanImplementAction({
+      tenantId: gate.tenant.id,
+      actionId: actionId,
+      actorUserId: gate.ctx.userId,
+      isPlatformSuperuser: gate.ctx.isPlatformSuperuser,
+    });
     await recordActionEffectiveness({
       tenantId: gate.tenant.id,
       actionId,

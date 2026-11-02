@@ -31,7 +31,7 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
       >
         <ul className="grid gap-3 md:grid-cols-3">
           {RESULTS.map((r) => (
-            <li key={r.label} className="flex flex-col gap-2 rounded-[var(--radius-lg)] border border-[var(--color-line)] p-4 text-sm">
+            <li key={r.label} className="flex flex-col gap-2 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] p-4 text-sm">
               <StatusChip status={r.status} label={r.label} />
               <p className="font-semibold">{r.rule}</p>
               <p className="text-[var(--color-ink-muted)]">{r.effect}</p>

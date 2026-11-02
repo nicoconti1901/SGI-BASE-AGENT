@@ -101,7 +101,7 @@ export function SupplierForm({
         <HintCallout>¿Un fallo de este proveedor afecta la conformidad del producto, la seguridad o el ambiente?</HintCallout>
         <div className="grid gap-2 sm:grid-cols-3">
           {SUPPLIER_CRITICALITIES.map((c) => (
-            <label key={c} className="flex items-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm has-[:checked]:border-[var(--color-accent)] has-[:checked]:bg-[var(--color-accent-soft)]">
+            <label key={c} className="flex items-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm has-[:checked]:border-[var(--color-accent)] has-[:checked]:bg-[var(--color-accent-soft)]">
               <input type="radio" name="criticality" value={c} checked={criticality === c} onChange={() => setCriticality(c)} className="mt-1 h-4 w-4 accent-[var(--color-accent)]" />
               <span>
                 <span className="font-semibold">{SUPPLIER_CRITICALITY_LABELS[c]}</span>
@@ -134,7 +134,7 @@ export function SupplierForm({
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">
             {sites.map((s) => (
-              <label key={s.id} className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm">
+              <label key={s.id} className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm">
                 <input type="checkbox" name="siteIds" value={s.id} defaultChecked={supplier?.siteIds.includes(s.id)} className="h-4 w-4 accent-[var(--color-accent)]" />
                 {s.name}
               </label>

@@ -34,7 +34,7 @@ export default async function PlatformTenantsPage() {
             Todavía no hay empresas. Creá la primera con el formulario.
           </p>
         ) : (
-          <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]">
+          <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)]">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-subtle)]">
                 <tr>

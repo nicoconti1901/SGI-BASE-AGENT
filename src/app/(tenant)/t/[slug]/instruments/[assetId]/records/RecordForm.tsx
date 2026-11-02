@@ -25,7 +25,7 @@ import { formatDateEs } from "@/domain/inspections/dates";
 
 const initial: RecordActionState = {};
 const checkbox = "h-4 w-4 accent-[var(--color-accent)]";
-const checkRow = "flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm";
+const checkRow = "flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm";
 
 export type RowDraft = { channelKey: string; nominal: string; measured: string; uncertainty: string };
 
@@ -119,7 +119,7 @@ function PointsEditor({
       {active.map((channel) => {
         const own = rows.map((row, index) => ({ row, index })).filter(({ row }) => row.channelKey === channel.key);
         return (
-          <div key={channel.key} className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-3">
+          <div key={channel.key} className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-3">
             <p className="text-sm">
               <span className="font-semibold">{channel.label}</span>{" "}
               <span className="text-[var(--color-ink-muted)]">
@@ -382,7 +382,7 @@ export function RecordForm({
         </>
       )}
 
-      <section aria-label="Resultado calculado" className="flex flex-col gap-2 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-sunken)] p-4">
+      <section aria-label="Resultado calculado" className="flex flex-col gap-2 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-sunken)] p-4">
         <p className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">Resultado calculado</p>
         {outcome.complete && outcome.asLeftResult ? (
           <>

@@ -1,3 +1,5 @@
+import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
+import { canOfferRemoval } from "@/domain/attachments/removal";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadTrainingAccess } from "@/app/(tenant)/t/[slug]/training/access";
@@ -14,7 +16,8 @@ const day = (d: Date) => dmy(d.toISOString().slice(0, 10));
 
 export default async function PersonTrainingPage({ params }: { params: Promise<{ slug: string; personId: string }> }) {
   const { slug, personId } = await params;
-  const { tenant, canManage, canRecord } = await loadTrainingAccess(slug);
+  const { tenant, ctx, canManage, canRecord } = await loadTrainingAccess(slug);
+  const actor = { userId: ctx.userId, canWrite: canRecord, canManage, isPlatformSuperuser: ctx.isPlatformSuperuser };
   const file = await getPersonFile(tenant.id, personId);
   if (!file) notFound();
   const { person, statuses, summary, history, tasks, courseName, attachmentsByRecord } = file;
@@ -58,7 +61,7 @@ export default async function PersonTrainingPage({ params }: { params: Promise<{
         {required.length === 0 ? (
           <EmptyState what="No tiene cursos exigidos." next="se definen en Requisitos, por puesto, tarea o para todo el personal." />
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {required.map((s) => (
               <li key={s.courseId} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
                 <span>
@@ -98,7 +101,7 @@ export default async function PersonTrainingPage({ params }: { params: Promise<{
         {tasks.length === 0 ? (
           <p className="text-sm text-[var(--color-ink-muted)]">No tiene tareas asignadas en Datos maestros.</p>
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {tasks.map((t) => (
               <li key={t.id} className="flex flex-col gap-1 px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -138,7 +141,7 @@ export default async function PersonTrainingPage({ params }: { params: Promise<{
         {history.length === 0 ? (
           <p className="text-sm text-[var(--color-ink-muted)]">Todavía no hay capacitaciones registradas.</p>
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {history.map((r) => {
               const files = attachmentsByRecord[r.id] ?? [];
               return (
@@ -164,10 +167,15 @@ export default async function PersonTrainingPage({ params }: { params: Promise<{
                   {files.length > 0 ? (
                     <ul className="flex flex-wrap gap-3 text-xs">
                       {files.map((f) => (
-                        <li key={f.id}>
+                        <li key={f.id} className="flex flex-wrap items-center gap-x-2 print:block">
                           <a href={`/api/training/attachments/${f.id}/download`} target="_blank" rel="noreferrer" className="text-[var(--color-accent)] underline">
                             {f.fileName}
                           </a>
+                          {canOfferRemoval(actor, "training", f.uploadedById, { voided: Boolean(r.voidedAt) }) ? (
+                            <span className="print:hidden">
+                              <RemoveAttachmentButton slug={slug} kind="training" attachmentId={f.id} fileName={f.fileName} />
+                            </span>
+                          ) : null}
                         </li>
                       ))}
                     </ul>

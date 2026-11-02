@@ -70,7 +70,7 @@ export default async function TenantUsersPage({ params }: { params: Params }) {
         <h2 className="font-[family-name:var(--font-display)] text-xl">
           Miembros ({members.length})
         </h2>
-        <div className="mt-3 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)]">
+        <div className="mt-3 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)]">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-subtle)]">
               <tr>

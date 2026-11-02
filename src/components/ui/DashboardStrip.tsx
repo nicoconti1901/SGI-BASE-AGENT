@@ -60,7 +60,7 @@ export function DashboardStrip({ children, "aria-label": ariaLabel = "Panel de c
     <div ref={ref} data-compact="false" className="group z-20 lg:pointer-events-none lg:sticky lg:top-0">
       <section
         aria-label={ariaLabel}
-        className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-card)] lg:pointer-events-auto"
+        className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-card)] lg:pointer-events-auto"
       >
         {children}
       </section>

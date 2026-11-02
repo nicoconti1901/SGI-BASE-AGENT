@@ -60,7 +60,7 @@ export default async function TrainingHomePage({ params, searchParams }: { param
               const filter = (status: string) => `${base}/compliance?sede=${s.siteId}&estado=${status}`;
               const tone = s.percent === null ? "pending" : s.percent >= 90 ? "ok" : s.percent >= 70 ? "warning" : "danger";
               return (
-                <li key={s.siteId} className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] p-4">
+                <li key={s.siteId} className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">
                       <Link href={`${base}/compliance?sede=${s.siteId}`} className="hover:underline">
@@ -96,7 +96,7 @@ export default async function TrainingHomePage({ params, searchParams }: { param
 
       {missing.length > 0 ? (
         <SectionBlock title="Los cursos que más faltan" what="Obligatorios faltantes o vencidos, por cantidad de personas.">
-          <ol className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+          <ol className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {missing.map((c) => (
               <li key={c.courseId} className="flex items-center justify-between gap-3 px-4 py-2.5">
                 <span className="font-medium">{c.name}</span>

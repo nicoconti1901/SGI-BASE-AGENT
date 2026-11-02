@@ -27,6 +27,7 @@ import {
 } from "@/lib/measurements";
 import type { AuditStandard } from "@/domain/audits/types";
 import { parsePlanSteps } from "@/domain/indicators/plan";
+import { canRunObjective, objectiveLockMessage } from "@/domain/indicators/ownership";
 import type {
   IndicatorDirection,
   IndicatorFrequency,
@@ -50,6 +51,34 @@ async function requireManager(slug: string) {
     !canTenantRole(membership?.role, "manage_objectives", { isPlatformSuperuser: ctx.isPlatformSuperuser })
   ) {
     return { error: "Tu rol no tiene permiso para esta acción" } as const;
+  }
+  return { ctx, tenant } as const;
+}
+
+/**
+ * Editar un objetivo, cargarle o cambiarle indicadores y cerrarlo es de su responsable o del superusuario.
+ * Quien lo creó y se lo asignó a otra persona no lo mueve.
+ */
+async function requireObjectiveRunner(slug: string, objectiveId: string) {
+  const ctx = await getAppSessionContext();
+  if (!ctx) return { error: "Debés iniciar sesión" } as const;
+  const tenant = await getTenantBySlug(slug);
+  if (!tenant) return { error: "Empresa no encontrada" } as const;
+  const membership = await getMembership(ctx.userId, tenant.id);
+  const objective = await prisma.objective.findFirst({
+    where: { id: objectiveId, tenantId: tenant.id },
+    select: { ownerUserId: true },
+  });
+  if (!objective) return { error: "Objetivo no encontrado" } as const;
+  const allowed = canRunObjective({
+    ownerUserId: objective.ownerUserId,
+    actorUserId: ctx.userId,
+    canWrite: canTenantRole(membership?.role, "write", { isPlatformSuperuser: ctx.isPlatformSuperuser }),
+    isPlatformSuperuser: ctx.isPlatformSuperuser,
+  });
+  if (!allowed) {
+    const owner = await prisma.user.findUnique({ where: { id: objective.ownerUserId }, select: { name: true } });
+    return { error: objectiveLockMessage(owner?.name ?? "Otra persona") } as const;
   }
   return { ctx, tenant } as const;
 }
@@ -134,7 +163,7 @@ export async function updateObjectiveAction(
   _prev: IndicatorActionState,
   formData: FormData,
 ): Promise<IndicatorActionState> {
-  const gate = await requireManager(slug);
+  const gate = await requireObjectiveRunner(slug, objectiveId);
   if ("error" in gate) return { error: gate.error };
   try {
     await updateObjective({ tenantId: gate.tenant.id, objectiveId, draft: objectiveDraft(formData) });
@@ -151,7 +180,7 @@ export async function closeObjectiveAction(
   _prev: IndicatorActionState,
   formData: FormData,
 ): Promise<IndicatorActionState> {
-  const gate = await requireManager(slug);
+  const gate = await requireObjectiveRunner(slug, objectiveId);
   if ("error" in gate) return { error: gate.error };
   const result = pick(formData.get("result"), ["achieved", "not_achieved", "cancelled"] as const, "achieved");
   try {
@@ -174,7 +203,7 @@ export async function createIndicatorAction(
   _prev: IndicatorActionState,
   formData: FormData,
 ): Promise<IndicatorActionState> {
-  const gate = await requireManager(slug);
+  const gate = await requireObjectiveRunner(slug, objectiveId);
   if ("error" in gate) return { error: gate.error };
   try {
     await createIndicator({ tenantId: gate.tenant.id, objectiveId, draft: indicatorDraft(formData) });
@@ -193,7 +222,7 @@ export async function updateIndicatorAction(
   _prev: IndicatorActionState,
   formData: FormData,
 ): Promise<IndicatorActionState> {
-  const gate = await requireManager(slug);
+  const gate = await requireObjectiveRunner(slug, objectiveId);
   if ("error" in gate) return { error: gate.error };
   try {
     await updateIndicator({ tenantId: gate.tenant.id, indicatorId, draft: indicatorDraft(formData) });
@@ -210,7 +239,7 @@ export async function setIndicatorActiveAction(
   indicatorId: string,
   active: boolean,
 ): Promise<IndicatorActionState> {
-  const gate = await requireManager(slug);
+  const gate = await requireObjectiveRunner(slug, objectiveId);
   if ("error" in gate) return { error: gate.error };
   try {
     await setIndicatorActive({ tenantId: gate.tenant.id, indicatorId, active });

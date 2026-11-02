@@ -183,7 +183,7 @@ export default async function RisksRegisterPage({ params }: { params: Params }) 
       ) : null}
 
       {closedItems.length > 0 ? (
-        <details className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5">
+        <details className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
           <summary className="cursor-pointer font-[family-name:var(--font-display)] text-lg">
             Cerrados y realizados ({closedItems.length})
           </summary>

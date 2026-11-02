@@ -1,3 +1,4 @@
+import { canOfferRemoval } from "@/domain/attachments/removal";
 import Link from "next/link";
 import { getAudit } from "@/lib/audits";
 import { prisma } from "@/lib/db";
@@ -40,9 +41,16 @@ export async function ExternalAuditView({
   });
   const reports = await prisma.auditReportAttachment.findMany({
     where: { tenantId, auditId: audit.id },
-    select: { id: true, fileName: true },
+    select: { id: true, fileName: true, uploadedById: true },
     orderBy: { createdAt: "asc" },
   });
+  // El informe lo carga quien planifica; lo puede quitar él mismo o un responsable, mientras la auditoría esté abierta.
+  const manager = { userId: "", canWrite: false, canManage: canPlan, isPlatformSuperuser: false };
+  const reportFiles = reports.map((r) => ({
+    id: r.id,
+    fileName: r.fileName,
+    removable: canOfferRemoval(manager, "audit_report", r.uploadedById, { status: audit.status }),
+  }));
   const pending = audit.status === "planned";
   const editable = canPlan && audit.status !== "cancelled";
 
@@ -115,7 +123,7 @@ export async function ExternalAuditView({
         <ExternalReportUpload
           slug={slug}
           auditId={audit.id}
-          files={reports}
+          files={reportFiles}
           canUpload={canPlan && audit.status !== "cancelled"}
         />
       </section>
@@ -125,7 +133,7 @@ export async function ExternalAuditView({
         {findings.length === 0 ? (
           <p className="text-sm text-[var(--color-ink-muted)]">Todavía no se cargaron hallazgos.</p>
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
             {findings.map((f) => (
               <li key={f.id}>
                 <Link
@@ -147,7 +155,7 @@ export async function ExternalAuditView({
           </ul>
         )}
         {canPlan && audit.status !== "cancelled" ? (
-          <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+          <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4">
             <h3 className="text-sm font-semibold">Registrar hallazgo</h3>
             <p className="text-xs text-[var(--color-ink-muted)]">
               Se crea como borrador en Hallazgos: completá la causa y las medidas y publicalo.

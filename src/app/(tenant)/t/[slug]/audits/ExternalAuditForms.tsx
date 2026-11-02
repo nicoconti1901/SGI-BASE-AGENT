@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
 import { Field, INPUT_CLASS } from "@/components/ui";
 
 import { useActionState } from "react";
@@ -27,7 +28,7 @@ const initial: AuditActionState = {};
 const primary =
   "self-start rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)] disabled:opacity-60";
 const secondary =
-  "self-start rounded-md border border-[var(--color-line)] px-4 py-2 text-sm font-medium disabled:opacity-60";
+  "self-start rounded-md border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium disabled:opacity-60";
 
 const saveChanges =
   "self-start rounded-md border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-4 py-2 text-sm font-medium text-[var(--color-accent)] disabled:opacity-60";
@@ -242,7 +243,7 @@ export function ExternalReportUpload({
 }: {
   slug: string;
   auditId: string;
-  files: { id: string; fileName: string }[];
+  files: { id: string; fileName: string; removable: boolean }[];
   canUpload: boolean;
 }) {
   const [state, action, pending] = useActionState(
@@ -271,13 +272,16 @@ export function ExternalReportUpload({
                 >
                   Abrir en pestaña nueva
                 </a>
+                {f.removable ? (
+                  <RemoveAttachmentButton slug={slug} kind="audit_report" attachmentId={f.id} fileName={f.fileName} />
+                ) : null}
               </li>
             ))}
           </ul>
           <iframe
             title={`Vista del informe ${files[files.length - 1].fileName}`}
             src={`/api/audits/report/${files[files.length - 1].id}/download?inline=1`}
-            className="h-[36rem] w-full rounded-md border border-[var(--color-line)]"
+            className="h-[36rem] w-full rounded-md border border-[var(--color-card-line)]"
           />
         </>
       ) : (

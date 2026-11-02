@@ -64,7 +64,7 @@ export function StartMeasureButton({
     initial,
   );
   return (
-    <form action={action} className="flex flex-col gap-2">
+    <form action={action} className="flex flex-col items-start gap-2 border-t border-[var(--color-line)] px-4 py-3">
       <button type="submit" disabled={pending} className={secondary}>
         {pending ? "Iniciando…" : "Iniciar medida"}
       </button>
@@ -228,7 +228,7 @@ export function AddMeasureForm({
 }) {
   const [state, action, pending] = useActionState(addMeasureAction.bind(null, slug, findingId), initial);
   return (
-    <details open={highlight} className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+    <details open={highlight} className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4">
       <summary className="cursor-pointer text-sm font-medium">Agregar medida</summary>
       <form action={action} className="mt-3 grid gap-3 sm:grid-cols-2">
         <Field label="Tipo">

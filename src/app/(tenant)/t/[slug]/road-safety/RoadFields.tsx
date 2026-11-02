@@ -60,7 +60,7 @@ export function RoadFields({ slug, vehicles }: { slug: string; vehicles: RoadVeh
   const [reportFiled, setReportFiled] = useState(false);
 
   return (
-    <fieldset className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+    <fieldset className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4">
       <legend className="px-1 font-[family-name:var(--font-display)] text-base font-semibold">Detalle del hecho de tránsito</legend>
       <HintCallout>
         Con estos datos se calculan los km y las tasas de seguridad vial. El conductor solo lo ven el administrador y el responsable de proceso; no se usa para sancionar.

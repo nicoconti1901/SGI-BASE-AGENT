@@ -5,6 +5,13 @@ import { fileURLToPath } from "node:url";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
+// Cada PrismaClient abre por defecto (CPUs × 2 + 1) conexiones, unas 25 en esta máquina. Los tests de integración
+// crean uno por archivo y comparten Postgres con el servidor de desarrollo: sin tope se agotan las 100 conexiones.
+if (process.env.DATABASE_URL && !/[?&]connection_limit=/.test(process.env.DATABASE_URL)) {
+  const url = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = `${url}${url.includes("?") ? "&" : "?"}connection_limit=4`;
+}
+
 export default defineConfig({
   test: {
     environment: "node",

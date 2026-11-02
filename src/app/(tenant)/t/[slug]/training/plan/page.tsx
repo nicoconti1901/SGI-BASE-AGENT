@@ -67,7 +67,7 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
               {percent === null ? "sin capacitaciones planificadas" : `${percent}% (${totals.done} de ${totals.planned})`}
               {totals.overdue > 0 ? <span className="ml-2"><StatusChip status="overdue" label={`${totals.overdue} atrasada(s)`} /></span> : null}
             </p>
-            <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+            <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
               <table className="w-full min-w-[34rem] text-left text-sm">
                 <caption className="sr-only">Plan anual por sede</caption>
                 <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
@@ -110,7 +110,7 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
 
       {sessions.length > 0 ? (
         <SectionBlock title="Capacitaciones del plan" what={`${pending.length} pendiente(s) y ${sessions.length - pending.length} realizada(s) en ${year}.`}>
-          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             <table className="w-full min-w-[40rem] text-left text-sm">
               <caption className="sr-only">Capacitaciones planificadas para {year}</caption>
               <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">

@@ -41,7 +41,7 @@ export default async function ApprovedListPage({ params }: { params: Promise<{ s
         {list.entries.length === 0 ? (
           <EmptyState what="Todavía no hay proveedores aprobados." next="evaluá a los proveedores para que figuren acá." action={{ href: base, label: "Ver proveedores" }} />
         ) : (
-          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             <table className="w-full min-w-[48rem] text-left text-sm">
               <caption className="sr-only">Lista de proveedores aprobados</caption>
               <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">

@@ -15,6 +15,9 @@ import {
   type EffectivenessStatus,
 } from "@/domain/actions/types";
 import { Field, FilePicker, FormError, INPUT_CLASS, StatusChip } from "@/components/ui";
+import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
+import { canOfferRemoval, type AttachmentActor } from "@/domain/attachments/removal";
+import { canImplement, type ImplementationKind } from "@/domain/risks/ownership";
 
 type Member = { id: string; name: string; email: string };
 type ActionRow = {
@@ -25,7 +28,7 @@ type ActionRow = {
   ownerUserId: string;
   dueAt: Date | string | null;
   effectivenessStatus: string;
-  attachments: { id: string; fileName: string }[];
+  attachments: { id: string; fileName: string; uploadedById: string | null }[];
 };
 
 const initial: RoActionState = {};
@@ -49,6 +52,8 @@ export function LinkedActionsPanel({
   members,
   actions,
   canWrite,
+  implementation,
+  actor,
 }: {
   slug: string;
   targetType: "risk" | "opportunity";
@@ -57,9 +62,22 @@ export function LinkedActionsPanel({
   members: Member[];
   actions: ActionRow[];
   canWrite: boolean;
+  /** Del riesgo u oportunidad: después de asignarlo, solo su responsable (o el de cada acción) las mueve. */
+  implementation: { kind: ImplementationKind; status: string; ownerUserId: string | null };
+  /** Quién mira, para ofrecer «Quitar» en los archivos que le corresponde. */
+  actor: AttachmentActor;
 }) {
   const createBound = createLinkedActionAction.bind(null, slug);
   const [createState, createAction, createPending] = useActionState(createBound, initial);
+  const mayImplement = (actionOwnerUserId?: string | null) =>
+    canImplement(implementation.kind, {
+      status: implementation.status,
+      ownerUserId: implementation.ownerUserId,
+      actorUserId: actor.userId,
+      isPlatformSuperuser: actor.isPlatformSuperuser,
+      actionOwnerUserId,
+    });
+  const canCreate = canWrite && mayImplement();
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "Sin asignar";
   // Fijo durante la vida de la vista: alcanza para marcar vencidas sin re-render impuro.
   const [now] = useState(() => Date.now());
@@ -76,18 +94,18 @@ export function LinkedActionsPanel({
 
       {actions.length === 0 ? (
         <p className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-line-strong)] px-4 py-3 text-sm text-[var(--color-ink-muted)]">
-          Todavía no hay acciones. {canWrite ? "Cargá la primera con el formulario de abajo." : ""}
+          Todavía no hay acciones. {canCreate ? "Cargá la primera con el formulario de abajo." : ""}
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
           {actions.map((a) => {
             const status = a.status as ActionStatus;
             const overdue = Boolean(a.dueAt && new Date(a.dueAt).getTime() < now && status !== "completed" && status !== "cancelled");
-            const workable = canWrite && status !== "completed" && status !== "cancelled";
+            const workable = canWrite && mayImplement(a.ownerUserId) && status !== "completed" && status !== "cancelled";
             return (
               <li
                 key={a.id}
-                className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4"
+                className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -121,13 +139,16 @@ export function LinkedActionsPanel({
                     <p className="text-xs text-[var(--color-ink-muted)]">Evidencia</p>
                     <ul className="mt-1 flex flex-col gap-1 text-sm">
                       {a.attachments.map((att) => (
-                        <li key={att.id}>
+                        <li key={att.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
                           <a
                             className="break-all text-[var(--color-accent)] underline-offset-2 hover:underline"
                             href={`/api/actions/attachments/${att.id}/download`}
                           >
                             {att.fileName}
                           </a>
+                          {canOfferRemoval(actor, "action", att.uploadedById, { status: a.status }) ? (
+                            <RemoveAttachmentButton slug={slug} kind="action" attachmentId={att.id} fileName={att.fileName} />
+                          ) : null}
                         </li>
                       ))}
                     </ul>
@@ -146,7 +167,7 @@ export function LinkedActionsPanel({
                   </div>
                 ) : null}
 
-                {canWrite && status === "completed" && a.effectivenessStatus === "pending" ? (
+                {canWrite && mayImplement(a.ownerUserId) && status === "completed" && a.effectivenessStatus === "pending" ? (
                   <EffectivenessForm slug={slug} actionId={a.id} returnPath={returnPath} />
                 ) : null}
               </li>
@@ -155,10 +176,10 @@ export function LinkedActionsPanel({
         </ul>
       )}
 
-      {canWrite ? (
+      {canCreate ? (
         <form
           action={createAction}
-          className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-line-strong)] bg-[var(--color-surface)] p-4"
+          className="sgi-form flex flex-col gap-4 p-4"
         >
           <h3 className="text-base font-semibold">Nueva acción</h3>
           {createState.error ? <FormError>{createState.error}</FormError> : null}

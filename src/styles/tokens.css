@@ -55,6 +55,15 @@
   --color-ink-muted: #4b5568;
   --color-ink-subtle: #5e6a7f;
   --color-line: #cbd2de;
+  /* Borde estándar de toda tarjeta o panel: se ve en claro y en oscuro sin competir con los campos (line-strong). */
+  --color-card-line: #94a1b8;
+  /* Formulario (alternativa 4: riel lateral y verde azulado): se distingue de las fichas azules y de la pantalla. */
+  --color-form-bg: #e6f4f2;
+  --color-form-line: #0f6e6a;
+  --color-form-rail: #0f6e6a;
+  --color-form-rail-hover: #0b5a56;
+  --color-form-ink: #0b3f3c;
+  --color-form-on-rail: #ffffff;
   --color-line-strong: #8491a8;
 
   /* Accent — cobalto (único accent dominante) */
@@ -148,6 +157,13 @@
   --color-ink-muted: #9aa6b8;
   --color-ink-subtle: #7c889b;
   --color-line: #232b38;
+  --color-card-line: #4b5870;
+  --color-form-bg: #0c2326;
+  --color-form-line: #3dd6c6;
+  --color-form-rail: #3dd6c6;
+  --color-form-rail-hover: #7be8dc;
+  --color-form-ink: #b8f3ec;
+  --color-form-on-rail: #04201e;
   --color-line-strong: #56647a;
 
   /* Accent — cian eléctrico (único accent dominante) */

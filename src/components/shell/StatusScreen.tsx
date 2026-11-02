@@ -13,7 +13,7 @@ export function StatusScreen({
 }) {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-6">
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-6 shadow-[var(--shadow-soft)]">
+      <div className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-6 shadow-[var(--shadow-soft)]">
         <h1 className="font-[family-name:var(--font-display)] text-2xl tracking-tight">
           {title}
         </h1>

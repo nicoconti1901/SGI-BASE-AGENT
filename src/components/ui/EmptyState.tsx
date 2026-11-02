@@ -16,7 +16,7 @@ export function EmptyState({ what, next, action }: EmptyStateProps) {
       role="status"
       className="flex flex-col items-start gap-3 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface-sunken)] px-5 py-6 text-sm sm:flex-row sm:gap-4"
     >
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] text-[var(--color-ink-muted)]">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] text-[var(--color-ink-muted)]">
         <InboxIcon className="h-6 w-6" />
       </span>
       <div className="flex min-w-0 flex-col items-start gap-1">

@@ -8,6 +8,7 @@ export function RecordStatusPanel({
   nextStep,
   responsible,
   missing,
+  notice,
   children,
 }: {
   statusLabel: string;
@@ -15,6 +16,8 @@ export function RecordStatusPanel({
   nextStep: string;
   responsible: { name: string; role: string } | null;
   missing: string[];
+  /** Para quien no puede avanzarlo: quién lo lleva y qué falta para cerrarlo. */
+  notice?: { message: string; remaining: string[] } | null;
   children?: ReactNode;
 }) {
   return (
@@ -66,6 +69,21 @@ export function RecordStatusPanel({
           </dd>
         </div>
       </dl>
+
+      {notice ? (
+        <div
+          role="note"
+          className="rounded-[var(--radius-md)] border border-[var(--color-info)] bg-[var(--color-info-soft)] px-3 py-2 text-sm text-[var(--color-ink)]"
+        >
+          <p className="font-semibold">Lo ves en solo lectura</p>
+          <p className="mt-0.5">{notice.message}</p>
+          {notice.remaining.length > 0 ? (
+            <p className="mt-1">
+              <span className="font-semibold">Para cerrarlo falta:</span> {notice.remaining.join(" · ")}.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       {missing.length > 0 ? (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-warning-line)] bg-[var(--color-warning-soft)] px-3 py-2 text-sm text-[var(--color-warning)]">

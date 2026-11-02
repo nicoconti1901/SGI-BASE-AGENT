@@ -50,7 +50,7 @@ export default async function NewInspectionPage({ params, searchParams }: { para
           </form>
         ) : null}
         {chosen && chosen.status !== "retired" && getAssetType(chosen.typeKey).preUseTemplateKey ? (
-          <form action={startPreUseInspectionAction.bind(null, slug, chosen.id)} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+          <form action={startPreUseInspectionAction.bind(null, slug, chosen.id)} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4">
             <p className="text-sm text-[var(--color-ink-muted)]">Antes de usar el equipo: un control corto, sin calendario.</p>
             <div>
               <Button type="submit" variant="secondary" className="min-h-12 w-full sm:w-auto">
@@ -76,7 +76,7 @@ export default async function NewInspectionPage({ params, searchParams }: { para
         ) : (
           <ul className="flex flex-col gap-2">
             {assets.map((a) => (
-              <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-3">
+              <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-3">
                 <div className="min-w-0">
                   <p className="font-[family-name:var(--font-mono)] font-semibold">{a.code}</p>
                   <p className="truncate text-sm text-[var(--color-ink-muted)]">
@@ -120,7 +120,7 @@ export default async function NewInspectionPage({ params, searchParams }: { para
         ) : (
           <ul className="flex flex-col gap-2">
             {sites.map((site) => (
-              <li key={site.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-3">
+              <li key={site.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-3">
                 <div className="min-w-0">
                   <p className="font-semibold">{site.name}</p>
                   <p className="text-sm text-[var(--color-ink-muted)]">

@@ -71,14 +71,14 @@ const slugKey = (label: string) =>
     .slice(0, 30);
 
 const checkbox = "h-4 w-4 accent-[var(--color-accent)]";
-const checkRow = "flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-2 text-sm";
+const checkRow = "flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-3 py-2 text-sm";
 
 function ChannelRow({ channel, onChange, onRemove, index }: { channel: ChannelDraft; onChange: (c: ChannelDraft) => void; onRemove: () => void; index: number }) {
   const set = (patch: Partial<ChannelDraft>) => onChange({ ...channel, ...patch });
   const setEmp = (patch: Partial<ChannelDraft["emp"]>) => onChange({ ...channel, emp: { ...channel.emp, ...patch } });
   const n = index + 1;
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-3">
+    <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-3">
       <div className="grid gap-3 sm:grid-cols-4">
         <Field label={`Canal ${n}: nombre`} required hint="Ej.: H₂S, Presión, Temperatura.">
           <input

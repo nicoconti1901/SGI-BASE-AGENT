@@ -66,7 +66,7 @@ export default async function PlatformAutomationsPage() {
           {offers.map((offer) => (
             <li
               key={offer.id}
-              className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] px-4 py-4"
+              className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] px-4 py-4"
             >
               <p className="font-medium">{offer.name}</p>
               <p className="mt-1 text-xs text-[var(--color-ink-subtle)]">
@@ -112,7 +112,7 @@ export default async function PlatformAutomationsPage() {
             {runs.map((run) => (
               <li
                 key={run.id}
-                className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm"
+                className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-4 py-3 text-sm"
               >
                 <p>
                   <strong>{run.offerCode}</strong> · {run.status}

@@ -19,6 +19,8 @@ import { explainResult, itemOutcome } from "@/domain/inspections/result";
 import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates";
 import { CRITICALITY_LABELS, RESULT_LABELS, type InspectionResult } from "@/domain/inspections/types";
 import { Button, SectionBlock, StatusChip, buttonClass } from "@/components/ui";
+import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
+import { canOfferRemoval } from "@/domain/attachments/removal";
 
 /** Las acciones de seguimiento separan los pasos extra (retirar, destruir) de la lista de no conformidades. */
 const STEPS_MARKER = "\nAdemás:\n";
@@ -209,10 +211,20 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
             {inspection.action.attachments.length > 0 ? (
               <ul>
                 {inspection.action.attachments.map((att) => (
-                  <li key={att.id}>
+                  <li key={att.id} className="flex flex-wrap items-center gap-x-3 print:block">
                     <a className="text-[var(--color-accent)] underline" href={`/api/actions/attachments/${att.id}/download`}>
                       {att.fileName}
                     </a>
+                    {canOfferRemoval(
+                      { userId: ctx.userId, canWrite, canManage: canRelease, isPlatformSuperuser: ctx.isPlatformSuperuser },
+                      "action",
+                      att.uploadedById,
+                      { status: inspection.action?.status },
+                    ) ? (
+                      <span className="print:hidden">
+                        <RemoveAttachmentButton slug={slug} kind="action" attachmentId={att.id} fileName={att.fileName} />
+                      </span>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -227,7 +239,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
       ) : null}
 
       <SectionBlock title="Respuestas" what="El listado tal como estaba la plantilla cuando se hizo la inspección.">
-        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
           {view.items.map(({ item, answer }) => (
             <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
               <span>
@@ -259,7 +271,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
 
       {inspection.corrections.length > 0 ? (
         <SectionBlock title="Correcciones" what="Cada cambio a una inspección cerrada queda con su motivo y quién lo hizo.">
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {inspection.corrections.map((c) => {
               const row = view.items.find((i) => i.answer.id === c.answerId);
               return (

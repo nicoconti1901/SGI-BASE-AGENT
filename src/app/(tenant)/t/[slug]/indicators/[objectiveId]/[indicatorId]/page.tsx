@@ -76,7 +76,7 @@ export default async function IndicatorPage({
       ) : null}
 
       {canLoad ? (
-        <section className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+        <section className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4">
           <RecordMeasurementForm
             slug={slug}
             objectiveId={objectiveId}
@@ -96,7 +96,7 @@ export default async function IndicatorPage({
             {indicator.measurements.map((m) => (
               <li
                 key={m.id}
-                className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4"
+                className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="font-medium">

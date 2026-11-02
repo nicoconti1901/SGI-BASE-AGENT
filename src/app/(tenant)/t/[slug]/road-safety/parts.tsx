@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 const fmt = (n: number, d = 2) => n.toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d });
 
-const CARD = "flex flex-col gap-1.5 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-4 shadow-[var(--shadow-card)]";
+const CARD = "flex flex-col gap-1.5 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4 shadow-[var(--shadow-card)]";
 const EYEBROW = "font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
 const BIG = "font-[family-name:var(--font-display)] text-[1.75rem] font-semibold leading-tight tabular-nums";
 

@@ -650,7 +650,7 @@ export async function getPersonFile(tenantId: string, personId: string, db: Db =
   const attachments = history.length
     ? await db.trainingAttachment.findMany({
         where: { tenantId, recordId: { in: history.map((h) => h.id) } },
-        select: { id: true, recordId: true, fileName: true },
+        select: { id: true, recordId: true, fileName: true, uploadedById: true },
         take: 500,
       })
     : [];
@@ -669,8 +669,8 @@ export async function getPersonFile(tenantId: string, personId: string, db: Db =
     statuses: statuses.map((s) => ({ ...s, courseName: courseName.get(s.courseId) ?? "Curso" })),
     summary: summarizeCompliance(statuses),
     history,
-    attachmentsByRecord: attachments.reduce<Record<string, { id: string; fileName: string }[]>>((acc, a) => {
-      (acc[a.recordId!] ??= []).push({ id: a.id, fileName: a.fileName });
+    attachmentsByRecord: attachments.reduce<Record<string, { id: string; fileName: string; uploadedById: string | null }[]>>((acc, a) => {
+      (acc[a.recordId!] ??= []).push({ id: a.id, fileName: a.fileName, uploadedById: a.uploadedById });
       return acc;
     }, {}),
     courseName,

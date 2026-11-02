@@ -216,7 +216,7 @@ export default async function RoadSafetyDashboardPage({ params, searchParams }: 
           what={`Quienes tuvieron ${settings.repeatThreshold} o más hechos en los últimos ${settings.repeatWindowMonths} meses. Es para conversar y revisar el caso, sin puntaje ni sanción.`}
         >
           {dash.review && dash.review.length > 0 ? (
-            <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-line)] text-sm">
+            <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-card-line)] text-sm">
               {dash.review.map((r) => (
                 <li key={r.personId} className="flex items-center justify-between gap-3 px-4 py-3">
                   <span className="font-medium">{r.name}</span>

@@ -158,10 +158,10 @@ export function FiveWhysLab({
   }
 
   const card =
-    "flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4";
+    "flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] p-4";
 
   return (
-    <div className="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
+    <div className="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
       <div>
         <h2 className="font-[family-name:var(--font-display)] text-xl">Análisis de causa · 5 Porqués</h2>
         <p className="mt-1 max-w-prose text-sm text-[var(--color-ink-muted)]">
@@ -246,7 +246,7 @@ export function FiveWhysLab({
                   <button
                     type="button"
                     onClick={() => setStatement(example.text)}
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] px-3 py-2 text-left hover:border-[var(--color-accent)]"
+                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] px-3 py-2 text-left hover:border-[var(--color-accent)]"
                   >
                     <span className="block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-subtle)]">
                       {example.label} · usar este

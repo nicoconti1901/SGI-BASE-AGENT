@@ -254,7 +254,7 @@ export default async function SupplierPage({
           {people.length === 0 ? (
             <EmptyState what="Ninguna persona está vinculada a este contratista." />
           ) : (
-            <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)] text-sm">
+            <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
               {people.map((p) => (
                 <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
                   <span>

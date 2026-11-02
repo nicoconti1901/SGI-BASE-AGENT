@@ -106,7 +106,7 @@ export function EvaluationForm({ slug, kind, id, today, suggestedReschedule, sug
       <section aria-label="Excepciones por persona" className="flex flex-col gap-2">
         <h3 className="text-sm font-semibold">Excepciones</h3>
         <p className="text-sm text-[var(--color-ink-muted)]">Tildá a quien tuvo un resultado distinto del general.</p>
-        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+        <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
           {people.map((p) => {
             const exception = exceptions[p.recordId];
             return (

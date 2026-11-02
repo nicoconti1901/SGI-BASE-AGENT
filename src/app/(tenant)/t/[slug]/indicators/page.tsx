@@ -171,7 +171,7 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
                   ],
                   children:
                     r.indicators.length === 0 ? null : (
-                      <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)]">
+                      <div className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)]">
                         <p className="border-b border-[var(--color-line)] px-3 py-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
                           Indicadores de este objetivo
                         </p>

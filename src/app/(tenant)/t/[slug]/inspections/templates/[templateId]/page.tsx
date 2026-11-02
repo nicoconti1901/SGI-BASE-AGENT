@@ -42,7 +42,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
       </SectionBlock>
 
       <SectionBlock title="Versiones" what="Cada edición queda guardada. Cada inspección conserva la versión con la que se hizo.">
-        <ol className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-line)] text-sm">
+        <ol className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-card-line)] text-sm">
           {versions.map((v) => (
             <li key={v.id} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-3">
               <span className="font-semibold tabular-nums">Versión {v.version}</span>

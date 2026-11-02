@@ -104,7 +104,7 @@ function Row({ slug, month, row, canManage }: { slug: string; month: string; row
 /** Grilla del mes: una fila por vehículo con los km calculados de los odómetros, los confirmados y su estado. */
 export function KmGrid({ slug, month, monthLabel, rows, canManage }: { slug: string; month: string; monthLabel: string; rows: KmRow[]; canManage: boolean }) {
   return (
-    <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+    <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
       <table className="w-full min-w-[44rem] text-left text-sm">
         <caption className="sr-only">Km de la flota en {monthLabel}</caption>
         <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">

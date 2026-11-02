@@ -81,7 +81,7 @@ export function CatalogSection({
         {active.length === 0 ? (
           <EmptyState what={copy.empty} next={canManage ? `usá el formulario de arriba para registrar la primera ${copy.one}.` : "pedile al administrador que la cargue."} />
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             {active.map((item) => (
               <CatalogRow key={item.id} slug={slug} entity={entity} item={item} canManage={canManage} />
             ))}
@@ -91,7 +91,7 @@ export function CatalogSection({
 
       {inactive.length > 0 ? (
         <SectionBlock title={`${copy.inactiveTitle} (${inactive.length})`} what="Conservan su historial pero no aparecen en los selectores.">
-          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)]">
+          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
             {inactive.map((item) => (
               <CatalogRow key={item.id} slug={slug} entity={entity} item={item} canManage={canManage} />
             ))}
@@ -129,7 +129,7 @@ function CatalogRow({
       {canManage ? (
         <div className="flex flex-col gap-3">
           {item.active ? (
-            <details className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-sunken)]">
+            <details className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface-sunken)]">
               <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-[var(--color-accent)]">
                 Editar {item.name}
               </summary>

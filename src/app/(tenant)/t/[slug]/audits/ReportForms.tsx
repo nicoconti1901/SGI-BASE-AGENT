@@ -11,7 +11,7 @@ import { Feedback } from "@/app/(tenant)/t/[slug]/audits/AuditForms";
 
 const initial: AuditActionState = {};
 const input =
-  "rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm";
+  "rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-sm";
 const primary =
   "self-start rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)] hover:bg-[var(--color-accent-hover)] disabled:opacity-60";
 const secondary =
