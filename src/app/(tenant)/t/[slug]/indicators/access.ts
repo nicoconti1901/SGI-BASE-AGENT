@@ -17,6 +17,9 @@ export async function loadIndicatorsAccess(slug: string) {
     canManage: canTenantRole(membership?.role, "manage_objectives", {
       isPlatformSuperuser: ctx.isPlatformSuperuser,
     }),
+    canWrite: canTenantRole(membership?.role, "write", {
+      isPlatformSuperuser: ctx.isPlatformSuperuser,
+    }),
   };
 }
 
