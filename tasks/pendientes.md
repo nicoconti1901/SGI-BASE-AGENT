@@ -14,6 +14,7 @@
 - [x] PR de docs: `tasks/todo.md`, `tasks/sesiones-fase-5.md` y README con lo entregado (PR #47)
 
 ## Decisiones del PO
+- [x] Estilo de formularios: elegida la alternativa B (pasos guiados, 2026-11-02). Aplicada a alta de objetivo, indicador, riesgo y oportunidad; falta extenderla al resto de los módulos (instrumentos, auditorías, proveedores, capacitación, activos) y al editor de hallazgos
 - [x] Aprobar SPEC de seguridad vial (2026-10-28)
 - [ ] Confirmar el índice de cláusulas de ISO 39001 (retira el tag `sin-verificar`): el PO lo pide a un auditor o consultor (2026-10-30); mensaje y pasos en `tasks/consulta-indice-iso-39001.md`
 - [x] Etiquetas de confianza de capacitaciones (aprobadas 2026-10-29)
