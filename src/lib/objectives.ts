@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { planStepIssues, type PlanStep } from "@/domain/indicators/plan";
 import { closeDueItemsForEntity, upsertOpenDueItemForEntity } from "@/lib/automation";
 import {
   indicatorDefinitionIssues,
@@ -119,10 +120,14 @@ export type ObjectiveDraft = {
   ownerUserId: string;
   dueDate: Date;
   plan: string;
+  /** Plan estructurado (§6.2.2). Sin definir = no se toca lo guardado. */
+  planSteps?: PlanStep[];
+  planResources?: string;
+  planEvaluation?: string;
 };
 
 function objectiveIssues(draft: ObjectiveDraft): string[] {
-  const issues: string[] = [];
+  const issues: string[] = [...planStepIssues(draft.planSteps ?? [])];
   if (draft.title.trim().length < 3) issues.push("Poné un título al objetivo");
   if (draft.standards.length === 0) issues.push("Elegí al menos una norma");
   if (!draft.ownerUserId) issues.push("Elegí un responsable");
@@ -138,7 +143,14 @@ function objectiveData(draft: ObjectiveDraft) {
     ownerUserId: draft.ownerUserId,
     dueDate: draft.dueDate,
     plan: draft.plan.trim(),
+    planSteps: draft.planSteps,
+    planResources: draft.planResources?.trim(),
+    planEvaluation: draft.planEvaluation?.trim(),
   };
+}
+
+function objectiveMembers(draft: ObjectiveDraft): string[] {
+  return [draft.ownerUserId, ...(draft.planSteps ?? []).map((s) => s.ownerUserId)];
 }
 
 export async function createObjective(
@@ -148,7 +160,7 @@ export async function createObjective(
   const issues = objectiveIssues(input.draft);
   if (issues.length > 0) throw new ObjectiveGateError(issues);
   await assertStandardsOffered(input.tenantId, input.draft.standards, db);
-  await assertMembers(input.tenantId, [input.draft.ownerUserId], db);
+  await assertMembers(input.tenantId, objectiveMembers(input.draft), db);
   const year = new Date().getUTCFullYear();
 
   // El código es correlativo por año; si dos altas chocan, se reintenta una vez.
@@ -190,7 +202,7 @@ export async function updateObjective(
   const issues = objectiveIssues(input.draft);
   if (issues.length > 0) throw new ObjectiveGateError(issues);
   await assertStandardsOffered(input.tenantId, input.draft.standards, db);
-  await assertMembers(input.tenantId, [input.draft.ownerUserId], db);
+  await assertMembers(input.tenantId, objectiveMembers(input.draft), db);
   return db.objective.update({ where: { id: objective.id }, data: objectiveData(input.draft) });
 }
 

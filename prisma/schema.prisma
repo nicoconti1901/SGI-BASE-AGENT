@@ -1125,7 +1125,14 @@ model Objective {
   standards       IsoStandard[]
   ownerUserId     String
   dueDate         DateTime
+  /// Texto libre del plan (objetivos anteriores al plan estructurado).
   plan            String          @default("")
+  /// §6.2.2 a) c) d): acciones del plan [{ what, ownerUserId, dueDate }]; se valida en lib/objectives.
+  planSteps       Json            @default("[]")
+  /// §6.2.2 b): recursos necesarios.
+  planResources   String          @default("")
+  /// §6.2.2 e): cómo se evalúan los resultados.
+  planEvaluation  String          @default("")
   status          ObjectiveStatus @default(active)
   closingNote     String?
   closedAt        DateTime?

@@ -21,6 +21,8 @@ import {
   SectionBlock,
   EntityList,
   EntityRow,
+  RecordFacts,
+  RecordList,
 } from "@/components/ui";
 
 const STANDARD_ORDER: AuditStandard[] = [...ALL_STANDARDS];
@@ -138,83 +140,89 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
               id={`norma-${g.standard}`}
               title={AUDIT_STANDARD_LABELS[g.standard]}
             >
-              <ul className="flex flex-col gap-4">
-                {g.rows.map((r) => (
-                  <li
-                    key={r.objective.id}
-                    className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p>
-                          <span className="mr-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">
-                            {r.objective.code}
-                          </span>
-                          <Link
-                            href={`/t/${slug}/indicators/${r.objective.id}`}
-                            className="font-medium hover:underline"
-                          >
-                            {r.objective.title}
-                          </Link>
+              <RecordList
+                aria-label={`${AUDIT_STANDARD_LABELS[g.standard]}: objetivos vigentes`}
+                items={g.rows.map((r) => ({
+                  id: r.objective.id,
+                  href: `/t/${slug}/indicators/${r.objective.id}`,
+                  kind: "Objetivo",
+                  code: r.objective.code,
+                  title: r.objective.title,
+                  summary: r.objective.description || undefined,
+                  chip: (
+                    <StatusChip
+                      label={MEASUREMENT_STATUS_LABELS[r.status]}
+                      className={MEASUREMENT_STATUS_TONE[r.status]}
+                    />
+                  ),
+                  facts: [
+                    { label: "Responsable del objetivo", value: nameOf(r.objective.ownerUserId) },
+                    { label: "Fecha de cumplimiento", value: formatDate(r.objective.dueDate) },
+                    {
+                      label: "Indicadores",
+                      value: r.indicators.length === 0 ? "Falta cargarlo" : String(r.indicators.length),
+                      tone: r.indicators.length === 0 ? ("warning" as const) : undefined,
+                    },
+                    {
+                      label: "Cargas vencidas",
+                      value: String(r.overdue),
+                      tone: r.overdue > 0 ? ("danger" as const) : undefined,
+                    },
+                  ],
+                  children:
+                    r.indicators.length === 0 ? null : (
+                      <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)]">
+                        <p className="border-b border-[var(--color-line)] px-3 py-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+                          Indicadores de este objetivo
                         </p>
-                        <p className="text-xs text-[var(--color-ink-muted)]">
-                          Responsable: {nameOf(r.objective.ownerUserId)} · Hasta{" "}
-                          {formatDate(r.objective.dueDate)}
-                        </p>
-                      </div>
-                      <StatusChip
-                        label={MEASUREMENT_STATUS_LABELS[r.status]}
-                        className={MEASUREMENT_STATUS_TONE[r.status]}
-                      />
-                    </div>
-                    {r.indicators.length === 0 ? (
-                      <EmptyState what="Sin indicadores todavía." />
-                    ) : (
-                      <ul className="divide-y divide-[var(--color-line)]">
-                        {r.indicators.map(({ indicator: i, last, status, trend, load }) => (
-                          <li
-                            key={i.id}
-                            className="flex flex-wrap items-center justify-between gap-3 py-2"
-                          >
-                            <div className="min-w-0">
-                              <Link
-                                href={`/t/${slug}/indicators/${r.objective.id}/${i.id}`}
-                                className="text-sm font-medium hover:underline"
-                              >
-                                {i.name}
-                              </Link>
-                              <p className="text-xs tabular-nums text-[var(--color-ink-muted)]">
-                                {last ? `${last.value} ${i.unit}` : "—"} · Meta {i.target}{" "}
-                                {i.unit}
-                                {" · Próxima carga: "}
-                                {load.period.label}
-                                {load.overdue ? (
-                                  <span className="ml-1 font-semibold text-[var(--color-danger)]">
-                                    (vencida)
+                        <ul className="divide-y divide-[var(--color-line)]">
+                          {r.indicators.map(({ indicator: i, last, status, trend, load }) => (
+                            <li key={i.id} className="flex flex-col gap-2 px-3 py-3">
+                              <div className="flex flex-wrap items-center justify-between gap-3">
+                                <p className="min-w-0 break-words">
+                                  <span className="mr-2 rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+                                    Indicador
                                   </span>
-                                ) : (
-                                  ` (hasta ${formatDate(load.dueAt)})`
-                                )}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Sparkline
-                                values={trend}
-                                target={i.target}
-                                label={`Últimos ${trend.length} períodos de ${i.name}`}
+                                  <Link
+                                    href={`/t/${slug}/indicators/${r.objective.id}/${i.id}`}
+                                    className="text-sm font-semibold hover:underline"
+                                  >
+                                    {i.name}
+                                  </Link>
+                                </p>
+                                <div className="flex items-center gap-3">
+                                  <Sparkline
+                                    values={trend}
+                                    target={i.target}
+                                    label={`Últimos ${trend.length} períodos de ${i.name}`}
+                                  />
+                                  <StatusChip
+                                    label={MEASUREMENT_STATUS_LABELS[status]}
+                                    className={MEASUREMENT_STATUS_TONE[status]}
+                                  />
+                                </div>
+                              </div>
+                              <RecordFacts
+                                facts={[
+                                  { label: "Responsable del indicador", value: nameOf(i.ownerUserId) },
+                                  { label: "Último valor", value: last ? `${last.value} ${i.unit}` : "Sin cargar" },
+                                  { label: "Meta", value: `${i.direction === "higher_better" ? "≥" : "≤"} ${i.target} ${i.unit}` },
+                                  {
+                                    label: "Próxima carga",
+                                    value: load.overdue
+                                      ? `${load.period.label} · vencida`
+                                      : `${load.period.label} · hasta ${formatDate(load.dueAt)}`,
+                                    tone: load.overdue ? ("danger" as const) : undefined,
+                                  },
+                                ]}
                               />
-                              <StatusChip
-                                label={MEASUREMENT_STATUS_LABELS[status]}
-                                className={MEASUREMENT_STATUS_TONE[status]}
-                              />
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ),
+                }))}
+              />
             </SectionBlock>
           ))}
 

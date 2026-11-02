@@ -26,6 +26,7 @@ import {
   recordMeasurement,
 } from "@/lib/measurements";
 import type { AuditStandard } from "@/domain/audits/types";
+import { parsePlanSteps } from "@/domain/indicators/plan";
 import type {
   IndicatorDirection,
   IndicatorFrequency,
@@ -79,6 +80,9 @@ function objectiveDraft(formData: FormData): ObjectiveDraft {
     ownerUserId: String(formData.get("ownerUserId") ?? ""),
     dueDate: new Date(String(formData.get("dueDate") ?? "")),
     plan: String(formData.get("plan") ?? ""),
+    planSteps: parsePlanSteps(formData.get("planSteps")),
+    planResources: String(formData.get("planResources") ?? ""),
+    planEvaluation: String(formData.get("planEvaluation") ?? ""),
   };
 }
 
@@ -178,7 +182,8 @@ export async function createIndicatorAction(
     return toState(e, "No se pudo crear el indicador");
   }
   revalidateObjective(slug, objectiveId);
-  return { ok: "Indicador creado" };
+  // Al terminar el indicador se muestra el resumen de todo el objetivo.
+  redirect(`/t/${slug}/indicators/${objectiveId}?listo=indicador`);
 }
 
 export async function updateIndicatorAction(
