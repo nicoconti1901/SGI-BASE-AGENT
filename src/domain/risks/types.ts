@@ -131,6 +131,23 @@ export const RISK_RESPONSE_LABELS: Record<RiskResponseDecision, string> = {
   retain: "Retener",
 };
 
+/** Qué significa cada respuesta, en palabras del usuario (se muestra junto a cada opción). */
+export const RISK_RESPONSE_HINTS: Record<RiskResponseDecision, string> = {
+  mitigate: "Bajar la probabilidad o el impacto con acciones. Pide cargar al menos una acción.",
+  avoid: "Dejar de hacer la actividad o eliminar la condición que lo genera. Pide al menos una acción.",
+  transfer: "Pasar el impacto a un tercero: seguro, contrato o proveedor. Pide al menos una acción.",
+  accept: "Asumirlo sin acciones nuevas porque el nivel es tolerable. Se revisa en la próxima fecha.",
+  retain: "Asumirlo con recursos propios previstos (ej.: stock de seguridad, fondo de contingencia).",
+  monitor: "Todavía no actuar, pero seguirlo de cerca con fecha de revisión.",
+};
+
+export const QUALITATIVE_LEVEL_HINTS: Record<QualitativeLevel, string> = {
+  low: "Poco probable y de impacto menor. Alcanza con los controles actuales.",
+  medium: "Puede ocurrir y afectaría el proceso, sin llegar al cliente.",
+  high: "Probable o con impacto en clientes, entregas o requisitos legales.",
+  critical: "Muy probable o con impacto grave: pide respuesta inmediata.",
+};
+
 /** Statement canvas: causa → evento → efecto. */
 export type RiskStatement = {
   cause: string;

@@ -3,16 +3,16 @@ import { notFound, redirect } from "next/navigation";
 import { getAppSessionContext } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
+import { listTenantMemberOptions } from "@/lib/findings";
 import { canTenantRole } from "@/domain/identity/authz";
-import { loadRisksWorkspace } from "@/lib/risks-workspace";
-import { WORKSPACE_STAGES } from "@/domain/risks/guide";
-import { RISK_STATUS_LABELS, RISK_STATUS_TONE } from "@/domain/risks/types";
+import { loadRiskRegister, type RegisterRow } from "@/lib/risks-workspace";
+import { RISK_STATUSES, RISK_STATUS_LABELS, RISK_STATUS_TONE, type RiskStatus } from "@/domain/risks/types";
 import {
+  OPPORTUNITY_STATUSES,
   OPPORTUNITY_STATUS_LABELS,
   OPPORTUNITY_STATUS_TONE,
+  type OpportunityStatus,
 } from "@/domain/opportunities/types";
-import type { RiskStatus } from "@/domain/risks/types";
-import type { OpportunityStatus } from "@/domain/opportunities/types";
 import {
   PageFrame,
   PageHeader,
@@ -21,17 +21,24 @@ import {
   StatusChip,
   EmptyState,
   SectionBlock,
-  EntityList,
-  EntityRow,
+  RecordList,
+  buttonClass,
+  type RecordItem,
 } from "@/components/ui";
 
 type Params = Promise<{ slug: string }>;
 
-export default async function RisksWorkspacePage({
-  params,
-}: {
-  params: Params;
-}) {
+function formatDay(d: Date): string {
+  return d.toLocaleDateString("es-AR");
+}
+
+/** Primero lo que tiene la revisión vencida; después en el orden del ciclo de vida. */
+function byAttention(order: readonly string[]) {
+  return (a: RegisterRow, b: RegisterRow) =>
+    Number(b.stale) - Number(a.stale) || order.indexOf(a.status) - order.indexOf(b.status);
+}
+
+export default async function RisksRegisterPage({ params }: { params: Params }) {
   const { slug } = await params;
   const ctx = await getAppSessionContext();
   if (!ctx) redirect("/login");
@@ -40,206 +47,151 @@ export default async function RisksWorkspacePage({
   if (!tenant) notFound();
 
   const membership = await getMembership(ctx.userId, tenant.id);
-  if (
-    !canTenantRole(membership?.role, "read", {
-      isPlatformSuperuser: ctx.isPlatformSuperuser,
-    })
-  ) {
-    redirect("/portal");
+  const opts = { isPlatformSuperuser: ctx.isPlatformSuperuser };
+  if (!canTenantRole(membership?.role, "read", opts)) redirect("/portal");
+  const canWrite = canTenantRole(membership?.role, "write", opts);
+
+  const [register, members] = await Promise.all([loadRiskRegister(tenant.id), listTenantMemberOptions(tenant.id)]);
+  const nameOf = (id: string | null) => (id ? (members.find((m) => m.id === id)?.name ?? "Sin asignar") : "—");
+
+  function toItem(row: RegisterRow, kind: "risk" | "opportunity"): RecordItem {
+    const chip =
+      kind === "risk" ? (
+        <StatusChip label={RISK_STATUS_LABELS[row.status as RiskStatus]} tone={RISK_STATUS_TONE[row.status as RiskStatus]} />
+      ) : (
+        <StatusChip
+          label={OPPORTUNITY_STATUS_LABELS[row.status as OpportunityStatus]}
+          tone={OPPORTUNITY_STATUS_TONE[row.status as OpportunityStatus]}
+        />
+      );
+    return {
+      id: row.id,
+      href: kind === "risk" ? `/t/${slug}/risks/${row.id}` : `/t/${slug}/risks/opportunities/${row.id}`,
+      kind: kind === "risk" ? "Riesgo" : "Oportunidad",
+      title: row.title,
+      summary: row.summary || (row.sourceLabel ? `Origen: ${row.sourceLabel}` : undefined),
+      chip,
+      facts: row.closed
+        ? []
+        : [
+            { label: kind === "risk" ? "Nivel" : "Valor", value: row.level ?? "Sin evaluar", tone: row.level ? undefined : "warning" },
+            { label: "Próximo paso", value: row.nextStep },
+            { label: "Responsable de avanzar", value: nameOf(row.responsibleUserId) },
+            {
+              label: "Próxima revisión",
+              value: row.nextReviewAt ? `${formatDay(row.nextReviewAt)}${row.stale ? " · vencida" : ""}` : row.stale ? "Vencida" : "Sin fecha",
+              tone: row.stale ? "danger" : undefined,
+            },
+          ],
+    };
   }
 
-  const canWrite = canTenantRole(membership?.role, "write", {
-    isPlatformSuperuser: ctx.isPlatformSuperuser,
-  });
-
-  const ws = await loadRisksWorkspace(tenant.id);
-
-  const [discovery, decisions, execution, learning] = WORKSPACE_STAGES;
-  const btn =
-    "rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] px-4 py-2 text-sm font-medium hover:border-[var(--color-accent)]";
+  const openRisks = register.risks.filter((r) => !r.closed).sort(byAttention(RISK_STATUSES));
+  const openOpps = register.opportunities.filter((o) => !o.closed).sort(byAttention(OPPORTUNITY_STATUSES));
+  const closedItems = [
+    ...register.risks.filter((r) => r.closed).map((r) => toItem(r, "risk")),
+    ...register.opportunities.filter((o) => o.closed).map((o) => toItem(o, "opportunity")),
+  ];
 
   return (
     <PageFrame>
       <PageHeader
         eyebrow="ISO 9001 · §6.1"
         title="Riesgos y oportunidades"
+        purpose="Cada registro muestra su nivel, en qué etapa está, el próximo paso y quién lo tiene que dar."
         guideHref={`/t/${slug}/risks/guia`}
         guideLabel="Guía para identificar →"
         actions={
           canWrite ? (
             <>
-              <Link
-                href={`/t/${slug}/risks/explore`}
-                title="Partí de un proceso, proveedor o cambio y anotá lo que surja"
-                className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-on-solid)]"
-              >
-                Explorar una fuente
+              <Link href={`/t/${slug}/risks/new`} className={buttonClass("primary")}>
+                Registrar riesgo
               </Link>
-              <Link href={`/t/${slug}/risks/new?tipo=riesgo`} className={btn}>
-                + Riesgo
-              </Link>
-              <Link
-                href={`/t/${slug}/risks/new?tipo=oportunidad`}
-                className={btn}
-              >
-                + Oportunidad
+              <Link href={`/t/${slug}/risks/opportunities/new`} className={buttonClass("secondary")}>
+                Registrar oportunidad
               </Link>
             </>
           ) : undefined
         }
       />
 
-      <StatGrid cols={3} aria-label="Resumen de riesgos y oportunidades">
-        <StatTile label="Riesgos abiertos" value={ws.counts.risksOpen} />
-        <StatTile
-          label="Oportunidades abiertas"
-          value={ws.counts.opportunitiesOpen}
-        />
-        <StatTile label="Acciones en curso" value={ws.counts.openActions} />
+      <StatGrid cols={4} aria-label="Resumen de riesgos y oportunidades">
+        <StatTile label="Riesgos abiertos" value={register.counts.risksOpen} />
+        <StatTile label="Oportunidades abiertas" value={register.counts.opportunitiesOpen} />
+        <StatTile label="Acciones en curso" value={register.counts.openActions} />
+        <StatTile label="Con revisión vencida" value={register.counts.stale} />
       </StatGrid>
 
       <SectionBlock
-        title={discovery.title}
-        what={discovery.what}
-        next={discovery.next}
+        title="Riesgos"
+        what="Lo que podría salir mal y afectar a un proceso, al cliente o a un requisito."
+        next="Abrí cada uno para dar el próximo paso que indica su tarjeta."
       >
-        <ItemList
-          slug={slug}
-          empty={discovery.empty}
-          risks={ws.discovery.risks}
-          opportunities={ws.discovery.opportunities}
-        />
+        {openRisks.length === 0 ? (
+          <EmptyState
+            what="No hay riesgos abiertos."
+            next={canWrite ? "Registrá el primero: qué podría pasar, por qué y con qué efecto." : undefined}
+            action={canWrite ? { href: `/t/${slug}/risks/new`, label: "Registrar riesgo" } : undefined}
+          />
+        ) : (
+          <RecordList aria-label="Riesgos abiertos" items={openRisks.map((r) => toItem(r, "risk"))} />
+        )}
       </SectionBlock>
 
       <SectionBlock
-        title={decisions.title}
-        what={decisions.what}
-        next={decisions.next}
+        title="Oportunidades"
+        what="Lo favorable que se podría aprovechar para mejorar."
+        next="Abrí cada una para evaluarla, decidir si se persigue y cargar sus acciones."
       >
-        <ItemList
-          slug={slug}
-          empty={decisions.empty}
-          risks={ws.decisions.risks}
-          opportunities={ws.decisions.opportunities}
-        />
+        {openOpps.length === 0 ? (
+          <EmptyState
+            what="No hay oportunidades abiertas."
+            next={canWrite ? "Registrá una: qué situación favorable aparece y qué beneficio traería." : undefined}
+            action={canWrite ? { href: `/t/${slug}/risks/opportunities/new`, label: "Registrar oportunidad" } : undefined}
+          />
+        ) : (
+          <RecordList aria-label="Oportunidades abiertas" items={openOpps.map((o) => toItem(o, "opportunity"))} />
+        )}
       </SectionBlock>
 
-      <SectionBlock
-        title={execution.title}
-        what={execution.what}
-        next={execution.next}
-      >
-        <ItemList
-          slug={slug}
-          empty={execution.empty}
-          risks={ws.execution.risks}
-          opportunities={ws.execution.opportunities}
-        />
-        {ws.execution.openActions.length > 0 ? (
-          <div className="mt-1">
-            <h3 className="text-sm font-medium">Acciones abiertas</h3>
-            <ul className="mt-1 space-y-1 text-sm">
-              {ws.execution.openActions.map((a) => (
-                <li key={a.id} className="text-[var(--color-ink-muted)]">
-                  {a.title}
-                  {a.dueAt
-                    ? ` · vence ${a.dueAt.toLocaleDateString("es-AR")}`
-                    : " · sin fecha"}
-                </li>
-              ))}
-            </ul>
+      {register.openActions.length > 0 || register.actionsNeedingEffectiveness.length > 0 ? (
+        <SectionBlock title="Acciones" what="Las acciones de todos los riesgos y oportunidades.">
+          {register.openActions.length > 0 ? (
+            <div>
+              <h3 className="text-sm font-semibold">En curso</h3>
+              <ul className="mt-1 flex flex-col gap-1 text-sm">
+                {register.openActions.map((a) => (
+                  <li key={a.id} className="text-[var(--color-ink-muted)]">
+                    <span className="font-medium text-[var(--color-ink)]">{a.title}</span> · {nameOf(a.ownerUserId)} ·{" "}
+                    {a.dueAt ? `fecha límite ${formatDay(a.dueAt)}` : "sin fecha límite"}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {register.actionsNeedingEffectiveness.length > 0 ? (
+            <div>
+              <h3 className="text-sm font-semibold">Completadas, falta evaluar su eficacia</h3>
+              <ul className="mt-1 flex flex-col gap-1 text-sm">
+                {register.actionsNeedingEffectiveness.map((a) => (
+                  <li key={a.id}>{a.title}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </SectionBlock>
+      ) : null}
+
+      {closedItems.length > 0 ? (
+        <details className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5">
+          <summary className="cursor-pointer font-[family-name:var(--font-display)] text-lg">
+            Cerrados y realizados ({closedItems.length})
+          </summary>
+          <div className="mt-4">
+            <RecordList aria-label="Cerrados y realizados" items={closedItems} />
           </div>
-        ) : null}
-      </SectionBlock>
-
-      <SectionBlock
-        title={learning.title}
-        what={learning.what}
-        next={learning.next}
-      >
-        {ws.learning.actionsNeedingEffectiveness.length > 0 ? (
-          <div className="mb-3">
-            <h3 className="text-sm font-medium">
-              Acciones completadas para verificar eficacia
-            </h3>
-            <ul className="mt-1 space-y-1 text-sm">
-              {ws.learning.actionsNeedingEffectiveness.map((a) => (
-                <li key={a.id}>{a.title}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-        <ItemList
-          slug={slug}
-          empty={
-            ws.learning.actionsNeedingEffectiveness.length > 0
-              ? "No hay registros con revisión vencida."
-              : learning.empty
-          }
-          risks={ws.learning.staleRisks}
-          opportunities={ws.learning.staleOpportunities}
-        />
-      </SectionBlock>
+        </details>
+      ) : null}
     </PageFrame>
-  );
-}
-
-function ItemList({
-  slug,
-  empty,
-  risks,
-  opportunities,
-}: {
-  slug: string;
-  empty: string;
-  risks: { id: string; title: string; status: string; sourceLabel: string }[];
-  opportunities: {
-    id: string;
-    title: string;
-    status: string;
-    sourceLabel: string;
-  }[];
-}) {
-  if (risks.length === 0 && opportunities.length === 0) {
-    return <EmptyState what={empty} />;
-  }
-  return (
-    <EntityList>
-      {risks.map((r) => {
-        const status = r.status as RiskStatus;
-        const tone = RISK_STATUS_TONE[status];
-        return (
-          <EntityRow
-            key={`r-${r.id}`}
-            href={`/t/${slug}/risks/${r.id}`}
-            kind="Riesgo"
-            title={r.title}
-            meta={r.sourceLabel || undefined}
-            chip={
-              <StatusChip label={RISK_STATUS_LABELS[status]} tone={tone} />
-            }
-          />
-        );
-      })}
-      {opportunities.map((o) => {
-        const status = o.status as OpportunityStatus;
-        const tone = OPPORTUNITY_STATUS_TONE[status];
-        return (
-          <EntityRow
-            key={`o-${o.id}`}
-            href={`/t/${slug}/risks/opportunities/${o.id}`}
-            kind="Oportunidad"
-            title={o.title}
-            meta={o.sourceLabel || undefined}
-            chip={
-              <StatusChip
-                label={OPPORTUNITY_STATUS_LABELS[status]}
-                tone={tone}
-              />
-            }
-          />
-        );
-      })}
-    </EntityList>
   );
 }

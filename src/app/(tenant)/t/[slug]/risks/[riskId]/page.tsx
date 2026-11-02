@@ -8,9 +8,12 @@ import { getRisk, riskHealthSignals } from "@/lib/risks";
 import { listTenantMemberOptions } from "@/lib/findings";
 import { listActionsForTarget } from "@/lib/actions";
 import { RISK_STATUS_LABELS, SOURCE_KIND_LABELS } from "@/domain/risks/types";
-import type { RiskStatus } from "@/domain/risks/types";
+import type { RiskResponseDecision, RiskStatus } from "@/domain/risks/types";
+import { riskProgress, type StageKey, type StageState } from "@/domain/risks/progress";
 import { RiskDetailForms } from "@/app/(tenant)/t/[slug]/risks/RiskDetailForms";
 import { LinkedActionsPanel } from "@/app/(tenant)/t/[slug]/risks/LinkedActionsPanel";
+import { RecordStatusPanel } from "@/app/(tenant)/t/[slug]/risks/RecordStatus";
+import { StatusControls } from "@/app/(tenant)/t/[slug]/risks/RecordParts";
 
 type Params = Promise<{ slug: string; riskId: string }>;
 
@@ -45,9 +48,25 @@ export default async function RiskDetailPage({ params }: { params: Params }) {
   ]);
 
   const returnPath = `/t/${slug}/risks/${risk.id}`;
+  const status = risk.status as RiskStatus;
+  const progress = riskProgress({
+    status,
+    statementComplete: Boolean(risk.cause.trim() && risk.event.trim() && risk.effect.trim()),
+    assessments: risk.assessments.length,
+    decision: risk.responseDecision as RiskResponseDecision | null,
+    actions,
+  });
+  const stageStates = Object.fromEntries(progress.stages.map((s) => [s.key, s.state])) as Record<StageKey, StageState>;
+  const nameOf = (id: string | null | undefined) => members.find((m) => m.id === id)?.name;
+  const responsible =
+    progress.who === "owner"
+      ? { name: nameOf(risk.responseOwnerUserId) ?? "Sin asignar", role: "Responsable de la respuesta" }
+      : progress.who === "creator"
+        ? { name: nameOf(risk.createdByUserId) ?? "Quien lo registró", role: "Lo registró: evalúa y decide la respuesta" }
+        : null;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-8">
+    <div className="mx-auto flex max-w-4xl flex-col gap-8">
       <div>
         <Link
           href={`/t/${slug}/risks`}
@@ -55,8 +74,8 @@ export default async function RiskDetailPage({ params }: { params: Params }) {
         >
           ← Riesgos y oportunidades
         </Link>
-        <p className="mt-2 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
-          Riesgo · {RISK_STATUS_LABELS[risk.status as RiskStatus]}
+        <p className="mt-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+          ISO 9001 · §6.1 · Riesgo
           {health?.stale ? " · Revisión vencida" : ""}
         </p>
         <h1 className="font-[family-name:var(--font-display)] text-3xl">
@@ -79,14 +98,24 @@ export default async function RiskDetailPage({ params }: { params: Params }) {
         </p>
       </div>
 
+      <RecordStatusPanel
+        statusLabel={RISK_STATUS_LABELS[status]}
+        stages={progress.stages}
+        nextStep={progress.nextStep}
+        responsible={responsible}
+        missing={progress.missing}
+      >
+        {canWrite && status !== "closed" ? (
+          <StatusControls slug={slug} kind="risk" id={risk.id} advance={progress.advance} canClose />
+        ) : null}
+      </RecordStatusPanel>
+
       <RiskDetailForms
         slug={slug}
-        risk={{
-          ...risk,
-          status: risk.status as RiskStatus,
-        }}
+        risk={{ ...risk, status }}
         members={members}
         canWrite={canWrite}
+        stages={stageStates}
       />
 
       <LinkedActionsPanel

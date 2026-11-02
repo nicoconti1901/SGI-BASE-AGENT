@@ -73,6 +73,16 @@ export const OPPORTUNITY_PURSUIT_LABELS: Record<
   close: "Cerrar",
 };
 
+/** Qué significa cada decisión, en palabras del usuario. «Cerrar» no se ofrece: se cierra desde el estado. */
+export const OPPORTUNITY_PURSUIT_HINTS: Record<OpportunityPursuitDecision, string> = {
+  pursue_now: "Aprovecharla ya: se cargan acciones con responsable y fecha.",
+  pursue_later: "Vale la pena, pero no ahora. Se vuelve a decidir en la próxima revisión.",
+  investigate: "Falta información para decidir. Se junta y se vuelve a decidir.",
+  monitor: "Seguirla de cerca sin invertir todavía.",
+  do_not_pursue: "No conviene: se descarta y queda cerrada con su justificación.",
+  close: "Se cierra sin perseguirla.",
+};
+
 /** Hipótesis: condición → circunstancia → beneficio. */
 export type OpportunityHypothesis = {
   condition: string;

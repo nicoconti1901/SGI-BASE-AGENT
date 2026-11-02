@@ -1,41 +1,39 @@
 "use client";
 
+import { useState } from "react";
 import { describeAssessmentResult } from "@/domain/risks/assessment";
-import { useActionState } from "react";
 import {
   saveRiskCanvasAction,
   addRiskAssessmentAction,
   setRiskDecisionAction,
-  transitionRiskAction,
-  type RoActionState,
 } from "@/app/(tenant)/t/[slug]/risks/actions";
 import {
-  QUALITATIVE_LEVEL_LABELS,
-  QUALITATIVE_LEVELS,
+  RISK_RESPONSE_HINTS,
   RISK_RESPONSE_LABELS,
-  RISK_STATUS_LABELS,
   type RiskResponseDecision,
   type RiskStatus,
 } from "@/domain/risks/types";
-import { nextStatusesForRisk } from "@/domain/risks/lifecycle";
+import type { StageKey, StageState } from "@/domain/risks/progress";
+import { FIELD_HINTS } from "@/domain/risks/guide";
+import { ChoiceCards, Field, FormError, INPUT_CLASS, StageSection, Summary } from "@/components/ui";
+import {
+  AssessmentFields,
+  AssessmentSummary,
+  MemberSelect,
+  SubmitButton,
+  useSectionAction,
+  type Assessment,
+  type Member,
+} from "@/app/(tenant)/t/[slug]/risks/RecordFields";
 
-type Member = { id: string; name: string };
-type Assessment = {
-  id: string;
-  version: number;
-  method: string;
-  rationale: string;
-  resultJson: unknown;
-  assessedAt: Date | string;
-};
-
-const initial: RoActionState = {};
+type Section = "describe" | "assess" | "decide";
 
 export function RiskDetailForms({
   slug,
   risk,
   members,
   canWrite,
+  stages,
 }: {
   slug: string;
   risk: {
@@ -54,254 +52,192 @@ export function RiskDetailForms({
   };
   members: Member[];
   canWrite: boolean;
+  stages: Record<StageKey, StageState>;
 }) {
-  const controls = Array.isArray(risk.existingControlsJson)
-    ? (risk.existingControlsJson as string[]).join("\n")
-    : "";
+  const [editing, setEditing] = useState<Section | null>(null);
+  const controls = Array.isArray(risk.existingControlsJson) ? (risk.existingControlsJson as string[]) : [];
+  const writable = canWrite && risk.status !== "closed";
+  const decisionEditable = risk.status === "evaluated" || risk.status === "response_planned";
+  const nameOf = (id: string | null) => members.find((m) => m.id === id)?.name ?? "";
 
-  const canvasBound = saveRiskCanvasAction.bind(null, slug, risk.id);
-  const assessBound = addRiskAssessmentAction.bind(null, slug, risk.id);
-  const decisionBound = setRiskDecisionAction.bind(null, slug, risk.id);
-  const [canvasState, canvasAction, canvasPending] = useActionState(
-    canvasBound,
-    initial,
+  const [canvasState, canvasAction, canvasPending] = useSectionAction(
+    "describe",
+    saveRiskCanvasAction.bind(null, slug, risk.id),
+    setEditing,
   );
-  const [assessState, assessAction, assessPending] = useActionState(
-    assessBound,
-    initial,
+  const [assessState, assessAction, assessPending] = useSectionAction(
+    "assess",
+    addRiskAssessmentAction.bind(null, slug, risk.id),
+    setEditing,
   );
-  const [decisionState, decisionAction, decisionPending] = useActionState(
-    decisionBound,
-    initial,
+  const [decisionState, decisionAction, decisionPending] = useSectionAction(
+    "decide",
+    setRiskDecisionAction.bind(null, slug, risk.id),
+    setEditing,
   );
 
-  const next = nextStatusesForRisk(risk.status);
+  const section = (key: Section) => ({
+    done: stages[key] === "done",
+    current: stages[key] === "current",
+    editing: editing === key,
+    onEdit: () => setEditing(key),
+    onCancel: () => setEditing(null),
+  });
 
   return (
-    <div className="flex flex-col gap-8">
-      <form action={canvasAction} className="flex flex-col gap-3">
-        <h2 className="font-[family-name:var(--font-display)] text-xl">
-          Descripción: causa → evento → efecto
-        </h2>
-        {canvasState.error ? (
-          <p className="text-sm text-[var(--color-danger)]">{canvasState.error}</p>
-        ) : null}
-        {canvasState.ok ? (
-          <p className="text-sm text-[var(--color-success)]">{canvasState.ok}</p>
-        ) : null}
-        <input
-          name="title"
-          defaultValue={risk.title}
-          required
-          disabled={!canWrite}
-          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
-        />
-        <input
-          name="cause"
-          defaultValue={risk.cause}
-          placeholder="Causa: por qué podría pasar"
-          disabled={!canWrite}
-          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
-        />
-        <input
-          name="event"
-          defaultValue={risk.event}
-          placeholder="Evento: qué podría ocurrir"
-          disabled={!canWrite}
-          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
-        />
-        <input
-          name="effect"
-          defaultValue={risk.effect}
-          placeholder="Efecto: qué consecuencia tendría"
-          disabled={!canWrite}
-          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
-        />
-        <textarea
-          name="existingControls"
-          defaultValue={controls}
-          rows={3}
-          placeholder="Controles existentes: lo que ya hacen hoy para prevenirlo (uno por línea)"
-          disabled={!canWrite}
-          className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
-        />
-        {canWrite ? (
-          <button
-            type="submit"
-            disabled={canvasPending}
-            className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-[var(--color-on-solid)]"
-          >
-            Guardar descripción
-          </button>
-        ) : null}
-      </form>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="font-[family-name:var(--font-display)] text-xl">
-          Evaluaciones
-        </h2>
-        <ul className="flex flex-col gap-2 text-sm">
-          {risk.assessments.map((a) => (
-            <li
-              key={a.id}
-              className="rounded-md border border-[var(--color-line)] px-3 py-2"
-            >
-              <strong>Versión {a.version}</strong> · {describeAssessmentResult(a.method, a.resultJson)} ·{" "}
-              {new Date(a.assessedAt).toLocaleString("es-AR")}
-              <div className="text-[var(--color-ink-muted)]">
-                {a.rationale}
-              </div>
-            </li>
-          ))}
-          {risk.assessments.length === 0 ? (
-            <li className="text-[var(--color-ink-muted)]">Sin evaluaciones aún.</li>
-          ) : null}
-        </ul>
-        {canWrite ? (
-          <form action={assessAction} className="flex flex-col gap-2 rounded-md border border-dashed border-[var(--color-line)] p-3">
-            {assessState.error ? (
-              <p className="text-sm text-[var(--color-danger)]">
-                {assessState.error}
-              </p>
-            ) : null}
-            {assessState.ok ? (
-              <p className="text-sm text-[var(--color-success)]">
-                {assessState.ok}
-              </p>
-            ) : null}
-            <input type="hidden" name="method" value="qualitative" />
-            <select
-              name="level"
-              defaultValue="medium"
-              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
-            >
-              {QUALITATIVE_LEVELS.map((l) => (
-                <option key={l} value={l}>
-                  {QUALITATIVE_LEVEL_LABELS[l]}
-                </option>
-              ))}
-            </select>
-            <textarea
-              name="rationale"
-              required
-              rows={2}
-              placeholder="Justificación: por qué este nivel"
-              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
-            />
-            <button
-              type="submit"
-              disabled={assessPending}
-              className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-[var(--color-on-solid)]"
-            >
-              Nueva evaluación
-            </button>
+    <div className="flex flex-col gap-6">
+      <StageSection
+        title="Descripción"
+        {...section("describe")}
+        canWrite={writable}
+        missingNote="Completá causa, evento y efecto: así cualquiera entiende el riesgo y se puede evaluar."
+        summary={
+          <Summary
+            items={[
+              { label: "Causa", value: risk.cause },
+              { label: "Evento", value: risk.event },
+              { label: "Efecto", value: risk.effect },
+              {
+                label: "Controles existentes",
+                value: controls.length ? (
+                  <ul className="list-disc pl-5 font-normal">
+                    {controls.map((c) => (
+                      <li key={c}>{c}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  "Ninguno cargado"
+                ),
+              },
+            ]}
+          />
+        }
+        form={
+          <form action={canvasAction} className="flex flex-col gap-4">
+            {canvasState.error ? <FormError>{canvasState.error}</FormError> : null}
+            <Field label="Título" required>
+              <input name="title" defaultValue={risk.title} required className={INPUT_CLASS} />
+            </Field>
+            <Field label="Causa: ¿por qué podría pasar?" hint={FIELD_HINTS.cause}>
+              <input name="cause" defaultValue={risk.cause} className={INPUT_CLASS} />
+            </Field>
+            <Field label="Evento: ¿qué podría ocurrir?" hint={FIELD_HINTS.event}>
+              <input name="event" defaultValue={risk.event} className={INPUT_CLASS} />
+            </Field>
+            <Field label="Efecto: ¿qué consecuencia tendría?" hint={FIELD_HINTS.effect}>
+              <input name="effect" defaultValue={risk.effect} className={INPUT_CLASS} />
+            </Field>
+            <Field label="Controles existentes" hint="Lo que ya hacen hoy para prevenirlo. Uno por renglón.">
+              <textarea name="existingControls" defaultValue={controls.join("\n")} rows={3} className={INPUT_CLASS} />
+            </Field>
+            <SubmitButton pending={canvasPending}>Guardar descripción</SubmitButton>
           </form>
-        ) : null}
-      </section>
+        }
+      />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="font-[family-name:var(--font-display)] text-xl">
-          Decisión de respuesta
-        </h2>
-        {risk.responseDecision ? (
-          <p className="text-sm">
-            Actual:{" "}
-            <strong>
-              {RISK_RESPONSE_LABELS[
-                risk.responseDecision as RiskResponseDecision
-              ] ?? risk.responseDecision}
-            </strong>
-            {risk.responseRationale ? ` — ${risk.responseRationale}` : null}
-          </p>
-        ) : null}
-        {canWrite ? (
-          <form action={decisionAction} className="flex flex-col gap-2">
-            {decisionState.error ? (
-              <p className="text-sm text-[var(--color-danger)]">
-                {decisionState.error}
-              </p>
-            ) : null}
-            {decisionState.ok ? (
-              <p className="text-sm text-[var(--color-success)]">
-                {decisionState.ok}
-              </p>
-            ) : null}
-            <select
-              name="decision"
-              required
-              defaultValue={risk.responseDecision ?? "mitigate"}
-              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
-            >
-              {Object.entries(RISK_RESPONSE_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v}
-                </option>
-              ))}
-            </select>
-            <select
-              name="ownerUserId"
-              required
-              defaultValue={risk.responseOwnerUserId ?? ""}
-              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
-            >
-              <option value="">Responsable…</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-            <textarea
-              name="rationale"
-              required
-              defaultValue={risk.responseRationale ?? ""}
-              rows={2}
-              placeholder="Justificación de la decisión"
-              className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+      <StageSection
+        title="Evaluación del nivel"
+        {...section("assess")}
+        canWrite={writable}
+        missingNote="Sin evaluación no se puede decidir la respuesta."
+        summary={<AssessmentSummary assessments={risk.assessments} describe={describeAssessmentResult} />}
+        form={
+          <form action={assessAction} className="flex flex-col gap-4">
+            {assessState.error ? <FormError>{assessState.error}</FormError> : null}
+            <AssessmentFields
+              question="¿Qué nivel tiene este riesgo hoy, con los controles actuales?"
+              rationalePlaceholder="Ej.: En 2025 hubo dos demoras de más de 48 h y no hay un segundo proveedor homologado."
+              hasPrevious={risk.assessments.length > 0}
             />
-            <label className="text-sm">
-              Próxima revisión
-              <input
-                type="date"
-                name="nextReviewAt"
-                defaultValue={
-                  risk.nextReviewAt
-                    ? new Date(risk.nextReviewAt).toISOString().slice(0, 10)
-                    : ""
-                }
-                className="mt-1 block rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2"
+            <SubmitButton pending={assessPending}>Guardar evaluación</SubmitButton>
+          </form>
+        }
+      />
+
+      <StageSection
+        title="Respuesta al riesgo"
+        {...section("decide")}
+        canWrite={writable && decisionEditable}
+        missingNote="Elegí qué se va a hacer con el riesgo y quién lo lleva adelante."
+        blockedNote={
+          risk.assessments.length === 0 ? "Primero evaluá el riesgo: la respuesta depende de su nivel." : undefined
+        }
+        summary={
+          <>
+            <Summary
+              items={[
+                {
+                  label: "Respuesta",
+                  value: risk.responseDecision ? (
+                    <>
+                      {RISK_RESPONSE_LABELS[risk.responseDecision as RiskResponseDecision] ?? risk.responseDecision}
+                      <span className="block text-xs font-normal text-[var(--color-ink-muted)]">
+                        {RISK_RESPONSE_HINTS[risk.responseDecision as RiskResponseDecision]}
+                      </span>
+                    </>
+                  ) : null,
+                },
+                { label: "Responsable", value: nameOf(risk.responseOwnerUserId) },
+                { label: "Por qué", value: risk.responseRationale },
+                {
+                  label: "Próxima revisión",
+                  value: risk.nextReviewAt ? new Date(risk.nextReviewAt).toLocaleDateString("es-AR") : "Sin fecha",
+                },
+              ]}
+            />
+            {writable && !decisionEditable ? (
+              <p className="text-xs text-[var(--color-ink-muted)]">
+                La respuesta se cambia después de volver a evaluar el riesgo (desde «Estado y próximo paso»).
+              </p>
+            ) : null}
+          </>
+        }
+        form={
+          <form action={decisionAction} className="flex flex-col gap-4">
+            {decisionState.error ? <FormError>{decisionState.error}</FormError> : null}
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-1 text-sm font-semibold">¿Qué se va a hacer con este riesgo?</legend>
+              <ChoiceCards<RiskResponseDecision>
+                name="decision"
+                defaultValue={risk.responseDecision as RiskResponseDecision | null}
+                options={(Object.keys(RISK_RESPONSE_LABELS) as RiskResponseDecision[]).map((k) => ({
+                  value: k,
+                  label: RISK_RESPONSE_LABELS[k],
+                  hint: RISK_RESPONSE_HINTS[k],
+                }))}
               />
-            </label>
-            <button
-              type="submit"
-              disabled={decisionPending}
-              className="self-start rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-[var(--color-on-solid)]"
-            >
-              Guardar decisión
-            </button>
+            </fieldset>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <MemberSelect
+                name="ownerUserId"
+                label="Responsable de la respuesta"
+                hint="Lleva adelante la respuesta y avanza el riesgo hasta su cierre."
+                members={members}
+                defaultValue={risk.responseOwnerUserId}
+              />
+              <Field label="Próxima revisión" hint="Cuándo se vuelve a mirar el riesgo aunque no pase nada. Ej.: en 6 meses.">
+                <input
+                  type="date"
+                  name="nextReviewAt"
+                  defaultValue={risk.nextReviewAt ? new Date(risk.nextReviewAt).toISOString().slice(0, 10) : ""}
+                  className={INPUT_CLASS}
+                />
+              </Field>
+            </div>
+            <Field label="¿Por qué esta respuesta?" required>
+              <textarea
+                name="rationale"
+                required
+                defaultValue={risk.responseRationale ?? ""}
+                rows={2}
+                placeholder="Ej.: El nivel es alto y homologar un segundo proveedor cuesta menos que un día de línea parada."
+                className={INPUT_CLASS}
+              />
+            </Field>
+            <SubmitButton pending={decisionPending}>Guardar respuesta</SubmitButton>
           </form>
-        ) : null}
-      </section>
-
-      {canWrite && next.length > 0 ? (
-        <section className="flex flex-wrap gap-2">
-          <span className="w-full text-sm text-[var(--color-ink-muted)]">
-            Estado: {RISK_STATUS_LABELS[risk.status]} →
-          </span>
-          {next.map((to) => (
-            <button
-              key={to}
-              type="button"
-              className="rounded-md border border-[var(--color-line)] px-3 py-1 text-sm"
-              onClick={async () => {
-                await transitionRiskAction(slug, risk.id, to);
-              }}
-            >
-              {RISK_STATUS_LABELS[to]}
-            </button>
-          ))}
-        </section>
-      ) : null}
+        }
+      />
     </div>
   );
 }

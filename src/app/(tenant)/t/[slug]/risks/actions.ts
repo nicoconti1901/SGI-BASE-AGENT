@@ -41,87 +41,6 @@ function parseSourceKind(raw: string): SourceKind {
   return "other";
 }
 
-export async function exploreContextAction(
-  slug: string,
-  _prev: RoActionState,
-  formData: FormData,
-): Promise<RoActionState> {
-  const gate = await requireWrite(slug);
-  if ("error" in gate && gate.error) return { error: gate.error };
-  if (!("tenant" in gate) || !gate.tenant || !gate.ctx) {
-    return { error: "Sesión inválida" };
-  }
-
-  const sourceKind = parseSourceKind(String(formData.get("sourceKind") ?? ""));
-  const sourceLabel = String(formData.get("sourceLabel") ?? "").trim();
-  const findingId = String(formData.get("findingId") ?? "").trim() || null;
-  const createRiskFlag = formData.get("createRisk") === "on";
-  const createOppFlag = formData.get("createOpportunity") === "on";
-  const riskTitle = String(formData.get("riskTitle") ?? "").trim();
-  const oppTitle = String(formData.get("opportunityTitle") ?? "").trim();
-
-  if (!sourceLabel) return { error: "Describí la fuente / contexto" };
-  if (!createRiskFlag && !createOppFlag) {
-    return { error: "Elegí crear riesgo, oportunidad, o ambos" };
-  }
-
-  let destination = `/t/${slug}/risks`;
-  try {
-    let riskId: string | undefined;
-    let oppId: string | undefined;
-
-    if (createRiskFlag) {
-      const risk = await createRisk({
-        tenantId: gate.tenant.id,
-        createdByUserId: gate.ctx.userId,
-        draft: {
-          title: riskTitle || `Riesgo: ${sourceLabel}`,
-          statement: {
-            cause: String(formData.get("cause") ?? ""),
-            event: String(formData.get("event") ?? ""),
-            effect: String(formData.get("effect") ?? ""),
-          },
-          existingControls: String(formData.get("existingControls") ?? "")
-            .split("\n")
-            .map((s) => s.trim())
-            .filter(Boolean),
-          sourceKind,
-          sourceLabel,
-          findingId,
-        },
-      });
-      riskId = risk.id;
-    }
-
-    if (createOppFlag) {
-      const opp = await createOpportunity({
-        tenantId: gate.tenant.id,
-        createdByUserId: gate.ctx.userId,
-        draft: {
-          title: oppTitle || `Oportunidad: ${sourceLabel}`,
-          hypothesis: {
-            condition: String(formData.get("condition") ?? ""),
-            circumstance: String(formData.get("circumstance") ?? ""),
-            benefit: String(formData.get("benefit") ?? ""),
-          },
-          sourceKind,
-          sourceLabel,
-          findingId,
-        },
-      });
-      oppId = opp.id;
-    }
-
-    revalidatePath(`/t/${slug}/risks`);
-    if (riskId && !oppId) destination = `/t/${slug}/risks/${riskId}`;
-    else if (oppId && !riskId) destination = `/t/${slug}/risks/opportunities/${oppId}`;
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Error al explorar" };
-  }
-  // redirect() lanza NEXT_REDIRECT: va fuera del try para que el catch no lo muestre como error.
-  redirect(destination);
-}
-
 export async function createRiskDirectAction(
   slug: string,
   _prev: RoActionState,
@@ -425,6 +344,7 @@ export async function transitionOpportunityAction(
   slug: string,
   opportunityId: string,
   to: OpportunityStatus,
+  formData?: FormData,
 ): Promise<RoActionState> {
   const gate = await requireWrite(slug);
   if ("error" in gate && gate.error) return { error: gate.error };
@@ -435,6 +355,7 @@ export async function transitionOpportunityAction(
       tenantId: gate.tenant.id,
       opportunityId,
       to,
+      closeRationale: formData ? String(formData.get("closeRationale") ?? "") : undefined,
     });
     revalidatePath(`/t/${slug}/risks/opportunities/${opportunityId}`);
     revalidatePath(`/t/${slug}/risks`);
