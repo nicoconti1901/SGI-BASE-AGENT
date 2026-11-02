@@ -104,6 +104,7 @@ Shared UI primitives in `src/components/ui/*`: P0 (PageFrame, PageHeader, StatTi
 
 ## Forms
 
+- **Estilo de formularios: pasos guiados (decisión del PO, 2026-11-02, alternativa B).** Un alta de varias secciones usa `GuidedSteps` (`components/ui/GuidedSteps.tsx`): riel lateral con `01 · AHORA / COMPLETO / DESPUÉS`, el paso actual en tarjeta con anillo de acento, los completos como resumen con «Editar», los siguientes atenuados y punteados. Un paso = una pregunta («¿Qué querés lograr?»). Todos los pasos viven en el mismo `<form>`; `validate` por paso dice por qué no se puede seguir. Las fichas de detalle usan `StageSection` (completo = resumen + «Editar», lo que falta resaltado). Un formulario de 2 o 3 campos no necesita pasos.
 - Use the shared `Field` pattern (label → control → hint in `text-xs ink-muted`).
 - Inputs: use `INPUT_CLASS` (border `line-strong` always visible, `field-fill`, focus = accent border + ring, `aria-invalid` = danger). Never borderless.
 - Contextual help lives in an accent-soft callout (`bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)]`), phrased as the question the user should ask themselves.
