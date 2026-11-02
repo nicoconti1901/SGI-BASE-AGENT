@@ -10,6 +10,9 @@
 - [ ] Adecuar las plantillas de inspección a los registros base (planillas) que pegue el PO: esperar la carpeta
 - [ ] Checkpoint E — flujo completo, privacidad y permisos por rol, revisión humana (sesión en el worktree `checkpoint-e`)
 
+- [x] Color y borde de formularios: elegida la opción 4 (riel lateral verde azulado, 2026-11-02). Clase `.sgi-form` aplicada a pasos guiados, fichas de riesgo, «Nueva acción» y edición de objetivos; falta el editor de hallazgos y los demás módulos
+- [ ] Quitar archivos adjuntos (2026-11-02): hecho en hallazgos, acciones de riesgos, auditorías, capacitaciones e inspecciones (seguimiento); calibración e inspección en borrador ya lo tenían. Fuera a propósito: documentos de proveedores (se anulan con motivo), comunicaciones de proveedores (son un registro) y documentos controlados de la plataforma (versionados). Las pantallas con selector de archivo "pelado" (auditorías, informe externo) siguen sin `FilePicker`
+
 ## Cierre
 - [x] PR de docs: `tasks/todo.md`, `tasks/sesiones-fase-5.md` y README con lo entregado (PR #47)
 
