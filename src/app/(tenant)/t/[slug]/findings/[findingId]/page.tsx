@@ -5,6 +5,8 @@ import { getAppSessionContext } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
+import { canOfferRemoval } from "@/domain/attachments/removal";
+import { attachmentActorOf } from "@/lib/attachment-actor";
 import { getFinding, listTenantMemberOptions } from "@/lib/findings";
 import { IncidentFichaCard } from "@/app/(tenant)/t/[slug]/safety/IncidentFichaCard";
 import {
@@ -82,6 +84,11 @@ export default async function FindingDetailPage({
 
   const finding = await getFinding(tenant.id, findingId);
   if (!finding) notFound();
+  const attachmentActor = attachmentActorOf({
+    userId: ctx.userId,
+    role: membership?.role,
+    isPlatformSuperuser: ctx.isPlatformSuperuser,
+  });
   const canWrite = canTenantRole(membership?.role, "write", {
     isPlatformSuperuser: ctx.isPlatformSuperuser,
   });
@@ -160,7 +167,7 @@ export default async function FindingDetailPage({
         </div>
         <Link
           href={`/t/${slug}/findings`}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
         >
           Lista de hallazgos
         </Link>
@@ -202,7 +209,7 @@ export default async function FindingDetailPage({
             ))}
           </ol>
           {steps.length > 0 ? (
-            <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
               <p className="font-medium">Qué falta</p>
               <ul className="mt-1 list-disc pl-5 text-[var(--color-ink-muted)]">
                 {steps.map((s) => (
@@ -253,7 +260,7 @@ export default async function FindingDetailPage({
         </section>
       ) : null}
 
-      <section className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5">
+      <section className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
         <h2 className="text-xs uppercase tracking-wide text-[var(--color-ink-subtle)]">
           Hecho
         </h2>
@@ -321,7 +328,7 @@ export default async function FindingDetailPage({
         ) : null}
       </section>
 
-      <section className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
+      <section className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-xl">
@@ -337,7 +344,15 @@ export default async function FindingDetailPage({
         </div>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           {docs.map((a) => (
-            <AttachmentCard key={a.id} attachment={a} />
+            <AttachmentCard
+              key={a.id}
+              attachment={a}
+              remove={
+                canOfferRemoval(attachmentActor, "finding_doc", a.uploadedById, { status: finding.status })
+                  ? { slug, kind: "finding_doc" }
+                  : undefined
+              }
+            />
           ))}
         </div>
         {docs.length === 0 ? (
@@ -391,6 +406,14 @@ export default async function FindingDetailPage({
                           key={ev.id}
                           attachment={ev}
                           tone="evidence"
+                          remove={
+                            canOfferRemoval(attachmentActor, "measure_evidence", ev.uploadedById, {
+                              status: finding.status,
+                              measureStatus: measure.status,
+                            })
+                              ? { slug, kind: "measure_evidence" }
+                              : undefined
+                          }
                         />
                       ))}
                     </div>
@@ -441,7 +464,7 @@ export default async function FindingDetailPage({
       </section>
 
       {findingStatus === "closed" ? (
-        <p className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
+        <p className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
           <span className="font-medium">¿Cambia algún riesgo?</span> ISO §10.2.1 e) pide actualizar
           riesgos y oportunidades si hace falta.{" "}
           <Link href={`/t/${slug}/risks/new?finding=${finding.id}`} className="text-[var(--color-accent)] hover:underline">
@@ -453,7 +476,7 @@ export default async function FindingDetailPage({
       {finding.verifications.length > 0 ? (
         <section className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-6">
           <h2 className="font-[family-name:var(--font-display)] text-xl">Verificaciones de eficacia</h2>
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
             {finding.verifications.map((v) => (
               <li key={v.id} className="flex flex-col gap-1 px-4 py-3 text-sm">
                 <p>

@@ -28,6 +28,7 @@ import {
 import { ExternalAuditView } from "@/app/(tenant)/t/[slug]/audits/ExternalAuditView";
 import { AuditReportForm,TransitionButton } from "@/app/(tenant)/t/[slug]/audits/ReportForms";
 import { summarizeResults } from "@/domain/audits/guide";
+import { canOfferRemoval } from "@/domain/attachments/removal";
 import { formatDate, loadAuditsAccess, toDateInput } from "@/app/(tenant)/t/[slug]/audits/access";
 
 const STEPS = [
@@ -68,6 +69,13 @@ export default async function AuditDetailPage({
     isCompanyAdmin: canApprove,
     isPlatformSuperuser: ctx.isPlatformSuperuser,
   });
+  // Quien carga evidencia es quien ejecuta la auditoría; la puede quitar él o quien planifica.
+  const evidenceActor = {
+    userId: ctx.userId,
+    canWrite: canExecute,
+    canManage: canPlan,
+    isPlatformSuperuser: ctx.isPlatformSuperuser,
+  };
   const runnerItems: RunnerItem[] = checklist.map((i) => ({
     id: i.id,
     question: i.question,
@@ -76,7 +84,11 @@ export default async function AuditDetailPage({
     evidence: i.evidence,
     findingId: i.findingId,
     findingStatus: i.finding?.status ?? null,
-    attachments: i.attachments.map((a) => ({ id: a.id, fileName: a.fileName })),
+    attachments: i.attachments.map((a) => ({
+      id: a.id,
+      fileName: a.fileName,
+      removable: canOfferRemoval(evidenceActor, "audit_evidence", a.uploadedById, { status: audit.status }),
+    })),
   }));
   const answered = checklist.filter((i) => i.result !== "pending").length;
   const summary = summarizeResults(checklist.map((i) => i.result));
@@ -136,7 +148,7 @@ export default async function AuditDetailPage({
       </ol>
 
       {audit.status === "planned" && issues.length > 0 ? (
-        <section className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
+        <section className="rounded-md border border-[var(--color-card-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
           <p className="font-medium">Para dejarla preparada falta:</p>
           <ul className="mt-1 list-disc pl-5 text-[var(--color-ink-muted)]">
             {issues.map((i) => (
@@ -261,7 +273,7 @@ export default async function AuditDetailPage({
               anotá la evidencia (qué viste, qué registros revisaste, a quién entrevistaste).
             </p>
           ) : null}
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
             {runnerItems.map((item) => (
               <ChecklistItemCard
                 key={item.id}
@@ -294,7 +306,7 @@ export default async function AuditDetailPage({
             mejora ya está creada en Hallazgos como borrador. Completá la causa y las medidas y
             publicala.
           </p>
-          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-line)]">
+          <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
             {checklist.flatMap((i) =>
               i.finding
                 ? [
@@ -347,7 +359,7 @@ export default async function AuditDetailPage({
                 ["Oportunidades de mejora", summary.improvement],
               ] as const
             ).map(([label, value]) => (
-              <div key={label} className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-3">
+              <div key={label} className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-3">
                 <div className="text-2xl font-semibold tabular-nums">{value}</div>
                 <div className="text-xs text-[var(--color-ink-muted)]">{label}</div>
               </div>

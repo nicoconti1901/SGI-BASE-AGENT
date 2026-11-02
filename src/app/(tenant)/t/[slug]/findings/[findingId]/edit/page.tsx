@@ -4,6 +4,8 @@ import { getAppSessionContext } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { getMembership } from "@/lib/identity";
 import { canTenantRole } from "@/domain/identity/authz";
+import { canOfferRemoval } from "@/domain/attachments/removal";
+import { attachmentActorOf } from "@/lib/attachment-actor";
 import { getFinding, listTenantMemberOptions } from "@/lib/findings";
 import { FindingEditor } from "@/app/(tenant)/t/[slug]/findings/FindingEditor";
 import { FindingDocUploadForm } from "@/app/(tenant)/t/[slug]/findings/FindingAttachments";
@@ -30,6 +32,11 @@ export default async function EditFindingPage({
   if (!tenant) notFound();
 
   const membership = await getMembership(ctx.userId, tenant.id);
+  const attachmentActor = attachmentActorOf({
+    userId: ctx.userId,
+    role: membership?.role,
+    isPlatformSuperuser: ctx.isPlatformSuperuser,
+  });
   const canWrite = canTenantRole(membership?.role, "write", {
     isPlatformSuperuser: ctx.isPlatformSuperuser,
   });
@@ -79,7 +86,7 @@ export default async function EditFindingPage({
         </div>
         <Link
           href={`/t/${slug}/findings`}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-2 text-sm font-medium"
         >
           Volver a la bandeja
         </Link>
@@ -129,7 +136,7 @@ export default async function EditFindingPage({
         />
       )}
 
-      <section className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
+      <section className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-xl">
@@ -152,7 +159,15 @@ export default async function EditFindingPage({
           {finding.attachments
             .filter((a) => a.kind === "finding_doc")
             .map((a) => (
-              <AttachmentCard key={a.id} attachment={a} />
+              <AttachmentCard
+                key={a.id}
+                attachment={a}
+                remove={
+                  canOfferRemoval(attachmentActor, "finding_doc", a.uploadedById, { status: finding.status })
+                    ? { slug, kind: "finding_doc" }
+                    : undefined
+                }
+              />
             ))}
         </div>
         {finding.attachments.filter((a) => a.kind === "finding_doc").length ===

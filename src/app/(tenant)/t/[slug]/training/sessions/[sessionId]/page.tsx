@@ -1,3 +1,5 @@
+import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
+import { canOfferRemoval } from "@/domain/attachments/removal";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadTrainingAccess } from "@/app/(tenant)/t/[slug]/training/access";
@@ -10,7 +12,8 @@ const LEVELS = { senior: "Superior", middle: "Intermedio", operational: "Operati
 
 export default async function SessionPage({ params }: { params: Promise<{ slug: string; sessionId: string }> }) {
   const { slug, sessionId } = await params;
-  const { tenant, canManage, canRecord } = await loadTrainingAccess(slug);
+  const { tenant, ctx, canManage, canRecord } = await loadTrainingAccess(slug);
+  const actor = { userId: ctx.userId, canWrite: canRecord, canManage, isPlatformSuperuser: ctx.isPlatformSuperuser };
   const session = await getSession(tenant.id, sessionId);
   if (!session) notFound();
   const base = `/t/${slug}/training`;
@@ -56,7 +59,7 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
       </SectionBlock>
 
       <SectionBlock title="Asistentes" what="Cada uno tiene su registro y su vencimiento, calculado con la vigencia del curso.">
-        <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-line)]">
+        <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
           <table className="w-full min-w-[36rem] text-left text-sm">
             <caption className="sr-only">Asistentes de la sesión</caption>
             <thead className="border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] text-xs text-[var(--color-ink-muted)]">
@@ -96,10 +99,15 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
         ) : (
           <ul className="flex flex-col gap-1 text-sm">
             {session.attachments.map((a) => (
-              <li key={a.id}>
+              <li key={a.id} className="flex flex-wrap items-center gap-x-3 print:block">
                 <a href={`/api/training/attachments/${a.id}/download`} target="_blank" rel="noreferrer" className="text-[var(--color-accent)] underline">
                   {a.fileName}
                 </a>
+                {canOfferRemoval(actor, "training", a.uploadedById, { voided: Boolean(session.voidedAt) }) ? (
+                  <span className="print:hidden">
+                    <RemoveAttachmentButton slug={slug} kind="training" attachmentId={a.id} fileName={a.fileName} />
+                  </span>
+                ) : null}
               </li>
             ))}
           </ul>

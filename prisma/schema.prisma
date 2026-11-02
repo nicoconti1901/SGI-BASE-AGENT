@@ -178,6 +178,7 @@ model Tenant {
   calibRecords          CalibrationRecord[]
   impacts               ImpactAssessment[]
   instrumentShipments   InstrumentShipment[]
+  attachmentRemovals    AttachmentRemoval[]
 
   @@map("tenant")
 }
@@ -3140,4 +3141,24 @@ model RoadDriver {
   @@unique([personId])
   @@index([tenantId, licenseExpiresOn])
   @@map("road_driver")
+}
+
+/// Baja de un archivo adjunto: el archivo se borra, pero queda quién lo quitó, cuándo y de qué registro.
+model AttachmentRemoval {
+  id              String   @id @default(cuid())
+  tenantId        String
+  /// Tipo de adjunto: finding_doc, measure_evidence, action, audit_evidence, audit_report, inspection, calibration, training…
+  kind            String
+  /// Registro al que estaba adjunto (hallazgo, acción, auditoría…).
+  parentId        String
+  fileName        String
+  contentType     String
+  sizeBytes       Int
+  uploadedById    String?
+  removedByUserId String
+  removedAt       DateTime @default(now())
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, kind, parentId])
+  @@map("attachment_removal")
 }
