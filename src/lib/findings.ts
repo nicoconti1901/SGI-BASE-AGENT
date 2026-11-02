@@ -8,6 +8,7 @@ import { getEmailSender } from "@/lib/mail";
 import { syncFindingStatus } from "@/lib/finding-lifecycle";
 import { assertCanPublishFinding } from "@/domain/findings/publish";
 import { assertCanCloseMeasureWithEvidence } from "@/domain/findings/attachments";
+import { canCloseMeasure } from "@/domain/findings/lifecycle";
 import {
   FINDING_MEASURE_ENTITY_TYPE,
   FINDING_TYPE_LABELS,
@@ -332,11 +333,21 @@ export async function publishFinding(input: {
   return published;
 }
 
+/** Responsable designado de una medida del tenant, o null si no existe. */
+export async function getFindingMeasureOwner(tenantId: string, measureId: string): Promise<string | null> {
+  const measure = await prisma.findingMeasure.findFirst({
+    where: { id: measureId, tenantId },
+    select: { ownerUserId: true },
+  });
+  return measure?.ownerUserId ?? null;
+}
+
 export async function closeFindingMeasure(input: {
   tenantId: string;
   measureId: string;
   /** Quién cierra: queda en la medida y en el historial del hallazgo. */
   actorUserId: string;
+  actorIsPlatformSuperuser?: boolean;
   db?: PrismaClient;
 }) {
   const db = input.db ?? prisma;
@@ -353,6 +364,15 @@ export async function closeFindingMeasure(input: {
   }
   if (measure.status === "closed") {
     throw new Error("La medida ya está cerrada");
+  }
+  if (
+    !canCloseMeasure({
+      actorUserId: input.actorUserId,
+      ownerUserId: measure.ownerUserId,
+      isPlatformSuperuser: input.actorIsPlatformSuperuser ?? false,
+    })
+  ) {
+    throw new Error("Solo el responsable designado de la medida puede cerrarla");
   }
 
   assertCanCloseMeasureWithEvidence(measure.evidence.length);

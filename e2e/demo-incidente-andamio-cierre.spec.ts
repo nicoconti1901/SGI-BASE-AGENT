@@ -32,28 +32,31 @@ async function openIncident(page: Page) {
 test("incidente del andamio: medidas, verificación de eficacia y cierre", async ({ page }) => {
   test.setTimeout(10 * 60_000);
 
-  // 1. Facundo (SST) ejecuta las medidas
-  await login(page, /Facundo SST/);
-  await openIncident(page);
-  await pause(page, 2500);
-
-  for (let i = 0; i < 3; i++) {
+  // 1. Cada responsable ejecuta y cierra su propia medida (solo el designado puede cerrarla).
+  const closers: [RegExp, string][] = [
+    [/Bruno Procesos/, "PR-SST-07 rev. 3 aprobado"],
+    [/Facundo SST/, "FR-SST-12 rev. 4 con verificación en campo"],
+    [/Diego Operaciones/, "Roldana y línea de vida instaladas — foto"],
+  ];
+  for (const [i, [who, label]] of closers.entries()) {
+    if (i > 0) await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await login(page, who);
+    await openIncident(page);
+    await pause(page, 2500);
     const start = page.getByRole("button", { name: "Iniciar medida" }).first();
     if (await start.isVisible()) {
       await start.click();
       await pause(page);
     }
     // Solo los formularios de cierre de medida (no el de documentación del hallazgo).
-    const closeInputs = page.locator('form:has(button:text("Confirmar cierre")) input[type="file"]');
-    await closeInputs.first().setInputFiles({
+    const closeForm = page.locator('form:has(input[aria-label="Descripción de la evidencia (opcional)"])').first();
+    await closeForm.locator('input[type="file"]').setInputFiles({
       name: `evidencia-medida-${i + 1}.pdf`,
       mimeType: "application/pdf",
       buffer: Buffer.from(`%PDF-1.4 evidencia de la medida ${i + 1}`),
     });
-    await page.locator('form:has(button:text("Confirmar cierre"))').first().getByPlaceholder("Descripción de la evidencia (opcional)").fill(
-      ["PR-SST-07 rev. 3 aprobado", "FR-SST-12 rev. 4 con verificación en campo", "Roldana y línea de vida instaladas — foto"][i],
-    );
-    await page.getByRole("button", { name: "Confirmar cierre" }).first().click();
+    await closeForm.getByLabel("Descripción de la evidencia (opcional)").fill(label);
+    await closeForm.getByRole("button", { name: "Cerrar medida con esta evidencia" }).click();
     await pause(page, 2500);
   }
 

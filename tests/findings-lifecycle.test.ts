@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   assertCanApplyFindingAction,
   canApplyFindingAction,
+  canCloseMeasure,
   defaultVerificationDueAt,
   deriveStatusFromMeasures,
   needsNewCorrectiveMeasure,
@@ -144,5 +145,13 @@ describe("pending steps", () => {
       "Falta cerrar 1 medida (1 vencida), con evidencia",
       "Después: verificar la eficacia de las acciones",
     ]);
+  });
+});
+
+describe("who closes a measure", () => {
+  it("lets only the designated owner or the platform superuser close it", () => {
+    expect(canCloseMeasure({ actorUserId: "u1", ownerUserId: "u1", isPlatformSuperuser: false })).toBe(true);
+    expect(canCloseMeasure({ actorUserId: "admin", ownerUserId: "u1", isPlatformSuperuser: false })).toBe(false);
+    expect(canCloseMeasure({ actorUserId: "root", ownerUserId: "u1", isPlatformSuperuser: true })).toBe(true);
   });
 });

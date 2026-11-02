@@ -150,6 +150,7 @@ export function MeasureCardShell({
   dueAt,
   linkedRootCause,
   overdue,
+  ownerName,
   children,
 }: {
   status: string;
@@ -158,6 +159,8 @@ export function MeasureCardShell({
   dueAt: Date | null;
   linkedRootCause: boolean;
   overdue: boolean;
+  /** Responsable designado: el único que la cierra (además del superusuario). */
+  ownerName?: string;
   children?: ReactNode;
 }) {
   const key: MeasureWorkflowStatus = isMeasureWorkflowStatus(status)
@@ -193,6 +196,11 @@ export function MeasureCardShell({
           <p className="mt-2 font-[family-name:var(--font-display)] text-lg text-[var(--color-ink)]">
             {title}
           </p>
+          {ownerName ? (
+            <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
+              Responsable: <span className="font-medium text-[var(--color-ink)]">{ownerName}</span>
+            </p>
+          ) : null}
           {dueLabel ? (
             <p
               className={`mt-1 text-sm ${
@@ -201,7 +209,7 @@ export function MeasureCardShell({
                   : "text-[var(--color-ink-muted)]"
               }`}
             >
-              Vence {dueLabel}
+              Fecha límite {dueLabel}
               {overdue && key !== "closed" ? " · vencida" : ""}
             </p>
           ) : (

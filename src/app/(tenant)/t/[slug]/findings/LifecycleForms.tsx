@@ -251,7 +251,7 @@ export function AddMeasureForm({
             <input name="title" required placeholder="Ej.: instalar línea de vida fija en nave 3" className={INPUT_CLASS} />
           </Field>
         </div>
-        <Field label="Vence" hint="Obligatorio para medidas correctivas.">
+        <Field label="Fecha límite de ejecución" hint="Hasta cuándo tiene el responsable para cumplirla. Obligatoria en las correctivas.">
           <input type="date" name="dueAt" className={INPUT_CLASS} />
         </Field>
         <label className="flex items-center gap-2 self-end text-sm">

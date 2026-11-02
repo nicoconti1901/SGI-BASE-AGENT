@@ -29,9 +29,15 @@ async function signOut(page: Page) {
   await expect(page).toHaveURL(/\/$/);
 }
 
-async function answerLevel(page: Page, answer: string, evidence: string) {
-  await page.getByPlaceholder("Respondé con un hecho verificable del proceso o sistema…").fill(answer);
-  await page.getByPlaceholder("Testimonio, registro, foto, medición…").fill(evidence);
+async function answerLevel(page: Page, factor: string, level: number, answer: string, evidence: string) {
+  const branch = page.locator("article").filter({ has: page.getByRole("heading", { name: factor }) });
+  await branch.locator("textarea").nth(level - 1).fill(answer);
+  await branch.getByLabel(`Evidencia del nivel ${level}`).fill(evidence);
+}
+
+async function askWhyAgain(page: Page, factor: string) {
+  const branch = page.locator("article").filter({ has: page.getByRole("heading", { name: factor }) });
+  await branch.getByRole("button", { name: /^\+ ¿Por qué\?/ }).click();
 }
 
 test("superusuario crea la empresa, carga el gap y sube un documento", async ({ page }) => {
@@ -100,30 +106,37 @@ test("se publica una NC con medida correctiva y el usuario ve el vencimiento en 
     await page.getByLabel(item).check();
   }
   await page
-    .getByLabel("Hecho / incidente (obligatorio)")
+    .getByLabel("Hecho comprobado")
     .fill("El 28/09 el registro de inspección de despacho N.º 88 se archivó sin la firma del responsable.");
-  await page.getByRole("button", { name: "Aplicar hecho a las preguntas de nivel 1" }).click();
+  const factor = "Método o procedimiento";
+  await page.getByRole("button", { name: new RegExp(`^${factor}`) }).click();
 
   await answerLevel(
     page,
+    factor,
+    1,
     "El responsable no firmó porque el formulario se completó en otro turno.",
     "Registro de despacho N.º 88, turno noche.",
   );
-  await page.getByRole("button", { name: "Profundizar esta rama (otro ¿por qué?)" }).click();
+  await askWhyAgain(page, factor);
   await answerLevel(
     page,
+    factor,
+    2,
     "El cambio de turno no incluye un paso de control de registros pendientes.",
     "Procedimiento de relevo de turno vigente, sin ese paso.",
   );
-  await page.getByRole("button", { name: "Profundizar esta rama (otro ¿por qué?)" }).click();
+  await askWhyAgain(page, factor);
   await answerLevel(
     page,
+    factor,
+    3,
     "El procedimiento de despacho no define quién verifica las firmas antes de archivar.",
     "Procedimiento PR-DES-03, sección 4.",
   );
-  await page.getByRole("button", { name: "Marcar como causa raíz de esta rama" }).click();
+  await page.getByRole("button", { name: "Es la causa raíz" }).click();
   await page.getByLabel(/el hecho no debería repetirse/).check();
-  await page.getByRole("button", { name: "Confirmar causa(s) raíz" }).click();
+  await page.getByRole("button", { name: "Confirmar causa raíz" }).click();
   await expect(page.getByText(/Causa raíz confirmada/)).toBeVisible();
 
   // Medida correctiva con vencimiento.
@@ -135,7 +148,7 @@ test("se publica una NC con medida correctiva y el usuario ve el vencimiento en 
   await block.getByLabel("Tipo").selectOption({ label: "Correctiva" });
   // El responsable queda en el único miembro de la empresa (primer valor por defecto).
   await block.getByLabel("Título").fill(measureTitle);
-  await block.getByLabel("Vence").fill(due);
+  await block.getByLabel("Fecha límite de ejecución").fill(due);
   await block.getByLabel("Ataca la causa raíz").check();
 
   await page.getByRole("checkbox", { name: new RegExp(member.email) }).check();

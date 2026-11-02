@@ -194,4 +194,12 @@ describe.skipIf(!hasDatabase)("finding lifecycle (integration)", () => {
       reopenFinding({ tenantId, findingId: f.id, actorUserId: users.admin, reason: "otra vez" }, db),
     ).rejects.toThrow(/reabrir/);
   });
+
+  it("only lets the designated owner (or the platform superuser) close a measure", async () => {
+    const f = await publishedFinding("observation", [users.owner]);
+    const measureId = f.measures[0].id;
+    await expect(closeWithEvidence(f.id, measureId, users.admin)).rejects.toThrow(/responsable designado/);
+    await closeFindingMeasure({ tenantId, measureId, actorUserId: users.admin, actorIsPlatformSuperuser: true, db });
+    expect((await db.findingMeasure.findUniqueOrThrow({ where: { id: measureId } })).status).toBe("closed");
+  });
 });
