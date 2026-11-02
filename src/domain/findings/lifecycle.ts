@@ -96,6 +96,15 @@ export function defaultVerificationDueAt(from: Date): Date {
   return due;
 }
 
+/** Una medida la cierra solo su responsable designado o el superusuario de plataforma (decisión del PO, 2026-11-02). */
+export function canCloseMeasure(input: {
+  actorUserId: string;
+  ownerUserId: string;
+  isPlatformSuperuser: boolean;
+}): boolean {
+  return input.isPlatformSuperuser || input.actorUserId === input.ownerUserId;
+}
+
 /** P3: el verificador no puede ser el único responsable de todas las medidas. */
 export function verifierIsSoleOwner(verifierUserId: string, measureOwnerIds: string[]): boolean {
   return measureOwnerIds.length > 0 && measureOwnerIds.every((id) => id === verifierUserId);

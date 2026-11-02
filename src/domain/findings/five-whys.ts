@@ -290,21 +290,104 @@ export function addWhyBranch(
   ];
 }
 
-export function updateBranchLabel(
-  steps: WhyStep[],
-  branchId: string,
-  label: string,
-): WhyStep[] {
-  const trimmed = label.trim();
-  if (!trimmed) return steps;
-  return normalizeWhySteps(steps).map((s) =>
-    s.branchId === branchId ? { ...s, branchLabel: trimmed } : s,
-  );
-}
-
 export function removeBranch(steps: WhyStep[], branchId: string): WhyStep[] {
   const normalized = normalizeWhySteps(steps);
   const remaining = normalized.filter((s) => s.branchId !== branchId);
   if (remaining.length === 0) return [createInitialWhyStep()];
   return remaining;
+}
+
+// ─── Árbol por factores (ramas con nombre fijo, edición en el lugar) ──────────
+
+export type FactorBranch = { branchId: string; label: string; steps: WhyStep[] };
+
+/** Ramas en orden de aparición. A diferencia de listBranchIds, sin pasos no inventa una rama. */
+export function factorBranches(steps: WhyStep[]): FactorBranch[] {
+  const branches = new Map<string, FactorBranch>();
+  for (const s of steps) {
+    const branch = branches.get(s.branchId) ?? { branchId: s.branchId, label: s.branchLabel, steps: [] };
+    branch.steps.push(s);
+    branches.set(s.branchId, branch);
+  }
+  return [...branches.values()].map((b) => ({ ...b, steps: [...b.steps].sort((x, y) => x.order - y.order) }));
+}
+
+/** Abre la rama de un factor (nombre fijo del catálogo) con su primer ¿por qué? vacío. */
+export function addFactorBranch(steps: WhyStep[], label: string): WhyStep[] {
+  const branches = factorBranches(steps);
+  if (branches.some((b) => b.label === label)) return steps;
+  if (branches.length >= MAX_BRANCHES) {
+    throw new Error(`Máximo ${MAX_BRANCHES} factores por análisis`);
+  }
+  return [
+    ...steps,
+    {
+      id: newWhyId(),
+      order: 1,
+      branchId: newWhyId("b"),
+      branchLabel: label,
+      question: "",
+      answer: "",
+      evidenceNote: "",
+      isRootCause: false,
+    },
+  ];
+}
+
+/** Quita el último nivel de una rama (una rama conserva siempre su primer nivel). */
+export function removeLastWhyStep(steps: WhyStep[], branchId: string): WhyStep[] {
+  const branch = factorBranches(steps).find((b) => b.branchId === branchId);
+  if (!branch || branch.steps.length <= 1) return steps;
+  const last = branch.steps[branch.steps.length - 1]!;
+  return steps.filter((s) => s.id !== last.id);
+}
+
+/** Recalcula las preguntas: nivel 1 parte del hecho; cada nivel siguiente, de la respuesta anterior. */
+export function refreshWhyQuestions(steps: WhyStep[], problemStatement: string): WhyStep[] {
+  const questions = new Map<string, string>();
+  for (const branch of factorBranches(steps)) {
+    branch.steps.forEach((step, i) => {
+      const subject = i === 0 ? problemStatement : branch.steps[i - 1]!.answer;
+      questions.set(
+        step.id,
+        subject.trim() ? systemWhyQuestion(subject, step.order) : "¿Por qué?",
+      );
+    });
+  }
+  return steps.map((s) => ({ ...s, question: questions.get(s.id) ?? s.question }));
+}
+
+/** Por qué todavía no se puede confirmar la causa raíz, en el orden en que se completa. Vacío = se puede. */
+export function rootCauseBlockers(input: {
+  checklistCount: number;
+  problemStatement: string;
+  steps: WhyStep[];
+  preventConfirmed: boolean;
+}): string[] {
+  const blockers: string[] = [];
+  if (input.checklistCount < 3) {
+    blockers.push("Marcá al menos 3 hechos reunidos (paso 1).");
+  }
+  if (!input.problemStatement.trim()) {
+    blockers.push("Escribí el hecho comprobado (paso 2).");
+  }
+  const branches = factorBranches(input.steps);
+  if (branches.length === 0) {
+    blockers.push("Elegí al menos un factor que intervino (paso 3).");
+  }
+  for (const b of branches) {
+    if (b.steps.some((s) => !s.answer.trim())) {
+      blockers.push(`Respondé los niveles vacíos de «${b.label}» o quitalos.`);
+    }
+  }
+  const hasDeepRoot = branches.some(
+    (b) => b.steps.length >= MIN_WHY_DEPTH && b.steps.some((s) => s.isRootCause && s.order >= MIN_WHY_DEPTH),
+  );
+  if (branches.length > 0 && !hasDeepRoot) {
+    blockers.push(`Llegá al menos al ${MIN_WHY_DEPTH}.er ¿por qué? en un factor y marcá su causa raíz.`);
+  }
+  if (!input.preventConfirmed) {
+    blockers.push("Confirmá que corregir estas causas evita que el hecho se repita.");
+  }
+  return blockers;
 }

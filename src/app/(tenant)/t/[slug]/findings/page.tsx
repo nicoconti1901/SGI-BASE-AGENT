@@ -141,8 +141,8 @@ export default async function FindingsListPage({
     <PageFrame width="6xl">
       <PageHeader
         eyebrow="ISO 9001 · 14001 · 45001 · §10.2"
-        title="Hallazgos"
-        purpose="Bandeja de no conformidades, incidentes y observaciones con seguimiento de medidas."
+        title="Lista de hallazgos"
+        purpose="No conformidades, incidentes y observaciones, con el seguimiento de sus medidas."
         actions={
           canWrite ? (
             <Link

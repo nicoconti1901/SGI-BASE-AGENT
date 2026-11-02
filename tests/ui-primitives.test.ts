@@ -114,8 +114,7 @@ describe("risks adopts ui primitives", () => {
       "StatusChip",
       "EmptyState",
       "SectionBlock",
-      "EntityList",
-      "EntityRow",
+      "RecordList",
     ]) {
       expect(source).toContain(symbol);
     }

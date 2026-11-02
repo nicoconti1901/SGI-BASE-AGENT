@@ -11,6 +11,11 @@ import {
   normalizeWhySteps,
   syncFirstWhyQuestion,
   appendWhyStep,
+  addFactorBranch,
+  factorBranches,
+  refreshWhyQuestions,
+  removeLastWhyStep,
+  rootCauseBlockers,
 } from "@/domain/findings/five-whys";
 import {
   guideForWhyLevel,
@@ -23,7 +28,7 @@ import {
   assertCanPublishFinding,
   getPublishBlockers,
 } from "@/domain/findings/publish";
-import type { FindingDraft } from "@/domain/findings/types";
+import type { FindingDraft, WhyStep } from "@/domain/findings/types";
 import {
   FINDING_STATUS_TONE,
   nearestOpenMeasureDueAt,
@@ -300,5 +305,62 @@ describe("measure close evidence gate", () => {
     );
     expect(() => assertCanCloseMeasureWithEvidence(0)).toThrow(/evidencia/i);
     expect(() => assertCanCloseMeasureWithEvidence(1)).not.toThrow();
+  });
+});
+
+describe("factor tree (fixed branch names, inline editing)", () => {
+  const answer = (steps: WhyStep[], id: string, text: string) =>
+    steps.map((s) => (s.id === id ? { ...s, answer: text } : s));
+
+  it("opens one branch per chosen factor, never duplicates and keeps the fixed name", () => {
+    let steps = addFactorBranch([], "Método o procedimiento");
+    steps = addFactorBranch(steps, "Método o procedimiento");
+    steps = addFactorBranch(steps, "Equipos y máquinas");
+    expect(factorBranches(steps).map((b) => b.label)).toEqual(["Método o procedimiento", "Equipos y máquinas"]);
+    expect(factorBranches([])).toEqual([]);
+  });
+
+  it("derives each question from the fact or the previous answer", () => {
+    let steps = addFactorBranch([], "Método o procedimiento");
+    const [first] = factorBranches(steps)[0]!.steps;
+    steps = answer(steps, first!.id, "La instrucción no indica el torque");
+    steps = appendWhyStep(steps, first!.branchId);
+    const refreshed = factorBranches(refreshWhyQuestions(steps, "Lote 45 con tornillos flojos"))[0]!.steps;
+    expect(refreshed[0]!.question).toContain("Lote 45 con tornillos flojos");
+    expect(refreshed[1]!.question).toContain("La instrucción no indica el torque");
+  });
+
+  it("removes only the last level and keeps the first", () => {
+    let steps = addFactorBranch([], "Equipos y máquinas");
+    const branchId = factorBranches(steps)[0]!.branchId;
+    steps = answer(steps, factorBranches(steps)[0]!.steps[0]!.id, "La llave dinamométrica no está calibrada");
+    steps = appendWhyStep(steps, branchId);
+    steps = removeLastWhyStep(steps, branchId);
+    steps = removeLastWhyStep(steps, branchId);
+    expect(factorBranches(steps)[0]!.steps).toHaveLength(1);
+  });
+
+  it("lists what blocks confirming, in order, until everything is done", () => {
+    expect(
+      rootCauseBlockers({ checklistCount: 0, problemStatement: "", steps: [], preventConfirmed: false }),
+    ).toEqual([
+      "Marcá al menos 3 hechos reunidos (paso 1).",
+      "Escribí el hecho comprobado (paso 2).",
+      "Elegí al menos un factor que intervino (paso 3).",
+      "Confirmá que corregir estas causas evita que el hecho se repita.",
+    ]);
+
+    let steps = addFactorBranch([], "Método o procedimiento");
+    const branchId = factorBranches(steps)[0]!.branchId;
+    for (const text of ["La instrucción no indica el torque", "Nadie revisó la instrucción al cambiar el modelo", "No hay control de cambios de documentos"]) {
+      const last = factorBranches(steps)[0]!.steps.at(-1)!;
+      steps = answer(steps, last.id, text);
+      if (text !== "No hay control de cambios de documentos") steps = appendWhyStep(steps, branchId);
+    }
+    const blocked = rootCauseBlockers({ checklistCount: 3, problemStatement: "Lote 45", steps, preventConfirmed: true });
+    expect(blocked).toEqual(["Llegá al menos al 3.er ¿por qué? en un factor y marcá su causa raíz."]);
+
+    steps = markStepAsRoot(steps, factorBranches(steps)[0]!.steps.at(-1)!.id);
+    expect(rootCauseBlockers({ checklistCount: 3, problemStatement: "Lote 45", steps, preventConfirmed: true })).toEqual([]);
   });
 });

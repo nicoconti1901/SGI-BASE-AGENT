@@ -58,3 +58,11 @@ export function describeAssessmentResult(method: string, result: unknown): strin
   }
   return "Evaluación";
 }
+
+/** Nivel en pocas palabras para listas: "Alto", "P3 × I4 = 12". */
+export function assessmentLevelLabel(method: string, result: unknown): string {
+  const r = (result ?? {}) as { level?: QualitativeLevel; probability?: number; impact?: number; score?: number };
+  if (method === "qualitative" && r.level) return QUALITATIVE_LEVEL_LABELS[r.level];
+  if (method === "probability_impact") return `P${r.probability} × I${r.impact} = ${r.score}`;
+  return "Evaluado";
+}

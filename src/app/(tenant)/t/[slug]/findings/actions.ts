@@ -9,12 +9,14 @@ import { assertCanTenantRole } from "@/domain/identity/authz";
 import {
   closeFindingMeasure,
   createFindingDraft,
+  getFindingMeasureOwner,
   publishFinding,
   saveFindingDraft,
 } from "@/lib/findings";
 import { uploadFindingAttachment } from "@/lib/finding-attachments";
 import { isFindingType, type FindingDraft, type MeasureKind, type RootCauseAnalysis } from "@/domain/findings/types";
 import { createInitialWhyStep } from "@/domain/findings/five-whys";
+import { canCloseMeasure } from "@/domain/findings/lifecycle";
 import { getEnabledModulesCached } from "@/lib/modules";
 import { createIncidentWithFinding, hasIncidentRecord } from "@/lib/safety-stats";
 import { hasRoadForm, parseRoadForm } from "@/app/(tenant)/t/[slug]/road-safety/form";
@@ -262,10 +264,17 @@ export async function closeMeasureAction(
   _prev: FindingActionState,
   formData: FormData,
 ): Promise<FindingActionState> {
-  const auth = await requireWrite(slug);
-  if ("error" in auth && auth.error) return { error: auth.error };
-  if (!("tenant" in auth) || !auth.tenant || !auth.ctx) {
-    return { error: "Sin acceso" };
+  const ctx = await getAppSessionContext();
+  if (!ctx) return { error: "Debés iniciar sesión" };
+  const tenant = await getTenantBySlug(slug);
+  if (!tenant) return { error: "Tenant no encontrado" };
+  const membership = await getMembership(ctx.userId, tenant.id);
+  if (!membership && !ctx.isPlatformSuperuser) return { error: "Sin acceso" };
+  // La cierra solo su responsable designado o el superusuario; se controla antes de subir la evidencia.
+  const ownerUserId = await getFindingMeasureOwner(tenant.id, measureId);
+  if (!ownerUserId) return { error: "Medida no encontrada" };
+  if (!canCloseMeasure({ actorUserId: ctx.userId, ownerUserId, isPlatformSuperuser: ctx.isPlatformSuperuser })) {
+    return { error: "Solo el responsable designado de la medida puede cerrarla" };
   }
 
   const file = formData.get("file");
@@ -279,20 +288,21 @@ export async function closeMeasureAction(
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
     await uploadFindingAttachment({
-      tenantId: auth.tenant.id,
+      tenantId: tenant.id,
       findingId,
       measureId,
       kind: "measure_evidence",
       fileName: file.name,
       contentType: file.type || "application/octet-stream",
       body: buffer,
-      uploadedById: auth.ctx.userId,
+      uploadedById: ctx.userId,
       label: String(formData.get("label") ?? "Evidencia de cierre"),
     });
     await closeFindingMeasure({
-      tenantId: auth.tenant.id,
+      tenantId: tenant.id,
       measureId,
-      actorUserId: auth.ctx.userId,
+      actorUserId: ctx.userId,
+      actorIsPlatformSuperuser: ctx.isPlatformSuperuser,
     });
     revalidatePath(`/t/${slug}/findings/${findingId}`);
     return { ok: "Medida cerrada con evidencia" };

@@ -145,10 +145,10 @@ export default async function IndicatorPage({
                       />
                     ) : null}
                     <Link
-                      href={`/t/${slug}/risks/explore?kind=indicator&label=${encodeURIComponent(indicator.name)}${m.findingId ? `&finding=${m.findingId}` : ""}`}
+                      href={`/t/${slug}/risks/new?kind=indicator&label=${encodeURIComponent(indicator.name)}${m.findingId ? `&finding=${m.findingId}` : ""}`}
                       className="self-center text-sm font-medium text-[var(--color-accent)] hover:underline"
                     >
-                      Explorar riesgo
+                      Registrar riesgo
                     </Link>
                   </div>
                 ) : null}

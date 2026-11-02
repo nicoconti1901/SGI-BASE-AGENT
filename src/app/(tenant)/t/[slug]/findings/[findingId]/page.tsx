@@ -10,6 +10,7 @@ import { IncidentFichaCard } from "@/app/(tenant)/t/[slug]/safety/IncidentFichaC
 import {
   VERIFICATION_RESULT_LABELS,
   canApplyFindingAction,
+  canCloseMeasure,
   needsNewCorrectiveMeasure,
   pendingSteps,
   requiresEffectivenessVerification,
@@ -161,7 +162,7 @@ export default async function FindingDetailPage({
           href={`/t/${slug}/findings`}
           className="rounded-[var(--radius-md)] border border-[var(--color-line)] px-4 py-2 text-sm font-medium"
         >
-          Bandeja
+          Lista de hallazgos
         </Link>
       </div>
 
@@ -377,6 +378,7 @@ export default async function FindingDetailPage({
                 dueAt={measure.dueAt}
                 linkedRootCause={measure.linkedRootCause}
                 overdue={overdue}
+                ownerName={nameOf(measure.ownerUserId)}
               >
                 {measure.evidence.length > 0 ? (
                   <div className="border-t border-[var(--color-line)] px-4 py-3">
@@ -405,12 +407,22 @@ export default async function FindingDetailPage({
                 (canWrite || measure.ownerUserId === ctx.userId) ? (
                   <StartMeasureButton slug={slug} findingId={finding.id} measureId={measure.id} />
                 ) : null}
-                {workable && canWrite && measure.status !== "closed" ? (
-                  <CloseMeasureWithEvidenceForm
-                    slug={slug}
-                    findingId={finding.id}
-                    measureId={measure.id}
-                  />
+                {workable && measure.status !== "closed" ? (
+                  canCloseMeasure({
+                    actorUserId: ctx.userId,
+                    ownerUserId: measure.ownerUserId,
+                    isPlatformSuperuser: ctx.isPlatformSuperuser,
+                  }) ? (
+                    <CloseMeasureWithEvidenceForm
+                      slug={slug}
+                      findingId={finding.id}
+                      measureId={measure.id}
+                    />
+                  ) : (
+                    <p className="border-t border-[var(--color-line)] px-4 py-3 text-sm text-[var(--color-ink-muted)]">
+                      La cierra {nameOf(measure.ownerUserId)}, su responsable designado, con la evidencia de ejecución.
+                    </p>
+                  )
                 ) : null}
               </MeasureCardShell>
             );
@@ -432,8 +444,8 @@ export default async function FindingDetailPage({
         <p className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm">
           <span className="font-medium">¿Cambia algún riesgo?</span> ISO §10.2.1 e) pide actualizar
           riesgos y oportunidades si hace falta.{" "}
-          <Link href={`/t/${slug}/risks/explore`} className="text-[var(--color-accent)] hover:underline">
-            Explorar riesgos desde este hallazgo →
+          <Link href={`/t/${slug}/risks/new?finding=${finding.id}`} className="text-[var(--color-accent)] hover:underline">
+            Registrar un riesgo desde este hallazgo →
           </Link>
         </p>
       ) : null}

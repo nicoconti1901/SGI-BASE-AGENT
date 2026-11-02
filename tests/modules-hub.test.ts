@@ -75,10 +75,10 @@ describe("ruta del encabezado", () => {
   it("ubica inicio, hub, pantalla y detalle", () => {
     expect(labels("/t/acme")).toEqual(["Inicio"]);
     expect(labels("/t/acme/m/risks")).toEqual(["Inicio", "Riesgos y oportunidades"]);
-    expect(labels("/t/acme/risks/explore")).toEqual([
+    expect(labels("/t/acme/risks/opportunities/new")).toEqual([
       "Inicio",
       "Riesgos y oportunidades",
-      "Explorar contexto",
+      "Registrar oportunidad",
     ]);
     expect(labels("/t/acme/risks/abc123")).toEqual([
       "Inicio",

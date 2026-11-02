@@ -17,6 +17,9 @@ import {
 import { SOURCE_KIND_LABELS } from "@/domain/risks/types";
 import { OpportunityDetailForms } from "@/app/(tenant)/t/[slug]/risks/OpportunityDetailForms";
 import { LinkedActionsPanel } from "@/app/(tenant)/t/[slug]/risks/LinkedActionsPanel";
+import { RecordStatusPanel } from "@/app/(tenant)/t/[slug]/risks/RecordStatus";
+import { StatusControls } from "@/app/(tenant)/t/[slug]/risks/RecordParts";
+import { opportunityProgress, type StageKey, type StageState } from "@/domain/risks/progress";
 
 type Params = Promise<{ slug: string; opportunityId: string }>;
 
@@ -55,9 +58,27 @@ export default async function OpportunityDetailPage({
   ]);
 
   const returnPath = `/t/${slug}/risks/opportunities/${opportunity.id}`;
+  const status = opportunity.status as OpportunityStatus;
+  const progress = opportunityProgress({
+    status,
+    statementComplete: Boolean(
+      opportunity.condition.trim() && opportunity.circumstance.trim() && opportunity.benefit.trim(),
+    ),
+    assessments: opportunity.assessments.length,
+    decided: Boolean(opportunity.pursuitDecision),
+    actions,
+  });
+  const stageStates = Object.fromEntries(progress.stages.map((s) => [s.key, s.state])) as Record<StageKey, StageState>;
+  const nameOf = (id: string | null | undefined) => members.find((m) => m.id === id)?.name;
+  const responsible =
+    progress.who === "owner"
+      ? { name: nameOf(opportunity.pursuitOwnerUserId) ?? "Sin asignar", role: "Responsable de llevarla adelante" }
+      : progress.who === "creator"
+        ? { name: nameOf(opportunity.createdByUserId) ?? "Quien la registró", role: "La registró: evalúa y decide" }
+        : null;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-8">
+    <div className="mx-auto flex max-w-4xl flex-col gap-8">
       <div>
         <Link
           href={`/t/${slug}/risks`}
@@ -65,13 +86,8 @@ export default async function OpportunityDetailPage({
         >
           ← Riesgos y oportunidades
         </Link>
-        <p className="mt-2 text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
-          Oportunidad ·{" "}
-          {
-            OPPORTUNITY_STATUS_LABELS[
-              opportunity.status as OpportunityStatus
-            ]
-          }
+        <p className="mt-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+          ISO 9001 · §6.1 · Oportunidad
           {health?.stale ? " · Revisión vencida" : ""}
         </p>
         <h1 className="font-[family-name:var(--font-display)] text-3xl">
@@ -95,14 +111,24 @@ export default async function OpportunityDetailPage({
         </p>
       </div>
 
+      <RecordStatusPanel
+        statusLabel={OPPORTUNITY_STATUS_LABELS[status]}
+        stages={progress.stages}
+        nextStep={progress.nextStep}
+        responsible={responsible}
+        missing={progress.missing}
+      >
+        {canWrite && status !== "closed" ? (
+          <StatusControls slug={slug} kind="opportunity" id={opportunity.id} advance={progress.advance} canClose />
+        ) : null}
+      </RecordStatusPanel>
+
       <OpportunityDetailForms
         slug={slug}
-        opportunity={{
-          ...opportunity,
-          status: opportunity.status as OpportunityStatus,
-        }}
+        opportunity={{ ...opportunity, status }}
         members={members}
         canWrite={canWrite}
+        stages={stageStates}
       />
 
       <LinkedActionsPanel

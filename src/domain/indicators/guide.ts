@@ -69,7 +69,7 @@ export const INDICATOR_GUIDE_SECTIONS: IndicatorGuideSection[] = [
     ],
     items: [
       { term: "Crear hallazgo", text: "Si el desvío es una no conformidad, se crea un borrador en Hallazgos con el valor y tu análisis." },
-      { term: "Explorar riesgo", text: "Si el desvío muestra algo que puede repetirse o agravarse, abrí “Explorar una fuente” en Riesgos con el indicador precargado." },
+      { term: "Registrar riesgo", text: "Si el desvío muestra algo que puede repetirse o agravarse, registrá un riesgo: se abre con el indicador precargado como origen." },
       { term: "Corregir", text: "Si te equivocaste al cargar, corregí el valor: queda registrado el valor anterior y el motivo." },
     ],
   },

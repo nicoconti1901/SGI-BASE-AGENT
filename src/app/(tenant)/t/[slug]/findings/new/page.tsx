@@ -43,7 +43,7 @@ export default async function NewFindingPage({
           href={`/t/${slug}/findings`}
           className="mt-4 inline-block text-sm text-[var(--color-accent)] underline-offset-2 hover:underline"
         >
-          Volver al seguimiento
+          Volver a la lista de hallazgos
         </Link>
       </div>
     );
@@ -70,7 +70,7 @@ export default async function NewFindingPage({
           href={`/t/${slug}/findings`}
           className="mt-2 inline-block text-sm text-[var(--color-accent)] underline-offset-2 hover:underline"
         >
-          ← Volver al seguimiento
+          ← Volver a la lista de hallazgos
         </Link>
       </div>
       <StartFindingForm

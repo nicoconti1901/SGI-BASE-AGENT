@@ -11,13 +11,17 @@ test.use({ launchOptions: { slowMo: 350 }, viewport: { width: 1400, height: 900 
 
 const pause = (page: Page, ms = 1200) => page.waitForTimeout(ms);
 
-async function answerLevel(page: Page, answer: string, evidence: string) {
-  await page.getByPlaceholder("Respondé con un hecho verificable del proceso o sistema…").fill(answer);
-  await page.getByPlaceholder("Testimonio, registro, foto, medición…").fill(evidence);
+function branchOf(page: Page, factor: string) {
+  return page.locator("article").filter({ has: page.getByRole("heading", { name: factor }) });
 }
 
-async function deepen(page: Page) {
-  await page.getByRole("button", { name: "Profundizar esta rama (otro ¿por qué?)" }).click();
+async function answerLevel(page: Page, factor: string, level: number, answer: string, evidence: string) {
+  await branchOf(page, factor).locator("textarea").nth(level - 1).fill(answer);
+  await branchOf(page, factor).getByLabel(`Evidencia del nivel ${level}`).fill(evidence);
+}
+
+async function deepen(page: Page, factor: string) {
+  await branchOf(page, factor).getByRole("button", { name: /^\+ ¿Por qué\?/ }).click();
 }
 
 async function fillMeasure(
@@ -27,7 +31,7 @@ async function fillMeasure(
   await block.getByLabel("Tipo").selectOption({ label: m.kind });
   await block.getByLabel("Responsable").selectOption({ label: m.owner });
   await block.getByLabel("Título").fill(m.title);
-  await block.getByLabel("Vence").fill(m.due);
+  await block.getByLabel("Fecha límite de ejecución").fill(m.due);
   if (m.root) await block.getByLabel("Ataca la causa raíz").check();
 }
 
@@ -82,59 +86,71 @@ test("incidente: caída de operario desde andamio", async ({ page }) => {
 
   const hecho =
     "El 26/09 a las 08:40, un operario de mantenimiento cayó desde 2,4 m al piso desde el lado norte de un andamio tubular en la nave 2, donde la baranda había sido retirada. Sufrió fractura de muñeca izquierda; no tenía el arnés enganchado a la línea de vida.";
-  await page.getByLabel("Hecho / incidente (obligatorio)").fill(hecho);
-  await page.getByRole("button", { name: "Aplicar hecho a las preguntas de nivel 1" }).click();
+  await page.getByLabel("Hecho comprobado").fill(hecho);
   await pause(page);
 
-  // Rama A — condición del andamio
-  await page.getByLabel("Nombre de la rama activa").fill("A — Condición del andamio (baranda retirada)");
+  // Factor: condición del andamio (baranda retirada)
+  const condicion = "Condición peligrosa";
+  await page.getByRole("button", { name: new RegExp(`^${condicion}`) }).click();
   await answerLevel(
     page,
+    condicion,
+    1,
     "El lado norte del andamio quedó sin baranda porque se retiró para subir las latas de pintura a mano.",
     "Foto del andamio tomada 08:50; testimonio del ayudante.",
   );
-  await deepen(page);
+  await deepen(page, condicion);
   await answerLevel(
     page,
+    condicion,
+    2,
     "No había un medio de izaje de materiales, así que la única forma de subir las latas era retirar la baranda.",
     "Inspección del sector: no hay roldana ni aparejo disponible en la nave 2.",
   );
-  await deepen(page);
+  await deepen(page, condicion);
   await answerLevel(
     page,
+    condicion,
+    3,
     "El procedimiento de trabajo en altura no define cómo subir materiales ni prohíbe retirar barandas con personal arriba.",
     "Procedimiento PR-SST-07 rev. 2, sección 5.",
   );
   await pause(page);
-  await page.getByRole("button", { name: "Marcar como causa raíz de esta rama" }).click();
+  await branchOf(page, condicion).getByRole("button", { name: "Es la causa raíz" }).click();
   await pause(page);
 
-  // Rama D — organización / supervisión
-  await page.getByRole("button", { name: "+ D" }).click();
-  await page.getByLabel("Nombre de la rama activa").fill("D — Permiso de trabajo en altura");
+  // Factor: permiso de trabajo en altura
+  const organizacion = "Organización y supervisión";
+  await page.getByRole("button", { name: new RegExp(`^${organizacion}`) }).click();
   await answerLevel(
     page,
+    organizacion,
+    1,
     "El operario trabajó con el arnés puesto pero sin enganchar porque la línea de vida no estaba instalada en ese sector.",
     "Testimonio del operario; arnés sin marcas de uso de conector.",
   );
-  await deepen(page);
+  await deepen(page, organizacion);
   await answerLevel(
     page,
+    organizacion,
+    2,
     "El permiso de trabajo en altura se firmó sin verificar en el lugar que la línea de vida estuviera instalada.",
     "Permiso PTA-0931 firmado a las 07:45, sin ítem de verificación en campo.",
   );
-  await deepen(page);
+  await deepen(page, organizacion);
   await answerLevel(
     page,
+    organizacion,
+    3,
     "El formulario de permiso no exige verificación en el lugar por parte del supervisor antes de habilitar la tarea.",
     "Formulario FR-SST-12 vigente.",
   );
   await pause(page);
-  await page.getByRole("button", { name: "Marcar como causa raíz de esta rama" }).click();
+  await branchOf(page, organizacion).getByRole("button", { name: "Es la causa raíz" }).click();
   await pause(page);
 
   await page.getByLabel(/el hecho no debería repetirse/).check();
-  await page.getByRole("button", { name: "Confirmar causa(s) raíz" }).click();
+  await page.getByRole("button", { name: "Confirmar 2 causas raíz" }).click();
   await expect(page.getByText(/Causa raíz confirmada/)).toBeVisible();
   await pause(page, 2000);
 

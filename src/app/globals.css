@@ -99,17 +99,18 @@ summary:focus-visible,
 }
 
 .sgi-bus[data-size="lg"] {
-  --hex-w: 9rem;
+  --hex-w: 10.5rem;
 }
 
+/* Hexágonos más grandes: nombre y ayuda tienen que entrar sin pisar el aro. */
 @media (min-width: 640px) {
   .sgi-bus {
-    --hex-w: 9.75rem;
+    --hex-w: 10.5rem;
     column-gap: 1.75rem;
   }
 
   .sgi-bus[data-size="lg"] {
-    --hex-w: 11.5rem;
+    --hex-w: 13.25rem;
   }
 }
 
@@ -126,10 +127,12 @@ summary:focus-visible,
   transition: transform var(--duration-med) var(--ease-out);
 }
 
-/* El cuerpo del nombre escala con el hexágono (cqi = 1% de su ancho). */
+/* El cuerpo del nombre escala con el hexágono (cqi = 1% de su ancho) y corta palabras largas antes que desbordar. */
 .sgi-hex-label {
   font-size: min(8cqi, 0.875rem);
   letter-spacing: 0.07em;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .sgi-hex-label[data-fit="md"] {

@@ -228,7 +228,7 @@ export function HexTile({ href, label, icon, detail, index = 0 }: HexTileProps) 
         </svg>
         <span aria-hidden className="sgi-hex-port" data-side="l" />
         <span aria-hidden className="sgi-hex-port" data-side="r" />
-        <span className="relative flex w-[80%] flex-col items-center gap-1.5">
+        <span className="relative flex w-[72%] flex-col items-center gap-1.5">
           <HubIcon
             name={icon}
             className="h-6 w-6 text-[var(--color-hub-glow)] sm:h-7 sm:w-7"
@@ -240,7 +240,7 @@ export function HexTile({ href, label, icon, detail, index = 0 }: HexTileProps) 
             {label}
           </span>
           {detail ? (
-            <span className="line-clamp-2 font-[family-name:var(--font-mono)] text-[10px] leading-snug text-[var(--color-hub-ink-muted)] tabular-nums">
+            <span className="line-clamp-3 font-[family-name:var(--font-mono)] text-[10px] leading-snug text-[var(--color-hub-ink-muted)] tabular-nums">
               {detail}
             </span>
           ) : null}

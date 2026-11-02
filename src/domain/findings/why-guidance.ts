@@ -311,11 +311,28 @@ export const INDUSTRIAL_CASE_STUDIES: IndustrialCaseStudy[] = [
   },
 ];
 
-export const SUGGESTED_BRANCH_LABELS = [
-  "A — Condición peligrosa",
-  "B — Exposición de la persona",
-  "C — Controles / protecciones",
-  "D — Organización / supervisión",
-  "E — Mantenimiento / energía",
-  "F — Capacitación / competencia",
+export type CauseFactor = { label: string; hint: string };
+
+/** Ramas del árbol de causas de un incidente SST. El nombre es fijo: identifica la rama en la causa raíz. */
+export const SAFETY_CAUSE_FACTORS: CauseFactor[] = [
+  { label: "Condición peligrosa", hint: "Lugar, equipo o material en estado inseguro." },
+  { label: "Exposición de la persona", hint: "Por qué la persona estaba expuesta al peligro." },
+  { label: "Controles y protecciones", hint: "Resguardos, bloqueos, EPP o barreras que faltaron o fallaron." },
+  { label: "Organización y supervisión", hint: "Permisos, planificación, supervisión, presión de tiempos." },
+  { label: "Mantenimiento y energía", hint: "Equipos sin mantenimiento, energías no aisladas." },
+  { label: "Capacitación y competencia", hint: "Qué sabía la persona y cómo se verificó." },
 ];
+
+/** Ramas del árbol de causas de una no conformidad u observación (las 6 M). */
+export const PROCESS_CAUSE_FACTORS: CauseFactor[] = [
+  { label: "Método o procedimiento", hint: "Cómo está definido el trabajo y si se sigue." },
+  { label: "Personas y competencia", hint: "Formación, experiencia, carga de trabajo." },
+  { label: "Equipos y máquinas", hint: "Estado, ajuste o capacidad del equipo." },
+  { label: "Materiales e insumos", hint: "Calidad o especificación de lo que se usa." },
+  { label: "Medición y control", hint: "Cómo se controla, mide o detecta el problema." },
+  { label: "Entorno de trabajo", hint: "Condiciones del lugar, proveedores, factores externos." },
+];
+
+export function causeFactorsFor(type: string): CauseFactor[] {
+  return type === "incident" ? SAFETY_CAUSE_FACTORS : PROCESS_CAUSE_FACTORS;
+}

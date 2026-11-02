@@ -246,6 +246,7 @@ export function FindingEditor({
         <FiveWhysLab
           initial={rca}
           userId={userId}
+          findingType={type}
           onConfirmed={setRca}
         />
         {rca?.status === "confirmed" ? (
@@ -341,7 +342,7 @@ export function FindingEditor({
               />
             </label>
             <label className="flex flex-col gap-1 text-xs text-[var(--color-ink-muted)]">
-              Vence
+              Fecha límite de ejecución
               <input
                 type="date"
                 value={m.dueAt}
