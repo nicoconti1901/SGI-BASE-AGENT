@@ -10,14 +10,14 @@
 - [ ] Adecuar las plantillas de inspección a los registros base (planillas) que pegue el PO: esperar la carpeta
 - [ ] Checkpoint E — flujo completo, privacidad y permisos por rol, revisión humana (sesión en el worktree `checkpoint-e`)
 
-- [x] Color y borde de formularios: elegida la opción 4 (riel lateral verde azulado, 2026-11-02). Clase `.sgi-form` aplicada a pasos guiados, fichas de riesgo, «Nueva acción» y edición de objetivos; falta el editor de hallazgos y los demás módulos
+- [x] Color y borde de formularios: elegida la opción 4 (riel lateral verde azulado, 2026-11-02). Clase `.sgi-form` aplicada a pasos guiados, fichas de riesgo, «Nueva acción» y edición de objetivos; extendida a todos los formularios (editor de hallazgos, auditorías, activos, instrumentos, proveedores, capacitación, seguridad, vial, importadores, alta de cliente y login), 2026-11-02
 - [ ] Quitar archivos adjuntos (2026-11-02): hecho en hallazgos, acciones de riesgos, auditorías, capacitaciones e inspecciones (seguimiento); calibración e inspección en borrador ya lo tenían. Fuera a propósito: documentos de proveedores (se anulan con motivo), comunicaciones de proveedores (son un registro) y documentos controlados de la plataforma (versionados). Las pantallas con selector de archivo "pelado" (auditorías, informe externo) siguen sin `FilePicker`
 
 ## Cierre
 - [x] PR de docs: `tasks/todo.md`, `tasks/sesiones-fase-5.md` y README con lo entregado (PR #47)
 
 ## Decisiones del PO
-- [x] Estilo de formularios: elegida la alternativa B (pasos guiados, 2026-11-02). Aplicada a alta de objetivo, indicador, riesgo y oportunidad; falta extenderla al resto de los módulos (instrumentos, auditorías, proveedores, capacitación, activos) y al editor de hallazgos
+- [x] Estilo de formularios: elegida la alternativa B (pasos guiados, 2026-11-02). Aplicada a alta de objetivo, indicador, riesgo y oportunidad; el contenedor `.sgi-form` ya está en todos los módulos
 - [x] Aprobar SPEC de seguridad vial (2026-10-28)
 - [ ] Confirmar el índice de cláusulas de ISO 39001 (retira el tag `sin-verificar`): el PO lo pide a un auditor o consultor (2026-10-30); mensaje y pasos en `tasks/consulta-indice-iso-39001.md`
 - [x] Etiquetas de confianza de capacitaciones (aprobadas 2026-10-29)
