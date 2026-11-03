@@ -71,7 +71,7 @@ export function AddDriverForm({ slug, taskId }: { slug: string; taskId?: string 
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="sgi-form flex flex-col gap-3 p-4">
       <Field label="Agregar conductor" hint="Buscá a la persona por nombre o legajo. Después cargá el vencimiento de su licencia.">
         <PersonPicker key={pickerKey} slug={slug} name="driverPersonId" label="Persona" qualifyForTaskId={taskId} onChange={(p) => setPersonId(p?.id ?? "")} />
       </Field>

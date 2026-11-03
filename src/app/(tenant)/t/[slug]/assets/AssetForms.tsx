@@ -93,7 +93,7 @@ export function AssetForm({
   const [ownership, setOwnership] = useState(asset?.ownership ?? "own");
 
   return (
-    <form {...keep} className="flex flex-col gap-5">
+    <form {...keep} className="sgi-form flex flex-col gap-5 p-5">
       <div className="grid gap-3 sm:grid-cols-2">
         {asset ? null : (
           <Field label="Código" required hint="Es único en la empresa y se guarda en mayúsculas. Ej.: EXT-014 (como figura en la etiqueta).">
@@ -194,7 +194,7 @@ export function RetireAssetForm({ slug, assetId, code }: { slug: string; assetId
   const [state, formAction, pending] = useActionState(action, initial);
   const keep = useKeepInputs(formAction, state);
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <Field label={`Motivo de la baja de ${code}`} required hint="Queda registrado. Un activo dado de baja no vuelve y no se puede inspeccionar.">
         <input name="reason" required minLength={5} placeholder="Ej.: vendido, destruido, fuera de uso" className={INPUT_CLASS} />
       </Field>

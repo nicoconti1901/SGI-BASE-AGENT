@@ -36,7 +36,7 @@ export function NewSupplierFindingForm({ slug, supplierId, today }: { slug: stri
   const [state, formAction, pending] = useActionState(action, initial);
   const keep = useKeepInputs(formAction, state, { resetOnSuccess: true });
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Tipo" required>
           <select name="kind" required defaultValue="" className={INPUT_CLASS}>
@@ -88,7 +88,7 @@ export function CommunicationForm({
   const [state, formAction, pending] = useActionState(action, initial);
   const keep = useKeepInputs(formAction, state, { resetOnSuccess: true });
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Qué se comunicó" required>
           <select name="kind" required defaultValue={defaultKind} className={INPUT_CLASS}>

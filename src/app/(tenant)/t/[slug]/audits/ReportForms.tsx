@@ -36,7 +36,7 @@ export function TransitionButton({
   );
   const actionForm = useKeepInputs(action, state);
   return (
-    <form {...actionForm} className="flex flex-col gap-2">
+    <form {...actionForm} className="sgi-form flex flex-col gap-2 p-4">
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={primaryStyle ? primary : secondary}>
         {label}
@@ -68,7 +68,7 @@ export function AuditReportForm({
   );
   const actionForm = useKeepInputs(action, state);
   return (
-    <form {...actionForm} className="flex flex-col gap-4">
+    <form {...actionForm} className="sgi-form flex flex-col gap-4 p-5">
       <p className="rounded-[var(--radius-md)] bg-[var(--color-accent-soft)] px-3 py-2 text-sm text-[var(--color-accent-ink)]">
         El objetivo era: <strong>{objective}</strong>. ¿Qué respondés con la evidencia reunida?
       </p>

@@ -72,7 +72,7 @@ export function RosterImport({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <HintCallout>
         Una fila por persona. Columnas: legajo, nombre, sede, puesto (obligatorias) y dni, sedes_adicionales, empresa, contratista,
         ingreso, tareas. Varias sedes o tareas en una celda se separan con «|». Si el legajo ya existe se actualiza; no se duplica.
@@ -136,7 +136,7 @@ function Preview({
 }) {
   const changes = preview.items.filter((i) => i.action !== "unchanged");
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <p className="text-sm text-[var(--color-ink-muted)]">Vista previa de {fileName}. Todavía no se guardó nada.</p>
       <StatGrid cols={4} aria-label="Resultado de la vista previa">
         <StatTile label="Nuevas" value={String(preview.counts.create)} />

@@ -16,7 +16,7 @@ export function RunDueScanForm({ defaultSlug = "" }: { defaultSlug?: string }) {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5"
+      className="flex flex-col gap-3 sgi-form p-5"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Ejecutar scan de vencimientos
@@ -94,7 +94,7 @@ export function CreateDueItemForm({ slug }: { slug: string }) {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5"
+      className="flex flex-col gap-3 sgi-form p-5"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Crear vencimiento

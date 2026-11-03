@@ -56,7 +56,7 @@ export function SupplierImport({ slug }: { slug: string }) {
 
   const importable = preview?.counts.create ?? 0;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <HintCallout>
         Una fila por proveedor. Columnas obligatorias: razon_social y tipo (producto, servicio o contratista). Opcionales: cuit, rubro, criticidad
         (crítico, estándar o bajo impacto), motivo_criticidad, responsable (email de un usuario), contacto, email, telefono y notas. Para
@@ -97,7 +97,7 @@ export function SupplierImport({ slug }: { slug: string }) {
 function Preview({ preview, fileName }: { preview: SupplierImportPreviewView; fileName: string }) {
   const news = preview.items.filter((i) => i.action === "create");
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <p className="text-sm text-[var(--color-ink-muted)]">Vista previa de {fileName}. Todavía no se guardó nada.</p>
       <StatGrid cols={3} aria-label="Resultado de la vista previa">
         <StatTile label="Nuevos" value={String(preview.counts.create)} />

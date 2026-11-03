@@ -202,7 +202,7 @@ export function TemplateEditor({ slug, templateId, initial, context, hasDefault,
             const label = item.text.trim() || "Ítem nuevo";
             return (
               <li key={item.code}>
-                <article aria-label={label} className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4">
+                <article aria-label={label} className="flex flex-col gap-3 sgi-form p-4">
                   <header className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="font-[family-name:var(--font-mono)] tabular-nums text-[var(--color-ink-muted)]">{index + 1}.</span>
                     {isNew(item) ? <StatusChip status="info" label="Nuevo" /> : <span className="font-[family-name:var(--font-mono)] text-[var(--color-ink-muted)]">{item.code}</span>}

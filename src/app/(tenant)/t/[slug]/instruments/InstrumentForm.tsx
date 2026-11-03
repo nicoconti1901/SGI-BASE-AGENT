@@ -173,7 +173,7 @@ export function InstrumentForm({
   const controlled = requiresCalibration || requiresVerification;
 
   return (
-    <form {...keep} className="flex flex-col gap-6">
+    <form {...keep} className="sgi-form flex flex-col gap-6 p-5">
       <fieldset className="flex flex-col gap-3">
         <legend className="text-sm font-semibold">El equipo</legend>
         <div className="grid gap-3 sm:grid-cols-2">

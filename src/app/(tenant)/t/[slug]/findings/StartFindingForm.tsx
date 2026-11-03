@@ -32,7 +32,7 @@ export function StartFindingForm({
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5"
+      className="flex flex-col gap-3 sgi-form p-5"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Nuevo hallazgo

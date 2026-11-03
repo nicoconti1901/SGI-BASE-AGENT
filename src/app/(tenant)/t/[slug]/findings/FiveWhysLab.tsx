@@ -161,7 +161,7 @@ export function FiveWhysLab({
     "flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] p-4";
 
   return (
-    <div className="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
+    <div className="flex flex-col gap-5 sgi-form p-5">
       <div>
         <h2 className="font-[family-name:var(--font-display)] text-xl">Análisis de causa · 5 Porqués</h2>
         <p className="mt-1 max-w-prose text-sm text-[var(--color-ink-muted)]">

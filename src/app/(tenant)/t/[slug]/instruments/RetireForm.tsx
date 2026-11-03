@@ -11,7 +11,7 @@ export function RetireInstrumentForm({ slug, assetId, code }: { slug: string; as
   const [state, formAction, pending] = useActionState(retireInstrumentAction.bind(null, slug, assetId), initial);
   const keep = useKeepInputs(formAction, state);
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <Field label={`Motivo de la baja de ${code}`} required hint="Queda registrado. El equipo conserva su historial de calibraciones y no vuelve a usarse.">
         <input name="reason" required minLength={5} placeholder="Ej.: vendido, roto sin reparación, reemplazado" className={INPUT_CLASS} />
       </Field>

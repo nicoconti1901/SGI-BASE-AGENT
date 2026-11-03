@@ -97,7 +97,7 @@ export function EvaluateForm({
   const conditional = live?.ok === true && live.result === "conditional";
 
   return (
-    <form {...keep} className="flex flex-col gap-6">
+    <form {...keep} className="sgi-form flex flex-col gap-6 p-5">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Tipo de evaluación" required>
           <select name="kind" value={kind} onChange={(e) => setKind(e.target.value as EvaluationKindValue)} className={INPUT_CLASS}>

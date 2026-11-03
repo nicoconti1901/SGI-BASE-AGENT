@@ -59,7 +59,7 @@ export function SupplierForm({
   const reasonRequired = criticality !== "standard";
 
   return (
-    <form {...keep} className="flex flex-col gap-5">
+    <form {...keep} className="sgi-form flex flex-col gap-5 p-5">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Razón social" required>
           <input name="legalName" required minLength={2} defaultValue={supplier?.legalName} placeholder="Ej.: Montajes del Sur SA" className={INPUT_CLASS} />

@@ -38,7 +38,7 @@ function Feedback({ state }: { state: SupplierActionState }) {
 export function StartDraftButton({ slug, supplierType, label }: { slug: string; supplierType: SupplierTypeValue; label: string }) {
   const [state, formAction, pending] = useActionState(startDraftAction.bind(null, slug, supplierType), initial);
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction} className="sgi-form flex flex-col gap-2 p-4">
       <div>
         <Button type="submit" variant="secondary" disabled={pending}>
           {pending ? "Creando…" : label}
@@ -113,7 +113,7 @@ export function DraftEditor({
     });
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form action={formAction} className="sgi-form flex flex-col gap-5 p-5">
       <input type="hidden" name="criteria" value={JSON.stringify(criteria)} />
       <HintCallout>
         Está editando la versión {version} (borrador). Al publicarla pasa a ser la vigente; las evaluaciones ya hechas conservan los criterios con los que se hicieron.
@@ -211,7 +211,7 @@ export function DraftEditor({
 export function DiscardDraftButton({ slug, templateId, supplierType }: { slug: string; templateId: string; supplierType: SupplierTypeValue }) {
   const [state, formAction, pending] = useActionState(discardDraftAction.bind(null, slug, templateId, supplierType), initial);
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction} className="sgi-form flex flex-col gap-2 p-4">
       <div>
         <Button type="submit" variant="ghost" disabled={pending}>
           {pending ? "Descartando…" : "Descartar borrador"}
@@ -241,7 +241,7 @@ export function DocumentTypeForm({ slug, value }: { slug: string; value?: Docume
   const [state, formAction, pending] = useActionState(saveDocumentTypeAction.bind(null, slug), initial);
   const keep = useKeepInputs(formAction, state, { resetOnSuccess: !value });
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       {value?.id ? <input type="hidden" name="id" value={value.id} /> : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Nombre del documento" required>

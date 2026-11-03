@@ -445,7 +445,7 @@ export function EditObjectiveForm({
   }, initial);
   const form = useKeepInputs(action, state);
   return (
-    <form {...form} className="flex flex-col gap-5">
+    <form {...form} className="sgi-form flex flex-col gap-5 p-5">
       <ObjectiveFields members={members} defaults={defaults} standards={standards} />
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={saveChanges}>
@@ -464,7 +464,7 @@ export function CloseObjectiveForm({ slug, objectiveId }: { slug: string; object
   return (
     <details className="text-sm">
       <summary className="cursor-pointer font-medium text-[var(--color-ink-muted)]">Cerrar objetivo</summary>
-      <form {...form} className="mt-3 flex flex-col gap-3">
+      <form {...form} className="sgi-form mt-3 flex flex-col gap-3 p-4">
         <Field label="Resultado">
           <select name="result" defaultValue="achieved" className={INPUT_CLASS}>
             <option value="achieved">Cumplido</option>
@@ -850,7 +850,7 @@ export function EditIndicatorForm({
   );
   const form = useKeepInputs(action, state);
   return (
-    <form {...form} className="flex flex-col gap-4">
+    <form {...form} className="sgi-form flex flex-col gap-4 p-5">
       <IndicatorFields members={members} defaults={defaults} />
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={saveChanges}>

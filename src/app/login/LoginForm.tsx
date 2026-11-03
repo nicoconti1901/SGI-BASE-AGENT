@@ -44,7 +44,7 @@ export function LoginForm({ defaultEmail = "" }: { defaultEmail?: string }) {
   return (
     <form
       onSubmit={onSubmit}
-      className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-6 shadow-[var(--shadow-soft)]"
+      className="flex flex-col gap-4 sgi-form p-6"
     >
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
         Email

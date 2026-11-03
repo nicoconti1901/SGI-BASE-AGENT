@@ -69,7 +69,7 @@ export function ChecklistBuilder({
 
   return (
     <div className="flex flex-col gap-6">
-      <form {...actionForm} className="flex flex-col gap-3">
+      <form {...actionForm} className="sgi-form flex flex-col gap-3 p-4">
         <p className="rounded-[var(--radius-md)] bg-[var(--color-accent-soft)] px-3 py-2 text-sm text-[var(--color-accent-ink)]">
           ¿Qué requisitos cubre el alcance de esta auditoría? No hace falta auditar todo en cada
           auditoría: el programa del año es el que cubre el sistema completo.
@@ -182,7 +182,7 @@ export function StartAuditForm({
   const [state, action, pending] = useActionState(startAuditAction.bind(null, slug, auditId), initial);
   const actionForm = useKeepInputs(action, state);
   return (
-    <form {...actionForm} className="flex flex-col gap-2">
+    <form {...actionForm} className="sgi-form flex flex-col gap-2 p-4">
       {early ? (
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium">Motivo para adelantar el inicio</span>
@@ -295,7 +295,7 @@ export function ChecklistItemCard({
           <p className="text-sm text-[var(--color-ink-muted)]">Evidencia: {item.evidence}</p>
         ) : null
       ) : (
-        <form {...actionForm} className="flex flex-col gap-2">
+        <form {...actionForm} className="sgi-form flex flex-col gap-2 p-4">
           <fieldset className="flex flex-wrap gap-2">
             <legend className="sr-only">Resultado</legend>
             {RESULT_OPTIONS.map((r) => (

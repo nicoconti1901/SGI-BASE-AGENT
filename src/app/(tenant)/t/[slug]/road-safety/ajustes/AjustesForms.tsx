@@ -33,7 +33,7 @@ export function SettingsForm({ slug, canManage, initial }: { slug: string; canMa
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="sgi-form flex flex-col gap-3 p-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label="Poca exposición: menos de (km)" hint="Bajo este total de km en el período, el tablero avisa que conviene mirar el número absoluto.">
           <input inputMode="numeric" value={minExposureKm} disabled={!canManage} onChange={(e) => setMin(e.target.value)} className={INPUT_CLASS} />
@@ -78,7 +78,7 @@ export function DriverTaskForm({ slug, canManage, tasks, current }: { slug: stri
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="sgi-form flex flex-col gap-3 p-4">
       <Field label="Tarea de conducción" hint="Sus cursos obligatorios (Capacitaciones) prueban el manejo defensivo. Sin tarea elegida, ningún conductor queda habilitado.">
         <select value={jobTaskId} disabled={!canManage} onChange={(e) => setJobTaskId(e.target.value)} className={INPUT_CLASS}>
           <option value="">Sin elegir</option>

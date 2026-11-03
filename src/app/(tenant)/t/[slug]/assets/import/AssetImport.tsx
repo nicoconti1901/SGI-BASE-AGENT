@@ -55,7 +55,7 @@ export function AssetImport({ slug, typeKey, typeLabel, columns, template }: { s
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <HintCallout>
         Una fila por {typeLabel.toLowerCase()}. Columnas: {columns}. La sede tiene que existir en Datos maestros (el CSV no crea sedes). Si el código ya existe se
         actualiza; no se duplica. Hasta 1.000 filas.
@@ -97,7 +97,7 @@ function Preview({ preview, fileName }: { preview: AssetImportPreviewView; fileN
   const changes = preview.items.filter((i) => i.action !== "unchanged");
   const errorCount = preview.errors.length + preview.counts.error;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <p className="text-sm text-[var(--color-ink-muted)]">Vista previa de {fileName}. Todavía no se guardó nada.</p>
       <StatGrid cols={4} aria-label="Resultado de la vista previa">
         <StatTile label="Nuevos" value={String(preview.counts.create)} />

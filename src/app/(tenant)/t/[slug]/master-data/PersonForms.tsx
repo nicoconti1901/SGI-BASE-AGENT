@@ -85,7 +85,7 @@ export function PersonForm({
   const [baseSite, setBaseSite] = useState(person?.siteId ?? "");
 
   return (
-    <form {...keep} className="flex flex-col gap-5">
+    <form {...keep} className="sgi-form flex flex-col gap-5 p-5">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Legajo" required hint="Es único en la empresa. Reimportar la nómina usa el legajo para actualizar.">
           <input name="employeeCode" required defaultValue={person?.employeeCode} placeholder="Ej.: 1042" className={INPUT_CLASS} />
@@ -180,7 +180,7 @@ export function PersonTasksForm({
   const [state, formAction, pending] = useActionState(action, initial);
   const keep = useKeepInputs(formAction, state);
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <Checks name="jobTaskIds" options={tasks} selected={selected} />
       <Feedback state={state} />
       <div>
@@ -197,7 +197,7 @@ export function PersonActiveToggle({ slug, personId, active, name }: { slug: str
   const action = setPersonActiveAction.bind(null, slug, personId, !active);
   const [state, formAction, pending] = useActionState(action, initial);
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="sgi-form flex flex-col gap-3 p-4">
       {active ? (
         <Field label="Motivo de la baja" hint="Opcional. Queda en el registro de cambios; el historial de la persona se conserva.">
           <input name="reason" placeholder="Ej.: Renuncia" className={INPUT_CLASS} />

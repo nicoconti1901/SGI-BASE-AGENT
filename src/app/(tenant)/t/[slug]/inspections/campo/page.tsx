@@ -26,7 +26,7 @@ export default async function FieldAuditPage({ params, searchParams }: { params:
       {sp.error ? <FormError>{sp.error}</FormError> : null}
       {canWrite ? (
         <SectionBlock title="Nueva auditoría en campo" eyebrow="Actividad en curso" what="Una auditoría mira cómo se trabaja en el frente: documentos, personas y condiciones. Marcá las tareas especiales para sumar sus controles." next="completá los datos y tocá Empezar.">
-          <form action={startFieldAuditAction.bind(null, slug)} className="flex flex-col gap-4">
+          <form action={startFieldAuditAction.bind(null, slug)} className="sgi-form flex flex-col gap-4 p-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Sede" htmlFor="siteId" required>
                 <select id="siteId" name="siteId" required defaultValue="" className={`${INPUT_CLASS} min-h-12`}>

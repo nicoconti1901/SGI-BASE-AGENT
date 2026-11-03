@@ -28,7 +28,7 @@ export function ImpactForm({ slug, assetId, assessmentId, members, defaultOwnerI
   const update = (index: number, patch: Partial<ActionRow>) => setRows(rows.map((r, i) => (i === index ? { ...r, ...patch } : r)));
 
   return (
-    <form {...keep} className="flex flex-col gap-4">
+    <form {...keep} className="sgi-form flex flex-col gap-4 p-5">
       <input type="hidden" name="actions" value={JSON.stringify(rows)} />
       <fieldset className="flex min-w-0 flex-col gap-2">
         <legend className="text-sm font-semibold">Qué se concluyó</legend>

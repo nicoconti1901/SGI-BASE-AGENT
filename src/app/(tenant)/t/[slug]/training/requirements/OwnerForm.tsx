@@ -11,7 +11,7 @@ const initial: State = {};
 export function OwnerForm({ slug, members, current }: { slug: string; members: { id: string; name: string }[]; current: string | null }) {
   const [state, formAction, pending] = useActionState(setTrainingOwnerAction.bind(null, slug), initial);
   return (
-    <form action={formAction} className="flex flex-col gap-3 sm:max-w-md">
+    <form action={formAction} className="sgi-form flex flex-col gap-3 sm:max-w-md p-4">
       <Field label="Responsable de capacitaciones" hint="Recibe un resumen por persona con lo que vence o falta. Sin responsable, lo reciben los administradores.">
         <select name="ownerUserId" defaultValue={current ?? ""} className={INPUT_CLASS}>
           <option value="">Sin responsable (administradores)</option>

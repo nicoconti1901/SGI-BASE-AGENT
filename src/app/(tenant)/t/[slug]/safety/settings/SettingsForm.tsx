@@ -20,7 +20,7 @@ const initial: SettingsState = {};
 export function SettingsForm({ slug, settings, members, indicators, links, metrics }: Props) {
   const [state, formAction, pending] = useActionState(saveSafetySettingsAction.bind(null, slug), initial);
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form action={formAction} className="sgi-form flex flex-col gap-6 p-5">
       <fieldset className="grid gap-4 sm:grid-cols-2">
         <legend className="mb-2 font-[family-name:var(--font-display)] text-base font-semibold">Cómo se calculan los índices</legend>
         <Field label="Días que se cargan por un fallecimiento" hint="Se suman a los días perdidos en el índice de gravedad. Valor habitual: 6.000.">

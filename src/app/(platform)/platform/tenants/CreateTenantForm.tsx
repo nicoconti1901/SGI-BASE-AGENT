@@ -23,7 +23,7 @@ export function CreateTenantForm() {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]"
+      className="flex flex-col gap-4 sgi-form p-5"
     >
       <h2 className="font-[family-name:var(--font-display)] text-xl">
         Nueva empresa (tenant)

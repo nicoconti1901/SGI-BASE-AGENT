@@ -61,7 +61,7 @@ export function IndividualForm({ slug, today, courses, members, defaultPerson }:
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="sgi-form flex flex-col gap-4 p-5">
       <div className="grid gap-3 sm:grid-cols-2">
         <PersonPicker slug={slug} name="personId" label="Persona" required defaultPerson={defaultPerson} onChange={setPerson} />
         <Field label="Curso" required>

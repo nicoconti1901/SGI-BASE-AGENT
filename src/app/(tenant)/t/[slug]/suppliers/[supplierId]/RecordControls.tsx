@@ -48,7 +48,7 @@ export function UploadDocumentForm({ slug, supplierId, types }: { slug: string; 
   const [state, formAction, pending] = useActionState(action, initial);
   const keep = useKeepInputs(formAction, state, { resetOnSuccess: true });
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Documento" required>
           <select name="typeId" required defaultValue="" className={INPUT_CLASS}>
