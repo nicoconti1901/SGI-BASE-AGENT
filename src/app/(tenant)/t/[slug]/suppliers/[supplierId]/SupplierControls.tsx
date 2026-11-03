@@ -31,7 +31,7 @@ export function SupplierActiveControl({ slug, supplierId, inactive }: { slug: st
   const [state, formAction, pending] = useActionState(action, initial);
   const keep = useKeepInputs(formAction, state);
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       {inactive ? null : (
         <Field label="Motivo de la baja" hint="Queda registrado. Se puede reactivar más adelante.">
           <input name="reason" required minLength={3} placeholder="Ej.: Dejó de operar con nosotros" className={INPUT_CLASS} />

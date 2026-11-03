@@ -121,7 +121,7 @@ export function SessionForm({ slug, today, courses, sites, positions, members, p
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="sgi-form flex flex-col gap-6 p-5">
       <section aria-label="Datos de la sesión" className="grid gap-3 sm:grid-cols-2">
         <Field label="Curso" required>
           <select value={courseId} onChange={(e) => setCourseId(e.target.value)} disabled={Boolean(planned)} className={INPUT_CLASS}>

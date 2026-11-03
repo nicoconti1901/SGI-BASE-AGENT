@@ -87,7 +87,7 @@ export function ProgramForm({
 
   return (
     <div className="flex flex-col gap-3">
-      <form {...saveActionForm} className="flex flex-col gap-3">
+      <form {...saveActionForm} className="sgi-form flex flex-col gap-3 p-4">
         <Field label="Objetivos del programa" hint="Ej.: auditar todos los procesos del SGI al menos una vez en el año.">
           <textarea name="objectives" rows={2} defaultValue={objectives} required className={INPUT_CLASS} />
         </Field>
@@ -103,7 +103,7 @@ export function ProgramForm({
         </button>
       </form>
       {canApprove ? (
-        <form {...approveActionForm} className="flex flex-col gap-2">
+        <form {...approveActionForm} className="sgi-form flex flex-col gap-2 p-4">
           <Feedback state={approveState} />
           <button type="submit" disabled={approving} className={primary}>
             {approving ? "Aprobando…" : "Aprobar programa"}
@@ -120,7 +120,7 @@ export function CreateAuditForm({ slug }: { slug: string }) {
   const [state, action, pending] = useActionState(createAuditAction.bind(null, slug), initial);
   const actionForm = useKeepInputs(action, state);
   return (
-    <form {...actionForm} className="flex flex-col gap-4">
+    <form {...actionForm} className="sgi-form flex flex-col gap-4 p-5">
       <Feedback state={state} />
       <Field label="Título" hint="Ej.: Proceso de compras y proveedores">
         <input name="title" required className={INPUT_CLASS} />
@@ -187,7 +187,7 @@ export function AuditPlanForm({
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? id;
 
   return (
-    <form {...actionForm} className="flex flex-col gap-5">
+    <form {...actionForm} className="sgi-form flex flex-col gap-5 p-5">
       <Field label="Título">
         <input name="title" required defaultValue={defaults.title} className={INPUT_CLASS} />
       </Field>
@@ -352,7 +352,7 @@ export function PrepareButton({ slug, auditId }: { slug: string; auditId: string
   );
   const actionForm = useKeepInputs(action, state);
   return (
-    <form {...actionForm} className="flex flex-col gap-2">
+    <form {...actionForm} className="sgi-form flex flex-col gap-2 p-4">
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={primary}>
         Marcar como preparada
@@ -370,7 +370,7 @@ export function CancelAuditForm({ slug, auditId }: { slug: string; auditId: stri
   return (
     <details className="text-sm">
       <summary className="cursor-pointer text-[var(--color-ink-muted)]">Cancelar auditoría</summary>
-      <form {...actionForm} className="mt-2 flex flex-col gap-2">
+      <form {...actionForm} className="sgi-form mt-2 flex flex-col gap-2 p-4">
         <Field label="Motivo">
           <input name="reason" required className={INPUT_CLASS} />
         </Field>

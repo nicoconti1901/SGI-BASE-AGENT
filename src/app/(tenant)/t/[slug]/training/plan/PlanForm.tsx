@@ -37,7 +37,7 @@ export function PlanForm({ slug, today, courses, sites }: { slug: string; today:
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Planificar una sesión">
+    <form onSubmit={submit} className="sgi-form grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Planificar una sesión">
       <Field label="Curso" required>
         <select value={courseId} onChange={(e) => setCourseId(e.target.value)} className={INPUT_CLASS}>
           {courses.map((c) => (

@@ -29,7 +29,7 @@ export function SpeedingForm({ slug, month, vehicles }: { slug: string; month: s
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="sgi-form flex flex-col gap-3 p-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label="Vehículo" required>
           <select value={assetId} onChange={(e) => setAssetId(e.target.value)} className={INPUT_CLASS}>

@@ -83,7 +83,7 @@ export function CatalogForm({
   const keep = useKeepInputs(formAction, state, { resetOnSuccess: !item });
 
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <Fields entity={entity} item={item} />
       {state.error ? <FormError>{state.error}</FormError> : null}
       {state.ok ? (
@@ -115,7 +115,7 @@ export function ActiveToggle({
   const action = setCatalogItemActiveAction.bind(null, slug, entity, item.id, !item.active);
   const [state, formAction, pending] = useActionState(action, initial);
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction} className="sgi-form flex flex-col gap-2 p-4">
       {state.error ? <FormError>{state.error}</FormError> : null}
       <div>
         <Button type="submit" variant={item.active ? "danger" : "secondary"} disabled={pending} aria-label={`${label}: ${item.name}`}>

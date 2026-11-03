@@ -76,7 +76,7 @@ export function AttachControl({ slug, kind, ownerId, label = "Adjuntar archivo" 
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="sgi-form flex flex-col gap-2 p-4">
       <div className="flex flex-wrap items-center gap-2">
         <input ref={fileRef} type="file" accept="application/pdf,image/jpeg,image/png" aria-label={label} className="text-sm" />
         <Button type="button" variant="secondary" disabled={pending} onClick={upload}>

@@ -57,7 +57,7 @@ export function ExposureImport({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <HintCallout>
         Una fila por sede, mes y grupo. Columnas: sede, mes (AAAA-MM), empresa (propio o contratista), horas y dotacion. Las sedes se buscan por nombre y no se crean solas. Si la fila ya está
         cargada con otros valores se corrige (y hay que dar el motivo); si es igual, no pasa nada. Hasta 2.000 filas.
@@ -103,7 +103,7 @@ export function ExposureImport({ slug }: { slug: string }) {
 function Preview({ preview, fileName }: { preview: ExposureImportPreviewView; fileName: string }) {
   const errorCount = preview.parseErrors.length + preview.counts.error;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <p className="text-sm text-[var(--color-ink-muted)]">Vista previa de {fileName}. Todavía no se guardó nada.</p>
       <StatGrid cols={4} aria-label="Resultado de la vista previa">
         <StatTile label="Nuevas" value={String(preview.counts.create)} />

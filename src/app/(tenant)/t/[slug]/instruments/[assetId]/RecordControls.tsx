@@ -32,7 +32,7 @@ export function VoidRecordForm({ slug, assetId, recordId }: { slug: string; asse
   const [state, formAction, pending] = useActionState(voidRecordAction.bind(null, slug, assetId, recordId), initial);
   const keep = useKeepInputs(formAction, state);
   return (
-    <form {...keep} className="flex flex-col gap-2">
+    <form {...keep} className="sgi-form flex flex-col gap-2 p-4">
       <Field label="Motivo de la anulación" required hint="El registro se conserva tachado y deja de contar. Después cargá el correcto.">
         <input name="reason" required minLength={5} maxLength={300} placeholder="Ej.: se cargó en el equipo equivocado" className={INPUT_CLASS} />
       </Field>
@@ -50,7 +50,7 @@ export function DiscardDraftForm({ slug, assetId, recordId }: { slug: string; as
   const [state, formAction, pending] = useActionState(discardDraftAction.bind(null, slug, assetId, recordId), initial);
   const keep = useKeepInputs(formAction, state);
   return (
-    <form {...keep} className="flex flex-col gap-2">
+    <form {...keep} className="sgi-form flex flex-col gap-2 p-4">
       <Feedback state={state} />
       <div>
         <Button type="submit" variant="danger" disabled={pending}>
@@ -79,7 +79,7 @@ export function SendToLabForm({ slug, assetId, today }: { slug: string; assetId:
   const [state, formAction, pending] = useActionState(sendToCalibrationAction.bind(null, slug, assetId), initial);
   const keep = useKeepInputs(formAction, state);
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label="Fecha de envío" required>
           <input name="sentAt" type="date" required max={today} defaultValue={today} className={INPUT_CLASS} />
@@ -106,7 +106,7 @@ export function ReturnFromLabForm({ slug, assetId, today }: { slug: string; asse
   const [state, formAction, pending] = useActionState(registerReturnAction.bind(null, slug, assetId), initial);
   const keep = useKeepInputs(formAction, state);
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <Field label="Fecha de regreso" required hint="Registrar el regreso no deja el equipo vigente: para eso hay que cargar la calibración.">
         <input name="returnedAt" type="date" required max={today} defaultValue={today} className={`${INPUT_CLASS} sm:max-w-56`} />
       </Field>

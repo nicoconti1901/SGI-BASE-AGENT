@@ -246,7 +246,7 @@ export function RecordForm({
   });
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-6">
+    <form onSubmit={submit} className="sgi-form flex flex-col gap-6 p-5">
       <input type="hidden" name="recordId" value={currentRecordId} />
       <input type="hidden" name="points" value={pointsPayload} />
       <input type="hidden" name="basis" value={basis} />

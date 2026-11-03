@@ -56,7 +56,7 @@ export function CourseForm({ slug, course, submitLabel }: { slug: string; course
   const [state, formAction, pending] = useActionState(action, initial);
   const keep = useKeepInputs(formAction, state, { resetOnSuccess: !course });
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Nombre" required>
           <input name="name" required minLength={2} defaultValue={course?.name} placeholder="Ej.: Trabajo en altura" className={INPUT_CLASS} />
@@ -137,7 +137,7 @@ export function CourseActiveToggle({ slug, course }: { slug: string; course: Cou
   const [state, formAction, pending] = useActionState(action, initial);
   const label = course.active ? "Dar de baja" : "Reactivar";
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction} className="sgi-form flex flex-col gap-2 p-4">
       {state.error ? <FormError>{state.error}</FormError> : null}
       <div>
         <Button type="submit" variant={course.active ? "danger" : "secondary"} disabled={pending} aria-label={`${label}: ${course.name}`}>
@@ -153,7 +153,7 @@ export function RecalculateValidity({ slug, course }: { slug: string; course: Co
   const action = recalculateCourseValidityAction.bind(null, slug, course.id);
   const [state, formAction, pending] = useActionState(action, initial);
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction} className="sgi-form flex flex-col gap-2 p-4">
       <p className="text-xs text-[var(--color-ink-muted)]">
         Cambiar la vigencia no modifica las capacitaciones ya cargadas. Si querés que sus vencimientos usen la vigencia actual
         ({course.validityMonths === null ? "no vence" : `${course.validityMonths} meses`}), recalculalos acá. Los que traen la fecha de su certificado no se tocan.
@@ -187,7 +187,7 @@ export function SuggestedImport({ slug, suggestions }: { slug: string; suggestio
   const keep = useKeepInputs(formAction, state, { resetOnSuccess: true });
   const available = suggestions.filter((s) => !s.imported);
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
         {suggestions.map((s) => (
           <li key={s.key} className="flex items-start gap-3 px-4 py-3">

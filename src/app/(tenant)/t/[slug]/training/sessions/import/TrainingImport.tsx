@@ -57,7 +57,7 @@ export function TrainingImport({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <HintCallout>
         Una fila por persona y capacitación. Columnas: legajo, curso, fecha, resultado, nota, vence, proveedor, certificado. Las personas se buscan por legajo y los cursos por
         nombre o código: no se crean solos. Si la fila ya está cargada se actualiza; no se duplica. Hasta 5.000 filas.
@@ -97,7 +97,7 @@ export function TrainingImport({ slug }: { slug: string }) {
 function Preview({ preview, fileName }: { preview: ImportPreviewView; fileName: string }) {
   const errorCount = preview.parseErrors.length + preview.counts.error;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="sgi-form flex flex-col gap-5 p-5">
       <p className="text-sm text-[var(--color-ink-muted)]">Vista previa de {fileName}. Todavía no se guardó nada.</p>
       <StatGrid cols={4} aria-label="Resultado de la vista previa">
         <StatTile label="Nuevos" value={String(preview.counts.create)} />

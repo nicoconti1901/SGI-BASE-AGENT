@@ -118,7 +118,7 @@ export function CreateExternalAuditForm({ slug, standards }: { slug: string; sta
   const [state, action, pending] = useActionState(createExternalAuditAction.bind(null, slug), initial);
   const actionForm = useKeepInputs(action, state);
   return (
-    <form {...actionForm} className="flex flex-col gap-4">
+    <form {...actionForm} className="sgi-form flex flex-col gap-4 p-5">
       <Feedback state={state} />
       <ExternalFields standards={standards} />
       <button type="submit" disabled={pending} className={primary}>
@@ -145,7 +145,7 @@ export function ExternalAuditPlanForm({
   );
   const actionForm = useKeepInputs(action, state);
   return (
-    <form {...actionForm} className="flex flex-col gap-4">
+    <form {...actionForm} className="sgi-form flex flex-col gap-4 p-5">
       <ExternalFields defaults={defaults} standards={standards} />
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={saveChanges}>
@@ -162,7 +162,7 @@ export function ExternalFindingForm({ slug, auditId }: { slug: string; auditId: 
   );
   const actionForm = useKeepInputs(action, state, { resetOnSuccess: true });
   return (
-    <form {...actionForm} className="flex flex-col gap-3">
+    <form {...actionForm} className="sgi-form flex flex-col gap-3 p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Tipo de hallazgo">
           <select name="result" required defaultValue="nc_minor" className={INPUT_CLASS}>
@@ -204,7 +204,7 @@ export function CompleteExternalAuditButton({ slug, auditId }: { slug: string; a
   );
   const actionForm = useKeepInputs(action, state);
   return (
-    <form {...actionForm} className="flex flex-col gap-2">
+    <form {...actionForm} className="sgi-form flex flex-col gap-2 p-4">
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={complete}>
         {pending ? "Guardando…" : "Marcar como realizada"}
@@ -222,7 +222,7 @@ export function CancelExternalAuditForm({ slug, auditId }: { slug: string; audit
   return (
     <details className="text-sm">
       <summary className="cursor-pointer text-[var(--color-ink-muted)]">Cancelar auditoría</summary>
-      <form {...actionForm} className="mt-2 flex flex-col gap-2">
+      <form {...actionForm} className="sgi-form mt-2 flex flex-col gap-2 p-4">
         <Field label="Motivo">
           <input name="reason" required className={INPUT_CLASS} />
         </Field>

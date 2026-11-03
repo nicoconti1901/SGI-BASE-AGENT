@@ -56,7 +56,7 @@ export function HealthForm({
 }) {
   const [state, action, pending] = useActionState(saveHealthAction.bind(null, slug, findingId), initial);
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={action} className="sgi-form flex flex-col gap-4 p-5">
       <HealthFields slug={slug} classification={classification} defaults={defaults} />
       <Feedback state={state} />
       <Button type="submit" disabled={pending} className="w-fit">
@@ -80,7 +80,7 @@ export function FactForm({
 }) {
   const [state, action, pending] = useActionState(updateFactAction.bind(null, slug, findingId), initial);
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={action} className="sgi-form flex flex-col gap-4 p-5">
       <FactFields sites={sites} defaults={defaults} showDays={false} lockClassification />
       <Feedback state={state} />
       <Button type="submit" disabled={pending} className="w-fit">
@@ -102,7 +102,7 @@ export function AddFichaForm({
 }) {
   const [state, action, pending] = useActionState(addFichaAction.bind(null, slug, findingId), initial);
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={action} className="sgi-form flex flex-col gap-4 p-5">
       <FactFields sites={sites} showDays={false} />
       <Feedback state={state} />
       <Button type="submit" disabled={pending} className="w-fit">
@@ -125,7 +125,7 @@ export function FollowUpForm({
   const [state, action, pending] = useActionState(addFollowUpAction.bind(null, slug, findingId), initial);
   const [classification, setClassification] = useState<IncidentClassification>(current.classification);
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={action} className="sgi-form flex flex-col gap-4 p-5">
       <Field label="Clasificación" hint="Si el caso empeoró o mejoró, cambiala acá: queda en el historial.">
         <select
           name="fact_classification"

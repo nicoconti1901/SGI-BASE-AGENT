@@ -93,7 +93,7 @@ export function VerifyForm({
     initial,
   );
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={action} className="sgi-form flex flex-col gap-4 p-5">
       <p className="rounded-[var(--radius-md)] bg-[var(--color-accent-soft)] px-3 py-2 text-sm text-[var(--color-accent-ink)]">
         ¿El problema volvió a ocurrir desde que se cerraron las medidas? Revisá registros, inspecciones o
         indicadores del período, no solo que las tareas estén hechas.
@@ -201,7 +201,7 @@ export function ReasonForm({
   return (
     <details className="text-sm">
       <summary className="cursor-pointer text-[var(--color-ink-muted)]">{copy.summary}</summary>
-      <form action={action} className="mt-2 flex flex-col gap-2">
+      <form action={action} className="sgi-form mt-2 flex flex-col gap-2 p-4">
         <Field label={copy.label}>
           <input name="reason" required placeholder={copy.placeholder} className={INPUT_CLASS} />
         </Field>

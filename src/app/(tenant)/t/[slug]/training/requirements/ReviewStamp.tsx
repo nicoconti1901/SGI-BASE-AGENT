@@ -12,7 +12,7 @@ export function ReviewStamp({ slug }: { slug: string }) {
   const [state, formAction, pending] = useActionState(recordMatrixReviewAction.bind(null, slug), initial);
   const keep = useKeepInputs(formAction, state, { resetOnSuccess: true });
   return (
-    <form {...keep} className="flex flex-col gap-3">
+    <form {...keep} className="sgi-form flex flex-col gap-3 p-4">
       <Field
         label="Quiénes participaron o fueron consultados"
         hint="Ej.: Revisada con el delegado de seguridad, el jefe de planta y la representante de los trabajadores."

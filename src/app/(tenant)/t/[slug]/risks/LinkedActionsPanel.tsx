@@ -268,7 +268,7 @@ function UploadEvidenceForm({
   }
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-2">
+    <form ref={formRef} action={formAction} className="sgi-form flex flex-col gap-2 p-4">
       <input type="hidden" name="returnPath" value={returnPath} />
       <p className="text-sm font-semibold">Evidencia de ejecución</p>
       <FilePicker

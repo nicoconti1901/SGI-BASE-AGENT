@@ -181,7 +181,7 @@ export function FindingEditor({
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
+      <section className="flex flex-col gap-3 sgi-form p-5">
         <h2 className="font-[family-name:var(--font-display)] text-xl">
           1. Datos del hecho
         </h2>
@@ -256,7 +256,7 @@ export function FindingEditor({
         ) : null}
       </section>
 
-      <section className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
+      <section className="flex flex-col gap-3 sgi-form p-5">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-[family-name:var(--font-display)] text-xl">
             3. Medidas (responsable = usuario)
@@ -377,7 +377,7 @@ export function FindingEditor({
         ))}
       </section>
 
-      <section className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
+      <section className="flex flex-col gap-3 sgi-form p-5">
         <h2 className="font-[family-name:var(--font-display)] text-xl">
           4. Quién recibe la notificación
         </h2>

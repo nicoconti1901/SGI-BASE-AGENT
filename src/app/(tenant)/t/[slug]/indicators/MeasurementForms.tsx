@@ -37,7 +37,7 @@ export function RecordMeasurementForm({
   );
   const form = useKeepInputs(action, state, { resetOnSuccess: true });
   return (
-    <form {...form} className="flex flex-col gap-3">
+    <form {...form} className="sgi-form flex flex-col gap-3 p-4">
       <h3 className="text-sm font-semibold">Cargar {periodLabel}</h3>
       <Field label={`Valor (${unit})`}>
         <input name="value" inputMode="decimal" required className={INPUT_CLASS} />
@@ -79,7 +79,7 @@ export function CorrectMeasurementForm({
   return (
     <details className="text-sm">
       <summary className="cursor-pointer font-medium text-[var(--color-accent)]">Corregir valor</summary>
-      <form {...form} className="mt-3 flex flex-col gap-3">
+      <form {...form} className="sgi-form mt-3 flex flex-col gap-3 p-4">
         <Field label="Valor correcto">
           <input name="value" inputMode="decimal" required defaultValue={currentValue} className={INPUT_CLASS} />
         </Field>
