@@ -26,7 +26,7 @@ Orden sugerido: primero los módulos que tratan datos de personas (accidentabili
 - [ ] D12: reparto de km por días.
 - [ ] D16: tratamiento de poca exposición (pocos km).
 - [ ] D21, D24: nombres de conductores visibles solo para `tenant_admin` y `process_owner`.
-- [ ] Índice de cláusulas de ISO 39001: ver `tasks/consulta-indice-iso-39001.md` (el tag `sin-verificar` sigue hasta confirmarlo).
+- [x] Índice de cláusulas de ISO 39001 confirmado (2026-11-04) contra `src/lib/iso`; ya no lleva el tag `sin-verificar`.
 - [ ] Datos de conductores: ver «Retención de datos personales» al final.
 
 ## Inspecciones

@@ -672,7 +672,7 @@ Aplica a detectores de gases y explosímetros, manómetros, balanzas, termómetr
 
 ## Task 18: seguridad vial — estadística propia y separada
 
-> **Hecha (2026-10-29), módulo propio bajo la ISO 39001.** El PO adelantó la tarea y aprobó `docs/specs/SPEC-road-safety.md` el 2026-10-28 (D1–D26). El alcance de abajo es el original; el vigente es el del SPEC. `road_safety` pasó a `available` en 18.4. Pendiente del PO: confirmar el índice de cláusulas de ISO 39001 contra la norma licenciada (hasta entonces llevan el tag `sin-verificar`).
+> **Hecha (2026-10-29), módulo propio bajo la ISO 39001.** El PO adelantó la tarea y aprobó `docs/specs/SPEC-road-safety.md` el 2026-10-28 (D1–D26). El alcance de abajo es el original; el vigente es el del SPEC. `road_safety` pasó a `available` en 18.4. Índice de cláusulas de ISO 39001 confirmado el 2026-11-04 contra `src/lib/iso`; ya no llevan el tag `sin-verificar`.
 
 **Description:** Módulo y tablero **propios** de seguridad vial (referencias: ISO 39001 e indicadores del estilo IOGP), separados de la accidentabilidad general. Cubre todos los eventos viales: con o sin lesión, en misión o in itinere, y los que solo dejan daño material. Los índices se calculan sobre los **km recorridos** por la flota. Reutiliza la ficha de accidente (marcada como vial) y el registro de vehículos de la Task 15.
 
