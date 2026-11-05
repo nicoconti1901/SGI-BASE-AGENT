@@ -55,9 +55,9 @@ describe("ims catalog seed invariants", () => {
 describe("ISO 39001 en el catálogo (SPEC-road-safety D1, D4, AR-20, AR-21)", () => {
   const iso39001 = ESSENTIAL_CATALOG_SEED.filter((r) => r.standard === "ISO39001");
 
-  it("todo requisito ISO39001 lleva el tag sin-verificar y un clauseKey único (AR-21)", () => {
+  it("todo requisito ISO39001 tiene un clauseKey único y ninguno lleva el tag sin-verificar (AR-21)", () => {
     expect(iso39001.length).toBeGreaterThan(0);
-    for (const r of iso39001) expect(r.tags).toContain(UNVERIFIED_TAG);
+    expect(iso39001.some((r) => r.tags.includes(UNVERIFIED_TAG))).toBe(false);
     expect(new Set(iso39001.map((r) => r.clauseKey)).size).toBe(iso39001.length);
     expect(iso39001.every((r) => r.clauseKey === `ISO39001:${r.clauseCode}`)).toBe(true);
   });
@@ -71,9 +71,16 @@ describe("ISO 39001 en el catálogo (SPEC-road-safety D1, D4, AR-20, AR-21)", ()
     expect(iso39001.some((r) => r.essential || r.tags.includes("escalable"))).toBe(false);
   });
 
-  it("no incluye la numeración descartada 6.1, 6.2 ni 6.3 (R§1.1)", () => {
-    const codes = iso39001.map((r) => r.clauseCode);
-    for (const c of ["6.1", "6.2", "6.3"]) expect(codes).not.toContain(c);
+  it("coincide con el índice de ISO 39001:2012 (cláusulas 4 a 10 hasta el último nivel)", () => {
+    expect(iso39001.map((r) => r.clauseCode)).toEqual([
+      "4", "4.1", "4.2", "4.3", "4.4",
+      "5", "5.1", "5.2", "5.3",
+      "6", "6.1", "6.2", "6.3", "6.4",
+      "7", "7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "7.6.1", "7.6.2", "7.6.3",
+      "8", "8.1", "8.2",
+      "9", "9.1", "9.2", "9.3", "9.4",
+      "10", "10.1", "10.2",
+    ]);
   });
 
   it("las tres normas anteriores conservan sus conteos (AR-20)", () => {

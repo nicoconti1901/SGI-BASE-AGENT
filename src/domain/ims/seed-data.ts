@@ -1,6 +1,5 @@
 import {
   buildClauseKey,
-  UNVERIFIED_TAG,
   type CatalogRequirement,
   type IsoStandardCode,
 } from "@/domain/ims/catalog";
@@ -244,29 +243,45 @@ const ISO45001_ROWS: ClauseRow[] = [
 ];
 
 /**
- * ISO 39001 (seguridad vial). Ninguna cláusula está verificada contra el texto oficial
- * (RESEARCH-road-safety §1.1, SPEC-road-safety D1): solo primer nivel (4 a 10) y las subcláusulas
- * con título visto en fuentes secundarias. Los resúmenes son paráfrasis propia. El tag `sin-verificar`
- * lo retira el PO cuando confirme el índice contra la norma licenciada.
- * Revisado el 2026-10-29 contra lo público (fichas de ISO, AFNOR y EVS: sin índice): confirman la edición
- * ISO 39001:2012 (con la enmienda Amd 1:2024) y la estructura de alto nivel, cláusulas 4 a 10, pero ninguna
- * fuente pública da las subcláusulas. Por eso el tag se mantiene.
+ * ISO 39001:2012 (seguridad vial). Numeración y títulos verificados el 2026-11-04 contra el índice de la edición
+ * UNE-ISO 39001:2012 (corregida 2015) que está en `src/lib/iso`. La enmienda Amd 1:2024 no está en ese archivo: se
+ * asume que no cambia la numeración. Los resúmenes son paráfrasis propia (el texto de la norma tiene derechos de autor).
  */
 const ISO39001_ROWS: ClauseRow[] = [
   { code: "4", title: "Contexto de la organización", summary: "Entender el contexto de la organización en relación con la seguridad vial.", tags: ["contexto"] },
-  { code: "4.1", title: "Comprender la organización y su contexto", summary: "Determinar las cuestiones internas y externas que afectan la seguridad vial.", tags: ["contexto"] },
-  { code: "4.2", title: "Necesidades y expectativas de las partes interesadas", summary: "Identificar las partes interesadas y lo que esperan en materia de seguridad vial.", tags: ["contexto", "partes-interesadas"] },
+  { code: "4.1", title: "Conocimiento de la organización y de su contexto", summary: "Determinar las cuestiones internas y externas que afectan la seguridad vial.", tags: ["contexto"] },
+  { code: "4.2", title: "Comprensión de las necesidades y expectativas de las partes interesadas", summary: "Identificar las partes interesadas y lo que esperan en materia de seguridad vial.", tags: ["contexto", "partes-interesadas"] },
+  { code: "4.3", title: "Determinación del alcance del sistema de gestión de la seguridad vial", summary: "Definir los límites y la aplicabilidad del sistema de seguridad vial.", tags: ["contexto", "alcance"] },
+  { code: "4.4", title: "Sistema de gestión de la seguridad vial", summary: "Establecer, implementar, mantener y mejorar el sistema y sus procesos.", tags: ["contexto"] },
   { code: "5", title: "Liderazgo", summary: "Compromiso de la dirección con la seguridad vial.", tags: ["liderazgo"] },
   { code: "5.1", title: "Liderazgo y compromiso", summary: "La dirección demuestra liderazgo y compromiso con el sistema de seguridad vial.", tags: ["liderazgo"] },
+  { code: "5.2", title: "Política", summary: "Establecer y comunicar la política de seguridad vial.", tags: ["liderazgo", "politica"] },
+  { code: "5.3", title: "Roles, responsabilidades y autoridades en la organización", summary: "Asignar y comunicar responsabilidades y autoridades del sistema de seguridad vial.", tags: ["liderazgo", "roles"] },
   { code: "6", title: "Planificación", summary: "Planificar el sistema: riesgos viales, factores de desempeño y objetivos.", tags: ["planificacion", "objetivos"] },
-  { code: "7", title: "Apoyo", summary: "Recursos, competencia, comunicación e información documentada para el sistema.", tags: ["recursos", "competencia"] },
+  { code: "6.1", title: "Generalidades (planificación)", summary: "Considerar el contexto y las partes interesadas al planificar el sistema.", tags: ["planificacion"] },
+  { code: "6.2", title: "Acciones para tratar riesgos y oportunidades", summary: "Determinar y tratar los riesgos y oportunidades de seguridad vial.", tags: ["planificacion", "riesgos"] },
+  { code: "6.3", title: "Factores de desempeño en seguridad vial", summary: "Definir los factores de desempeño de seguridad vial y las metas que se miden.", tags: ["planificacion", "indicadores"] },
+  { code: "6.4", title: "Objetivos de seguridad vial y planificación para lograrlos", summary: "Fijar objetivos de seguridad vial y planificar cómo alcanzarlos.", tags: ["planificacion", "objetivos"] },
+  { code: "7", title: "Soporte", summary: "Coordinación, recursos, competencia, comunicación e información documentada para el sistema.", tags: ["recursos", "competencia"] },
+  { code: "7.1", title: "Coordinación", summary: "Coordinar la seguridad vial con las demás organizaciones y partes que intervienen.", tags: ["recursos"] },
+  { code: "7.2", title: "Recursos", summary: "Proveer los recursos que necesita el sistema de seguridad vial.", tags: ["recursos"] },
+  { code: "7.3", title: "Competencia", summary: "Asegurar la competencia de las personas que afectan la seguridad vial.", tags: ["competencia"] },
+  { code: "7.4", title: "Toma de conciencia", summary: "Lograr que las personas conozcan la política, su aporte y las consecuencias de no cumplir.", tags: ["competencia"] },
+  { code: "7.5", title: "Comunicación", summary: "Determinar qué, cuándo, a quién y cómo se comunica sobre seguridad vial.", tags: ["comunicacion"] },
+  { code: "7.6", title: "Información documentada", summary: "Mantener la información documentada que exige el sistema.", tags: ["documentos"] },
+  { code: "7.6.1", title: "Generalidades (información documentada)", summary: "Definir qué información documentada requiere el sistema.", tags: ["documentos"] },
+  { code: "7.6.2", title: "Creación y actualización", summary: "Identificar, describir, revisar y aprobar la información documentada.", tags: ["documentos"] },
+  { code: "7.6.3", title: "Control de la información documentada", summary: "Controlar disponibilidad, protección, distribución, cambios y conservación.", tags: ["documentos"] },
   { code: "8", title: "Operación", summary: "Planificar y controlar las operaciones que afectan la seguridad vial.", tags: ["operacion"] },
   { code: "8.1", title: "Planificación y control operacional", summary: "Controlar la flota, los conductores y los viajes de la organización.", tags: ["operacion", "flota"] },
-  { code: "8.2", title: "Preparación y respuesta ante emergencias", summary: "Estar preparados para responder ante un siniestro vial.", tags: ["emergencias"] },
+  { code: "8.2", title: "Preparación y respuesta a las emergencias", summary: "Estar preparados para responder ante un siniestro vial.", tags: ["emergencias"] },
   { code: "9", title: "Evaluación del desempeño", summary: "Medir y evaluar el desempeño de seguridad vial.", tags: ["indicadores"] },
   { code: "9.1", title: "Seguimiento, medición, análisis y evaluación", summary: "Medir los factores de desempeño de seguridad vial y analizar los resultados.", tags: ["indicadores"] },
+  { code: "9.2", title: "Investigación de accidentes de tráfico y otros incidentes de tráfico", summary: "Investigar los siniestros e incidentes viales para hallar sus causas.", tags: ["incidentes", "investigacion"] },
+  { code: "9.3", title: "Auditoría interna", summary: "Realizar auditorías internas del sistema de seguridad vial.", tags: ["auditoria"] },
+  { code: "9.4", title: "Revisión por la dirección", summary: "Revisar el sistema de seguridad vial a intervalos planificados.", tags: ["revision-direccion"] },
   { code: "10", title: "Mejora", summary: "Corregir y mejorar el sistema de seguridad vial.", tags: ["mejora"] },
-  { code: "10.1", title: "No conformidad y acción correctiva", summary: "Tratar las no conformidades y los siniestros con acciones correctivas.", tags: ["nc", "mejora"] },
+  { code: "10.1", title: "No conformidades y acciones correctivas", summary: "Tratar las no conformidades y los siniestros con acciones correctivas.", tags: ["nc", "mejora"] },
   { code: "10.2", title: "Mejora continua", summary: "Mejorar continuamente la idoneidad y eficacia del sistema.", tags: ["mejora"] },
 ];
 
@@ -278,7 +293,7 @@ const ISO39001_REQUIREMENTS: CatalogRequirement[] = ISO39001_ROWS.map((row) => (
   title: row.title,
   summary: row.summary,
   essential: false,
-  tags: [...row.tags, "vial", UNVERIFIED_TAG],
+  tags: [...row.tags, "vial"],
 }));
 
 export const ESSENTIAL_CATALOG_SEED: CatalogRequirement[] = [

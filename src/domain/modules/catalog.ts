@@ -102,7 +102,7 @@ export const MODULE_CATALOG: readonly ModuleDefinition[] = [
     label: "Seguridad vial",
     section: "sst",
     path: "road-safety",
-    // ISO 39001 (D5): operación, evaluación del desempeño y mejora; las cláusulas del catálogo siguen «sin verificar» (D1).
+    // ISO 39001 (D5): operación, evaluación del desempeño y mejora.
     clauses: [
       { standard: "ISO39001", clause: "8.1" },
       { standard: "ISO39001", clause: "9.1" },
