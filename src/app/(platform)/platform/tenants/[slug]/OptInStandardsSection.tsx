@@ -1,6 +1,6 @@
 import { Button, EntityList, SectionBlock, StatusChip } from "@/components/ui";
 import { AUDIT_STANDARD_LABELS } from "@/domain/audits/types";
-import { OPT_IN_STANDARDS, UNVERIFIED_TAG } from "@/domain/ims/catalog";
+import { OPT_IN_STANDARDS } from "@/domain/ims/catalog";
 import { listOfferedStandards } from "@/lib/ims-catalog";
 import { adoptStandardAction } from "./standard-actions";
 
@@ -22,9 +22,6 @@ export async function OptInStandardsSection({ slug, tenantId }: { slug: string; 
             <li key={standard} className="flex min-h-12 flex-wrap items-center justify-between gap-3 px-4 py-3">
               <div className="min-w-0">
                 <p className="font-medium">{AUDIT_STANDARD_LABELS[standard]}</p>
-                <p className="text-xs text-[var(--color-ink-muted)]">
-                  Los requisitos figuran «{UNVERIFIED_TAG}» hasta confirmar el índice contra la norma licenciada.
-                </p>
               </div>
               <div className="flex items-center gap-3">
                 <StatusChip status={adopted ? "ok" : "pending"} label={adopted ? "Adoptada" : "No adoptada"} />

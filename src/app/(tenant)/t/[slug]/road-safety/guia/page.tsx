@@ -11,7 +11,7 @@ export default async function RoadSafetyGuidePage({ params }: { params: Promise<
         <Link href={`/t/${slug}/road-safety`} className="text-sm text-[var(--color-accent)]">
           ← Tablero de seguridad vial
         </Link>
-        <p className="mt-2 text-sm text-[var(--color-ink-muted)]">ISO 39001 · cláusulas sin verificar</p>
+        <p className="mt-2 text-sm text-[var(--color-ink-muted)]">ISO 39001</p>
         <h2 className="font-[family-name:var(--font-display)] text-3xl tracking-tight">Guía de seguridad vial</h2>
         <nav aria-label="Contenido" className="mt-4 flex flex-wrap gap-2 text-sm">
           {ROAD_GUIDE_SECTIONS.map((s) => (

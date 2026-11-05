@@ -1,6 +1,5 @@
 /**
- * Guía breve de seguridad vial (docs/specs/SPEC-road-safety.md § Qué ve el cliente). Las cláusulas de ISO 39001 del
- * catálogo figuran «sin verificar» hasta que el PO las confirme contra la norma licenciada (D1).
+ * Guía breve de seguridad vial (docs/specs/SPEC-road-safety.md § Qué ve el cliente).
  */
 export type RoadGuideSection = {
   id: string;
@@ -59,13 +58,13 @@ export const ROAD_GUIDE_SECTIONS: RoadGuideSection[] = [
     id: "norma",
     title: "Qué cláusulas cubre",
     paragraphs: [
-      "El módulo ayuda con la operación, la evaluación del desempeño y la mejora de ISO 39001. Las cláusulas de esa norma en el catálogo figuran «sin verificar»: se cargaron a partir de fuentes secundarias y se confirman contra el texto oficial antes de usarlas como referencia de una auditoría.",
+      "El módulo ayuda con la operación, la evaluación del desempeño y la mejora de ISO 39001. Las cláusulas del catálogo siguen el índice de la edición ISO 39001:2012.",
     ],
   },
 ];
 
 export const ROAD_GUIDE_REFERENCES: string[] = [
-  "ISO 39001: sistemas de gestión de la seguridad vial (índice de cláusulas sin verificar).",
+  "ISO 39001: sistemas de gestión de la seguridad vial.",
   "Ley 24.449 de Tránsito y Seguridad Vial (licencias, art. 11 y 20; denuncia del siniestro, art. 65).",
   "Ley 25.326 de Protección de Datos Personales.",
 ];

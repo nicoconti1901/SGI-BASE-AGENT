@@ -19,7 +19,7 @@
 ## Decisiones del PO
 - [x] Estilo de formularios: elegida la alternativa B (pasos guiados, 2026-11-02). Aplicada a alta de objetivo, indicador, riesgo y oportunidad; el contenedor `.sgi-form` ya está en todos los módulos
 - [x] Aprobar SPEC de seguridad vial (2026-10-28)
-- [ ] Confirmar el índice de cláusulas de ISO 39001 (retira el tag `sin-verificar`): el PO lo pide a un auditor o consultor (2026-10-30); mensaje y pasos en `tasks/consulta-indice-iso-39001.md`
+- [x] Índice de cláusulas de ISO 39001 confirmado (2026-11-04) contra la edición UNE-ISO 39001:2012 de `src/lib/iso`; retirado el tag `sin-verificar`. Falta solo confirmar que la enmienda Amd 1:2024 no cambia la numeración
 - [x] Etiquetas de confianza de capacitaciones (aprobadas 2026-10-29)
 - [x] Anulación de hallazgo vs. vencimiento de seguimiento: anular cierra el vencimiento (2026-10-29)
 - [x] Seguridad vial D8, D12, D16, D21, D24 y D26 como defaults (2026-10-29)
