@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button, Field, FormError, INPUT_CLASS } from "@/components/ui";
+import { Button, Field, FilePicker, FormError, INPUT_CLASS } from "@/components/ui";
 import { createSupplierFindingAction, recordCommunicationAction } from "@/app/(tenant)/t/[slug]/suppliers/followup-actions";
 import type { SupplierActionState } from "@/app/(tenant)/t/[slug]/suppliers/guard";
 import {
@@ -118,8 +118,8 @@ export function CommunicationForm({
         <Field label="A quién" hint="Opcional: persona o área del proveedor.">
           <input name="recipientName" maxLength={120} className={INPUT_CLASS} />
         </Field>
-        <Field label="Adjunto" hint="Opcional: el mail, la carta o el acta. PDF, imagen, Word o texto, hasta 15 MB.">
-          <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt" className={INPUT_CLASS} />
+        <Field label="Adjunto" htmlFor="communication-file" hint="Opcional: el mail, la carta o el acta. PDF, imagen, Word o texto, hasta 15 MB.">
+          <FilePicker id="communication-file" name="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt" hint="Ningún archivo elegido" />
         </Field>
       </div>
       <Field label="Resumen" required hint="Qué se le pidió o qué resultado se le informó.">

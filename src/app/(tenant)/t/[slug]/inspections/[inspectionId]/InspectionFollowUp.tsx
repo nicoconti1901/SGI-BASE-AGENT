@@ -2,13 +2,14 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Field, FormError, INPUT_CLASS } from "@/components/ui";
+import { Button, Field, FilePicker, FormError, INPUT_CLASS } from "@/components/ui";
 import { completeFollowUpAction, correctAnswerAction, uploadFollowUpEvidenceAction } from "@/app/(tenant)/t/[slug]/inspections/actions";
 
 /** Evidencia y cierre de la acción de seguimiento de la inspección. */
 export function FollowUpControls({ slug, inspectionId, hasEvidence }: { slug: string; inspectionId: string; hasEvidence: boolean }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [picked, setPicked] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -22,6 +23,7 @@ export function FollowUpControls({ slug, inspectionId, hasEvidence }: { slug: st
       const result = await uploadFollowUpEvidenceAction(slug, inspectionId, data);
       if (result.ok) {
         if (fileRef.current) fileRef.current.value = "";
+        setPicked(null);
         router.refresh();
       } else setError(result.error);
     });
@@ -39,8 +41,8 @@ export function FollowUpControls({ slug, inspectionId, hasEvidence }: { slug: st
   return (
     <div className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-3">
       <div className="flex max-w-full flex-wrap items-end gap-2 [&>*]:min-w-0 [&>*]:max-w-full">
-        <Field label="Evidencia de lo resuelto" hint="Foto o documento. Hace falta al menos una para completar.">
-          <input ref={fileRef} type="file" className="w-full max-w-full text-sm" />
+        <Field label="Evidencia de lo resuelto" htmlFor="followup-evidence" hint="Foto o documento. Hace falta al menos una para completar.">
+          <FilePicker ref={fileRef} id="followup-evidence" name="file" hint="Ningún archivo elegido" file={picked} onChange={(e) => setPicked(e.target.files?.[0] ?? null)} />
         </Field>
         <Button type="button" variant="secondary" disabled={pending} onClick={upload}>
           Adjuntar

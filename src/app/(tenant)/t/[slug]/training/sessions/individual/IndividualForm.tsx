@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Field, FormError, INPUT_CLASS } from "@/components/ui";
+import { Button, Field, FilePicker, FormError, INPUT_CLASS } from "@/components/ui";
 import { PersonPicker } from "@/components/pickers/PersonPicker";
 import type { PersonOption } from "@/components/pickers/picker-actions";
 import { addIndividualRecordAction, uploadTrainingAttachmentAction } from "@/app/(tenant)/t/[slug]/training/records-actions";
@@ -117,8 +117,8 @@ export function IndividualForm({ slug, today, courses, members, defaultPerson }:
           </Field>
         </div>
         <div className="sm:col-span-2">
-          <Field label="Certificado" hint="PDF, JPG o PNG, hasta 10 MB. Opcional ahora: lo podés subir después desde la ficha.">
-            <input ref={fileRef} type="file" accept="application/pdf,image/jpeg,image/png" className="text-sm" />
+          <Field label="Certificado" htmlFor="record-certificate" hint="PDF, JPG o PNG, hasta 10 MB. Opcional ahora: lo podés subir después desde la ficha.">
+            <FilePicker ref={fileRef} id="record-certificate" name="certificate" accept="application/pdf,image/jpeg,image/png" hint="Ningún archivo elegido" />
           </Field>
         </div>
       </div>

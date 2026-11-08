@@ -3,6 +3,7 @@
 import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
 import { useActionState, useState } from "react";
 import { useKeepInputs } from "@/lib/use-keep-inputs";
+import { FilePicker } from "@/components/ui";
 import {
   addCustomQuestionAction,
   recordItemResultAction,
@@ -359,6 +360,7 @@ function EvidenceFiles({
     initial,
   );
   const actionForm = useKeepInputs(action, state, { resetOnSuccess: true });
+  const [file, setFile] = useState<File | null>(null);
   if (!canUpload && item.attachments.length === 0) return null;
   return (
     <div className="flex flex-col gap-2 text-sm">
@@ -380,8 +382,15 @@ function EvidenceFiles({
         </ul>
       ) : null}
       {canUpload ? (
-        <form {...actionForm} className="flex flex-wrap items-center gap-2">
-          <input type="file" name="file" aria-label="Archivo de evidencia" className="text-xs" />
+        <form {...actionForm} onReset={() => setFile(null)} className="flex flex-wrap items-center gap-2">
+          <div className="min-w-56 flex-1">
+            <FilePicker
+              name="file"
+              hint="Elegí la evidencia y adjuntala"
+              file={file}
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
           <button type="submit" disabled={pending} className={secondary}>
             {pending ? "Subiendo…" : "Adjuntar evidencia"}
           </button>

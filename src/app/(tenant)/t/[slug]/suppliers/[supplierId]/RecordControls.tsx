@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button, Field, FormError, INPUT_CLASS } from "@/components/ui";
+import { Button, Field, FilePicker, FormError, INPUT_CLASS } from "@/components/ui";
 import { uploadDocumentAction, voidDocumentAction, voidEvaluationAction } from "@/app/(tenant)/t/[slug]/suppliers/evaluation-actions";
 import type { SupplierActionState } from "@/app/(tenant)/t/[slug]/suppliers/guard";
 import { useKeepInputs } from "@/lib/use-keep-inputs";
@@ -58,8 +58,8 @@ export function UploadDocumentForm({ slug, supplierId, types }: { slug: string; 
             ))}
           </select>
         </Field>
-        <Field label="Archivo" required hint="PDF, imagen, Word o texto. Hasta 15 MB.">
-          <input type="file" name="file" required accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt" className={INPUT_CLASS} />
+        <Field label="Archivo" required htmlFor="supplier-document-file" hint="PDF, imagen, Word o texto. Hasta 15 MB.">
+          <FilePicker id="supplier-document-file" name="file" required accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt" hint="Ningún archivo elegido" />
         </Field>
         <Field label="Fecha de emisión" hint="Opcional.">
           <input type="date" name="issuedAt" className={INPUT_CLASS} />

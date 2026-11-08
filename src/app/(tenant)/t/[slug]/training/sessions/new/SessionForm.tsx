@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Field, FormError, INPUT_CLASS } from "@/components/ui";
+import { Button, Field, FilePicker, FormError, INPUT_CLASS } from "@/components/ui";
 import { registerSessionAction, searchAttendeesAction, uploadTrainingAttachmentAction } from "@/app/(tenant)/t/[slug]/training/records-actions";
 
 type Option = { id: string; name: string };
@@ -275,8 +275,8 @@ export function SessionForm({ slug, today, courses, sites, positions, members, p
         ) : null}
       </section>
 
-      <Field label="Planilla de asistencia firmada" hint="PDF, JPG o PNG, hasta 10 MB. Opcional ahora: la podés subir después desde la sesión.">
-        <input ref={sheetRef} type="file" accept="application/pdf,image/jpeg,image/png" className="text-sm" />
+      <Field label="Planilla de asistencia firmada" htmlFor="session-sheet" hint="PDF, JPG o PNG, hasta 10 MB. Opcional ahora: la podés subir después desde la sesión.">
+        <FilePicker ref={sheetRef} id="session-sheet" name="sheet" accept="application/pdf,image/jpeg,image/png" hint="Ningún archivo elegido" />
       </Field>
 
       {error ? <FormError>{error}</FormError> : null}
