@@ -1,9 +1,9 @@
 "use client";
 
 import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
-import { Field, INPUT_CLASS } from "@/components/ui";
+import { Field, FilePicker, INPUT_CLASS } from "@/components/ui";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useKeepInputs } from "@/lib/use-keep-inputs";
 import {
   addExternalFindingAction,
@@ -251,6 +251,7 @@ export function ExternalReportUpload({
     initial,
   );
   const actionForm = useKeepInputs(action, state, { resetOnSuccess: true });
+  const [file, setFile] = useState<File | null>(null);
   return (
     <div className="flex flex-col gap-2 text-sm">
       {files.length > 0 ? (
@@ -288,15 +289,17 @@ export function ExternalReportUpload({
         <p className="text-[var(--color-ink-muted)]">Todavía no se adjuntó el informe.</p>
       )}
       {canUpload ? (
-        <form {...actionForm} className="flex flex-wrap items-center gap-2">
-          <input
-            type="file"
-            name="file"
-            accept="application/pdf"
-            required
-            aria-label="Informe del auditor externo"
-            className="text-xs"
-          />
+        <form {...actionForm} onReset={() => setFile(null)} className="flex flex-wrap items-center gap-2">
+          <div className="min-w-56 flex-1">
+            <FilePicker
+              name="file"
+              accept="application/pdf"
+              required
+              hint="Informe del auditor externo (PDF)"
+              file={file}
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
           <button type="submit" disabled={pending} className={secondary}>
             {pending ? "Subiendo…" : "Adjuntar informe"}
           </button>

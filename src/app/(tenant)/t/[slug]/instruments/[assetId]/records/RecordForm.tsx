@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState, useTransition } from "react";
-import { Button, Field, FormError, INPUT_CLASS, StatusChip } from "@/components/ui";
+import { Button, Field, FilePicker, FormError, INPUT_CLASS, StatusChip } from "@/components/ui";
 import { InstrumentPicker, type InstrumentOption } from "@/components/pickers/InstrumentPicker";
 import { saveRecordAction, type RecordActionState } from "@/app/(tenant)/t/[slug]/instruments/actions";
 import {
@@ -423,9 +423,10 @@ export function RecordForm({
         <legend className="text-sm font-semibold">Certificado</legend>
         <Field
           label="Adjuntar el certificado (PDF o imagen)"
+          htmlFor="record-certificate"
           hint={traceability === "in_house" ? "Opcional en una verificación interna." : "Obligatorio para cerrar. Si todavía no lo tenés, guardá el borrador y adjuntalo después."}
         >
-          <input name="certificate" type="file" multiple accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" className={INPUT_CLASS} />
+          <FilePicker id="record-certificate" name="certificate" multiple accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" ariaLabel="Adjuntar el certificado (PDF o imagen)" hint="Ningún archivo elegido" />
         </Field>
         <Field label="Observaciones" hint="Opcional.">
           <textarea name="notes" rows={2} defaultValue={defaults.notes} maxLength={1000} className={INPUT_CLASS} />

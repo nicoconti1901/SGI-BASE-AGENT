@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Field, FormError, INPUT_CLASS } from "@/components/ui";
+import { Button, Field, FilePicker, FormError, INPUT_CLASS } from "@/components/ui";
 import { uploadTrainingAttachmentAction, voidRecordAction, voidSessionAction } from "@/app/(tenant)/t/[slug]/training/records-actions";
 
 /** Anula un registro o una sesión: pide el motivo (queda en el historial) y confirma. */
@@ -57,6 +57,7 @@ export function VoidControl({ slug, kind, id, label = "Anular" }: { slug: string
 export function AttachControl({ slug, kind, ownerId, label = "Adjuntar archivo" }: { slug: string; kind: "record" | "session"; ownerId: string; label?: string }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [picked, setPicked] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -70,6 +71,7 @@ export function AttachControl({ slug, kind, ownerId, label = "Adjuntar archivo" 
       const result = await uploadTrainingAttachmentAction(slug, kind, ownerId, data);
       if (result.ok) {
         if (fileRef.current) fileRef.current.value = "";
+        setPicked(null);
         router.refresh();
       } else setError(result.error);
     });
@@ -78,7 +80,9 @@ export function AttachControl({ slug, kind, ownerId, label = "Adjuntar archivo" 
   return (
     <div className="sgi-form flex flex-col gap-2 p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <input ref={fileRef} type="file" accept="application/pdf,image/jpeg,image/png" aria-label={label} className="text-sm" />
+        <div className="min-w-56 flex-1">
+          <FilePicker ref={fileRef} name="file" accept="application/pdf,image/jpeg,image/png" ariaLabel={label} hint={label} file={picked} onChange={(e) => setPicked(e.target.files?.[0] ?? null)} />
+        </div>
         <Button type="button" variant="secondary" disabled={pending} onClick={upload}>
           {pending ? "Subiendo…" : "Subir"}
         </Button>
