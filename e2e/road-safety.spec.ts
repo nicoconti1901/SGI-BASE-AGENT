@@ -129,7 +129,6 @@ test("seguridad vial: choque con daño material, km del mes, índice vial y sin 
     await expect(page.getByRole("heading", { name: "Conductores habilitados" })).toBeVisible({ timeout: 30_000 });
     await page.goto(`/t/${slug}/road-safety/guia`);
     await expect(page.getByRole("heading", { name: "Guía de seguridad vial" })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(/sin verificar/).first()).toBeVisible();
 
     // ── Colaborador: ve el tablero y los totales, pero no a los conductores ─
     await loginAs(page, "colab");

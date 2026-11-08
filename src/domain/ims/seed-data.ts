@@ -244,12 +244,14 @@ const ISO45001_ROWS: ClauseRow[] = [
 
 /**
  * ISO 39001:2012 (seguridad vial). Numeración y títulos verificados el 2026-11-04 contra el índice de la edición
- * UNE-ISO 39001:2012 (corregida 2015) que está en `src/lib/iso`. La enmienda Amd 1:2024 no está en ese archivo: se
- * asume que no cambia la numeración. Los resúmenes son paráfrasis propia (el texto de la norma tiene derechos de autor).
+ * UNE-ISO 39001:2012 (corregida 2015) que está en `src/lib/iso`. La enmienda Amd 1:2024 («Climate action changes»,
+ * publicada el 2024-02-22) no está en ese archivo; según las fichas públicas agrega texto en 4.1 (decidir si el cambio
+ * climático es una cuestión pertinente) y no agrega, quita ni renumera cláusulas (confirmado el 2026-11-08 por fuentes
+ * públicas, sin el texto completo). Los resúmenes son paráfrasis propia (el texto de la norma tiene derechos de autor).
  */
 const ISO39001_ROWS: ClauseRow[] = [
   { code: "4", title: "Contexto de la organización", summary: "Entender el contexto de la organización en relación con la seguridad vial.", tags: ["contexto"] },
-  { code: "4.1", title: "Conocimiento de la organización y de su contexto", summary: "Determinar las cuestiones internas y externas que afectan la seguridad vial.", tags: ["contexto"] },
+  { code: "4.1", title: "Conocimiento de la organización y de su contexto", summary: "Determinar las cuestiones internas y externas que afectan la seguridad vial, incluido si el cambio climático es pertinente (Amd 1:2024).", tags: ["contexto"] },
   { code: "4.2", title: "Comprensión de las necesidades y expectativas de las partes interesadas", summary: "Identificar las partes interesadas y lo que esperan en materia de seguridad vial.", tags: ["contexto", "partes-interesadas"] },
   { code: "4.3", title: "Determinación del alcance del sistema de gestión de la seguridad vial", summary: "Definir los límites y la aplicabilidad del sistema de seguridad vial.", tags: ["contexto", "alcance"] },
   { code: "4.4", title: "Sistema de gestión de la seguridad vial", summary: "Establecer, implementar, mantener y mejorar el sistema y sus procesos.", tags: ["contexto"] },
