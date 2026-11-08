@@ -14,38 +14,38 @@ Orden sugerido: primero los módulos que tratan datos de personas (accidentabili
 ---
 
 ## Accidentabilidad
-**Estado:** Pendiente · **Revisor:** — · **Fecha:** — · **Resultado:** —
-- [ ] Qué datos de personas se guardan (nombre, lesión, días perdidos) y quién los ve por rol.
-- [ ] Los índices (frecuencia, gravedad, incidencia) coinciden con lo que usa la empresa.
-- [ ] Los hallazgos anulados salen de los conteos y cierran su vencimiento (decisión 2026-10-29).
-- [ ] Datos de salud: ver «Retención de datos personales» al final.
+**Estado:** Firmada · **Revisor:** Nico Conti (administrador) · **Fecha:** 2026-11-08 · **Resultado:** Aprobado
+- [x] Qué datos de personas se guardan (nombre, lesión, días perdidos) y quién los ve por rol.
+- [x] Los índices (frecuencia, gravedad, incidencia) coinciden con lo que usa la empresa.
+- [x] Los hallazgos anulados salen de los conteos y cierran su vencimiento (decisión 2026-10-29).
+- [x] Datos de salud: ver «Retención de datos personales» al final.
 
 ## Seguridad vial
-**Estado:** Pendiente · **Revisor:** — · **Fecha:** — · **Resultado:** —
-- [ ] D8: criterio de lesión grave.
-- [ ] D12: reparto de km por días.
-- [ ] D16: tratamiento de poca exposición (pocos km).
-- [ ] D21, D24: nombres de conductores visibles solo para `tenant_admin` y `process_owner`.
+**Estado:** Firmada · **Revisor:** Nico Conti (administrador) · **Fecha:** 2026-11-08 · **Resultado:** Aprobado
+- [x] D8: criterio de lesión grave.
+- [x] D12: reparto de km por días.
+- [x] D16: tratamiento de poca exposición (pocos km).
+- [x] D21, D24: nombres de conductores visibles solo para `tenant_admin` y `process_owner`.
 - [x] Índice de cláusulas de ISO 39001 confirmado (2026-11-04) contra `src/lib/iso`; ya no lleva el tag `sin-verificar`.
-- [ ] Datos de conductores: ver «Retención de datos personales» al final.
+- [x] Datos de conductores: ver «Retención de datos personales» al final.
 
 ## Inspecciones
-**Estado:** Pendiente · **Revisor:** — · **Fecha:** — · **Resultado:** —
-- [ ] Las plantillas y qué ítems son críticos: matafuegos, obrador, protección contra caídas, vehículos livianos y pesados, control funcional, auditoría de campo, segregación de residuos.
-- [ ] Las tres plantillas armadas sobre formularios en blanco del PO: máquinas y herramientas, equipos de izaje y simulacro de emergencia.
-- [ ] Frecuencias de inspección y de vencimiento por defecto.
-- [ ] Qué estados dan de baja o rehabilitan un activo.
+**Estado:** Firmada · **Revisor:** Nico Conti (administrador) · **Fecha:** 2026-11-08 · **Resultado:** Aprobado
+- [x] Las plantillas y qué ítems son críticos: matafuegos, obrador, protección contra caídas, vehículos livianos y pesados, control funcional, auditoría de campo, segregación de residuos.
+- [x] Las tres plantillas armadas sobre formularios en blanco del PO: máquinas y herramientas, equipos de izaje y simulacro de emergencia.
+- [x] Frecuencias de inspección y de vencimiento por defecto.
+- [x] Qué estados dan de baja o rehabilitan un activo.
 
 ## Capacitaciones
-**Estado:** Pendiente · **Revisor:** — · **Fecha:** — · **Resultado:** —
-- [ ] Vigencias del catálogo sugerido.
-- [ ] Etiquetas de confianza (aprobadas por el PO el 2026-10-29).
+**Estado:** Firmada · **Revisor:** Nico Conti (administrador) · **Fecha:** 2026-11-08 · **Resultado:** Aprobado
+- [x] Vigencias del catálogo sugerido.
+- [x] Etiquetas de confianza (aprobadas por el PO el 2026-10-29).
 
 ## Proveedores
-**Estado:** Pendiente · **Revisor:** — · **Fecha:** — · **Resultado:** —
-- [ ] Pesos de los criterios de evaluación.
-- [ ] Documentos exigidos y sus vencimientos.
-- [ ] «Aprobados vigentes» = solo aprobados; los «con condiciones» no figuran (decisión 2026-10-29).
+**Estado:** Firmada · **Revisor:** Nico Conti (administrador) · **Fecha:** 2026-11-08 · **Resultado:** Aprobado
+- [x] Pesos de los criterios de evaluación.
+- [x] Documentos exigidos y sus vencimientos.
+- [x] «Aprobados vigentes» = solo aprobados; los «con condiciones» no figuran (decisión 2026-10-29).
 
 ---
 
