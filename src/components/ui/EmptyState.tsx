@@ -20,9 +20,9 @@ export function EmptyState({ what, next, action }: EmptyStateProps) {
         <InboxIcon className="h-6 w-6" />
       </span>
       <div className="flex min-w-0 flex-col items-start gap-1">
-        <p className="font-semibold text-[var(--color-ink)]">{what}</p>
+        <p className="text-base font-semibold text-[var(--color-ink)]">{what}</p>
         {next ? (
-          <p className="max-w-[52ch] text-[var(--color-ink-muted)]">Qué hacer: {next}</p>
+          <p className="max-w-[60ch] text-[var(--color-ink)]">Qué hacer: {next}</p>
         ) : null}
         {action ? (
           <Link href={action.href} className={buttonClass("secondary", "mt-2")}>

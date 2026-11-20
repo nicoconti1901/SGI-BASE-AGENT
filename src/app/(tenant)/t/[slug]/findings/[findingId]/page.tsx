@@ -261,24 +261,24 @@ export default async function FindingDetailPage({
       ) : null}
 
       <section className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5">
-        <h2 className="text-xs uppercase tracking-wide text-[var(--color-ink-subtle)]">
+        <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-tight">
           Hecho
         </h2>
-        <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+        <p className="mt-2 max-w-[70ch] text-base leading-relaxed text-[var(--color-ink)]">
           {finding.description}
         </p>
       </section>
 
       <section className="rounded-[var(--radius-lg)] border border-[var(--color-accent)] bg-[var(--color-accent-soft)] p-5">
-        <h2 className="text-xs uppercase tracking-wide text-[var(--color-ink-subtle)]">
+        <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-tight">
           Causa raíz (5 Porqués)
         </h2>
-        <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-[var(--color-ink)]">
+        <p className="mt-2 font-[family-name:var(--font-display)] text-lg font-medium text-[var(--color-ink)]">
           ★ {finding.rootCause ?? "Sin causa raíz"}
         </p>
         {rca?.problemStatement ? (
-          <p className="mt-3 text-sm text-[var(--color-ink-muted)]">
-            <span className="text-xs uppercase tracking-wide text-[var(--color-ink-subtle)]">
+          <p className="mt-3 max-w-[70ch] text-base leading-relaxed text-[var(--color-ink)]">
+            <span className="text-sm font-semibold text-[var(--color-ink-muted)]">
               Hecho de partida ·{" "}
             </span>
             {rca.problemStatement}

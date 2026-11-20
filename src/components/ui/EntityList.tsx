@@ -41,10 +41,10 @@ export function EntityRow({ href, kind, title, meta, chip }: EntityRowProps) {
         className="relative flex min-h-12 flex-wrap items-center justify-between gap-2 px-4 py-3 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-[var(--color-accent)] before:opacity-0 hover:bg-[var(--color-accent-soft)] hover:before:opacity-100 focus-visible:before:opacity-100 focus-visible:outline-offset-[-2px]"
       >
         <div className="min-w-0">
-          <span className="mr-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+          <span className="mr-2 text-xs font-medium text-[var(--color-ink-muted)]">
             {kind}
           </span>
-          <span className="font-medium">{title}</span>
+          <span className="text-base font-semibold">{title}</span>
           {meta ? (
             <span className="ml-2 text-sm text-[var(--color-ink-muted)]">
               · {meta}

@@ -34,7 +34,7 @@ function HintOrError({ hint, error }: { hint?: string; error?: string }) {
 function LabelText({ label, required }: { label: string; required?: boolean }) {
   return (
     <span className="flex items-baseline justify-between gap-2">
-      <span className="font-semibold">{label}</span>
+      <span className="text-sm font-semibold text-[var(--color-ink)]">{label}</span>
       {required ? (
         <span className="text-xs font-normal text-[var(--color-ink-muted)]">Obligatorio</span>
       ) : null}

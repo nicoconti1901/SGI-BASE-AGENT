@@ -8,7 +8,7 @@ export async function ModulesSection({ slug, tenantId }: { slug: string; tenantI
   const enabled = await getEnabledModules(tenantId);
 
   return (
-    <SectionBlock
+    <SectionBlock framed={false}
       title="Módulos de la empresa"
       eyebrow="Alcance del cliente"
       what="Lo que esta empresa ve en su menú. Al desactivar un módulo se oculta y sus páginas dejan de estar disponibles; los datos se conservan y vuelven al reactivarlo."
@@ -19,7 +19,7 @@ export async function ModulesSection({ slug, tenantId }: { slug: string; tenantI
         if (modules.length === 0) return null;
         return (
           <div key={section.key} className="flex flex-col gap-2">
-            <h3 className="font-[family-name:var(--font-mono)] text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-muted)]">
+            <h3 className="sgi-h3">
               {section.label}
             </h3>
             <EntityList aria-label={`Módulos: ${section.label}`}>

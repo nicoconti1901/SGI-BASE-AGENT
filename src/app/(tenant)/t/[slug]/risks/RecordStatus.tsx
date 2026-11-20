@@ -38,7 +38,7 @@ export function RecordStatusPanel({
                   : "border-dashed border-[var(--color-line-strong)] text-[var(--color-ink-muted)]"
             }`}
           >
-            <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em]">
+            <span className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em]">
               {String(i + 1).padStart(2, "0")} · {s.state === "done" ? "Listo" : s.state === "current" ? "Ahora" : "Después"}
             </span>
             <span>{s.label}</span>

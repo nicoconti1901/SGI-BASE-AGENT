@@ -83,7 +83,7 @@ export function EvaluationsPanel({
       {selected ? (
         <article aria-label="Detalle de la evaluación" className="mt-6 flex flex-col gap-4 rounded-[var(--radius-md)] border border-[var(--color-line-strong)] p-4">
           <header className="flex flex-col gap-1">
-            <h3 className="font-[family-name:var(--font-display)] text-lg">
+            <h3 className="sgi-h3">
               {EVALUATION_KIND_LABELS[selected.kind]} · {dmy(selected.evaluatedAt)}
             </h3>
             <p className="text-sm text-[var(--color-ink-muted)]">
@@ -255,7 +255,7 @@ export function DocumentsPanel({
 
       {canUpload && rows.length ? (
         <div className="mt-6 border-t border-[var(--color-line)] pt-4">
-          <h3 className="mb-3 font-[family-name:var(--font-display)] text-lg">Cargar un documento</h3>
+          <h3 className="sgi-h3 mb-3">Cargar un documento</h3>
           <UploadDocumentForm slug={slug} supplierId={supplierId} types={rows.map((r) => ({ id: r.type.id, name: r.type.name, validityMonths: r.type.validityMonths }))} />
         </div>
       ) : null}

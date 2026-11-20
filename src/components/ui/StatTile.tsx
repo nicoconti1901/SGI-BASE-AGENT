@@ -45,7 +45,7 @@ export function StatTile({
     <div
       className={`relative min-w-0 bg-[var(--color-surface-raised)] px-4 py-3 ${ALERT_BAR[tone]}`}
     >
-      <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+      <p className="text-xs font-medium text-[var(--color-ink-muted)]">
         {label}
       </p>
       <div className="mt-1 flex items-start justify-between gap-2">

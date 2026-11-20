@@ -165,7 +165,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
             {nonconforming.map(({ item, answer }) => (
               <li key={item.id} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-danger)] p-4 text-sm">
                 <p className="font-semibold">
-                  {item.text} <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{CRITICALITY_LABELS[item.criticality]}</span>
+                  {item.text} <span className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{CRITICALITY_LABELS[item.criticality]}</span>
                 </p>
                 {answer.comment ? <p>{answer.comment}</p> : null}
                 {answer.attachments.length > 0 ? (
@@ -243,7 +243,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
           {view.items.map(({ item, answer }) => (
             <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
               <span>
-                <span className="block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{item.section}</span>
+                <span className="block font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{item.section}</span>
                 {item.text}
               </span>
               <span className="flex flex-wrap items-center gap-3 font-semibold">
@@ -296,7 +296,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ slu
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{label}</dt>
+      <dt className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{label}</dt>
       <dd className="mt-0.5 text-sm font-semibold">{value}</dd>
     </div>
   );

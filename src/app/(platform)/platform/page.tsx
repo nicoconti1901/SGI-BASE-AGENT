@@ -67,7 +67,7 @@ export default async function PlatformHomePage() {
               href={s.href}
               className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4 transition duration-[var(--duration-med)] ease-[var(--ease-out)] hover:border-[var(--color-accent)]"
             >
-              <h3 className="text-sm font-semibold">{s.title}</h3>
+              <h3 className="sgi-h3">{s.title}</h3>
               <p className="mt-1 text-sm text-[var(--color-ink-muted)]">{s.body}</p>
             </Link>
           ))}

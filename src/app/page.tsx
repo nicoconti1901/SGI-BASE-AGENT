@@ -74,7 +74,7 @@ function CurrentSession({
     <div className="relative flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-soft)]">
       <div className="flex flex-wrap items-center gap-3">
         <span
-          className={`rounded-[var(--radius-sm)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-on-solid)] ${theme.accent}`}
+          className={`rounded-[var(--radius-sm)] px-3 py-1 font-[family-name:var(--font-mono)] text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-on-solid)] ${theme.accent}`}
         >
           {PERSONA_LABELS[persona]}
         </span>
@@ -164,7 +164,7 @@ function DevColumn({
       <div className={`h-1.5 ${theme.accent}`} aria-hidden />
       <div className="flex flex-col gap-3 p-4">
         <div>
-          <h3 className="font-semibold">{PERSONA_LABELS[persona]}</h3>
+          <h3 className="sgi-h3">{PERSONA_LABELS[persona]}</h3>
           <p className="text-xs text-[var(--color-ink-muted)]">{subtitle}</p>
         </div>
         <div className="flex max-h-80 flex-col gap-2 overflow-y-auto">{children}</div>

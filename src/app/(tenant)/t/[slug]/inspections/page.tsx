@@ -15,7 +15,7 @@ import { Button, EmptyState, Field, FormError, INPUT_CLASS, SectionBlock, StatGr
 const RESULT_CHIP: Record<InspectionResult, "ok" | "warning" | "danger"> = { fit: "ok", fit_with_observations: "warning", unfit: "danger" };
 
 const th = "px-4 py-2.5 font-semibold";
-const THEAD = "border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
+const THEAD = "border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
 
 export default async function InspectionsPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<InspectionSearchParams> }) {
   const { slug } = await params;

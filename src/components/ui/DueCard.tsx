@@ -28,11 +28,11 @@ export function DueCard({ date, kind, title, chip, href }: DueCardProps) {
         >
           {date}
         </time>
-        <span className="min-w-0 truncate font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+        <span className="min-w-0 truncate text-xs font-medium text-[var(--color-ink-muted)]">
           {kind}
         </span>
       </span>
-      <span className="truncate text-sm font-medium" title={title}>
+      <span className="truncate text-sm font-semibold" title={title}>
         {title}
       </span>
       <span className="flex">{chip}</span>

@@ -138,7 +138,7 @@ function CustomQuestions({
   const actionForm = useKeepInputs(action, state, { resetOnSuccess: true });
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold">Preguntas propias</h3>
+      <h3 className="sgi-h3">Preguntas propias</h3>
       {items.length > 0 ? (
         <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
           {items.map((q) => (

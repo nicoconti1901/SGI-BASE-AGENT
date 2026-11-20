@@ -27,7 +27,7 @@ import { startFunctionalCheckAction } from "@/app/(tenant)/t/[slug]/instruments/
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{label}</dt>
+      <dt className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{label}</dt>
       <dd className="mt-0.5 text-sm">{children}</dd>
     </div>
   );
@@ -43,7 +43,7 @@ const TRIGGER_LABEL = {
 
 const dateOrDash = (d: Date | null) => (d ? formatDateEs(isoFromDate(d)) : "—");
 const th = "px-4 py-2.5 font-semibold";
-const THEAD = "border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
+const THEAD = "border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
 
 function ChannelLine({ channel, rule }: { channel: Channel; rule: Parameters<typeof describeRule>[0] }) {
   return (

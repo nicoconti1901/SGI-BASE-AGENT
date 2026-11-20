@@ -22,7 +22,7 @@ type StatusChipProps = {
 };
 
 const BASE =
-  "inline-flex h-[22px] items-center gap-1 whitespace-nowrap rounded-[var(--radius-sm)] border px-2 font-[family-name:var(--font-mono)] text-[11px] font-semibold uppercase tracking-[0.04em]";
+  "inline-flex h-[22px] items-center gap-1 whitespace-nowrap rounded-[var(--radius-sm)] border px-2 font-[family-name:var(--font-mono)] text-xs font-semibold uppercase tracking-[0.04em]";
 
 const STATUS: Record<ChipStatus, { cls: string; icon: React.ReactNode }> = {
   ok: {

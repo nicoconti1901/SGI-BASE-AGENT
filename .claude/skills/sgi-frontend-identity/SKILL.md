@@ -48,6 +48,8 @@ Shared UI primitives in `src/components/ui/*`: P0 (PageFrame, PageHeader, StatTi
 - Sans (`--font-sans`, Geist): all body/UI.
 - Mono (`--font-mono`, Geist Mono): eyebrows, labels, codes, IDs, clause numbers, dates, chips.
 - Numbers in metrics/tables: `tabular-nums`.
+- **Escala de lectura (informe `docs/ux/informe-legibilidad-2026-11.md`):** h1 30px · h2 22px · h3 `.sgi-h3` (17px, única) · contenido que se lee 16px en `--color-ink`, máx. `70ch` · datos secundarios 14px · etiquetas 12px medium. Nada por debajo de 12px (`text-xs`). El gris `--color-ink-muted` es solo para datos secundarios y etiquetas, no para descripciones. Etiquetas en minúscula y sans; mayúsculas mono solo para códigos, cláusulas y fechas.
+- **Niveles de caja:** sección sin caja (`<SectionBlock framed={false}>`: línea arriba + título) cuando contiene tarjetas o listas con marco; tarjeta con `--color-card-line` (≥3:1) y hover de acento; nunca una caja con marco dentro de otra caja con marco igual.
 
 ## Page anatomy (tenant/platform content)
 

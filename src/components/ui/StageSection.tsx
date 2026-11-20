@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 
 const chip =
-  "rounded-[var(--radius-sm)] border px-2 py-0.5 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em]";
+  "rounded-[var(--radius-sm)] border px-2 py-0.5 text-xs font-semibold";
 
 /**
  * Sección de la ficha: completa = resumen confirmado con «Editar»; incompleta = resaltada con lo que
@@ -44,7 +44,7 @@ export function StageSection({
   return (
     <section className={`flex flex-col gap-4 rounded-[var(--radius-lg)] border bg-[var(--color-surface-raised)] p-5 ${tone} ${showForm ? "sgi-form" : ""}`}>
       <header className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-[family-name:var(--font-display)] text-xl">{title}</h2>
+        <h2 className="font-[family-name:var(--font-display)] text-[1.375rem] font-semibold tracking-tight">{title}</h2>
         <div className="flex items-center gap-2">
           <span
             className={`${chip} ${
@@ -95,7 +95,7 @@ export function Summary({ items }: { items: { label: string; value: ReactNode }[
       {items.map((it) => (
         <div key={it.label} className="contents">
           <dt className="text-[var(--color-ink-muted)]">{it.label}</dt>
-          <dd className="break-words font-medium">{it.value || <span className="text-[var(--color-warning)]">Sin completar</span>}</dd>
+          <dd className="break-words font-medium text-[var(--color-ink)]">{it.value || <span className="text-[var(--color-warning)]">Sin completar</span>}</dd>
         </div>
       ))}
     </dl>
@@ -129,7 +129,7 @@ export function ChoiceCards<T extends string>({
           />
           <span className="min-w-0">
             <span className="block text-sm font-semibold">{o.label}</span>
-            <span className="block text-xs text-[var(--color-ink-muted)]">{o.hint}</span>
+            <span className="block text-sm text-[var(--color-ink-muted)]">{o.hint}</span>
           </span>
         </label>
       ))}

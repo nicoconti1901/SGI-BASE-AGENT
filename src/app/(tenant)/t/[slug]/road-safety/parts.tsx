@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 const fmt = (n: number, d = 2) => n.toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d });
 
 const CARD = "flex flex-col gap-1.5 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4 shadow-[var(--shadow-card)]";
-const EYEBROW = "font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
 const BIG = "font-[family-name:var(--font-display)] text-[1.75rem] font-semibold leading-tight tabular-nums";
 
 /** Un número con su título y una línea de ayuda. «Sin datos» va atenuado: nunca se muestra 0 por falta de dato. */
@@ -11,7 +10,7 @@ export function StatCard({ title, value, help }: { title: string; value: string;
   const muted = value === "Sin datos";
   return (
     <article className={CARD}>
-      <h3 className={EYEBROW}>{title}</h3>
+      <h3 className="sgi-h3">{title}</h3>
       <p className={`${BIG} ${muted ? "text-[var(--color-ink-muted)]" : ""}`}>{value}</p>
       <p className="text-xs text-[var(--color-ink-muted)]">{help}</p>
     </article>
@@ -43,7 +42,7 @@ export function RateCard({ title, status, events, injury, rollovers, totalKm, pa
   return (
     <article className={CARD}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className={EYEBROW}>{title}</h3>
+        <h3 className="sgi-h3">{title}</h3>
         {status}
       </div>
       <p className={`${BIG} ${events === null ? "text-[var(--color-ink-muted)]" : ""}`}>{value(events)}</p>

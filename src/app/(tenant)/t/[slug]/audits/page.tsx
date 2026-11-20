@@ -159,7 +159,7 @@ export default async function AuditsPage({
         </SectionBlock>
       ) : null}
 
-      <SectionBlock title="Auditorías planificadas">
+      <SectionBlock framed={false} title="Auditorías planificadas">
         {canPlan ? (
           <p>
             <Link
@@ -211,7 +211,7 @@ export default async function AuditsPage({
         )}
       </SectionBlock>
 
-      <SectionBlock
+      <SectionBlock framed={false}
         id="externas"
         title="Auditorías externas"
         what="Certificadoras, clientes o autoridades. No forman parte del programa ni de la cobertura; sus hallazgos se gestionan en Hallazgos."

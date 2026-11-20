@@ -25,7 +25,7 @@ export function EvidencePanel({
   if (nothing) return null;
   return (
     <section aria-label="Evidencia del período" className="flex flex-col gap-3">
-      <h3 className="font-[family-name:var(--font-display)] text-lg">Evidencia a mano</h3>
+      <h3 className="sgi-h3">Evidencia a mano</h3>
       <p className="text-sm text-[var(--color-ink-muted)]">
         {evidence.since ? `Desde la última evaluación (${dmy(evidence.since)}), más lo que sigue abierto.` : "Todo lo registrado del proveedor hasta hoy."}
       </p>

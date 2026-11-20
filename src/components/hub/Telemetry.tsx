@@ -19,10 +19,10 @@ export function TelemetryPanel({
       className={`overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-card)] ${className}`}
     >
       <header className="flex items-center justify-between gap-3 border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] px-4 py-2">
-        <p className="font-[family-name:var(--font-mono)] text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-ink-muted)]">
+        <p className="font-[family-name:var(--font-mono)] text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-ink-muted)]">
           {title}
         </p>
-        <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.08em] text-[var(--color-ink-subtle)]">
+        <span className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.08em] text-[var(--color-ink-subtle)]">
           Solo referencia
         </span>
       </header>
@@ -33,7 +33,7 @@ export function TelemetryPanel({
 
 export function TelemetryHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="font-[family-name:var(--font-mono)] text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+    <h2 className="font-[family-name:var(--font-mono)] text-xs font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
       {children}
     </h2>
   );

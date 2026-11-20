@@ -95,7 +95,7 @@ export function AppShell({
 
           <div className="order-1 flex w-full min-w-0 items-center gap-2 sm:order-none sm:ml-auto sm:w-auto sm:gap-3">
             <span
-              className={`whitespace-nowrap rounded-[var(--radius-sm)] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-on-solid)] ${theme.accent}`}
+              className={`whitespace-nowrap rounded-[var(--radius-sm)] px-2.5 py-1 font-[family-name:var(--font-mono)] text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-on-solid)] ${theme.accent}`}
             >
               {PERSONA_LABELS[identity.persona]}
             </span>

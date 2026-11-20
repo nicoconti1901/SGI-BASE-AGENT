@@ -152,7 +152,7 @@ export function HubSteps({
   return (
     <ol
       aria-label="Cómo entrar"
-      className="flex flex-wrap items-center gap-x-3 gap-y-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.1em]"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.1em]"
     >
       {steps.map((step, i) => {
         const active = step.n === current;
@@ -244,7 +244,7 @@ export function HexTile({ href, label, icon, detail, index = 0 }: HexTileProps) 
             {label}
           </span>
           {detail ? (
-            <span className="line-clamp-3 break-words font-[family-name:var(--font-mono)] text-[10px] leading-snug text-[var(--color-hub-ink-muted)] tabular-nums">
+            <span className="line-clamp-3 break-words font-[family-name:var(--font-mono)] text-xs leading-snug text-[var(--color-hub-ink-muted)] tabular-nums">
               {detail}
             </span>
           ) : null}

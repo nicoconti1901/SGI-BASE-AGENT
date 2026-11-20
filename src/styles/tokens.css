@@ -46,17 +46,17 @@
   color-scheme: light;
 
   /* Surfaces */
-  --color-canvas: #f4f6fa;
+  --color-canvas: #eaeef4;
   --color-surface: #f9fafc;
   --color-surface-raised: #ffffff;
-  --color-surface-sunken: #edf1f7;
+  --color-surface-sunken: #e1e7f0;
   --color-field-fill: #ffffff;
   --color-ink: #0e1525;
   --color-ink-muted: #4b5568;
   --color-ink-subtle: #5e6a7f;
-  --color-line: #cbd2de;
+  --color-line: #b4bdcc;
   /* Borde estándar de toda tarjeta o panel: se ve en claro y en oscuro sin competir con los campos (line-strong). */
-  --color-card-line: #94a1b8;
+  --color-card-line: #7a879e;
   /* Formulario (alternativa 4: riel lateral y verde azulado): se distingue de las fichas azules y de la pantalla. */
   --color-form-bg: #e6f4f2;
   --color-form-line: #0f6e6a;
@@ -64,7 +64,7 @@
   --color-form-rail-hover: #0b5a56;
   --color-form-ink: #0b3f3c;
   --color-form-on-rail: #ffffff;
-  --color-line-strong: #8491a8;
+  --color-line-strong: #6b7890;
 
   /* Accent — cobalto (único accent dominante) */
   --color-accent: #2448e0;
@@ -138,7 +138,7 @@
   --radius-lg: 0.5rem;
 
   /* Elevation — sutil; el marco (borde) siempre está */
-  --shadow-card: 0 1px 2px rgb(14 21 37 / 6%);
+  --shadow-card: 0 1px 3px rgb(14 21 37 / 12%);
   --shadow-hover: 0 4px 12px rgb(14 21 37 / 8%);
   --shadow-soft: 0 1px 0 rgb(14 21 37 / 6%), 0 8px 24px rgb(14 21 37 / 8%);
 }
@@ -150,21 +150,21 @@
   /* Surfaces */
   --color-canvas: #06080b;
   --color-surface: #0a0e13;
-  --color-surface-raised: #0d1117;
+  --color-surface-raised: #111720;
   --color-surface-sunken: #030406;
   --color-field-fill: #030406;
   --color-ink: #e8edf5;
   --color-ink-muted: #9aa6b8;
   --color-ink-subtle: #7c889b;
-  --color-line: #232b38;
-  --color-card-line: #4b5870;
+  --color-line: #2f3948;
+  --color-card-line: #64728c;
   --color-form-bg: #0c2326;
   --color-form-line: #3dd6c6;
   --color-form-rail: #3dd6c6;
   --color-form-rail-hover: #7be8dc;
   --color-form-ink: #b8f3ec;
   --color-form-on-rail: #04201e;
-  --color-line-strong: #56647a;
+  --color-line-strong: #74829c;
 
   /* Accent — cian eléctrico (único accent dominante) */
   --color-accent: #38e1ff;

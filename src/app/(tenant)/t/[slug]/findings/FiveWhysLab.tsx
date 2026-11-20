@@ -50,14 +50,14 @@ function bootSteps(initial?: RootCauseAnalysis | null): WhyStep[] {
 function StepHeading({ n, title, done }: { n: number; title: string; done: boolean }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <h3 className="text-base font-semibold text-[var(--color-ink)]">
+      <h3 className="sgi-h3">
         <span className="mr-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-subtle)]">
           PASO {n}
         </span>
         {title}
       </h3>
       <span
-        className={`rounded-[var(--radius-sm)] border px-2 py-0.5 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] ${
+        className={`rounded-[var(--radius-sm)] border px-2 py-0.5 font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] ${
           done
             ? "border-[var(--color-success-line)] bg-[var(--color-success-soft)] text-[var(--color-success)]"
             : "border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface-sunken)] text-[var(--color-ink-muted)]"
@@ -283,7 +283,7 @@ export function FiveWhysLab({
               >
                 <span
                   aria-hidden
-                  className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-[var(--radius-sm)] border text-[11px] font-bold ${
+                  className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-[var(--radius-sm)] border text-xs font-bold ${
                     on
                       ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-on-solid)]"
                       : "border-[var(--color-line-strong)]"
@@ -334,7 +334,7 @@ export function FiveWhysLab({
               <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-line)] px-4 py-2.5">
                 <h4 className="text-sm font-semibold">{branch.label}</h4>
                 <span
-                  className={`rounded-[var(--radius-sm)] border px-2 py-0.5 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] ${
+                  className={`rounded-[var(--radius-sm)] border px-2 py-0.5 font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] ${
                     hasRoot
                       ? "border-[var(--color-success-line)] bg-[var(--color-success-soft)] text-[var(--color-success)]"
                       : "border-dashed border-[var(--color-line-strong)] text-[var(--color-ink-muted)]"

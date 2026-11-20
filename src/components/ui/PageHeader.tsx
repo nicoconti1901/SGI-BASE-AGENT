@@ -23,14 +23,14 @@ export function PageHeader({
   return (
     <header className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
-        <p className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+        <p className="font-[family-name:var(--font-mono)] text-sm font-medium text-[var(--color-ink-muted)]">
           {eyebrow}
         </p>
         <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight">
           {title}
         </h1>
         {purpose ? (
-          <p className="mt-2 text-[var(--color-ink-muted)]">{purpose}</p>
+          <p className="mt-2 max-w-[70ch] text-base leading-relaxed text-[var(--color-ink)]">{purpose}</p>
         ) : null}
         {guideHref ? (
           <p className="mt-2">

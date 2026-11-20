@@ -77,7 +77,7 @@ export default async function SafetySummaryPage({ params, searchParams }: { para
       </section>
 
       <section aria-label="Índices" className="flex flex-col gap-2">
-        <h3 className="font-semibold">Índices del período</h3>
+        <h3 className="sgi-h3">Índices del período</h3>
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-[var(--color-ink)] text-left">
@@ -132,7 +132,7 @@ export default async function SafetySummaryPage({ params, searchParams }: { para
       </section>
 
       <section aria-label="Eventos" className="flex flex-col gap-2">
-        <h3 className="font-semibold">Eventos del período</h3>
+        <h3 className="sgi-h3">Eventos del período</h3>
         <p className="text-sm text-[var(--color-ink-muted)]">Hechos laborales, con o sin horas cargadas. Sin nombres.</p>
         <ul className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-3">
           {(["fatal", "lost_time", "no_lost_time", "first_aid", "near_miss", "occupational_disease"] as const).map((k) => (
@@ -148,7 +148,7 @@ export default async function SafetySummaryPage({ params, searchParams }: { para
       </section>
 
       <section aria-label="Resultados por sede" className="flex flex-col gap-2">
-        <h3 className="font-semibold">Por sede</h3>
+        <h3 className="sgi-h3">Por sede</h3>
         {summary.perSite.length === 0 ? (
           <p className="text-sm">No hay sedes activas.</p>
         ) : (
@@ -190,7 +190,7 @@ export default async function SafetySummaryPage({ params, searchParams }: { para
       </section>
 
       <section aria-label="Decisiones de la dirección" className="flex flex-col gap-3 text-sm">
-        <h3 className="font-semibold">Revisión por la dirección</h3>
+        <h3 className="sgi-h3">Revisión por la dirección</h3>
         <p>Observaciones y decisiones (acciones, recursos, cambios en los objetivos):</p>
         <div className="h-24 rounded-[var(--radius-md)] border border-[var(--color-ink)]" />
         <div className="grid gap-6 sm:grid-cols-2">

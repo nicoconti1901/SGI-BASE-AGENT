@@ -78,7 +78,7 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
                     <Link href={`${base}/people/${r.person.id}`} className="font-medium text-[var(--color-accent)] hover:underline">
                       {r.person.name}
                     </Link>
-                    <span className="block font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-muted)]">{r.person.employeeCode}</span>
+                    <span className="block font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-muted)]">{r.person.employeeCode}</span>
                   </td>
                   <td className="px-4 py-2.5">{r.person.position.name}</td>
                   <td className="px-4 py-2.5">

@@ -156,7 +156,7 @@ export async function ExternalAuditView({
         )}
         {canPlan && audit.status !== "cancelled" ? (
           <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-[var(--color-card-line)] p-4">
-            <h3 className="text-sm font-semibold">Registrar hallazgo</h3>
+            <h3 className="sgi-h3">Registrar hallazgo</h3>
             <p className="text-xs text-[var(--color-ink-muted)]">
               Se crea como borrador en Hallazgos: completá la causa y las medidas y publicalo.
             </p>

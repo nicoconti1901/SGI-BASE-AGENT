@@ -68,7 +68,7 @@ function MeasureStatusCell({
         return (
           <li key={`${m.kind}-${i}-${m.title}`} className="flex items-center gap-1.5">
             <span
-              className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] px-1.5 py-0.5 text-[11px] font-semibold"
+              className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] px-1.5 py-0.5 text-xs font-semibold"
               style={{ background: tone.bg, color: tone.fg }}
               title={`${kindLabel}: ${m.title}`}
             >
@@ -79,7 +79,7 @@ function MeasureStatusCell({
               />
               {MEASURE_STATUS_LABELS[status]}
             </span>
-            <span className="truncate text-[11px] text-[var(--color-ink-muted)]">
+            <span className="truncate text-xs text-[var(--color-ink-muted)]">
               {kindLabel === "Correctiva" ? "Corr." : "Prev."}
             </span>
           </li>

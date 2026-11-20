@@ -188,7 +188,7 @@ export function SessionForm({ slug, today, courses, sites, positions, members, p
       </section>
 
       <section aria-label="Asistentes" className="flex flex-col gap-3">
-        <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">Asistentes · {selectedIds.length} elegido(s)</h3>
+        <h3 className="sgi-h3">Asistentes · {selectedIds.length} elegido(s)</h3>
         <div className="grid gap-3 sm:grid-cols-3">
           <Field label="Buscar" hint="Nombre o legajo.">
             <input value={query} onChange={(e) => setQuery(e.target.value)} className={INPUT_CLASS} />
@@ -239,7 +239,7 @@ export function SessionForm({ slug, today, courses, sites, positions, members, p
                     </td>
                     <td className="px-3 py-2 font-medium">
                       {c.name}
-                      <span className="block font-[family-name:var(--font-mono)] text-[11px] font-normal text-[var(--color-ink-muted)]">{c.employeeCode}</span>
+                      <span className="block font-[family-name:var(--font-mono)] text-xs font-normal text-[var(--color-ink-muted)]">{c.employeeCode}</span>
                     </td>
                     <td className="px-3 py-2 text-[var(--color-ink-muted)]">
                       {c.positionName} · {c.siteName}
