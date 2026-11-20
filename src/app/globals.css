@@ -27,6 +27,15 @@ summary:focus-visible,
   outline-offset: 2px;
 }
 
+/* Subtítulo (h3) único: misma fuente, tamaño y peso en toda la plataforma. */
+.sgi-h3 {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-ink);
+}
+
 /* Entrada suave de bloques (opacity + 6px, 220ms). */
 @keyframes sgi-enter {
   from {

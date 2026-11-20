@@ -114,7 +114,7 @@ function Preview({ preview, fileName }: { preview: ExposureImportPreviewView; fi
 
       {preview.parseErrors.length > 0 ? (
         <section aria-label="Filas con error de formato" className="flex flex-col gap-2">
-          <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">Filas con error de formato (no se importan)</h3>
+          <h3 className="sgi-h3">Filas con error de formato (no se importan)</h3>
           <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {preview.parseErrors.slice(0, SHOWN).map((e, i) => (
               <li key={i} className="px-4 py-2">
@@ -130,7 +130,7 @@ function Preview({ preview, fileName }: { preview: ExposureImportPreviewView; fi
 
       {preview.items.length > 0 ? (
         <section aria-label="Qué va a pasar" className="flex flex-col gap-2">
-          <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">Qué va a pasar</h3>
+          <h3 className="sgi-h3">Qué va a pasar</h3>
           <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)] text-sm">
             {preview.items.slice(0, SHOWN).map((i) => (
               <li key={i.line} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">

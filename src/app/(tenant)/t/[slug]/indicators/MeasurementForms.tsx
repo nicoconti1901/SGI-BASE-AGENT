@@ -38,7 +38,7 @@ export function RecordMeasurementForm({
   const form = useKeepInputs(action, state, { resetOnSuccess: true });
   return (
     <form {...form} className="sgi-form flex flex-col gap-3 p-4">
-      <h3 className="text-sm font-semibold">Cargar {periodLabel}</h3>
+      <h3 className="sgi-h3">Cargar {periodLabel}</h3>
       <Field label={`Valor (${unit})`}>
         <input name="value" inputMode="decimal" required className={INPUT_CLASS} />
       </Field>

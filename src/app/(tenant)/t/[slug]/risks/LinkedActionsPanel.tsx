@@ -181,7 +181,7 @@ export function LinkedActionsPanel({
           action={createAction}
           className="sgi-form flex flex-col gap-4 p-4"
         >
-          <h3 className="text-base font-semibold">Nueva acción</h3>
+          <h3 className="sgi-h3">Nueva acción</h3>
           {createState.error ? <FormError>{createState.error}</FormError> : null}
           {createState.ok ? (
             <p role="status" className="text-sm text-[var(--color-success)]">

@@ -110,7 +110,7 @@ export function DueRail({ children, title = "Próximos vencimientos", action }: 
   return (
     <div className="flex flex-col gap-2 border-t border-[var(--color-line)] px-4 py-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-[family-name:var(--font-mono)] text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+        <h2 className="font-[family-name:var(--font-mono)] text-xs font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
           {title}
         </h2>
         <div className="flex items-center gap-2">

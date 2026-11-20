@@ -119,7 +119,7 @@ export async function IncidentFichaCard({
       ) : null}
 
       <div className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-4">
-        <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">Persona afectada y lesión</h3>
+        <h3 className="sgi-h3">Persona afectada y lesión</h3>
         {!ficha.healthVisible ? (
           <p className="text-sm text-[var(--color-ink-muted)]">Los datos de salud no se muestran al personal de plataforma.</p>
         ) : health ? (
@@ -166,7 +166,7 @@ export async function IncidentFichaCard({
 
       {ficha.healthVisible ? (
         <div className="flex flex-col gap-3 border-t border-[var(--color-line)] pt-4">
-          <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">Seguimiento</h3>
+          <h3 className="sgi-h3">Seguimiento</h3>
           <ol className="divide-y divide-[var(--color-line)] rounded-[var(--radius-md)] border border-[var(--color-card-line)]">
             {followUps.map((f) => (
               <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">

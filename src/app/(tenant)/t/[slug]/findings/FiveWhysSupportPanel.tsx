@@ -40,7 +40,7 @@ export function FiveWhysSupportPanel() {
       {open ? (
         <div className="space-y-5 border-t border-[var(--color-line)] px-4 py-4 text-sm text-[var(--color-ink-muted)]">
           <section>
-            <h3 className="font-semibold text-[var(--color-ink)]">
+            <h3 className="sgi-h3">
               Para qué sirve
             </h3>
             <p className="mt-1">
@@ -57,7 +57,7 @@ export function FiveWhysSupportPanel() {
           </section>
 
           <section>
-            <h3 className="font-semibold text-[var(--color-ink)]">
+            <h3 className="sgi-h3">
               Secuencia profesional
             </h3>
             <ol className="mt-2 space-y-1.5">
@@ -76,7 +76,7 @@ export function FiveWhysSupportPanel() {
           </section>
 
           <section>
-            <h3 className="font-semibold text-[var(--color-ink)]">
+            <h3 className="sgi-h3">
               {BRANCHING_GUIDANCE.title}
             </h3>
             <p className="mt-1">{BRANCHING_GUIDANCE.summary}</p>
@@ -94,7 +94,7 @@ export function FiveWhysSupportPanel() {
           </section>
 
           <section>
-            <h3 className="font-semibold text-[var(--color-ink)]">
+            <h3 className="sgi-h3">
               Ejemplos industriales (condensados)
             </h3>
             <div className="mt-2 flex flex-wrap gap-2">

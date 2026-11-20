@@ -10,7 +10,7 @@ import { formatDateEs } from "@/domain/inspections/dates";
 import { Button, EmptyState, Field, INPUT_CLASS, SectionBlock, StatGrid, StatTile, buttonClass } from "@/components/ui";
 
 const th = "px-4 py-2.5 font-semibold";
-const THEAD = "border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
+const THEAD = "border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
 
 const TILES: { group: StatusGroup; tone: "default" | "danger" | "warning" }[] = [
   { group: "valid", tone: "default" },
@@ -88,7 +88,7 @@ export default async function InstrumentsPage({ params, searchParams }: { params
 
       <section aria-label="Plan de calibración y próximos vencimientos" className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div className="flex flex-col gap-3">
-          <h3 className="text-sm font-semibold">Cumplimiento del plan</h3>
+          <h3 className="sgi-h3">Cumplimiento del plan</h3>
           <StatGrid cols={2} aria-label="Cumplimiento del plan de calibración">
             <StatTile label="Equipos utilizables" value={pct(compliance.usable, compliance.controlled)} tone={compliance.controlled > 0 && compliance.usable < compliance.controlled ? "warning" : "default"} />
             <StatTile label="Recalibrados a tiempo" value={pct(compliance.onTime, compliance.renewals)} tone={compliance.renewals > 0 && compliance.onTime < compliance.renewals ? "warning" : "default"} />
@@ -98,7 +98,7 @@ export default async function InstrumentsPage({ params, searchParams }: { params
           </p>
         </div>
         <div className="flex flex-col gap-3">
-          <h3 className="text-sm font-semibold">Vencen en los próximos 30 días ({upcoming.total})</h3>
+          <h3 className="sgi-h3">Vencen en los próximos 30 días ({upcoming.total})</h3>
           {upcoming.items.length === 0 ? (
             <p className="text-sm text-[var(--color-ink-muted)]">Ningún equipo vence en los próximos 30 días.</p>
           ) : (

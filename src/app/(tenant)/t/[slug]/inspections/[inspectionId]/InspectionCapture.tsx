@@ -166,7 +166,7 @@ export function InspectionCapture(props: CaptureProps) {
     return (
       <div className="flex flex-col gap-5 pb-24">
         <section aria-label="Resultado" className="flex flex-col gap-3 sgi-form p-5">
-          <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">Paso 3 · Revisar y cerrar</p>
+          <p className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">Paso 3 · Revisar y cerrar</p>
           {derived?.result ? (
             <>
               <div className="flex flex-wrap items-center gap-3">
@@ -201,7 +201,7 @@ export function InspectionCapture(props: CaptureProps) {
         {worst && proposedDue ? (
           <section aria-label="Seguimiento" className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] p-5">
             <div>
-              <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">Qué se hace con lo que no cumplió</h3>
+              <h3 className="sgi-h3">Qué se hace con lo que no cumplió</h3>
               <p className="text-sm text-[var(--color-ink-muted)]">
                 Al cerrar se crea una acción de seguimiento con estas no conformidades. El plazo propuesto es de 48 h si hay una crítica, 7 días si la más grave es mayor y 30 días si es menor.
                 {derived?.result === "unfit" ? " El activo queda fuera de servicio hasta una reinspección apta." : ""}
@@ -280,7 +280,7 @@ export function InspectionCapture(props: CaptureProps) {
   return (
     <div className="flex flex-col gap-5 pb-28">
       <header className="flex flex-col gap-1">
-        <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">Paso 2 · Control</p>
+        <p className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">Paso 2 · Control</p>
         <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold">{props.assetCode}</h2>
         <p className="text-sm text-[var(--color-ink-muted)]">
           {props.assetSummary} · {props.siteName}
@@ -391,7 +391,7 @@ function ItemCard({
       <div className="flex flex-col gap-1">
         <p className="font-semibold leading-snug">{item.text}</p>
         {scoring ? (
-          <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{CRITICALITY_LABELS[e.criticality]}</p>
+          <p className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{CRITICALITY_LABELS[e.criticality]}</p>
         ) : null}
         {item.help ? <p className="text-xs text-[var(--color-ink-muted)]">{item.help}</p> : null}
       </div>

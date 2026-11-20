@@ -28,7 +28,7 @@ export function IndexCard({ title, help, unit, value, decimals, noCases, noData,
   const muted = value === null && !noCases;
   return (
     <article className="flex flex-col gap-1.5 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-4 shadow-[var(--shadow-card)]">
-      <h3 className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{title}</h3>
+      <h3 className="sgi-h3">{title}</h3>
       <p className={`font-[family-name:var(--font-display)] text-[1.75rem] font-semibold leading-tight tabular-nums ${muted ? "text-[var(--color-ink-muted)]" : ""}`}>{display}</p>
       <p className="text-xs text-[var(--color-ink-muted)]">{noData || muted ? help : unit}</p>
       {trend && trendAgainst ? (

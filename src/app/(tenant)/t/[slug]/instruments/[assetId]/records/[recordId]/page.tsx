@@ -11,7 +11,7 @@ import { formatDateEs, isoFromDate, todayIso } from "@/domain/inspections/dates"
 import { SectionBlock, StatusChip } from "@/components/ui";
 
 const th = "px-3 py-2 font-semibold";
-const THEAD = "border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
+const THEAD = "border-b border-[var(--color-line)] bg-[var(--color-surface-sunken)] font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]";
 const es = (v: { toString(): string } | null | undefined) => (v === null || v === undefined ? "—" : v.toString().replace(".", ","));
 const dateOrDash = (d: Date | null) => (d ? formatDateEs(isoFromDate(d)) : "—");
 
@@ -21,7 +21,7 @@ function PointsTable({ title, points }: { title: string; points: RecordDetail["p
   if (points.length === 0) return null;
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold">{title}</h3>
+      <h3 className="sgi-h3">{title}</h3>
       <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <caption className="sr-only">{title}</caption>

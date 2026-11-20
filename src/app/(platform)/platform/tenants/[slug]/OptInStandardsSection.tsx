@@ -9,7 +9,7 @@ export async function OptInStandardsSection({ slug, tenantId }: { slug: string; 
   const offered = new Set(await listOfferedStandards(tenantId));
 
   return (
-    <SectionBlock
+    <SectionBlock framed={false}
       title="Normas opcionales"
       eyebrow="Alcance del cliente"
       what="Normas que no vienen en la plantilla de una empresa nueva. Al adoptarla, sus requisitos se suman a la empresa y la norma pasa a ofrecerse en objetivos y auditorías."

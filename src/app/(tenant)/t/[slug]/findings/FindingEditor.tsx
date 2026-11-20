@@ -403,7 +403,7 @@ export function FindingEditor({
       </section>
 
       <section className="rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface)] p-4">
-        <h3 className="font-medium">Revisión antes de publicar</h3>
+        <h3 className="sgi-h3">Revisión antes de publicar</h3>
         {blockers.length === 0 ? (
           <p className="mt-2 text-sm text-[var(--color-success)]">
             Listo para publicar.

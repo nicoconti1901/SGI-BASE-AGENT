@@ -122,7 +122,7 @@ export default async function RisksRegisterPage({ params }: { params: Params }) 
         <StatTile label="Con revisión vencida" value={register.counts.stale} />
       </StatGrid>
 
-      <SectionBlock
+      <SectionBlock framed={false}
         title="Riesgos"
         what="Lo que podría salir mal y afectar a un proceso, al cliente o a un requisito."
         next="Abrí cada uno para dar el próximo paso que indica su tarjeta."
@@ -138,7 +138,7 @@ export default async function RisksRegisterPage({ params }: { params: Params }) 
         )}
       </SectionBlock>
 
-      <SectionBlock
+      <SectionBlock framed={false}
         title="Oportunidades"
         what="Lo favorable que se podría aprovechar para mejorar."
         next="Abrí cada una para evaluarla, decidir si se persigue y cargar sus acciones."
@@ -158,7 +158,7 @@ export default async function RisksRegisterPage({ params }: { params: Params }) 
         <SectionBlock title="Acciones" what="Las acciones de todos los riesgos y oportunidades.">
           {register.openActions.length > 0 ? (
             <div>
-              <h3 className="text-sm font-semibold">En curso</h3>
+              <h3 className="sgi-h3">En curso</h3>
               <ul className="mt-1 flex flex-col gap-1 text-sm">
                 {register.openActions.map((a) => (
                   <li key={a.id} className="text-[var(--color-ink-muted)]">
@@ -171,7 +171,7 @@ export default async function RisksRegisterPage({ params }: { params: Params }) 
           ) : null}
           {register.actionsNeedingEffectiveness.length > 0 ? (
             <div>
-              <h3 className="text-sm font-semibold">Completadas, falta evaluar su eficacia</h3>
+              <h3 className="sgi-h3">Completadas, falta evaluar su eficacia</h3>
               <ul className="mt-1 flex flex-col gap-1 text-sm">
                 {register.actionsNeedingEffectiveness.map((a) => (
                   <li key={a.id}>{a.title}</li>

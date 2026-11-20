@@ -104,7 +104,7 @@ export function EvaluationForm({ slug, kind, id, today, suggestedReschedule, sug
       </section>
 
       <section aria-label="Excepciones por persona" className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold">Excepciones</h3>
+        <h3 className="sgi-h3">Excepciones</h3>
         <p className="text-sm text-[var(--color-ink-muted)]">Tildá a quien tuvo un resultado distinto del general.</p>
         <ul className="divide-y divide-[var(--color-line)] rounded-[var(--radius-lg)] border border-[var(--color-card-line)]">
           {people.map((p) => {
@@ -148,7 +148,7 @@ export function EvaluationForm({ slug, kind, id, today, suggestedReschedule, sug
 
       {someoneFails ? (
         <section aria-label="Qué hacer con lo que no fue eficaz" className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-warning-line)] bg-[var(--color-warning-soft)] p-4">
-          <h3 className="text-sm font-semibold">Hay personas a las que no les fue eficaz</h3>
+          <h3 className="sgi-h3">Hay personas a las que no les fue eficaz</h3>
           <p className="text-sm">Elegí qué hacer: crear una acción para reforzar o evaluar de nuevo más adelante.</p>
           <fieldset className="flex flex-col gap-2">
             <legend className="sr-only">Qué hacer</legend>

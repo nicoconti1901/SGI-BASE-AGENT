@@ -12,7 +12,7 @@ const date = (d: Date) => d.toLocaleDateString("es-AR", { timeZone: "UTC" });
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{label}</dt>
+      <dt className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">{label}</dt>
       <dd className="mt-0.5 text-sm">{children}</dd>
     </div>
   );

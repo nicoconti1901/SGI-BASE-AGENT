@@ -142,7 +142,7 @@ export function GapAssessmentForm({
                     <span className="rounded-[var(--radius-sm)] bg-[var(--color-surface)] px-2 py-1 text-xs">
                       {DOCUMENT_FATE_LABELS[fateHint]}
                     </span>
-                    <p className="mt-1 text-[10px] text-[var(--color-ink-subtle)]">
+                    <p className="mt-1 text-xs text-[var(--color-ink-subtle)]">
                       Se recalcula al guardar
                     </p>
                   </td>

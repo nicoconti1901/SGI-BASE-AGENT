@@ -10,6 +10,8 @@ type SectionBlockProps = {
   actions?: React.ReactNode;
   children?: React.ReactNode;
   id?: string;
+  /** false = sin caja propia: título grande con línea arriba (para secciones que ya contienen tarjetas o listas con marco). */
+  framed?: boolean;
 };
 
 /** Sección con marco: card con borde + encabezado separado por hairline. */
@@ -21,28 +23,35 @@ export function SectionBlock({
   actions,
   children,
   id,
+  framed = true,
 }: SectionBlockProps) {
   return (
     <section
       id={id}
-      className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-card)] sm:p-6"
+      className={
+        framed
+          ? "flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] p-5 shadow-[var(--shadow-card)] sm:p-6"
+          : "flex flex-col gap-4 border-t-2 border-[var(--color-line-strong)] pt-5"
+      }
     >
-      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--color-line)] pb-3">
+      <header
+        className={`flex flex-wrap items-start justify-between gap-3 ${framed ? "border-b border-[var(--color-line)] pb-3" : ""}`}
+      >
         <div className="min-w-0">
           {eyebrow ? (
-            <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+            <p className="font-[family-name:var(--font-mono)] text-xs font-medium text-[var(--color-ink-muted)]">
               {eyebrow}
             </p>
           ) : null}
-          <h2 className="flex items-center gap-2 font-[family-name:var(--font-display)] text-lg font-semibold tracking-tight">
+          <h2 className="flex items-center gap-2 font-[family-name:var(--font-display)] text-[1.375rem] font-semibold leading-snug tracking-tight">
             <span aria-hidden className="h-0.5 w-4 shrink-0 bg-[var(--color-accent)]" />
             {title}
           </h2>
           {what ? (
-            <p className="mt-0.5 text-sm text-[var(--color-ink-muted)]">{what}</p>
+            <p className="mt-1 max-w-[70ch] text-base leading-relaxed text-[var(--color-ink)]">{what}</p>
           ) : null}
           {next ? (
-            <p className="mt-1 text-sm">
+            <p className="mt-1 max-w-[70ch] text-base leading-relaxed text-[var(--color-ink)]">
               <span className="font-semibold">Qué hacer:</span> {next}
             </p>
           ) : null}

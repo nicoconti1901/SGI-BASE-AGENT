@@ -135,7 +135,7 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
           </p>
 
           {groups.map((g) => (
-            <SectionBlock
+            <SectionBlock framed={false}
               key={g.standard}
               id={`norma-${g.standard}`}
               title={AUDIT_STANDARD_LABELS[g.standard]}
@@ -172,7 +172,7 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
                   children:
                     r.indicators.length === 0 ? null : (
                       <div className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)]">
-                        <p className="border-b border-[var(--color-line)] px-3 py-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+                        <p className="border-b border-[var(--color-line)] px-3 py-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
                           Indicadores de este objetivo
                         </p>
                         <ul className="divide-y divide-[var(--color-line)]">
@@ -180,7 +180,7 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
                             <li key={i.id} className="flex flex-col gap-2 px-3 py-3">
                               <div className="flex flex-wrap items-center justify-between gap-3">
                                 <p className="min-w-0 break-words">
-                                  <span className="mr-2 rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+                                  <span className="mr-2 rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
                                     Indicador
                                   </span>
                                   <Link
@@ -227,7 +227,7 @@ export default async function IndicatorsPage({ params }: { params: Promise<{ slu
           ))}
 
           {closed.length > 0 ? (
-            <SectionBlock id="cerrados" title="Cerrados">
+            <SectionBlock framed={false} id="cerrados" title="Cerrados">
               <EntityList aria-label="Objetivos cerrados">
                 {closed.map((r) => (
                   <EntityRow

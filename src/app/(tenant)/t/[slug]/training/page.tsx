@@ -62,7 +62,7 @@ export default async function TrainingHomePage({ params, searchParams }: { param
               return (
                 <li key={s.siteId} className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-card-line)] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="font-[family-name:var(--font-display)] text-base font-semibold">
+                    <h3 className="sgi-h3">
                       <Link href={`${base}/compliance?sede=${s.siteId}`} className="hover:underline">
                         {siteName.get(s.siteId) ?? "Sede"}
                       </Link>

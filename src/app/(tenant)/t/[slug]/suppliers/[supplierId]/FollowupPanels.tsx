@@ -97,7 +97,7 @@ export function FindingsPanel({
       ) : null}
       {canRegister ? (
         <div className="mt-6 flex flex-col gap-3 border-t border-[var(--color-line)] pt-4">
-          <h3 className="font-[family-name:var(--font-display)] text-lg">Registrar un hallazgo</h3>
+          <h3 className="sgi-h3">Registrar un hallazgo</h3>
           <NewSupplierFindingForm slug={slug} supplierId={supplierId} today={today} />
         </div>
       ) : null}
@@ -160,7 +160,7 @@ export function CommunicationsPanel({
       )}
       {canRegister ? (
         <div className="mt-6 flex flex-col gap-3 border-t border-[var(--color-line)] pt-4">
-          <h3 className="font-[family-name:var(--font-display)] text-lg">Registrar una comunicación</h3>
+          <h3 className="sgi-h3">Registrar una comunicación</h3>
           <CommunicationForm
             slug={slug}
             supplierId={supplierId}

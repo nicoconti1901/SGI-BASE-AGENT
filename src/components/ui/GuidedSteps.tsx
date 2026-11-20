@@ -125,7 +125,7 @@ export function GuidedSteps({
           const body = (
             <>
               <span
-                className={`block font-[family-name:var(--font-mono)] text-[11px] tracking-[0.06em] ${
+                className={`block font-[family-name:var(--font-mono)] text-xs tracking-[0.06em] ${
                   isDone && !isCurrent ? "text-[var(--color-success)]" : "text-[var(--color-ink-subtle)]"
                 }`}
               >
@@ -171,7 +171,7 @@ export function GuidedSteps({
             >
               {isCurrent ? (
                 <div>
-                  <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+                  <p className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
                     Paso {i + 1} de {steps.length}
                   </p>
                   <h3 className="font-[family-name:var(--font-display)] text-xl">{step.title}</h3>
@@ -196,7 +196,7 @@ export function GuidedSteps({
                 </div>
               ) : (
                 <p className="text-sm text-[var(--color-ink-muted)]">
-                  <span className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.06em]">
+                  <span className="font-[family-name:var(--font-mono)] text-xs tracking-[0.06em]">
                     {String(i + 1).padStart(2, "0")} ·{" "}
                   </span>
                   {step.title}

@@ -130,7 +130,7 @@ export default async function CompliancePage({ params, searchParams }: { params:
                       <Link href={`${base}/people/${p.id}`} className="text-[var(--color-accent)] hover:underline">
                         {p.name}
                       </Link>
-                      <span className="block font-[family-name:var(--font-mono)] text-[11px] font-normal text-[var(--color-ink-muted)]">{p.employeeCode}</span>
+                      <span className="block font-[family-name:var(--font-mono)] text-xs font-normal text-[var(--color-ink-muted)]">{p.employeeCode}</span>
                     </th>
                     {page.columns.map((c) => {
                       const cell = cells.get(`${p.id}|${c.id}`);

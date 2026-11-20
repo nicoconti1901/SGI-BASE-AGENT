@@ -107,7 +107,7 @@ export default async function ObjectivePage({
                     : "border-[var(--color-warning)] bg-[var(--color-warning-soft)] font-semibold text-[var(--color-warning)]"
                 }`}
               >
-                <span className="block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em]">
+                <span className="block font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em]">
                   {String(i + 1).padStart(2, "0")} · {s.done ? "Listo" : "Falta"}
                 </span>
                 {s.label}
@@ -183,7 +183,7 @@ export default async function ObjectivePage({
               ]}
             />
             <div className="flex flex-col gap-2 border-t border-[var(--color-line)] pt-4">
-              <h3 className="text-sm font-semibold">Plan</h3>
+              <h3 className="sgi-h3">Plan</h3>
               {hasStructuredPlan(plan) ? (
                 <>
                   {planSteps.length > 0 ? (
@@ -249,7 +249,7 @@ export default async function ObjectivePage({
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <span className="rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
+                      <span className="rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-xs uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
                         Indicador
                       </span>
                       <p className="mt-1 break-words font-semibold">
@@ -311,7 +311,7 @@ export default async function ObjectivePage({
               id="agregar-indicador"
               className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-accent)] bg-[var(--color-surface-raised)] p-5"
             >
-              <h3 className="font-[family-name:var(--font-display)] text-lg">
+              <h3 className="sgi-h3">
                 {objective.indicators.length === 0 ? "Agregá el indicador del objetivo" : "Agregar otro indicador"}
               </h3>
               <CreateIndicatorForm slug={slug} objectiveId={objective.id} members={options} />
