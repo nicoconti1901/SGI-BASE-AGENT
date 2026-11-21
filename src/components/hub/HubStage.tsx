@@ -129,7 +129,7 @@ export function HubStage({ children }: { children: React.ReactNode }) {
   return (
     <div className="sgi-stage">
       <StageArt />
-      <div className="flex flex-col gap-8 px-4 py-6 sm:px-8 sm:py-8">{children}</div>
+      <div className="flex h-full flex-col gap-4 p-3 sm:p-4">{children}</div>
     </div>
   );
 }

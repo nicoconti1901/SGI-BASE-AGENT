@@ -11,11 +11,13 @@ import {
   nextVersionNumber,
   resolveUploadContentType,
 } from "@/domain/documents/versioning";
+import { isDocumentKind, type DocumentKind } from "@/domain/documents/folders";
 
 export type UploadDocumentInput = {
   tenantId: string;
   title: string;
-  kind?: string;
+  /** Carpeta del documento; al agregar una versión, si viene, lo mueve. */
+  kind?: DocumentKind;
   fate?: DocumentFate;
   tenantRequirementId?: string | null;
   validFrom?: Date | null;
@@ -107,6 +109,9 @@ export async function uploadTenantDocument(
 
   if (!isAllowedUploadContentType(contentType)) {
     throw new Error(`Tipo de archivo no permitido: ${input.contentType}`);
+  }
+  if (input.kind !== undefined && !isDocumentKind(input.kind)) {
+    throw new Error("Carpeta de documento inválida");
   }
   if (input.body.length === 0) {
     throw new Error("El archivo está vacío");
@@ -238,6 +243,7 @@ async function addVersionToDocument(
       ...(input.validFrom !== undefined ? { validFrom: input.validFrom } : {}),
       ...(input.validUntil !== undefined ? { validUntil: input.validUntil } : {}),
       ...(input.fate ? { fate: input.fate } : {}),
+      ...(input.kind ? { kind: input.kind } : {}),
       ...(input.title?.trim() ? { title: input.title.trim() } : {}),
       ...(input.tenantRequirementId !== undefined
         ? { tenantRequirementId: input.tenantRequirementId }
