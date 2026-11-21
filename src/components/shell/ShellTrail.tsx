@@ -9,6 +9,9 @@ export function ShellTrail({ index }: { index: TrailIndex }) {
   const pathname = usePathname();
   const crumbs = crumbsFor(pathname, index);
 
+  // En el inicio solo hay un tramo ("Inicio"): no aporta nada, no se muestra.
+  if (crumbs.length <= 1) return null;
+
   return (
     <nav aria-label="Ruta" className="min-w-0">
       <ol className="flex min-w-0 items-center gap-1.5 overflow-x-auto text-sm">

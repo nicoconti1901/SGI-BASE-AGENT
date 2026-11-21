@@ -7,15 +7,14 @@ import { getTenantDashboard } from "@/lib/dashboard";
 import { getEnabledModulesCached } from "@/lib/modules";
 import { canTenantRole } from "@/domain/identity/authz";
 import { hubAreas } from "@/domain/modules/hub";
-import { PageFrame, PageHeader } from "@/components/ui";
-import { HubStage, HubSteps } from "@/components/hub/HubStage";
+import { PageFrame } from "@/components/ui";
+import { HubStage } from "@/components/hub/HubStage";
 import { AreaGrid } from "@/components/hub/AreaGrid";
 import {
   ComplianceBar,
   DueMiniList,
   TelemetryCounts,
   TelemetryHeading,
-  TelemetryPanel,
 } from "@/components/hub/Telemetry";
 
 type Params = Promise<{ slug: string }>;
@@ -39,7 +38,6 @@ export default async function TenantPortalBySlugPage({ params }: { params: Param
   const canWrite = canTenantRole(membership?.role, "write", {
     isPlatformSuperuser: ctx.isPlatformSuperuser,
   });
-  const firstName = ctx.name.split(" ")[0] || ctx.name;
 
   const [{ compliance, dueItems, dueCounts }, enabled] = await Promise.all([
     getTenantDashboard(tenant.id, new Date(), slug),
@@ -48,21 +46,22 @@ export default async function TenantPortalBySlugPage({ params }: { params: Param
   const areas = hubAreas(slug, enabled, canWrite);
 
   return (
-    <PageFrame width="7xl">
-      <PageHeader
-        eyebrow={`${tenant.name} · ISO 9001 · 14001 · 45001`}
-        title={`Hola, ${firstName}`}
-        purpose="Elegí un módulo para entrar. Adentro vas a ver sus pantallas, cada una con su nombre."
-      />
-
+    <PageFrame width="7xl" fill>
       <HubStage>
-        <HubSteps current={1} />
         <nav aria-label="Principal" className="sgi-hub-areas">
           <AreaGrid areas={areas} />
         </nav>
       </HubStage>
 
-      <TelemetryPanel title="Estado del sistema">
+      <details className="group overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-card-line)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-card)]">
+        <summary className="flex cursor-pointer items-center justify-between gap-3 bg-[var(--color-surface-sunken)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-ink-muted)]">
+          <span>Estado del sistema</span>
+          <span className="font-normal normal-case tracking-normal text-[var(--color-ink-subtle)]">
+            <span className="group-open:hidden">Ver estado ▾</span>
+            <span className="hidden group-open:inline">Ocultar ▴</span>
+          </span>
+        </summary>
+        <div className="border-t border-[var(--color-line)]">
         <div className="grid grid-cols-1 divide-y divide-[var(--color-line)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.25fr)] lg:divide-x lg:divide-y-0">
           <TelemetryCounts
             items={[
@@ -127,7 +126,8 @@ export default async function TenantPortalBySlugPage({ params }: { params: Param
             )}
           </div>
         </div>
-      </TelemetryPanel>
+        </div>
+      </details>
     </PageFrame>
   );
 }

@@ -192,11 +192,8 @@ describe("tenant panel adopts ui primitives", () => {
     // Inicio = hub de módulos + tablero chico de referencia.
     for (const symbol of [
       "PageFrame",
-      "PageHeader",
       "HubStage",
-      "HubSteps",
       "AreaGrid",
-      "TelemetryPanel",
       "TelemetryCounts",
       "ComplianceBar",
       "DueMiniList",
