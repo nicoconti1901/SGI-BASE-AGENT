@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { DOCUMENT_FATE_LABELS, type DocumentFate } from "@/domain/assessment/gap";
+import { DOCUMENT_FOLDERS, DOCUMENT_KIND_LABELS } from "@/domain/documents/folders";
 import {
   uploadDocumentAction,
   type UploadDocumentState,
@@ -70,6 +71,32 @@ export function UploadDocumentForm({
           required
           className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
         />
+      </label>
+
+      <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
+        Carpeta
+        <select
+          name="kind"
+          defaultValue=""
+          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
+        >
+          <option value="">— Elegí la carpeta (en una versión nueva, mantiene la actual) —</option>
+          {DOCUMENT_FOLDERS.map((folder) =>
+            folder.children ? (
+              <optgroup key={folder.key} label={folder.label}>
+                {folder.children.map((child) => (
+                  <option key={child.key} value={child.kinds[0]}>
+                    {DOCUMENT_KIND_LABELS[child.kinds[0]]}
+                  </option>
+                ))}
+              </optgroup>
+            ) : (
+              <option key={folder.key} value={folder.kinds[0]}>
+                {DOCUMENT_KIND_LABELS[folder.kinds[0]]}
+              </option>
+            ),
+          )}
+        </select>
       </label>
 
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">

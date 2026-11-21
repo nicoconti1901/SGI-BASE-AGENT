@@ -27,6 +27,14 @@ export function CheckCircleIcon(p: IconProps) {
   );
 }
 
+export function FolderIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M1.75 4.25v7.5c0 .55.45 1 1 1h10.5c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1H8L6.5 3.25H2.75c-.55 0-1 .45-1 1Z" />
+    </Svg>
+  );
+}
+
 export function AlertTriangleIcon(p: IconProps) {
   return (
     <Svg {...p}>

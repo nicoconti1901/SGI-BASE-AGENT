@@ -5,6 +5,7 @@ import type { DocumentFate } from "@prisma/client";
 import { getSession } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant-provisioning";
 import { uploadTenantDocument } from "@/lib/documents";
+import { isDocumentKind } from "@/domain/documents/folders";
 
 export type UploadDocumentState = {
   error?: string;
@@ -47,6 +48,14 @@ export async function uploadDocumentAction(
   const tenantRequirementId = String(formData.get("tenantRequirementId") ?? "");
   const notes = String(formData.get("notes") ?? "");
   const documentId = String(formData.get("documentId") ?? "");
+  const kindRaw = String(formData.get("kind") ?? "");
+  if (kindRaw && !isDocumentKind(kindRaw)) {
+    return { error: "Carpeta de documento inválida" };
+  }
+  if (!kindRaw && !documentId) {
+    return { error: "Elegí la carpeta del documento" };
+  }
+  const kind = kindRaw && isDocumentKind(kindRaw) ? kindRaw : undefined;
   const validUntilRaw = String(formData.get("validUntil") ?? "");
   const validUntil = validUntilRaw ? new Date(`${validUntilRaw}T00:00:00.000Z`) : undefined;
   if (validUntil && Number.isNaN(validUntil.getTime())) {
@@ -66,6 +75,7 @@ export async function uploadDocumentAction(
     const doc = await uploadTenantDocument({
       tenantId: tenant.id,
       title,
+      kind,
       fate: fateRaw,
       tenantRequirementId: tenantRequirementId || null,
       fileName: file.name,
