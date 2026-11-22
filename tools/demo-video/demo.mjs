@@ -116,8 +116,8 @@ async function render(args) {
   console.log(`Listo: ${salida}`);
 }
 
-// -14 LUFS (lo que piden WhatsApp, Instagram y YouTube) y pico verdadero por debajo de -1,5 dBTP.
-const LOUDNESS = "I=-14:TP=-2:LRA=11";
+// -14 LUFS (lo que piden WhatsApp, Instagram y YouTube) y pico verdadero por debajo de -1 dBTP (el limitador alimiter empeoraba el pico: se quitó).
+const LOUDNESS = "I=-14:TP=-2.5:LRA=11";
 
 function medirLoudness(entrada) {
   const r = spawnSync(rutaFfmpeg(), ["-hide_banner", "-i", entrada, "-af", `loudnorm=${LOUDNESS}:print_format=json`, "-vn", "-f", "null", "-"], {
@@ -137,7 +137,7 @@ function final() {
   const m = medirLoudness(crudo);
   const segunda = `loudnorm=${LOUDNESS}:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`;
   const destino = path.join(SALIDA, "demo-sgi-base.mp4");
-  const cadena = `${segunda},aresample=48000,alimiter=limit=${10 ** (-3 / 20)}:attack=1:release=50:level=disabled`;
+  const cadena = `${segunda},aresample=48000`;
   ffmpeg(["-y", "-i", crudo, "-af", cadena, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", destino]);
 
   const cuadros = l.escenas.map((e) => e.desde + Math.floor(e.cuadros / 2));
@@ -152,7 +152,7 @@ const COMANDOS = {
   servidor: () => comprobarServidor(),
   relevar: async () => (await import("./grabar/relevar.mts")).relevar(),
   voz: () => voz(),
-  grabar: async () => (await import("./grabar/grabar.mts")).grabar(),
+  grabar: async (args) => (await import("./grabar/grabar.mts")).grabar(args),
   linea: () => linea(),
   render: (args) => render(args),
   final: () => final(),

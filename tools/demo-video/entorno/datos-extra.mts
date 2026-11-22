@@ -11,6 +11,8 @@ import { recordMeasurement } from "../../../src/lib/measurements";
 import { approveProgram, createAudit, saveAuditPlan, saveAuditReport, saveProgram, transitionAudit } from "../../../src/lib/audits";
 import { getChecklist, listChecklistCandidates, recordItemResult, setRequirementItems } from "../../../src/lib/audit-checklist";
 import { addDriver, saveDriverLicense, setDriverTask } from "../../../src/lib/road-drivers";
+import { exposureMonthOptions, getExposureGrid, saveExposure, syncExposureDueItems } from "../../../src/lib/safety-exposure";
+import { FLEET_KM_TYPE_KEYS, saveVehicleKm } from "../../../src/lib/road-safety";
 
 const SLUG = "demo-patagonia";
 const DAY = 86_400_000;
@@ -195,6 +197,36 @@ await step("Choferes y licencias", async () => {
     const persona = await db.person.findFirstOrThrow({ where: { tenantId, name: c.nombre }, select: { id: true } });
     await addDriver({ tenantId, actor, personId: persona.id }).catch(() => undefined); // ya era chofer
     await saveDriverLicense({ tenantId, actor, personId: persona.id, expiresOn: isoDay(c.vence) as never });
+  }
+});
+
+/* ---------- Accidentabilidad: horas del último mes que el seed deja sin cargar (con eso los índices dicen «sin datos») ---------- */
+await step("Horas trabajadas del último mes completo", async () => {
+  const actor = { userId: ana, role: "tenant_admin" as const, isPlatformSuperuser: false };
+  const mes = exposureMonthOptions(isoDay(0) as never)[1];
+  const sedes = await db.site.findMany({ where: { tenantId }, select: { id: true } });
+  for (const sede of sedes) {
+    const fila = (await getExposureGrid(tenantId, mes)).find((f) => f.siteId === sede.id);
+    if (!fila || (fila.own && fila.contractor)) continue;
+    await saveExposure({
+      tenantId, actor, siteId: sede.id, month: mes,
+      ...(fila.own ? {} : { own: { hours: 1480, headcountAvg: 9 } }),
+      ...(fila.contractor ? {} : { contractor: { hours: 620, headcountAvg: 4 } }),
+    });
+  }
+  await syncExposureDueItems(tenantId);
+});
+
+/* ---------- Seguridad vial: la flota existe desde hace un año y tiene km confirmados los últimos tres meses cerrados ---------- */
+await step("Flota con km de los últimos meses", async () => {
+  const actor = { userId: ana, role: "tenant_admin" as const, isPlatformSuperuser: false };
+  await db.asset.updateMany({ where: { tenantId, typeKey: { in: FLEET_KM_TYPE_KEYS } }, data: { createdAt: dias(-420) } });
+  const meses = exposureMonthOptions(isoDay(0) as never).slice(1, 13);
+  const flota = await db.asset.findMany({ where: { tenantId, typeKey: { in: FLEET_KM_TYPE_KEYS } }, select: { id: true }, orderBy: { code: "asc" } });
+  for (const [m, month] of meses.entries()) {
+    for (const [i, v] of flota.entries()) {
+      await saveVehicleKm({ tenantId, actor, assetId: v.id, month, km: 1800 + i * 450 + m * 130, reason: "Lectura del odómetro al cierre del mes" });
+    }
   }
 });
 

@@ -1,16 +1,21 @@
 // Línea de tiempo de la demo: traduce guion, voces y marcas de grabación a cuadros de salida. Es pura: Remotion solo la dibuja.
 
 export type Caja = { x: number; y: number; w: number; h: number };
-export type Tono = "oro" | "vino";
+export type Tono = "acento" | "alerta";
 
 /** `mantener`: sigue visible cuando aparece el siguiente destacado, hasta un `soltar` o el fin de la escena. */
 export type DestacadoGuion = { id: string; texto: string; icono?: string; tono: Tono; zoom?: number; mantener?: boolean };
 export type EscenaGuion = {
   id: string;
   tipo: "titulo" | "captura";
-  pantalla?: "telefono";
-  /** Nombre de la pantalla, arriba del teléfono. */
+  pantalla?: string;
+  /** Nombre de la pantalla, arriba a la izquierda de la ventana. */
   rotulo?: string;
+  /** Cláusulas de las normas que cubre la pantalla (chip a la derecha del rótulo). */
+  norma?: string;
+  /** Ideas de una escena de título: cada una entra con su palabra (`en`) en la voz. */
+  chips?: { texto: string; en: string }[];
+  llamado?: string;
   voz?: string;
   /** Segundos de la escena en que arranca la voz de un título (por defecto 0,3). */
   vozDesde?: number;
@@ -25,6 +30,7 @@ export type Guion = { voz: { nombre: string; rate: string; pitch: string }; fps:
 export type Voz = { archivo: string; segundos: number; texto?: string; palabras: [number, number, string][] };
 export type EventoMarca = {
   escena: string;
+  captura?: string;
   tipo: "inicio" | "lista" | "voz" | "fin" | "velocidad" | "destacar" | "soltar" | "cursor" | "evento";
   t: number;
   valor?: number | "ajustar";
@@ -36,7 +42,7 @@ export type EventoMarca = {
   nombre?: string;
 };
 export type CapturaMarcas = { archivo: string; primerCuadro: number; ancho: number; alto: number };
-export type Marcas = { capturas: Partial<Record<"telefono", CapturaMarcas>>; eventos: EventoMarca[] };
+export type Marcas = { capturas: Record<string, CapturaMarcas>; eventos: EventoMarca[] };
 export type EntradaLinea = { guion: Guion; voces: Record<string, Voz>; marcas: Marcas; solo?: string[] };
 
 /** Dentro de una escena, todos los cuadros son relativos a su inicio. */
@@ -49,7 +55,7 @@ export type EscenaLinea = {
   tipo: "titulo" | "captura";
   desde: number;
   cuadros: number;
-  captura?: { archivo: string; pantalla: "telefono"; ancho: number; alto: number; tramos: Tramo[] };
+  captura?: { archivo: string; pantalla: string; ancho: number; alto: number; tramos: Tramo[] };
   etiqueta?: string;
   camara: ClaveCamara[];
   destacados: DestacadoLinea[];
@@ -57,6 +63,10 @@ export type EscenaLinea = {
   rotulo?: { texto: string; desdeCuadro: number; cuadros: number };
   texto?: string[];
   contacto?: string;
+  norma?: string;
+  chips?: { texto: string; en: string }[];
+  llamado?: string;
+  textoVoz?: string;
 };
 /** En las pistas de audio y en silenciarMusica los cuadros son absolutos. */
 export type PistaAudio = {
@@ -120,9 +130,9 @@ function limitar(valor: number, minimo: number, maximo: number) {
 function armarCaptura(escena: EscenaGuion, desde: number, entrada: EntradaLinea, audio: PistaAudio[]): EscenaLinea {
   const { guion, voces, marcas } = entrada;
   const fps = guion.fps;
-  const pantalla = escena.pantalla ?? "telefono";
-  const captura = marcas.capturas[pantalla];
   const eventos = marcas.eventos.filter((e) => e.escena === escena.id).sort((a, b) => a.t - b.t);
+  const pantalla = eventos.find((e) => e.captura)?.captura ?? "ventana";
+  const captura = marcas.capturas[pantalla];
   exigir(captura && eventos.length > 0, `No hay marcas de la escena ${escena.id}: grabala con node demo.mjs grabar`);
   const voz = voces[escena.id];
   exigir(voz, `No hay voz para la escena ${escena.id}: corré node demo.mjs voz`);
@@ -229,6 +239,7 @@ function armarCaptura(escena: EscenaGuion, desde: number, entrada: EntradaLinea,
     cursor,
     rotulo,
     etiqueta: escena.rotulo,
+    norma: escena.norma,
   };
 }
 
@@ -254,6 +265,9 @@ function armarTitulo(escena: EscenaGuion, desde: number, entrada: EntradaLinea, 
     cursor: [],
     texto: escena.texto,
     contacto: escena.contacto,
+    chips: escena.chips,
+    llamado: escena.llamado,
+    textoVoz: voz?.texto,
   };
 }
 

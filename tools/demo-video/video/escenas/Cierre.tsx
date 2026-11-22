@@ -1,4 +1,4 @@
-// Cierre de DEVCEN (el de la demo de DEVCEN Campus, en vertical): "Una app desarrollada por", el ícono que se dibuja,
+// Cierre de DEVCEN (el de la demo de DEVCEN Campus, en horizontal): "Una plataforma desarrollada por", el ícono que se dibuja,
 // DEVCEN, CONNECTED SYSTEMS y el contacto. Funde a negro.
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { fuentes } from "../fuentes";
@@ -27,25 +27,25 @@ export const Cierre: React.FC<{ contacto: string; cuadros: number; voz?: PistaAu
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div
           style={{
-            marginBottom: 70,
+            marginBottom: 40,
             fontFamily: fuentes.devcenTexto,
             fontWeight: 500,
-            fontSize: 46,
+            fontSize: 42,
             letterSpacing: "0.04em",
             color: devcen.tinta,
             opacity: intro,
             transform: `translateY(${(1 - intro) * 18}px)`,
           }}
         >
-          Una app desarrollada por
+          Una plataforma desarrollada por
         </div>
-        <LogoDevcen progreso={dibujo} tamano={260} />
+        <LogoDevcen progreso={dibujo} tamano={190} />
         <div
           style={{
-            marginTop: 30,
+            marginTop: 22,
             fontFamily: fuentes.devcenTitulo,
             fontWeight: 800,
-            fontSize: 168,
+            fontSize: 128,
             lineHeight: 1,
             letterSpacing: "0.04em",
             color: devcen.titulo,
@@ -55,17 +55,17 @@ export const Cierre: React.FC<{ contacto: string; cuadros: number; voz?: PistaAu
         >
           DEV<span style={{ color: devcen.naranja }}>CEN</span>
         </div>
-        <div style={{ marginTop: 22, fontFamily: fuentes.devcenMono, fontSize: 36, letterSpacing: "0.32em", color: devcen.secundario, opacity: lema }}>
+        <div style={{ marginTop: 16, fontFamily: fuentes.devcenMono, fontSize: 30, letterSpacing: "0.32em", color: devcen.secundario, opacity: lema }}>
           CONNECTED SYSTEMS
         </div>
         <div
           style={{
-            marginTop: 70,
-            padding: "18px 40px",
+            marginTop: 44,
+            padding: "14px 36px",
             borderRadius: 12,
             border: `1px solid ${devcen.linea}`,
             fontFamily: fuentes.devcenMono,
-            fontSize: 44,
+            fontSize: 38,
             letterSpacing: "0.04em",
             color: devcen.secundario,
             opacity: contactoVisible,

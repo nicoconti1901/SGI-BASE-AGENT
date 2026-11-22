@@ -1,22 +1,21 @@
-// Audio: la voz al frente; la música de DEVCEN (la de la demo de DEVCEN Campus) en la presentación y el cierre, y el
-// tango en el medio, que baja cuando habla la voz. Entre una y otra hay un fundido cruzado.
+// Audio: la voz al frente; la música de DEVCEN entera en la presentación y el cierre, y la misma pista en bucle a −24 dB en
+// el medio, que baja cuando habla la voz. Entre una y otra hay un fundido cruzado.
 import { Audio, Sequence, interpolate, staticFile, useVideoConfig } from "remotion";
 import type { Linea } from "../linea";
 
-const TANGO = 0.24;
-const TANGO_BAJO = 0.075;
 const DEVCEN = 0.34;
 const DEVCEN_BAJO = 0.16;
+/** En el medio, la misma pista en bucle a −24 dB, y más baja todavía cuando habla la voz. */
+const MEDIO = 0.063;
+const MEDIO_BAJO = 0.03;
 const RAMPA = 8;
-const CRUCE = 24; // cuadros del fundido cruzado entre la música de DEVCEN y el tango
+const CRUCE = 24; // cuadros del fundido cruzado entre la música de la apertura, la del medio y la del cierre
 /** Segundos de "Talent in the Air" (1:54): el cierre usa su final, así la música termina con el video. */
 const DURACION_DEVCEN = 114;
-/** Segundos de "An Old-Fashioned Hat" (3:03). Si el tango tiene que durar más, vuelve a empezar con un fundido cruzado de 3 s. */
-const DURACION_TANGO = 183;
 const limitar = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
-function tramosDeTango(total: number, fps: number) {
-  const largo = Math.round((DURACION_TANGO - 1) * fps);
+function tramosDeMedio(total: number, fps: number) {
+  const largo = Math.round((DURACION_DEVCEN - 1) * fps);
   const paso = largo - 3 * fps;
   const tramos: { desde: number; cuadros: number; ultimo: boolean }[] = [];
   for (let desde = 0; desde < total; desde += paso) {
@@ -43,8 +42,8 @@ export const Pistas: React.FC<{ linea: Linea }> = ({ linea }) => {
   const cierre = linea.escenas.find((e) => e.id === "cierre")!;
   const finApertura = apertura.desde + apertura.cuadros;
   const total = linea.duracionCuadros;
-  const tangoDesde = finApertura - CRUCE;
-  const tangoCuadros = cierre.desde + CRUCE - tangoDesde;
+  const medioDesde = finApertura - CRUCE;
+  const medioCuadros = cierre.desde + CRUCE - medioDesde;
   const cierreDesde = cierre.desde - CRUCE;
   const cierreCuadros = total - cierreDesde;
 
@@ -65,12 +64,12 @@ export const Pistas: React.FC<{ linea: Linea }> = ({ linea }) => {
           }
         />
       </Sequence>
-      {tramosDeTango(tangoCuadros, fps).map((t) => (
-        <Sequence key={t.desde} from={tangoDesde + t.desde} durationInFrames={t.cuadros} layout="none">
+      {tramosDeMedio(medioCuadros, fps).map((t) => (
+        <Sequence key={t.desde} from={medioDesde + t.desde} durationInFrames={t.cuadros} layout="none">
           <Audio
-            src={staticFile("musica-tango.mp3")}
+            src={staticFile("musica-devcen.mp3")}
             volume={(f) =>
-              ducking(linea, tangoDesde + t.desde + f, TANGO, TANGO_BAJO) *
+              ducking(linea, medioDesde + t.desde + f, MEDIO, MEDIO_BAJO) *
               interpolate(f, [0, t.desde === 0 ? 2 * CRUCE : 3 * fps], [0, 1], limitar) *
               interpolate(f, [t.cuadros - (t.ultimo ? 2 * CRUCE : 3 * fps), t.cuadros], [1, 0], limitar)
             }

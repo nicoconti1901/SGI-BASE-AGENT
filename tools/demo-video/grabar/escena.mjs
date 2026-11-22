@@ -121,6 +121,10 @@ export function crearEscena({ id, page, marcas, voz, respiro = 0 }) {
       for (const l of Array.isArray(locator) ? locator : [locator]) {
         const caja = await l.boundingBox();
         if (!caja) throw new Error(`El destacado "${idDestacado}" de la escena ${id} no está visible`);
+        const v = page.viewportSize();
+        if (v && (caja.y < -2 || caja.y + caja.height > v.height + 2 || caja.x < -2 || caja.x + caja.width > v.width + 2)) {
+          throw new Error(`El destacado "${idDestacado}" de la escena ${id} queda fuera de la ventana (x ${Math.round(caja.x)}, y ${Math.round(caja.y)}, ${Math.round(caja.width)}×${Math.round(caja.height)})`);
+        }
         cajas.push(caja);
       }
       const x = Math.min(...cajas.map((c) => c.x));

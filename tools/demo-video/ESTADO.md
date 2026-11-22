@@ -7,7 +7,7 @@ Pasar a Sonnet 5.5 desde la sesión 2 (F5 a F7).
   4 riesgos, 1 oportunidad, 3 objetivos con 18 mediciones, 2 auditorías (1 cerrada con 1 hallazgo, 1 planificada) con
   programa aprobado, choferes con licencia, y activa el módulo road_safety (el seed no lo activaba: daba 404).
 - F3 ✔ relevamiento en `trabajo/relevamiento/*.yml|png` (vial se relevó de nuevo, ya activado).
-- F4 ✔ voz (Mateo; ~193 s + transiciones, sin cortes extra)  · F5 ☐ grabación  · F6 ☐ edición  · F7 ☐ control y entrega
+- F4 ✔ voz (Mateo; ~193 s + transiciones, sin cortes extra)  · F5 ✔ grabación (`npm run demo -- grabar`, 13 escenas, todas las marcas; ~165 s de toma)  · F6 ✔ edición (1920×1080, tema claro de la plataforma, `video/` adaptado)  · F7 ◐ control hecho; falta que Nico escuche la voz y publicar
 
 ## Cambios al guion (plan §5)
 - documentos: la pantalla no muestra «quién lo aprobó» (solo título con código, `vN` y archivo): se cambió por «listo para descargar».
@@ -22,5 +22,18 @@ Pasar a Sonnet 5.5 desde la sesión 2 (F5 a F7).
 - Login: `input[type=email]`, `input[type=password]`, `button[type=submit]` (grabar/relevar.mts → `ingresar`).
 - Detalles reales: riesgos y objetivos se abren haciendo clic en el nombre (los `/guia` NO son detalle); hallazgos → «Editar».
 - Pantallas tardan en cargar en producción local: usar `waitUntil: "networkidle"` y precalentar las rutas.
+## Notas F5 (hecho)
+- datos-extra suma: horas del último mes (índices de accidentabilidad ya no dicen «sin datos») y km de la flota de 12 meses (tasas viales).
+- Escenas: panel/riesgos/proveedores/accidentabilidad/vial se desplazan; hallazgos abre «Ver» de uno «En curso» (causa raíz 5 porqués);
+  vial pasa a la pestaña Conductores; capacitaciones se queda en Resumen. marcas.json: `capturas.ventana` + `evento.captura` (regrabar
+  con `--escena` suma `ventana-xxxx`; linea.ts debe leer `evento.captura`).
+- Servidor: si el login da 500, matar el node del puerto 3124 y `npx next start -p 3124` (log en trabajo/logs/server2.log).
 ## Problemas
 - Consola: solo un 404 en vial (antes de activar el módulo).
+- Panel muestra «Vencido hace 1411 d» y «Cumplimiento 0 %» (datos del seed, no se tocan): ver docs/demo/observaciones.md.
+
+## Entrega (F7)
+- salida/demo-sgi-base.mp4 · 3:25 · -14,0 LUFS · pico -1,3 dBTP (se quitó el alimiter del paso `final`: subía el pico a -0,1).
+- Render: `npm run demo -- render` tarda ~35 min en esta máquina (8 GB); el blob OOM de Chrome se resuelve solo con el reintento.
+- Pendiente: Nico escucha «Dev Cen» / «Ese ge i»; publicar con /publicar-cambios en demo/video-sgi-base (no se publicó).
+- Desajustes guion/pantalla a decidir: vial dice «cada hecho de tránsito» (hay 0) y «licencia al día» (una sale por vencer, no habilitado).

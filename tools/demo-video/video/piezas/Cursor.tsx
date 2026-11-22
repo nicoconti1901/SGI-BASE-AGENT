@@ -1,4 +1,4 @@
-// Cursor dibujado a partir de las marcas de la grabación: flecha en escritorio, solo el toque en el teléfono.
+// Cursor dibujado a partir de las marcas de la grabación: flecha del mouse y onda en cada clic.
 import { Easing, interpolate, useCurrentFrame } from "remotion";
 import type { Caja, PuntoCursor } from "../linea";
 import { tema } from "../tema";
@@ -39,8 +39,8 @@ export const Cursor: React.FC<{ puntos: PuntoCursor[]; aPantalla: (caja: Caja) =
               width: radio * 2,
               height: radio * 2,
               borderRadius: "50%",
-              border: `4px solid ${tema.oroClaro}`,
-              backgroundColor: tactil ? "rgba(236, 210, 154, 0.28)" : "transparent",
+              border: `4px solid ${tema.acento}`,
+              backgroundColor: tactil ? "rgba(15, 110, 106, 0.2)" : "transparent",
               opacity: 0.85 * (1 - avance),
             }}
           />
@@ -48,7 +48,7 @@ export const Cursor: React.FC<{ puntos: PuntoCursor[]; aPantalla: (caja: Caja) =
       })}
       {tactil ? null : (
         <svg style={{ position: "absolute", left: actual.x - 3, top: actual.y - 2, overflow: "visible" }} width={34} height={44} viewBox="0 0 17 22">
-          <path d="M1 1 L1 17.5 L5.2 13.6 L8.1 20.4 L11 19.1 L8.2 12.5 L13.9 12.5 Z" fill="#0a0d12" stroke="#ffffff" strokeWidth={1.3} strokeLinejoin="round" />
+          <path d="M1 1 L1 17.5 L5.2 13.6 L8.1 20.4 L11 19.1 L8.2 12.5 L13.9 12.5 Z" fill="#0e1525" stroke="#ffffff" strokeWidth={1.3} strokeLinejoin="round" />
         </svg>
       )}
     </div>

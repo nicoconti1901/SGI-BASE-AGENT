@@ -1,18 +1,16 @@
-// Colores: los de la app ("Salón de gala", src/theme/tokens.ts) y, para la presentación y el cierre de DEVCEN, los de la
+// Colores de la plataforma (tema claro, src/styles/tokens.css) y, para la presentación y el cierre de DEVCEN, los de la
 // demo de DEVCEN Campus (fondo oscuro, naranjas del ícono y cian).
 import type { Tono } from "./linea";
 
 export const tema = {
-  fondo: "#110d0e",
-  superficie: "#1a1415",
-  elevado: "#251c1d",
-  linea: "#3a2d2b",
-  tinta: "#f3e8d6",
-  tinta2: "#bfae94",
-  oro: "#d1ae6c",
-  oroClaro: "#ecd29a",
-  vino: "#7a1e32",
-  vinoClaro: "#9c2a43",
+  fondo: "#eaeef4", // --color-canvas
+  superficie: "#ffffff",
+  linea: "#7a879e", // --color-card-line
+  tinta: "#0e1525", // --color-ink
+  tinta2: "#4b5568", // --color-ink-muted
+  acento: "#0f6e6a", // --color-form-rail
+  acentoClaro: "#7ee7df", // sobre fondos oscuros (subtítulos)
+  alerta: "#c4202f", // --color-danger
 } as const;
 
 export const devcen = {
@@ -27,9 +25,11 @@ export const devcen = {
 } as const;
 
 export const colorDeTono: Record<Tono, { fondo: string; texto: string }> = {
-  oro: { fondo: tema.oro, texto: tema.fondo },
-  vino: { fondo: tema.vinoClaro, texto: tema.tinta },
+  acento: { fondo: tema.acento, texto: "#ffffff" },
+  alerta: { fondo: tema.alerta, texto: "#ffffff" },
 };
 
-export const ANCHO = 1080;
-export const ALTO = 1920;
+export const ANCHO = 1920;
+export const ALTO = 1080;
+/** La ventana de la app dentro del lienzo: 1600 × 900, centrada, con la barra de puntos encima. */
+export const VENTANA = { x: 160, y: 112, w: 1600, h: 900 } as const;

@@ -1,11 +1,10 @@
-// Subtítulos de la voz debajo del teléfono, frase por frase y con la palabra que suena en dorado (el video se mira
-// mucho sin sonido en el celular). El texto visible es el del guion; los tiempos, los de cada palabra de la voz.
+// Subtítulos de la voz en una píldora sobre el borde inferior de la ventana, frase por frase y con la palabra que suena resaltada. El texto visible es el del guion; los tiempos, los de cada palabra de la voz.
 import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { fuentes } from "../fuentes";
 import type { PistaAudio } from "../linea";
 import { tema } from "../tema";
 
-const MAX_LINEA = 30;
+const MAX_LINEA = 62;
 const limitar = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 const normalizar = (t: string) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9ñ]/g, "");
 
@@ -77,12 +76,13 @@ export const Subtitulos: React.FC<{ pistas: PistaAudio[]; y: number }> = ({ pist
   const palabraActual = pagina.lineas.flat().findLast((w) => w.desde <= f);
 
   return (
-    <div style={{ position: "absolute", left: 60, right: 60, top: y, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, opacity: opacidad }}>
+    <div style={{ position: "absolute", left: 0, right: 0, top: y, display: "flex", justifyContent: "center", opacity: opacidad }}>
+     <div style={{ maxWidth: 1200, padding: "14px 34px", borderRadius: 18, backgroundColor: "rgba(14, 21, 37, 0.9)", boxShadow: "0 10px 30px rgba(14, 21, 37, 0.35)", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
       {pagina.lineas.map((linea, n) => (
-        <div key={n} style={{ fontFamily: fuentes.texto, fontWeight: 500, fontSize: 44, lineHeight: 1.25, textAlign: "center", whiteSpace: "nowrap" }}>
+        <div key={n} style={{ fontFamily: fuentes.texto, fontWeight: 500, fontSize: 34, lineHeight: 1.3, textAlign: "center", whiteSpace: "nowrap" }}>
           {linea.map((w, k) => {
             const dicha = w.desde <= f;
-            const color = w === palabraActual ? tema.oroClaro : dicha ? tema.tinta : "rgba(191, 174, 148, 0.55)";
+            const color = w === palabraActual ? tema.acentoClaro : dicha ? "#ffffff" : "rgba(214, 220, 228, 0.5)";
             return (
               <span key={k} style={{ color }}>
                 {k > 0 ? " " : ""}
@@ -92,6 +92,7 @@ export const Subtitulos: React.FC<{ pistas: PistaAudio[]; y: number }> = ({ pist
           })}
         </div>
       ))}
+     </div>
     </div>
   );
 };
