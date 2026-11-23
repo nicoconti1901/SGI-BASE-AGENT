@@ -70,7 +70,7 @@
       "ruta": "/t/demo-patagonia",
       "rotulo": "Panel de la empresa",
       "respiro": 0.6,
-      "voz": "En el panel está el pulso del sistema: las áreas de la norma, a un clic, y los próximos vencimientos a la vista.",
+      "voz": "En el panel entrás por áreas: cumplimiento, mejora, operación en obra, personas y terceros. Todo el sistema, a un clic.",
       "destacados": [
         {
           "id": "areas",
@@ -79,10 +79,10 @@
           "tono": "acento"
         },
         {
-          "id": "vence",
-          "texto": "Próximos vencimientos",
-          "icono": "calendar-clock",
-          "tono": "alerta",
+          "id": "obra",
+          "texto": "Operación en obra",
+          "icono": "hard-hat",
+          "tono": "acento",
           "zoom": 1.2
         }
       ]
@@ -93,8 +93,15 @@
       "ruta": "/t/demo-patagonia/documents",
       "rotulo": "Documentos controlados",
       "respiro": 0.6,
-      "voz": "Los documentos están controlados: cada uno con su código y su revisión vigente, listo para descargar. El auditor pide un procedimiento… y está. Sin versiones sueltas por mail.",
+      "voz": "Los documentos están ordenados en carpetas y controlados: cada uno con su código y su revisión vigente, listo para descargar. El auditor pide un procedimiento… y está. Sin versiones sueltas por mail.",
       "destacados": [
+        {
+          "id": "carpetas",
+          "texto": "Ordenados en carpetas",
+          "icono": "folder",
+          "tono": "acento",
+          "zoom": 1.2
+        },
         {
           "id": "codigo",
           "texto": "Código único",

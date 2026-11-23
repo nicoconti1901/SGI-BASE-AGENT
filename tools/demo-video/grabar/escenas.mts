@@ -28,7 +28,7 @@ const tablaFilas = (page: Page) => page.locator("table tbody tr");
 
 /** Rutas que se visitan antes de grabar para que el build de producción las tenga calientes. */
 export const RUTAS = [
-  T, `${T}/documents`, `${T}/risks`, `${T}/indicators`, `${T}/inspections`, `${T}/findings`, `${T}/safety/stats`,
+  T, `${T}/documents`, `${T}/documents?carpeta=procedimientos`, `${T}/risks`, `${T}/indicators`, `${T}/inspections`, `${T}/findings`, `${T}/safety/stats`,
   `${T}/road-safety`, `${T}/road-safety/conductores`, `${T}/instruments`, `${T}/training`, `${T}/suppliers`, `${T}/audits`,
 ];
 
@@ -51,23 +51,27 @@ export const ESCENAS: Record<string, (esc: Escena, ctx: Contexto) => Promise<voi
     await ir(page, T);
     await esc.lista();
     esc.empezarVoz();
-    await cursor.deslizar(160, 0.9);
+    await cursor.deslizar(120, 0.8);
     await esc.enPalabra("áreas");
     await esc.destacar("areas", page.getByRole("navigation", { name: "Principal" }));
-    await esc.enPalabra("vencimientos");
+    await esc.enPalabra("obra");
+    await esc.destacar("obra", page.getByRole("group", { name: "Operación SST" }));
     esc.soltar();
-    const vence = page.getByRole("heading", { name: "Próximos vencimientos" });
-    await cursor.deslizarHasta(vence, 130, 0.9);
-    await esc.destacar("vence", [vence, page.getByRole("region", { name: "Estado del sistema" }).getByRole("list").last()]);
     await esc.finDeVoz(0.3);
     await esc.terminar();
   },
 
-  async documentos(esc, { page }) {
+  async documentos(esc, { page, cursor }) {
     await ir(page, `${T}/documents`);
     await esc.lista();
     esc.empezarVoz();
-    const fila = page.getByRole("listitem").filter({ has: page.getByText("PE 02 · Trabajo en altura", { exact: true }) }).last();
+    await esc.enPalabra("carpetas");
+    await esc.destacar("carpetas", page.getByRole("list", { name: "Carpetas" }));
+    esc.soltar();
+    await cursor.tocar(page.getByRole("link", { name: /^Procedimientos/ }));
+    await page.waitForURL((u) => u.search.includes("carpeta=procedimientos"), { timeout: 30_000 });
+    await esperarLista(page);
+    const fila = page.getByRole("list", { name: "Documentos de Procedimientos" }).getByRole("listitem").filter({ has: page.getByText("PE 02 · Trabajo en altura", { exact: true }) });
     await esc.enPalabra("código");
     await esc.destacar("codigo", fila.locator("p").nth(0));
     await esc.enPalabra("revisión");
