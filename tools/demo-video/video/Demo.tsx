@@ -13,11 +13,16 @@ import { tema, VENTANA } from "./tema";
 export type PropsDemo = { linea: Linea };
 
 const TITULOS: Record<string, TextosTitulo> = {
-  portada: { kicker: "ISO 9001 · 14001 · 45001 · 39001", titulo: "SGI Base", subtitulo: "Tu sistema de gestión ISO, listo para trabajar con las grandes empresas.", palabraSubtitulo: "sistema" },
+  portada: { kicker: "ISO 9001 · 14001 · 45001 · 39001", titulo: "SGI DevCen", subtitulo: "Tu sistema de gestión integrado, listo para trabajar con las grandes empresas.", palabraSubtitulo: "sistema" },
   problema: { kicker: "El desafío", titulo: "Hacerlo bien no alcanza: hay que demostrarlo" },
-  camino: { kicker: "El camino", titulo: "SGI Base ordena, ejecuta y deja la evidencia" },
-  final: { kicker: "SGI Base", titulo: "Demostralo con evidencia", subtitulo: "Calificá para trabajar con las grandes empresas.", palabraSubtitulo: "calificá" },
+  camino: { kicker: "El camino", titulo: "Sistema de gestión integrado" },
+  final: { kicker: "SGI DevCen", titulo: "Demostralo con evidencia", subtitulo: "Calificá para trabajar con las grandes empresas.", palabraSubtitulo: "calificá" },
 };
+const PASOS_CAMINO: string[][] = [
+  ["Documentos controlados", "Riesgos y objetivos", "Procesos y responsables"],
+  ["Inspecciones en obra", "Capacitaciones al día", "Hallazgos y acciones"],
+  ["Registros con fecha y firma", "Auditorías internas cerradas", "Todo a un clic del auditor"],
+];
 const TANDAS: Record<string, string> = { tanda1: "Parte 1 de 3", tanda2: "Parte 2 de 3", tanda3: "Parte 3 de 3" };
 
 export const Demo: React.FC<PropsDemo> = ({ linea }) => {
@@ -35,7 +40,7 @@ export const Demo: React.FC<PropsDemo> = ({ linea }) => {
     } else if (TANDAS[escena.id]) {
       contenido = <Titulo kicker={TANDAS[escena.id]} titulo={(escena.textoVoz ?? "").replace(/\.$/, "")} cuadros={escena.cuadros} desde={escena.desde} voz={vozDe(escena.id)} />;
     } else if (TITULOS[escena.id]) {
-      contenido = <Titulo {...TITULOS[escena.id]!} chips={escena.chips} llamado={escena.llamado} cuadros={escena.cuadros} desde={escena.desde} voz={vozDe(escena.id)} />;
+      contenido = <Titulo {...TITULOS[escena.id]!} chips={escena.chips} pasos={escena.id === "camino" ? PASOS_CAMINO : undefined} llamado={escena.llamado} cuadros={escena.cuadros} desde={escena.desde} voz={vozDe(escena.id)} />;
     } else {
       contenido = <AbsoluteFill style={{ backgroundColor: tema.fondo }} />;
     }

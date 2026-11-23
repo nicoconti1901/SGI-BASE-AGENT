@@ -27,7 +27,8 @@ export async function relevar() {
   const consola = path.join(dir, "consola.txt");
   const navegador = await chromium.launch({ headless: true });
   try {
-    const contexto = await navegador.newContext({ viewport: VENTANA, deviceScaleFactor: 1, locale: "es-AR", timezoneId: "America/Argentina/Buenos_Aires" });
+    const contexto = await navegador.newContext({ viewport: VENTANA, deviceScaleFactor: 1, locale: "es-AR", timezoneId: "America/Argentina/Buenos_Aires", colorScheme: "dark" });
+    await contexto.addInitScript(() => { try { localStorage.setItem("sgi-theme", "dark"); } catch { /* sin storage */ } });
     const page = await contexto.newPage();
     let actual = "login";
     page.on("console", (m) => m.type() === "error" && appendFileSync(consola, `[${actual}] ${m.text().slice(0, 200)}\n`));

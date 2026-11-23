@@ -44,7 +44,8 @@ export async function grabar(args: string[] = []) {
     args: [`--force-device-scale-factor=${ESCALA}`, "--disable-renderer-backgrounding", "--disable-background-timer-throttling"],
   });
   try {
-    const contexto = await navegador.newContext({ viewport: VENTANA, deviceScaleFactor: ESCALA, locale: "es-AR", timezoneId: "America/Argentina/Buenos_Aires" });
+    const contexto = await navegador.newContext({ viewport: VENTANA, deviceScaleFactor: ESCALA, locale: "es-AR", timezoneId: "America/Argentina/Buenos_Aires", colorScheme: "dark" });
+    await contexto.addInitScript(() => { try { localStorage.setItem("sgi-theme", "dark"); } catch { /* sin storage */ } });
     await contexto.addInitScript((css) => {
       const poner = () => {
         const estilo = document.createElement("style");

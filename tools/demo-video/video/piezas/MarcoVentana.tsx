@@ -19,9 +19,9 @@ export const MarcoVentana: React.FC<{ rect: Rect; children: React.ReactNode }> =
         width: rect.w + 2,
         height: rect.h + BARRA + 2,
         borderRadius: 12,
-        border: "1px solid #b4bdcc",
-        backgroundColor: "#dfe4ec",
-        boxShadow: "0 24px 60px rgba(14, 21, 37, 0.18), 0 4px 14px rgba(14, 21, 37, 0.08)",
+        border: "1px solid #2a3342",
+        backgroundColor: "#141a23",
+        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.35)",
       }}
     >
       <div style={{ display: "flex", gap: 8, padding: "9px 14px" }}>
@@ -30,7 +30,7 @@ export const MarcoVentana: React.FC<{ rect: Rect; children: React.ReactNode }> =
         ))}
       </div>
     </div>
-    <div style={{ position: "absolute", left: rect.x, top: rect.y, width: rect.w, height: rect.h, overflow: "hidden", borderRadius: "0 0 11px 11px", backgroundColor: "#fff" }}>
+    <div style={{ position: "absolute", left: rect.x, top: rect.y, width: rect.w, height: rect.h, overflow: "hidden", borderRadius: "0 0 11px 11px", backgroundColor: "#06080b" }}>
       {children}
     </div>
   </>

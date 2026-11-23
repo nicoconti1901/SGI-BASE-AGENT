@@ -20,49 +20,31 @@
     {
       "id": "portada",
       "tipo": "titulo",
-      "voz": "{SGI|Ese ge i} Base. Tu sistema de gestión ISO, listo para trabajar con las grandes empresas.",
+      "voz": "{SGI|Ese ge i} {DevCen|Dev Cen}. Tu sistema de gestión integrado, listo para trabajar con las grandes empresas.",
       "respiro": 0.6
     },
     {
       "id": "problema",
       "tipo": "titulo",
       "respiro": 0.8,
-      "voz": "Para entrar como proveedor de una gran empresa no alcanza con hacer bien el trabajo: hay que demostrarlo. Calidad, ambiente, seguridad y salud, seguridad vial… y evidencia de todo.",
-      "chips": [
-        {
-          "texto": "ISO 9001 · Calidad",
-          "en": "Calidad"
-        },
-        {
-          "texto": "ISO 14001 · Ambiente",
-          "en": "ambiente"
-        },
-        {
-          "texto": "ISO 45001 · Seguridad y salud",
-          "en": "salud"
-        },
-        {
-          "texto": "ISO 39001 · Seguridad vial",
-          "en": "vial"
-        }
-      ]
+      "voz": "Para entrar como proveedor de una gran empresa no alcanza con hacer bien el trabajo: hay que demostrarlo. Calidad, ambiente, seguridad y salud, seguridad vial."
     },
     {
       "id": "camino",
       "tipo": "titulo",
       "respiro": 0.8,
-      "voz": "{SGI|Ese ge i} Base es el camino: ordena tu sistema, lo pone a funcionar todos los días y deja la evidencia lista para la auditoría del cliente.",
+      "voz": "El sistema de gestión integrado ordena tu trabajo, lo pone a funcionar todos los días y deja la evidencia lista para la auditoría del cliente.",
       "chips": [
         {
-          "texto": "1 · Sistema ordenado",
+          "texto": "Ordena el sistema",
           "en": "ordena"
         },
         {
-          "texto": "2 · Gestión de todos los días",
+          "texto": "Funciona todos los días",
           "en": "funcionar"
         },
         {
-          "texto": "3 · Evidencia para auditar",
+          "texto": "Evidencia lista para auditar",
           "en": "evidencia"
         }
       ]
@@ -79,7 +61,7 @@
       "ruta": "/login",
       "rotulo": "Ingreso",
       "respiro": 0.5,
-      "voz": "Ana, gerente de operaciones de Constructora Patagonia, entra a su espacio. Ve solo los datos de su empresa.",
+      "voz": "Ana, gerente de operaciones de Constructora Patagonia, entra a su espacio de {SGI|Ese ge i} {DevCen|Dev Cen}. Ve solo los datos de su empresa.",
       "destacados": []
     },
     {
@@ -110,7 +92,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/documents",
       "rotulo": "Documentos controlados",
-      "norma": "ISO 9001 · 14001 · 45001 — 7.5",
       "respiro": 0.6,
       "voz": "Los documentos están controlados: cada uno con su código y su revisión vigente, listo para descargar. El auditor pide un procedimiento… y está. Sin versiones sueltas por mail.",
       "destacados": [
@@ -142,7 +123,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/risks",
       "rotulo": "Riesgos y oportunidades",
-      "norma": "ISO 9001 · 14001 · 45001 — 6.1",
       "respiro": 0.6,
       "voz": "Riesgos y oportunidades por proceso, cada uno con su nivel, su próximo paso y quién lo tiene que dar. Es lo primero que mira un auditor, y acá está a la vista.",
       "destacados": [
@@ -174,7 +154,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/indicators",
       "rotulo": "Objetivos e indicadores",
-      "norma": "ISO 9001 · 14001 · 45001 — 6.2 · 9.1",
       "opcional": true,
       "respiro": 0.6,
       "voz": "Los objetivos se miden: cada uno con su responsable, su indicador y su estado, en meta, en alerta o fuera de meta. Así se demuestra que el sistema mejora.",
@@ -205,7 +184,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/inspections",
       "rotulo": "Inspecciones en obra",
-      "norma": "ISO 45001 — 6.1.2 · 8.1 · 9.1.1",
       "respiro": 0.6,
       "voz": "El supervisor inspecciona los equipos y los vehículos en obra. Cada control queda con su resultado, sus fotos y quién lo firmó. Y lo que no cumple, se ve enseguida.",
       "destacados": [
@@ -237,7 +215,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/findings",
       "rotulo": "Hallazgos y acciones",
-      "norma": "ISO 9001 · 14001 · 45001 — 10.2",
       "respiro": 0.7,
       "voz": "Las no conformidades, los incidentes y las observaciones están en un solo listado, con su estado y el seguimiento de sus medidas. Y cada hallazgo tiene su análisis de causa, con los cinco porqués.",
       "destacados": [
@@ -262,7 +239,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/safety",
       "rotulo": "Accidentabilidad",
-      "norma": "ISO 45001 — 9.1.1 · 10.2",
       "respiro": 0.6,
       "voz": "Los índices de frecuencia y de gravedad se calculan solos, por sede y por mes. Son los números que una gran empresa pide antes de dejarte entrar.",
       "destacados": [
@@ -286,10 +262,9 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/road-safety",
       "rotulo": "Seguridad vial",
-      "norma": "ISO 39001 — 8.1 · 9.1 · 10.1",
       "opcional": true,
       "respiro": 0.6,
-      "voz": "La seguridad vial también: cada hecho de tránsito con su detalle, la tasa por kilómetro recorrido y los conductores con su licencia al día.",
+      "voz": "Y en seguridad vial, se ve la tasa por kilómetro recorrido y los conductores con su licencia a la vista.",
       "destacados": [
         {
           "id": "tasa",
@@ -319,7 +294,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/instruments",
       "rotulo": "Equipos de medición",
-      "norma": "ISO 9001 — 7.1.5",
       "respiro": 0.6,
       "voz": "Los equipos de medición, con su calibración al día. Si uno está por vencer, el sistema avisa.",
       "destacados": [
@@ -349,7 +323,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/training",
       "rotulo": "Capacitaciones",
-      "norma": "ISO 9001 · 14001 · 45001 — 7.2 · 7.3",
       "respiro": 0.6,
       "voz": "La matriz de capacitación cruza el puesto y las tareas críticas de cada persona. Se ve quién está al día y a quién le vence.",
       "destacados": [
@@ -374,7 +347,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/suppliers",
       "rotulo": "Proveedores y contratistas",
-      "norma": "ISO 9001 — 8.4",
       "respiro": 0.6,
       "voz": "Y así como la gran empresa te evalúa a vos, vos evaluás a tus contratistas: la documentación que presentan y si quedan aprobados, con el mismo rigor.",
       "destacados": [
@@ -399,7 +371,6 @@
       "tipo": "captura",
       "ruta": "/t/demo-patagonia/audits",
       "rotulo": "Auditorías",
-      "norma": "ISO 9001 · 14001 · 45001 — 9.2",
       "respiro": 0.8,
       "voz": "Las auditorías internas tienen su programa del año, aprobado, con su planificación y la cobertura de la norma. Lo que encuentran entra al mismo circuito de mejora. Cuando llega el auditor del cliente, la evidencia ya está.",
       "destacados": [
@@ -431,7 +402,7 @@
       "tipo": "titulo",
       "llamado": "Pedí una demo",
       "respiro": 1.0,
-      "voz": "{SGI|Ese ge i} Base. Cumplí con los requisitos ISO, demostralo con evidencia… y calificá para trabajar con las grandes empresas."
+      "voz": "{SGI|Ese ge i} {DevCen|Dev Cen}. Cumplí con los requisitos ISO, demostralo con evidencia… y calificá para trabajar con las grandes empresas."
     },
     {
       "id": "cierre",

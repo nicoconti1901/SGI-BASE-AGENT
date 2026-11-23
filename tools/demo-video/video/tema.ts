@@ -1,16 +1,16 @@
-// Colores de la plataforma (tema claro, src/styles/tokens.css) y, para la presentación y el cierre de DEVCEN, los de la
+// Colores de la plataforma (tema oscuro, src/styles/tokens.css) y, para la presentación y el cierre de DEVCEN, los de la
 // demo de DEVCEN Campus (fondo oscuro, naranjas del ícono y cian).
 import type { Tono } from "./linea";
 
 export const tema = {
-  fondo: "#eaeef4", // --color-canvas
-  superficie: "#ffffff",
-  linea: "#7a879e", // --color-card-line
-  tinta: "#0e1525", // --color-ink
-  tinta2: "#4b5568", // --color-ink-muted
-  acento: "#0f6e6a", // --color-form-rail
-  acentoClaro: "#7ee7df", // sobre fondos oscuros (subtítulos)
-  alerta: "#c4202f", // --color-danger
+  fondo: "#06080b", // --color-canvas (oscuro)
+  superficie: "#0a0e13", // --color-surface
+  linea: "#64728c", // --color-card-line
+  tinta: "#e8edf5", // --color-ink
+  tinta2: "#9aa6b8", // --color-ink-muted
+  acento: "#3dd6c6", // --color-form-rail
+  acentoClaro: "#b8f3ec", // --color-form-ink (subtítulos)
+  alerta: "#ff6b7a", // --color-danger
 } as const;
 
 export const devcen = {
@@ -25,8 +25,8 @@ export const devcen = {
 } as const;
 
 export const colorDeTono: Record<Tono, { fondo: string; texto: string }> = {
-  acento: { fondo: tema.acento, texto: "#ffffff" },
-  alerta: { fondo: tema.alerta, texto: "#ffffff" },
+  acento: { fondo: tema.acento, texto: "#04201e" },
+  alerta: { fondo: tema.alerta, texto: "#2a0509" },
 };
 
 export const ANCHO = 1920;

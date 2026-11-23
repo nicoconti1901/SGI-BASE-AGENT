@@ -37,3 +37,18 @@ Pasar a Sonnet 5.5 desde la sesión 2 (F5 a F7).
 - Render: `npm run demo -- render` tarda ~35 min en esta máquina (8 GB); el blob OOM de Chrome se resuelve solo con el reintento.
 - Pendiente: Nico escucha «Dev Cen» / «Ese ge i»; publicar con /publicar-cambios en demo/video-sgi-base (no se publicó).
 - Desajustes guion/pantalla a decidir: vial dice «cada hecho de tránsito» (hay 0) y «licencia al día» (una sale por vencer, no habilitado).
+
+## Correcciones v2 (23/11) — en curso
+Pedido de Nico: nombre «SGI DevCen» alternado con «sistema de gestión integrado»; sacar «evidencia de todo»; tema OSCURO y home
+ACTUAL (main ya trae el hub compacto: se hizo `git merge main` y build nuevo); otra forma de mostrar el punto 3; mejorar el
+arranque de seguridad vial; no mostrar las ISO una por una.
+- ✔ guion.json: nombres, problema sin chips ni «evidencia de todo», camino con 3 tarjetas, vial en una sola frase, `norma` quitada
+  de todas las capturas (ya no hay chip de norma en el rótulo). Voz regenerada (solo cambiaron portada, problema, camino, ingreso, vial, final).
+- ✔ video/: tema oscuro (tema.ts, MarcoVentana), `Titulo` con variante `pasos` (3 tarjetas con lista; la 3.ª = evidencia con checks).
+- ✔ grabar.mts y relevar.mts fuerzan tema oscuro (`colorScheme: "dark"` + localStorage `sgi-theme`).
+- ☐ BLOQUEO: Docker Desktop con el motor trabado (500 en `_ping`), Postgres caído → login da 500. Abrir/reiniciar Docker Desktop y
+  `docker compose up -d` desde la RAÍZ del repo principal (no desde la worktree: crearía otro proyecto/volumen).
+- ☐ Reiniciar `next start -p 3124` (matar el node del 3124) cuando Postgres esté arriba; probar login (200).
+- ☐ `ESCENAS=panel,documentos npm run demo -- relevar` y revisar: el hub compacto cambió; los localizadores de `panel`
+  (`navigation "Principal"`, `heading "Próximos vencimientos"`, `region "Estado del sistema"`) y `documentos` (ahora hay carpetas) pueden no existir.
+- ☐ `npm run demo -- grabar` (todo, tema oscuro) → `linea` → `render` (~35 min) → `final` → copiar a Escritorio\Demo-SGI-Base.
