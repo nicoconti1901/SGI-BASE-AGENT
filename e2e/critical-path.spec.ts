@@ -61,6 +61,7 @@ test("superusuario crea la empresa, carga el gap y sube un documento", async ({ 
   // Documento.
   await page.goto(`/platform/tenants/${slug}/documents`);
   await page.getByLabel("Título", { exact: true }).fill("Manual de calidad e2e");
+  await page.getByLabel("Carpeta").selectOption("manual");
   await page.getByLabel(/^Archivo/).setInputFiles({
     name: "manual.txt",
     mimeType: "text/plain",

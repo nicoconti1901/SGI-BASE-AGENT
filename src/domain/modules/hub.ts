@@ -81,12 +81,12 @@ const guide = (path = "guia"): HubScreen => ({
 export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   documents: {
     icon: "documents",
-    tagline: "Procedimientos y registros con su versión vigente.",
+    tagline: "Manual, políticas, registros y procedimientos con su versión vigente.",
     dueTypes: ["document_validity"],
     screens: [
       {
         label: "Documentos",
-        hint: "Procedimientos y registros vigentes.",
+        hint: "Carpetas de manual, políticas, registros y procedimientos.",
         path: "",
         icon: "documents",
       },

@@ -178,4 +178,38 @@ describe.skipIf(!hasDatabase)("document control integration", () => {
     expect(after).toHaveLength(1);
     expect(after[0].dueAt.toISOString()).toBe(renewed.toISOString());
   });
+
+  it("guarda la carpeta, la mantiene en una versión sin carpeta y la cambia si viene", async () => {
+    const base = {
+      tenantId,
+      title: "Planilla de control de despacho",
+      contentType: "application/pdf",
+      uploadedById: userId,
+      isPlatformSuperuser: true,
+    };
+    const doc = await uploadTenantDocument(
+      { ...base, kind: "record_blank", fileName: "planilla.pdf", body: Buffer.from("%PDF-1.4 a") },
+      { db, storage },
+    );
+    expect(doc.kind).toBe("record_blank");
+
+    const kept = await uploadTenantDocument(
+      { ...base, documentId: doc.id, fileName: "planilla-v2.pdf", body: Buffer.from("%PDF-1.4 b") },
+      { db, storage },
+    );
+    expect(kept.kind).toBe("record_blank");
+
+    const moved = await uploadTenantDocument(
+      { ...base, documentId: doc.id, kind: "record_managed", fileName: "planilla-v3.pdf", body: Buffer.from("%PDF-1.4 c") },
+      { db, storage },
+    );
+    expect(moved.kind).toBe("record_managed");
+
+    await expect(
+      uploadTenantDocument(
+        { ...base, kind: "otra" as never, fileName: "x.pdf", body: Buffer.from("%PDF-1.4 x") },
+        { db, storage },
+      ),
+    ).rejects.toThrow("Carpeta de documento inválida");
+  });
 });

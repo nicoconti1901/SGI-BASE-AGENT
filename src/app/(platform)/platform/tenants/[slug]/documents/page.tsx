@@ -8,6 +8,7 @@ import {
   DOCUMENT_FATE_LABELS,
   type DocumentFate,
 } from "@/domain/assessment/gap";
+import { DOCUMENT_KIND_LABELS, documentKindOf } from "@/domain/documents/folders";
 import { PLATFORM_ROLE_LABEL } from "@/domain/identity/authz";
 import { resolveStorageBackend } from "@/lib/storage";
 import { UploadDocumentForm } from "@/app/(platform)/platform/tenants/[slug]/documents/UploadDocumentForm";
@@ -130,6 +131,7 @@ export default async function TenantDocumentsPlatformPage({
                       {doc.title}
                     </p>
                     <p className="mt-1 text-xs text-[var(--color-ink-subtle)]">
+                      {DOCUMENT_KIND_LABELS[documentKindOf(doc.kind)]} ·{" "}
                       {DOCUMENT_FATE_LABELS[doc.fate as DocumentFate]}
                       {doc.tenantRequirement
                         ? ` · ${doc.tenantRequirement.requirement.standard} ${doc.tenantRequirement.requirement.clauseKey}`

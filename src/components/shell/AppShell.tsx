@@ -80,7 +80,7 @@ export function AppShell({
           </Link>
 
           {backLink || trail ? (
-            <div className="order-last flex w-full min-w-0 items-center gap-3 border-t border-[var(--color-line)] pt-2">
+            <div className="order-last flex w-full min-w-0 items-center gap-3 empty:hidden border-t border-[var(--color-line)] pt-2">
               {backLink ? (
                 <Link
                   href={backLink.href}
@@ -126,7 +126,7 @@ export function AppShell({
           </nav>
         ) : null}
       </header>
-      <main id="contenido-principal" className="flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main id="contenido-principal" className="flex-1 px-4 py-6 sm:px-6 sm:py-8 [&:has(>[data-fill])]:flex [&:has(>[data-fill])]:flex-col">
         {children}
       </main>
     </div>
