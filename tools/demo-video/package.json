@@ -1,0 +1,20 @@
+{
+  "name": "sgi-base-demo-video",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Video demo de SGI Base (horizontal 1920x1080): grabación con Playwright sobre la app en producción local, locución con edge-tts y edición con Remotion. No forma parte de la app.",
+  "scripts": {
+    "demo": "node --import tsx demo.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.544",
+    "@remotion/google-fonts": "4.0.544",
+    "lucide-react": "1.39.0",
+    "playwright-core": "1.65.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "remotion": "4.0.544",
+    "tsx": "4.23.13"
+  }
+}
