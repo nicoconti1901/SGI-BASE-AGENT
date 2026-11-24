@@ -167,11 +167,13 @@ test("se publica una NC con medida correctiva y el usuario ve el vencimiento en 
   await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page).toHaveURL(new RegExp(`/t/${slug}$`), { timeout: 30_000 });
 
-  const dueList = page.locator("section").filter({ has: page.getByRole("heading", { name: "Próximos vencimientos" }) });
+  // El estado del sistema del inicio viene plegado: se abre para ver los vencimientos.
+  const dueList = page.locator("details").filter({ has: page.getByRole("heading", { name: "Próximos vencimientos", includeHidden: true }) });
+  await dueList.getByText("Ver estado").click();
   await expect(dueList.getByText(measureTitle)).toBeVisible();
   await expect(dueList.getByText("Medida de hallazgo")).toBeVisible();
   await expect(dueList.getByText(due)).toBeVisible();
-  await expect(page.getByRole("group", { name: "Resumen" }).getByText("Próximos a vencer")).toBeVisible();
+  await expect(dueList.getByText("Por vencer", { exact: true })).toBeVisible();
 
   // Sigue el enlace al detalle del hallazgo.
   await dueList.getByRole("link", { name: new RegExp(measureTitle) }).click();

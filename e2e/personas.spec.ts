@@ -23,6 +23,7 @@ test("administrador de empresa va directo a su empresa", async ({ page }) => {
   await expect(page).toHaveURL(/\/t\/tisico$/);
   await expect(page.getByRole("banner").getByText("Administrador de la empresa")).toBeVisible();
   // Inicio: un panel por área con la lista de módulos + tablero chico, y navegación por teclado entre módulos.
+  await page.getByText("Ver estado").click();
   await expect(page.getByRole("heading", { name: "Cumplimiento de requisitos" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Próximos vencimientos" })).toBeVisible();
   const nav = page.getByRole("navigation", { name: "Principal" });

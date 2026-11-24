@@ -269,6 +269,8 @@ test("carga la calibración de un detector con tres puntos, ve el resultado en v
   await expect(page.getByRole("button", { name: "Agregar un punto de H₂S" })).toBeVisible({ timeout: 30_000 });
   const overflowing = await page.evaluate(() =>
     [...document.querySelectorAll("body *")]
+      // La ruta del encabezado se desplaza sola (overflow-x-auto): no cuenta como desborde de la página.
+      .filter((el) => !el.closest('nav[aria-label="Ruta"]'))
       .filter((el) => el.getBoundingClientRect().right > window.innerWidth + 1)
       .slice(0, 6)
       .map((el) => `${el.tagName}.${String(el.className).slice(0, 60)} ${Math.round(el.getBoundingClientRect().right)}`),
