@@ -271,10 +271,18 @@ describe.skipIf(!hasDatabase)("avisos, eficacia y plan anual de capacitaciones (
     it("planifica, completa la sesión del plan y compara planificado con realizado por sede", async () => {
       const plannedFor = addDays(today, 20);
       const planned = await planSession({ tenantId: a, actorUserId: actor, courseId: induction, plannedFor, siteId: siteA, level: "operational" }, db);
-      await planSession({ tenantId: a, actorUserId: actor, courseId: height, plannedFor: addDays(today, 40), siteId: siteA }, db);
-      await planSession({ tenantId: a, actorUserId: actor, courseId: height, plannedFor: addDays(today, -3), siteId: siteA }, db);
+      const dates = [plannedFor, addDays(today, 40), addDays(today, -3)];
+      await planSession({ tenantId: a, actorUserId: actor, courseId: height, plannedFor: dates[1], siteId: siteA }, db);
+      await planSession({ tenantId: a, actorUserId: actor, courseId: height, plannedFor: dates[2], siteId: siteA }, db);
 
-      const before = (await getPlanSummary(a, new Date(plannedFor).getUTCFullYear(), today, db)).find((s) => s.siteId === siteA)!;
+      // Cerca de fin o de inicio de año las tres fechas pueden caer en años distintos: se suma el resumen de cada año.
+      const years = [...new Set(dates.map((d) => new Date(d).getUTCFullYear()))];
+      const summarize = async () => {
+        const rows = (await Promise.all(years.map((y) => getPlanSummary(a, y, today, db)))).flat().filter((s) => s.siteId === siteA);
+        return { planned: rows.reduce((n, s) => n + s.planned, 0), done: rows.reduce((n, s) => n + s.done, 0), overdue: rows.reduce((n, s) => n + s.overdue, 0) };
+      };
+
+      const before = await summarize();
       expect(before).toMatchObject({ planned: 3, done: 0 });
       expect(before.overdue).toBeGreaterThanOrEqual(1);
 
@@ -291,7 +299,7 @@ describe.skipIf(!hasDatabase)("avisos, eficacia y plan anual de capacitaciones (
         registerSession({ tenantId: a, actorUserId: actor, courseId: induction, heldAt: today, instructorKind: "internal", instructorName: "Ana", plannedSessionId: planned.id, attendees: [{ personId: personIds[2], result: "passed" }] }, db),
       ).rejects.toThrow(/ya no está pendiente/);
 
-      const after = (await getPlanSummary(a, new Date(plannedFor).getUTCFullYear(), today, db)).find((s) => s.siteId === siteA)!;
+      const after = await summarize();
       expect(after).toMatchObject({ planned: 3, done: 1 });
       const held = await listPlanSessions(a, { year: new Date(plannedFor).getUTCFullYear(), status: "held" }, db);
       expect(held.map((s) => s.id)).toContain(planned.id);
