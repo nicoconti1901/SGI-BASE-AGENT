@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
 import { createDueItem } from "@/lib/automation";
-import { getTenantDashboard } from "@/lib/dashboard";
+import { getModuleTelemetry, getTenantDashboard } from "@/lib/dashboard";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
@@ -82,5 +82,104 @@ describe.skipIf(!hasDatabase)("tenant dashboard integration", () => {
     expect(d.compliance.byStatus.compliant).toBe(1);
     expect(d.compliance.byStatus.not_applicable).toBe(1);
     expect(d.compliance.applicable).toBe(d.compliance.total - 1);
+  });
+});
+
+describe.skipIf(!hasDatabase)("destino de los vencimientos que dependen de otro registro", () => {
+  const db = new PrismaClient();
+  const slug = `dash-dest-${Date.now()}`;
+  const dueAt = new Date("2031-01-10T12:00:00.000Z");
+  let tenantId = "";
+  let assetId = "";
+  let supplierId = "";
+
+  beforeAll(async () => {
+    tenantId = (await createTenantWithTemplate({ name: "Dash Destinos", slug, size: "small", activity: "servicios" })).id;
+    const site = await db.site.create({ data: { tenantId, name: "Planta" } });
+    assetId = (await db.asset.create({ data: { tenantId, siteId: site.id, typeKey: "extinguisher", code: "EXT-1", description: "Matafuego", attributes: {} } })).id;
+    const assetDue = await db.assetDueDate.create({ data: { tenantId, assetId, kind: "charge", dueAt } });
+    const impact = await db.impactAssessment.create({ data: { tenantId, assetId, trigger: "functional_check_failed", windowTo: dueAt } });
+    supplierId = (await db.supplier.create({ data: { tenantId, legalName: "Proveedor SA", type: "service" } })).id;
+    const docType = await db.supplierDocumentType.create({ data: { tenantId, key: "art", name: "ART" } });
+    const document = await db.supplierDocument.create({
+      data: { tenantId, supplierId, typeId: docType.id, storageKey: "k", fileName: "art.pdf", contentType: "application/pdf", sizeBytes: 1 },
+    });
+    for (const [entityType, entityId] of [
+      ["asset_due_date", assetDue.id],
+      ["instrument_impact", impact.id],
+      ["supplier_document", document.id],
+    ] as const) {
+      await createDueItem({ tenantId, title: entityType, entityType, entityId, dueAt }, db);
+    }
+  });
+
+  afterAll(async () => {
+    await db.dueItem.deleteMany({ where: { tenantId } });
+    await db.tenantModuleActivation.deleteMany({ where: { tenantId } });
+    await db.supplierDocument.deleteMany({ where: { tenantId } });
+    await db.supplierDocumentType.deleteMany({ where: { tenantId } });
+    await db.supplier.deleteMany({ where: { tenantId } });
+    await db.impactAssessment.deleteMany({ where: { tenantId } });
+    await db.assetDueDate.deleteMany({ where: { tenantId } });
+    await db.asset.deleteMany({ where: { tenantId } });
+    await db.site.deleteMany({ where: { tenantId } });
+    await db.tenantRequirement.deleteMany({ where: { tenantId } });
+    await db.tenant.deleteMany({ where: { id: tenantId } });
+    await db.$disconnect();
+  });
+
+  it("no enlaza a un módulo inactivo, porque su pantalla responde 404", async () => {
+    // Inspecciones, Equipos y Proveedores vienen inactivos.
+    const { dueItems } = await getTenantDashboard(tenantId, new Date("2031-01-01T12:00:00.000Z"), slug, db);
+
+    expect(dueItems.map((d) => d.href)).toEqual([null, null, null]);
+  });
+
+  it("lleva al activo, al equipo y al proveedor", async () => {
+    await db.tenantModuleActivation.createMany({
+      data: ["inspections", "instruments", "suppliers"].map((moduleKey) => ({ tenantId, moduleKey, enabled: true })),
+    });
+
+    const { dueItems } = await getTenantDashboard(tenantId, new Date("2031-01-01T12:00:00.000Z"), slug, db);
+
+    expect(Object.fromEntries(dueItems.map((d) => [d.title, d.href]))).toEqual({
+      asset_due_date: `/t/${slug}/assets/${assetId}`,
+      instrument_impact: `/t/${slug}/instruments/${assetId}`,
+      supplier_document: `/t/${slug}/suppliers/${supplierId}`,
+    });
+  });
+});
+
+describe.skipIf(!hasDatabase)("vencimientos de hoy en el panel y en los tableros", () => {
+  const db = new PrismaClient();
+  const slug = `dash-hoy-${Date.now()}`;
+  let tenantId = "";
+
+  beforeAll(async () => {
+    tenantId = (await createTenantWithTemplate({ name: "Dash Hoy", slug, size: "small", activity: "servicios" })).id;
+    for (const [title, dueAt] of [
+      ["Sin hora", "2031-03-10T00:00:00.000Z"],
+      ["Fin del día", "2031-03-10T23:59:59.999-03:00"],
+      ["Ayer", "2031-03-09T00:00:00.000Z"],
+    ]) {
+      await createDueItem({ tenantId, title, entityType: "risk", dueAt: new Date(dueAt) }, db);
+    }
+  });
+
+  afterAll(async () => {
+    await db.dueItem.deleteMany({ where: { tenantId } });
+    await db.tenantRequirement.deleteMany({ where: { tenantId } });
+    await db.tenant.deleteMany({ where: { id: tenantId } });
+    await db.$disconnect();
+  });
+
+  it.each(["2031-03-10T00:00:00-03:00", "2031-03-10T23:59:00-03:00"])("a las %s solo está vencido lo de ayer", async (instant) => {
+    const now = new Date(instant);
+    const panel = await getTenantDashboard(tenantId, now, slug, db);
+    const modulo = await getModuleTelemetry(tenantId, ["risk"], now, slug, db);
+
+    expect(panel.dueCounts).toEqual({ overdue: 1, soon: 2, open: 3 });
+    expect(modulo.dueCounts).toEqual(panel.dueCounts);
+    expect(panel.dueItems.map((d) => d.tone)).toEqual(["overdue", "soon", "soon"]);
   });
 });

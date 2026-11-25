@@ -8,6 +8,7 @@ import {
 import { isStale } from "@/domain/risks/review";
 import { assessmentLevelLabel } from "@/domain/risks/assessment";
 import { opportunityProgress, riskProgress, type ActionSnapshot } from "@/domain/risks/progress";
+import { isPastDue } from "@/domain/due/day";
 
 export type RegisterRow = {
   id: string;
@@ -50,7 +51,7 @@ export async function loadRiskRegister(tenantId: string) {
     links.filter((l) => l.targetType === targetType && l.targetId === id).map((l) => l.action);
   const hasOverdue = (targetType: "risk" | "opportunity", id: string) =>
     openActions.some(
-      (a) => a.dueAt && a.dueAt < now && a.links.some((l) => l.targetType === targetType && l.targetId === id),
+      (a) => a.dueAt && isPastDue(a.dueAt, now) && a.links.some((l) => l.targetType === targetType && l.targetId === id),
     );
 
   const riskRows: RegisterRow[] = risks.map((r) => {

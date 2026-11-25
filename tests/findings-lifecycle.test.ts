@@ -155,3 +155,18 @@ describe("who closes a measure", () => {
     expect(canCloseMeasure({ actorUserId: "root", ownerUserId: "u1", isPlatformSuperuser: true })).toBe(true);
   });
 });
+
+describe("medida que vence hoy", () => {
+  it("no figura vencida en todo el día", () => {
+    const steps = pendingSteps({
+      status: "in_progress",
+      type: "observation",
+      reworkSince: null,
+      measures: [{ ...m("open"), dueAt: new Date("2026-10-05T00:00:00Z") }],
+      verificationDueAt: null,
+      now: new Date("2026-10-05T22:00:00-03:00"),
+    });
+
+    expect(steps).toEqual(["Falta cerrar 1 medida, con evidencia"]);
+  });
+});

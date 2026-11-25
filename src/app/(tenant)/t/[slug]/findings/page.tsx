@@ -30,6 +30,7 @@ import {
   Field,
   INPUT_CLASS,
 } from "@/components/ui";
+import { isPastDue } from "@/domain/due/day";
 
 type Params = Promise<{ slug: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -90,7 +91,7 @@ function MeasureStatusCell({
 }
 
 function isPast(date: Date): boolean {
-  return date.getTime() < Date.now();
+  return isPastDue(date, new Date());
 }
 
 export default async function FindingsListPage({

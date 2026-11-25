@@ -1,3 +1,4 @@
+import { dueColumns } from "@/domain/due/day";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaClient, type FindingType } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
@@ -167,7 +168,7 @@ describe.skipIf(!hasDatabase)("finding lifecycle (integration)", () => {
   it("cancels with a reason and closes pending due items", async () => {
     const f = await publishedFinding("nonconformity", [users.owner]);
     await db.dueItem.create({
-      data: { tenantId, title: "Medida", entityType: "finding_measure", entityId: f.measures[0].id, dueAt: new Date("2031-01-01"), remindAt: new Date("2030-12-25") },
+      data: { tenantId, title: "Medida", entityType: "finding_measure", entityId: f.measures[0].id, ...dueColumns(new Date("2031-01-01"), 7) },
     });
     await expect(
       cancelFinding({ tenantId, findingId: f.id, actorUserId: users.admin, reason: " " }, db),

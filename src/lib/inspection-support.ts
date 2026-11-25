@@ -1,6 +1,7 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import { reminderStartsAt } from "@/domain/automation/due";
-import type { ACTION_ENTITY_TYPE } from "@/domain/actions/types";
+import { dueColumns } from "@/domain/due/day";
+import { reminderReset } from "@/domain/due/reminders";
+import type { DueEntityType } from "@/domain/due/registry";
 
 export type Db = PrismaClient;
 export type Tx = Prisma.TransactionClient;
@@ -24,12 +25,10 @@ export async function writeAudit(
   await db.inspectionAudit.create({ data: input });
 }
 
-/** Vencimientos de equipos de medición (Task 16): `entityId` es el equipo, o la evaluación en `instrument_impact`. */
-export type InstrumentDueEntityType = "instrument_calibration" | "instrument_verification" | "instrument_impact";
-
 export type DueItemSpec = {
   tenantId: string;
-  entityType: "inspection_plan" | "asset_due_date" | InstrumentDueEntityType | typeof ACTION_ENTITY_TYPE;
+  entityType: DueEntityType;
+  /** En los equipos de medición es el equipo, o la evaluación en `instrument_impact`. */
   entityId: string;
   title: string;
   dueAt: Date;
@@ -39,16 +38,14 @@ export type DueItemSpec = {
   personId: string | null;
 };
 
-/** Fila de `DueItem` con el mismo cálculo de `remindAt` que `src/lib/automation.ts`. */
+/** Fila de `DueItem` con el mismo cálculo de fechas que `src/lib/automation.ts`. */
 export function dueItemRow(spec: DueItemSpec) {
   return {
     tenantId: spec.tenantId,
     title: spec.title,
     entityType: spec.entityType,
     entityId: spec.entityId,
-    dueAt: spec.dueAt,
-    leadDays: spec.leadDays,
-    remindAt: reminderStartsAt(spec.dueAt, spec.leadDays),
+    ...dueColumns(spec.dueAt, spec.leadDays),
     ownerUserId: spec.ownerUserId,
     siteId: spec.siteId,
     personId: spec.personId,
@@ -65,24 +62,22 @@ export async function syncOpenDueItem(tx: Tx, spec: DueItemSpec) {
   const open = await tx.dueItem.findMany({
     where: { tenantId: spec.tenantId, entityType: spec.entityType, entityId: spec.entityId, status: "open" },
     orderBy: { createdAt: "desc" },
-    select: { id: true },
+    select: { id: true, dueOn: true, leadDays: true, ownerUserId: true },
   });
   const [keep, ...extra] = open;
   if (extra.length > 0) await tx.dueItem.updateMany({ where: { id: { in: extra.map((d) => d.id) } }, data: { status: "closed" } });
   const row = dueItemRow(spec);
   if (!keep) return tx.dueItem.create({ data: row });
+  const columns = dueColumns(row.dueAt, row.leadDays);
   return tx.dueItem.update({
     where: { id: keep.id },
     data: {
       title: row.title,
-      dueAt: row.dueAt,
-      leadDays: row.leadDays,
-      remindAt: row.remindAt,
+      ...columns,
       ownerUserId: row.ownerUserId,
       siteId: row.siteId,
       personId: row.personId,
-      lastReminderKind: null,
-      lastRemindedAt: null,
+      ...reminderReset(keep, { ...columns, ownerUserId: row.ownerUserId }),
     },
   });
 }

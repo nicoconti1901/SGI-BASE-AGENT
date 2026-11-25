@@ -6,8 +6,9 @@ import {
   summarizeCompliance,
   type DueItemView,
 } from "@/domain/dashboard/summary";
-import { FINDING_MEASURE_ENTITY_TYPE } from "@/domain/findings/types";
-import { INDICATOR_MEASUREMENT_ENTITY_TYPE } from "@/domain/indicators/types";
+import { dueToday } from "@/domain/due/day";
+import type { DueEntityType, DueParentRef } from "@/domain/due/registry";
+import { getEnabledModules } from "@/lib/modules";
 
 const DUE_LIST_SIZE = 8;
 
@@ -34,33 +35,37 @@ async function toDueViews(
   slug: string,
   db: PrismaClient,
 ) {
-  const idsOf = (type: string) =>
+  const idsOf = (type: DueEntityType) =>
     shown.flatMap((i) => (i.entityType === type && i.entityId ? [i.entityId] : []));
-  const [indicators, measures] = await Promise.all([
-    db.indicator.findMany({
-      where: { tenantId, id: { in: idsOf(INDICATOR_MEASUREMENT_ENTITY_TYPE) } },
-      select: { id: true, objectiveId: true },
-    }),
-    db.findingMeasure.findMany({
-      where: { tenantId, id: { in: idsOf(FINDING_MEASURE_ENTITY_TYPE) } },
-      select: { id: true, findingId: true },
-    }),
+  /** Consulta los padres solo de los tipos presentes en la lista. */
+  const parentsOf = async <K extends keyof DueParentRef>(
+    type: DueEntityType,
+    key: K,
+    query: (where: { tenantId: string; id: { in: string[] } }) => Promise<({ id: string } & Pick<DueParentRef, K>)[]>,
+  ) => {
+    const ids = idsOf(type);
+    if (ids.length === 0) return [];
+    const rows = await query({ tenantId, id: { in: ids } });
+    return rows.map((row) => [`${type}:${row.id}`, { [key]: row[key] } as DueParentRef] as const);
+  };
+  const [enabled, ...found] = await Promise.all([
+    getEnabledModules(tenantId, db),
+    parentsOf("indicator_measurement", "objectiveId", (where) => db.indicator.findMany({ where, select: { id: true, objectiveId: true } })),
+    parentsOf("finding_measure", "findingId", (where) => db.findingMeasure.findMany({ where, select: { id: true, findingId: true } })),
+    parentsOf("asset_due_date", "assetId", (where) => db.assetDueDate.findMany({ where, select: { id: true, assetId: true } })),
+    parentsOf("inspection_plan", "assetId", (where) => db.inspectionPlan.findMany({ where, select: { id: true, assetId: true } })),
+    parentsOf("instrument_impact", "assetId", (where) => db.impactAssessment.findMany({ where, select: { id: true, assetId: true } })),
+    parentsOf("supplier_document", "supplierId", (where) => db.supplierDocument.findMany({ where, select: { id: true, supplierId: true } })),
   ]);
-  const objectiveByIndicator = new Map(indicators.map((i) => [i.id, i.objectiveId]));
-  const findingByMeasure = new Map(measures.map((m) => [m.id, m.findingId]));
+  const parents = new Map<string, DueParentRef>(found.flat());
 
   return shown.map((item) => {
-    const parent = item.entityId
-      ? {
-          objectiveId: objectiveByIndicator.get(item.entityId),
-          findingId: findingByMeasure.get(item.entityId),
-        }
-      : {};
+    const parent = parents.get(`${item.entityType}:${item.entityId}`) ?? {};
     return {
       id: item.id,
       title: item.title,
       dueAt: item.dueAt,
-      ...describeDueItem(item, slug, now, item.leadDays, parent),
+      ...describeDueItem(item, slug, now, item.leadDays, parent, enabled),
     };
   });
 }
@@ -73,13 +78,14 @@ export async function getTenantDashboard(
   db: PrismaClient = prisma,
 ): Promise<TenantDashboard> {
   // Los conteos salen de la base: con la Fase 5 una empresa puede tener miles de vencimientos abiertos.
-  // "Por vencer" ⇔ remindAt ≤ ahora ≤ dueAt, igual que classifyDueWindow.
+  // "Por vencer" ⇔ remindOn ≤ hoy ≤ dueOn, igual que classifyDueWindow.
+  const today = dueToday(now);
   const open = { tenantId, status: "open" as const };
   const [requirements, shown, overdue, soon, openCount] = await Promise.all([
     db.tenantRequirement.findMany({ where: { tenantId }, select: { status: true } }),
     db.dueItem.findMany({
       where: open,
-      orderBy: { dueAt: "asc" },
+      orderBy: [{ dueOn: "asc" }, { dueAt: "asc" }],
       take: DUE_LIST_SIZE,
       select: {
         id: true,
@@ -90,8 +96,8 @@ export async function getTenantDashboard(
         leadDays: true,
       },
     }),
-    db.dueItem.count({ where: { ...open, dueAt: { lt: now } } }),
-    db.dueItem.count({ where: { ...open, dueAt: { gte: now }, remindAt: { lte: now } } }),
+    db.dueItem.count({ where: { ...open, dueOn: { lt: today } } }),
+    db.dueItem.count({ where: { ...open, dueOn: { gte: today }, remindOn: { lte: today } } }),
     db.dueItem.count({ where: open }),
   ]);
 
@@ -121,6 +127,7 @@ export async function getModuleTelemetry(
   if (entityTypes.length === 0) {
     return { dueItems: [], dueCounts: { overdue: 0, soon: 0, open: 0 } };
   }
+  const today = dueToday(now);
   const open = {
     tenantId,
     status: "open" as const,
@@ -129,7 +136,7 @@ export async function getModuleTelemetry(
   const [shown, overdue, soon, openCount] = await Promise.all([
     db.dueItem.findMany({
       where: open,
-      orderBy: { dueAt: "asc" },
+      orderBy: [{ dueOn: "asc" }, { dueAt: "asc" }],
       take: MODULE_DUE_LIST_SIZE,
       select: {
         id: true,
@@ -140,8 +147,8 @@ export async function getModuleTelemetry(
         leadDays: true,
       },
     }),
-    db.dueItem.count({ where: { ...open, dueAt: { lt: now } } }),
-    db.dueItem.count({ where: { ...open, dueAt: { gte: now }, remindAt: { lte: now } } }),
+    db.dueItem.count({ where: { ...open, dueOn: { lt: today } } }),
+    db.dueItem.count({ where: { ...open, dueOn: { gte: today }, remindOn: { lte: today } } }),
     db.dueItem.count({ where: open }),
   ]);
   return {
@@ -160,7 +167,7 @@ export async function getPlatformOverview(
   const [tenants, openDue, overdue] = await Promise.all([
     db.tenant.count(),
     db.dueItem.count({ where: { status: "open" } }),
-    db.dueItem.count({ where: { status: "open", dueAt: { lt: now } } }),
+    db.dueItem.count({ where: { status: "open", dueOn: { lt: dueToday(now) } } }),
   ]);
   return { tenants, openDue, overdue };
 }

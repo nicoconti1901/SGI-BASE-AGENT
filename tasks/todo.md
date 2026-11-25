@@ -876,19 +876,19 @@ Verificación común a cada tarea: `npx tsc --noEmit`, `npm run lint`, `npm test
   - Archivos: `src/lib/automation.ts`, `t/[slug]/automations/page.tsx`, el test.
 
 ### V1 — fundación (en serie)
-- [ ] 21.1 Registro único de tipos (`src/domain/due/registry.ts`)
+- [x] 21.1 (hecho 2026-11-25) Registro único de tipos (`src/domain/due/registry.ts`)
   - Aceptación: todo tipo existente tiene módulo, etiqueta y destino; un tipo sin registrar no compila; `DUE_ROUTES` y `hub.dueTypes` salen del registro.
   - Verificar: unit del registro y de `describeDueItem`.
   - Archivos: registro, `domain/dashboard/summary.ts`, `domain/modules/hub.ts`, `lib/automation.ts`, `lib/inspection-support.ts`, `lib/dashboard.ts`.
-- [ ] 21.2 Día calendario en los datos (`domain/due/day.ts`, `dueOn`, `remindOn`)
+- [x] 21.2 (hecho 2026-11-25) Día calendario en los datos (`domain/due/day.ts`, `dueOn`, `remindOn`)
   - Aceptación: migración con backfill; toda alta o cambio los completa; medianoche UTC conserva su día y 23:59:59-03 también.
   - Verificar: unit de `day.ts`; integración de altas por módulo; `prisma migrate dev` sin diferencias.
   - Archivos: `schema.prisma` y migración, `day.ts`, escritores de `DueItem`.
-- [ ] 21.3 Lecturas por día
+- [x] 21.3 (hecho 2026-11-25) Lecturas por día
   - Aceptación: panel, hubs, ficha de activo y control diario clasifican igual; lo que vence hoy no figura vencido en ningún horario.
   - Verificar: `tests/automation-due.test.ts`, `tests/dashboard.integration.test.ts`.
   - Archivos: `domain/automation/due.ts`, `domain/dashboard/summary.ts`, `lib/dashboard.ts`, `lib/automation.ts`.
-- [ ] 21.4 Sin avisos duplicados y comando local completo
+- [x] 21.4 (hecho 2026-11-25) Sin avisos duplicados y comando local completo
   - Aceptación: guardar sin cambiar `dueOn` ni anticipación no reinicia el aviso; un nuevo responsable recibe el suyo; `job:due-scan` usa `runDueScan`.
   - Verificar: integración sobre `upsertOpenDueItemForEntity` y `syncOpenDueItem`.
   - Archivos: `lib/automation.ts`, `lib/inspection-support.ts`, `scripts/due-scan.ts`.
@@ -931,6 +931,7 @@ Verificación común a cada tarea: `npx tsc --noEmit`, `npm run lint`, `npm test
   - Verificar: integración del control repetido en el mismo día y en días distintos.
 - [ ] 21.12 `/platform/reminders` y retiro de ofertas y de sus tablas (confirmado por el PO el 2026-11-25)
   - Aceptación: último control, errores en palabras, alerta a las 26 h, «Controlar ahora»; semillas, `demo-seed` y tests adaptados.
+  - En la misma migración: eliminar los índices sobre `remindAt` (sin lectores desde 21.3).
   - Verificar: suite, e2e de plataforma, 401 y 503 del endpoint.
 
 ### Checkpoint V4

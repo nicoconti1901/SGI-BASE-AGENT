@@ -108,19 +108,6 @@ export function CreateDueItemForm({ slug }: { slug: string }) {
         />
       </label>
       <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
-        Tipo de entidad
-        <select
-          name="entityType"
-          defaultValue="document"
-          className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] bg-[var(--color-surface)] px-3 py-2 text-[var(--color-ink)]"
-        >
-          <option value="document">document</option>
-          <option value="action">action</option>
-          <option value="indicator">indicator</option>
-          <option value="manual">manual</option>
-        </select>
-      </label>
-      <label className="flex flex-col gap-1 text-sm text-[var(--color-ink-muted)]">
         Vence el
         <input
           name="dueAt"

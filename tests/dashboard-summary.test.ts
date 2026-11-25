@@ -47,6 +47,22 @@ describe("describeDueItem", () => {
     expect(d(30).tone).toBe("ok");
   });
 
+  it("cuenta días de calendario de Argentina y expone el día en que vence", () => {
+    const view = describeDueItem(
+      { ...base, entityType: "risk", dueAt: new Date("2026-09-30T23:59:59.999-03:00") },
+      "acme",
+      new Date("2026-09-30T00:10:00-03:00"),
+    );
+
+    expect(view).toMatchObject({ dueDay: "2026-09-30", daysLeft: 0, tone: "soon" });
+    const tomorrow = describeDueItem(
+      { ...base, entityType: "risk", dueAt: new Date("2026-10-01T00:00:00.000Z") },
+      "acme",
+      new Date("2026-09-30T23:00:00-03:00"),
+    );
+    expect(tomorrow).toMatchObject({ dueDay: "2026-10-01", daysLeft: 1, tone: "soon" });
+  });
+
   it("resuelve tipo legible y link al detalle cuando la entidad tiene ruta propia", () => {
     const risk = describeDueItem(
       { ...base, entityType: "risk", dueAt: inDays(1) },

@@ -52,4 +52,4 @@ export const MEASUREMENT_STATUS_TONE: Record<MeasurementStatus, string> = {
 
 /** La carga de un período vence N días después de que termina (supuesto 1). */
 export const MEASUREMENT_GRACE_DAYS = 10;
-export const INDICATOR_MEASUREMENT_ENTITY_TYPE = "indicator_measurement";
+export const INDICATOR_MEASUREMENT_ENTITY_TYPE = "indicator_measurement" as const;

@@ -127,7 +127,9 @@ describe("dashboard rules", () => {
     const base = { frequency: "monthly" as const, lastLoadedStart: null, createdAt: new Date("2026-08-15T00:00:00Z") };
     // Período pendiente: agosto → vence el 11 de septiembre.
     expect(pendingLoad({ ...base, now: new Date("2026-09-11T00:00:00Z") }).overdue).toBe(false);
-    const late = pendingLoad({ ...base, now: new Date("2026-09-12T00:00:00Z") });
+    // Todo el día 11 en Argentina todavía se puede cargar.
+    expect(pendingLoad({ ...base, now: new Date("2026-09-11T23:00:00-03:00") }).overdue).toBe(false);
+    const late = pendingLoad({ ...base, now: new Date("2026-09-12T00:00:00-03:00") });
     expect(late.overdue).toBe(true);
     expect(late.period.key).toBe("2026-08");
   });

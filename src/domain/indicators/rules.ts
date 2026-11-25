@@ -4,6 +4,7 @@ import {
   type IndicatorFrequency,
   type MeasurementStatus,
 } from "@/domain/indicators/types";
+import { isPastDue } from "@/domain/due/day";
 
 // ─── Estado de una medición (determinista: 9001:2026 pide software confiable) ──
 
@@ -171,7 +172,7 @@ export function pendingLoad(input: {
 }): { period: Period; dueAt: Date; overdue: boolean } {
   const period = nextPendingPeriod(input);
   const dueAt = measurementDueAt(period);
-  return { period, dueAt, overdue: dueAt < input.now };
+  return { period, dueAt, overdue: isPastDue(dueAt, input.now) };
 }
 
 export type DashboardCounts = Record<MeasurementStatus, number> & { overdueLoads: number };

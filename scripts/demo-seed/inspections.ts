@@ -1,3 +1,4 @@
+import { dueColumns } from "../../src/domain/due/day";
 import { createAsset } from "../../src/lib/assets";
 import { addInspectionPhoto, closeInspection, getInspectionView, saveAnswer, saveInspectionMeta, startInspection } from "../../src/lib/inspections";
 import { scheduleSiteInspection, startSiteInspection } from "../../src/lib/inspection-sites";
@@ -306,7 +307,7 @@ async function seedInspections(t: DemoTenant, assets: Record<string, string>) {
     if (actions[1]) {
       const overdue = new Date(`${ago(6)}T12:00:00.000Z`);
       await db.action.update({ where: { id: actions[1].id }, data: { dueAt: overdue } });
-      await db.dueItem.updateMany({ where: { tenantId: t.id, entityType: ACTION_ENTITY_TYPE, entityId: actions[1].id, status: "open" }, data: { dueAt: overdue } });
+      await db.dueItem.updateMany({ where: { tenantId: t.id, entityType: ACTION_ENTITY_TYPE, entityId: actions[1].id, status: "open" }, data: dueColumns(overdue, 7) });
     }
   });
 }

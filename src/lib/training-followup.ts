@@ -8,13 +8,15 @@
  *   no avisa; solo avisan las transiciones posteriores (se marca como ya avisado con `lastReminderKind`).
  * - Evaluación de eficacia por sesión, con excepciones por persona; "no eficaz" crea una `Action` o reprograma.
  */
+import { dueColumns } from "@/domain/due/day";
+import { reminderReset } from "@/domain/due/reminders";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { closeDueItemsForEntity, createDueItem, upsertOpenDueItemForEntity } from "@/lib/automation";
 import { ACTION_ENTITY_TYPE } from "@/domain/actions/types";
 import { TrainingError, audit } from "@/lib/training-config";
 import { cellsCte, trainingToday } from "@/lib/training";
-import { classifyDueWindow, reminderStartsAt } from "@/domain/automation/due";
+import { classifyDueWindow } from "@/domain/automation/due";
 import { addDays, dateOnly, isIsoDate, type IsoDate } from "@/domain/training/dates";
 import {
   EVALUATION_METHOD_LABELS,
@@ -122,6 +124,7 @@ type OpenItem = {
   entityId: string | null;
   title: string;
   dueAt: Date;
+  dueOn: Date;
   leadDays: number;
   ownerUserId: string | null;
   siteId: string | null;
@@ -157,7 +160,7 @@ async function reconcilePeople(
       status: "open",
       ...(opts.personIds ? { entityId: { in: opts.personIds } } : {}),
     },
-    select: { id: true, entityId: true, title: true, dueAt: true, leadDays: true, ownerUserId: true, siteId: true },
+    select: { id: true, entityId: true, title: true, dueAt: true, dueOn: true, leadDays: true, ownerUserId: true, siteId: true },
     orderBy: { createdAt: "desc" },
     take: OPEN_ITEMS_LIMIT,
   });
@@ -200,22 +203,22 @@ async function reconcilePeople(
     } else if (plan.action === "update" && current) {
       const dueAt = dateFromIso(plan.dueAt);
       const windowChanged = dateOnly(current.dueAt) !== plan.dueAt || current.leadDays !== plan.leadDays;
+      const columns = dueColumns(dueAt, plan.leadDays);
       await db.dueItem.update({
         where: { id: current.id },
         data: {
           title: plan.title,
-          dueAt,
-          leadDays: plan.leadDays,
-          remindAt: reminderStartsAt(dueAt, plan.leadDays),
+          ...columns,
           ownerUserId: plan.ownerUserId,
           siteId: plan.siteId,
           personId: summary.personId,
-          // Si solo cambiaron los conteos o el dueño, no se vuelve a avisar; si cambió la ventana, sí.
-          ...(windowChanged
-            ? opts.silent
+          // En una conciliación silenciosa (importaciones, cambio del responsable de capacitaciones) el aviso
+          // queda "ya avisado", y un cambio de dueño solo no lo vuelve a disparar (SPEC-training).
+          ...(opts.silent
+            ? windowChanged
               ? silentReminderState(dueAt, plan.leadDays, opts.now)
-              : { lastReminderKind: null, lastRemindedAt: null }
-            : {}),
+              : {}
+            : reminderReset(current, { ...columns, ownerUserId: plan.ownerUserId })),
         },
       });
       result.updated++;

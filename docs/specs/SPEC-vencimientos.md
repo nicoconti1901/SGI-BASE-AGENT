@@ -116,6 +116,7 @@ Vencido ⇔ `dueOn < hoy`. Por vencer ⇔ `remindOn ≤ hoy ≤ dueOn`. Lo usan 
 1. Uno al entrar en «por vencer» y uno al vencer.
 2. Si sigue vencido, uno cada 7 días.
 3. Cambiar título, sede o responsable no reinicia el aviso. Cambiar `dueOn` o la anticipación, sí. Un nuevo responsable recibe su primer aviso en el siguiente control.
+   Excepción (aprobada el 2026-11-25): en Capacitaciones, cambiar el responsable de avisos del módulo no vuelve a avisar, porque enviaría de golpe un aviso por persona (alta silenciosa de `SPEC-training`).
 4. Claim y notificación van en la misma transacción por empresa; si una empresa falla, las demás siguen y queda registrado.
 
 ### Resumen del administrador
@@ -138,9 +139,12 @@ Título, notas, fecha, responsable, sede opcional, anticipación (7 por defecto)
 | `DueItem.dueOn`, `remindOn` (con backfill) + índices `[tenantId, status, dueOn]`, `[status, remindOn]` | V1 |
 | `InAppNotification.kind`, `href`, `dedupeKey` + único `[userId, dedupeKey]` e índice `[userId, tenantId, readAt]`. Las que no tienen `userId` dejan de mostrarse | V3 |
 | Eliminar `automation_offer`, `tenant_offer_activation` y activaciones del módulo `automations`. `AutomationRun` se conserva | V4 |
+| Eliminar los índices sobre `remindAt`, que ya nadie lee | V4 |
 | `DueItem.assignedUserId`; `DueItemReschedule` (tenantId, dueItemId, fromDueOn, toDueOn, reason, actorUserId, createdAt) | V5 |
 | `CustomDueDate` (tenantId, title, notes, dueOn, anchorDay, recurrence, ownerUserId, siteId, leadDays, status, completedAt, completedByUserId, completionNote, previousId) + único `[tenantId, previousId]` para no duplicar la siguiente | V6 |
 | `TenantReminderSetting` (tenantId, moduleKey, enabled, leadDays?, defaultOwnerUserId?) + único `[tenantId, moduleKey]`. Sin fila valen los sugeridos | V7 |
+
+La migración de `dueOn`/`remindOn` agrega columnas obligatorias y una restricción: no es compatible con el código anterior y se despliega con la aplicación y el control diario detenidos.
 
 ## 7. Estructura
 

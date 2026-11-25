@@ -142,17 +142,15 @@ const DUE_TONE_STATUS: Record<DueTone, ChipStatus> = {
 };
 
 function dueChipText(tone: DueTone, daysLeft: number): string {
-  if (tone === "overdue") {
-    const d = Math.abs(daysLeft);
-    return d === 0 ? "Venció hoy" : `Vencido hace ${d} d`;
-  }
+  // Vencido implica un día anterior a hoy (daysLeft < 0).
+  if (tone === "overdue") return `Vencido hace ${-daysLeft} d`;
   return daysLeft === 0 ? "Vence hoy" : `En ${daysLeft} d`;
 }
 
 export type DueMiniItem = {
   id: string;
   title: string;
-  dueAt: Date;
+  dueDay: string;
   typeLabel: string;
   href: string | null;
   tone: DueTone;
@@ -167,7 +165,7 @@ export function DueMiniList({ items }: { items: readonly DueMiniItem[] }) {
         <li key={item.id} className="py-2">
           <div className="flex items-center justify-between gap-3">
             <span className="font-[family-name:var(--font-mono)] text-xs tabular-nums text-[var(--color-ink-muted)]">
-              {item.dueAt.toISOString().slice(0, 10)} · {item.typeLabel}
+              {item.dueDay} · {item.typeLabel}
             </span>
             <StatusChip
               status={DUE_TONE_STATUS[item.tone]}

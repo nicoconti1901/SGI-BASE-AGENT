@@ -4,17 +4,19 @@ import {
   classifyDueWindow,
   DUE_REMINDERS_OFFER_CODE,
   NATIVE_OFFER_CATALOG,
-  reminderStartsAt,
   shouldEmitReminder,
   type ReminderKind,
 } from "@/domain/automation/due";
+import { dueColumns, dueToday } from "@/domain/due/day";
+import { reminderReset } from "@/domain/due/reminders";
+import type { DueEntityType } from "@/domain/due/registry";
 import { buildReminderDigests, type DigestItem, type DigestMember } from "@/domain/automation/digest";
 import { getEmailSender, type EmailSender } from "@/lib/mail";
 
 export type CreateDueItemInput = {
   tenantId: string;
   title: string;
-  entityType: string;
+  entityType: DueEntityType;
   entityId?: string | null;
   dueAt: Date;
   leadDays?: number;
@@ -117,9 +119,7 @@ export async function createDueItem(
       title,
       entityType: input.entityType,
       entityId: input.entityId ?? null,
-      dueAt: input.dueAt,
-      leadDays,
-      remindAt: reminderStartsAt(input.dueAt, leadDays),
+      ...dueColumns(input.dueAt, leadDays),
       ownerUserId: input.ownerUserId ?? null,
       siteId: input.siteId ?? null,
       personId: input.personId ?? null,
@@ -145,18 +145,17 @@ export async function upsertOpenDueItemForEntity(
 
   if (existing) {
     const leadDays = input.leadDays ?? existing.leadDays;
+    const columns = dueColumns(input.dueAt, leadDays);
+    const ownerUserId = input.ownerUserId !== undefined ? input.ownerUserId : existing.ownerUserId;
     return db.dueItem.update({
       where: { id: existing.id },
       data: {
         title: input.title.trim(),
-        dueAt: input.dueAt,
-        leadDays,
-        remindAt: reminderStartsAt(input.dueAt, leadDays),
+        ...columns,
         ...(input.ownerUserId !== undefined ? { ownerUserId: input.ownerUserId } : {}),
         ...(input.siteId !== undefined ? { siteId: input.siteId } : {}),
         ...(input.personId !== undefined ? { personId: input.personId } : {}),
-        lastReminderKind: null,
-        lastRemindedAt: null,
+        ...reminderReset(existing, { ...columns, ownerUserId }),
       },
     });
   }
@@ -189,7 +188,7 @@ export async function listDueItems(
 ) {
   return db.dueItem.findMany({
     where: { tenantId },
-    orderBy: [{ status: "asc" }, { dueAt: "asc" }],
+    orderBy: [{ status: "asc" }, { dueOn: "asc" }, { dueAt: "asc" }],
   });
 }
 
@@ -243,7 +242,7 @@ export type ScanDueRemindersResult = {
 };
 
 /**
- * Recorre los vencimientos que entraron en ventana (remindAt ≤ ahora) y avisa una vez por
+ * Recorre los vencimientos que entraron en ventana (remindOn ≤ hoy) y avisa una vez por
  * transición (próximo → vencido). En la app: una notificación por vencimiento, al responsable
  * o a la empresa. Por mail: un resumen por persona (ver buildReminderDigests).
  */
@@ -275,7 +274,7 @@ export async function scanDueReminders(options?: {
     const activeTenants = offer?.enabledGlobal ? offer.activations.map((a) => a.tenantId) : [];
     const inWindow = {
       status: "open" as const,
-      remindAt: { lte: now },
+      remindOn: { lte: dueToday(now) },
       ...(options?.tenantId ? { tenantId: options.tenantId } : {}),
     };
 
@@ -288,13 +287,14 @@ export async function scanDueReminders(options?: {
           title: true,
           entityType: true,
           dueAt: true,
+          dueOn: true,
           leadDays: true,
           ownerUserId: true,
           lastReminderKind: true,
           tenant: { select: { name: true } },
           site: { select: { name: true } },
         },
-        orderBy: { dueAt: "asc" },
+        orderBy: [{ dueOn: "asc" }, { dueAt: "asc" }],
       }),
       db.dueItem.count({ where: { ...inWindow, AND: [{ tenantId: { notIn: activeTenants } }] } }),
     ]);
@@ -319,7 +319,8 @@ export async function scanDueReminders(options?: {
         tenantName: item.tenant.name,
         title: item.title,
         kind,
-        dueAt: item.dueAt,
+        // El resumen muestra el día calendario, no el instante.
+        dueAt: item.dueOn,
         ownerUserId: item.ownerUserId,
         siteName: item.site?.name ?? null,
       });

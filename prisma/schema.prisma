@@ -382,6 +382,9 @@ model DueItem {
   leadDays         Int                 @default(7)
   /// dueAt − leadDays: desde cuándo está "por vencer". Lo mantiene src/lib/automation.ts.
   remindAt         DateTime
+  /// Día calendario en que vence y desde el que está "por vencer". Todas las fechas se escriben con `dueColumns` (src/domain/due/day.ts).
+  dueOn            DateTime            @db.Date
+  remindOn         DateTime            @db.Date
   /// Quién lo resuelve: recibe el aviso en su resumen diario. Sin FK, como los demás ownerUserId; el scan valida la membresía.
   ownerUserId      String?
   /// Para agrupar los avisos por sede o persona (módulos de la Fase 5).
@@ -400,6 +403,8 @@ model DueItem {
   @@index([tenantId, status, dueAt])
   @@index([tenantId, status, remindAt])
   @@index([status, remindAt])
+  @@index([tenantId, status, dueOn])
+  @@index([status, remindOn])
   @@index([ownerUserId])
   @@index([tenantId, entityType, entityId])
   @@map("due_item")

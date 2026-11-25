@@ -1,7 +1,7 @@
+import { dueColumns } from "@/domain/due/day";
 import { randomUUID } from "node:crypto";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { reminderStartsAt } from "@/domain/automation/due";
 import { closeDueItemsForEntity, upsertOpenDueItemForEntity, type CreateDueItemInput } from "@/lib/automation";
 import { cleanName, normalizeKey } from "@/domain/masterdata/roster";
 import { buildApprovedList, type ApprovedList } from "@/domain/suppliers/approved-list";
@@ -223,7 +223,7 @@ async function syncDocumentDueItems(
 /** Las funciones de automatización tipan `PrismaClient`; en una transacción usan los mismos delegados. */
 export const asClient = (db: Tx | PrismaClient) => db as unknown as PrismaClient;
 
-export const SUPPLIER_EVALUATION_ENTITY = "supplier_evaluation";
+export const SUPPLIER_EVALUATION_ENTITY = "supplier_evaluation" as const;
 export const SUPPLIER_DOCUMENT_ENTITY = "supplier_document";
 const REEVALUATION_LEAD_DAYS = 30;
 const INITIAL_EVALUATION_LEAD_DAYS = 7;
@@ -823,9 +823,7 @@ export async function applySupplierImport(
             title: `Evaluar proveedor nuevo: ${row.legalName}`,
             entityType: SUPPLIER_EVALUATION_ENTITY,
             entityId: id,
-            dueAt,
-            leadDays: INITIAL_EVALUATION_LEAD_DAYS,
-            remindAt: reminderStartsAt(dueAt, INITIAL_EVALUATION_LEAD_DAYS),
+            ...dueColumns(dueAt, INITIAL_EVALUATION_LEAD_DAYS),
             ownerUserId: row.ownerEmail ? (ctx.ownerByEmail.get(row.ownerEmail) ?? null) : null,
           })),
         });
