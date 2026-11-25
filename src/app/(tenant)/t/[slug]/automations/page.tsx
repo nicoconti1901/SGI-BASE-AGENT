@@ -6,7 +6,7 @@ import { getMembership } from "@/lib/identity";
 import {
   listDueItems,
   listOffersWithActivation,
-  listTenantNotifications,
+  listVisibleNotifications,
 } from "@/lib/automation";
 import { labelReminderKind } from "@/domain/automation/due";
 
@@ -38,7 +38,7 @@ export default async function TenantAutomationsPage({
   const [offers, dueItems, notifications] = await Promise.all([
     listOffersWithActivation(tenant.id),
     listDueItems(tenant.id),
-    listTenantNotifications(tenant.id),
+    listVisibleNotifications(tenant.id, ctx.userId),
   ]);
 
   return (
