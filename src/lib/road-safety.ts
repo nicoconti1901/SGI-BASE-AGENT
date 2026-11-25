@@ -3,6 +3,7 @@
  * de odómetro y avisos mensuales. Todo lleva `tenantId`; los permisos se verifican acá, no solo en la UI.
  */
 import { dueColumns } from "@/domain/due/day";
+import { reminderReset } from "@/domain/due/reminders";
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { closeDueItemsForEntity, createDueItem } from "@/lib/automation";
@@ -556,7 +557,7 @@ export async function syncKmDueItems(
   const today = opts.today ?? localDay(new Date());
   const open = await db.dueItem.findMany({
     where: { tenantId, entityType: KM_DUE_ENTITY_TYPE, status: "open" },
-    select: { id: true, entityId: true, title: true, dueAt: true },
+    select: { id: true, entityId: true, title: true, dueAt: true, dueOn: true, leadDays: true, ownerUserId: true },
   });
   const openBy = new Map(open.map((o) => [o.entityId, o]));
   const months = new Set<MonthKey>([lastClosedMonth(today), ...open.map((o) => o.entityId).filter((m): m is string => Boolean(m))]);
@@ -578,8 +579,11 @@ export async function syncKmDueItems(
     if (!current) {
       await createDueItem({ tenantId, title, entityType: KM_DUE_ENTITY_TYPE, entityId: month, dueAt, leadDays: KM_LEAD_DAYS }, db);
     } else if (current.title !== title || current.dueAt.getTime() !== dueAt.getTime()) {
-      // Solo se toca si cambió algo: reescribirlo cada vez reiniciaría el aviso ya enviado.
-      await db.dueItem.update({ where: { id: current.id }, data: { title, ...dueColumns(dueAt, KM_LEAD_DAYS) } });
+      const columns = dueColumns(dueAt, KM_LEAD_DAYS);
+      await db.dueItem.update({
+        where: { id: current.id },
+        data: { title, ...columns, ...reminderReset(current, { ...columns, ownerUserId: current.ownerUserId }) },
+      });
     }
     result.opened.push(month);
   }

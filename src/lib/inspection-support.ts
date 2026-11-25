@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { dueColumns } from "@/domain/due/day";
+import { reminderReset } from "@/domain/due/reminders";
 import type { DueEntityType } from "@/domain/due/registry";
 
 export type Db = PrismaClient;
@@ -61,22 +62,22 @@ export async function syncOpenDueItem(tx: Tx, spec: DueItemSpec) {
   const open = await tx.dueItem.findMany({
     where: { tenantId: spec.tenantId, entityType: spec.entityType, entityId: spec.entityId, status: "open" },
     orderBy: { createdAt: "desc" },
-    select: { id: true },
+    select: { id: true, dueOn: true, leadDays: true, ownerUserId: true },
   });
   const [keep, ...extra] = open;
   if (extra.length > 0) await tx.dueItem.updateMany({ where: { id: { in: extra.map((d) => d.id) } }, data: { status: "closed" } });
   const row = dueItemRow(spec);
   if (!keep) return tx.dueItem.create({ data: row });
+  const columns = dueColumns(row.dueAt, row.leadDays);
   return tx.dueItem.update({
     where: { id: keep.id },
     data: {
       title: row.title,
-      ...dueColumns(row.dueAt, row.leadDays),
+      ...columns,
       ownerUserId: row.ownerUserId,
       siteId: row.siteId,
       personId: row.personId,
-      lastReminderKind: null,
-      lastRemindedAt: null,
+      ...reminderReset(keep, { ...columns, ownerUserId: row.ownerUserId }),
     },
   });
 }

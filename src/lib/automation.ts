@@ -8,6 +8,7 @@ import {
   type ReminderKind,
 } from "@/domain/automation/due";
 import { dueColumns, dueToday } from "@/domain/due/day";
+import { reminderReset } from "@/domain/due/reminders";
 import type { DueEntityType } from "@/domain/due/registry";
 import { buildReminderDigests, type DigestItem, type DigestMember } from "@/domain/automation/digest";
 import { getEmailSender, type EmailSender } from "@/lib/mail";
@@ -144,16 +145,17 @@ export async function upsertOpenDueItemForEntity(
 
   if (existing) {
     const leadDays = input.leadDays ?? existing.leadDays;
+    const columns = dueColumns(input.dueAt, leadDays);
+    const ownerUserId = input.ownerUserId !== undefined ? input.ownerUserId : existing.ownerUserId;
     return db.dueItem.update({
       where: { id: existing.id },
       data: {
         title: input.title.trim(),
-        ...dueColumns(input.dueAt, leadDays),
+        ...columns,
         ...(input.ownerUserId !== undefined ? { ownerUserId: input.ownerUserId } : {}),
         ...(input.siteId !== undefined ? { siteId: input.siteId } : {}),
         ...(input.personId !== undefined ? { personId: input.personId } : {}),
-        lastReminderKind: null,
-        lastRemindedAt: null,
+        ...reminderReset(existing, { ...columns, ownerUserId }),
       },
     });
   }

@@ -152,10 +152,13 @@ describe.skipIf(!hasDatabase)("exposición mensual (integración)", () => {
     });
 
     it("el responsable de la carga pasa a ser el dueño de los avisos abiertos", async () => {
+      await db.dueItem.updateMany({ where: { tenantId: a }, data: { lastReminderKind: "upcoming" } });
       await updateSafetySettings({ tenantId: a, actor: actors.admin, settings: { exposureOwnerUserId: actors.owner.userId } }, db);
       const result = await syncExposureDueItems(a, { today }, db);
       expect(result.updated).toBeGreaterThan(0);
       expect((await dueItems(a)).every((i) => i.ownerUserId === actors.owner.userId)).toBe(true);
+      // El nuevo responsable todavía no fue avisado.
+      expect((await dueItems(a)).every((i) => i.lastReminderKind === null)).toBe(true);
       await expect(updateSafetySettings({ tenantId: a, actor: actors.admin, settings: { exposureOwnerUserId: actors.adminB.userId } }, db)).rejects.toThrow(/no pertenece/);
     });
 

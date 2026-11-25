@@ -888,7 +888,7 @@ Verificación común a cada tarea: `npx tsc --noEmit`, `npm run lint`, `npm test
   - Aceptación: panel, hubs, ficha de activo y control diario clasifican igual; lo que vence hoy no figura vencido en ningún horario.
   - Verificar: `tests/automation-due.test.ts`, `tests/dashboard.integration.test.ts`.
   - Archivos: `domain/automation/due.ts`, `domain/dashboard/summary.ts`, `lib/dashboard.ts`, `lib/automation.ts`.
-- [ ] 21.4 Sin avisos duplicados y comando local completo
+- [x] 21.4 (hecho 2026-11-25) Sin avisos duplicados y comando local completo
   - Aceptación: guardar sin cambiar `dueOn` ni anticipación no reinicia el aviso; un nuevo responsable recibe el suyo; `job:due-scan` usa `runDueScan`.
   - Verificar: integración sobre `upsertOpenDueItemForEntity` y `syncOpenDueItem`.
   - Archivos: `lib/automation.ts`, `lib/inspection-support.ts`, `scripts/due-scan.ts`.

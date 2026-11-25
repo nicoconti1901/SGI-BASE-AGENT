@@ -5,6 +5,7 @@
  * Todo está acotado por `tenantId`; cada carga o corrección deja registro en `MasterDataAudit`.
  */
 import { dueColumns } from "@/domain/due/day";
+import { reminderReset } from "@/domain/due/reminders";
 import type { PersonEmployer, Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { closeDueItemsForEntity, createDueItem } from "@/lib/automation";
@@ -381,7 +382,7 @@ export async function syncExposureDueItems(
     }),
     db.dueItem.findMany({
       where: { tenantId, entityType: EXPOSURE_DUE_ENTITY_TYPE, status: "open", entityId: { in: keys.map((k) => k.entityId) } },
-      select: { id: true, entityId: true, title: true, dueAt: true, ownerUserId: true, siteId: true },
+      select: { id: true, entityId: true, title: true, dueAt: true, dueOn: true, leadDays: true, ownerUserId: true, siteId: true },
     }),
   ]);
   const groups = new Map(loaded.map((l) => [`${l.siteId}:${monthOfDate(l.periodMonth)}`, l._count._all]));
@@ -403,9 +404,10 @@ export async function syncExposureDueItems(
       await createDueItem({ tenantId, title, entityType: EXPOSURE_DUE_ENTITY_TYPE, entityId, dueAt, leadDays: EXPOSURE_LEAD_DAYS, ownerUserId: owner, siteId: site.id }, db);
       result.created++;
     } else if (current.title !== title || current.dueAt.getTime() !== dueAt.getTime() || current.ownerUserId !== owner || current.siteId !== site.id) {
+      const columns = dueColumns(dueAt, EXPOSURE_LEAD_DAYS);
       await db.dueItem.update({
         where: { id: current.id },
-        data: { title, ...dueColumns(dueAt, EXPOSURE_LEAD_DAYS), ownerUserId: owner, siteId: site.id },
+        data: { title, ...columns, ownerUserId: owner, siteId: site.id, ...reminderReset(current, { ...columns, ownerUserId: owner }) },
       });
       result.updated++;
     }

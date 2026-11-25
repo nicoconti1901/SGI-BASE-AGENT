@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { scanDueReminders } from "../src/lib/automation";
 import { prisma } from "../src/lib/db";
+import { runDueScan } from "../src/lib/due-scan";
 
 async function main() {
   const tenantSlug = process.argv[2];
@@ -15,7 +15,7 @@ async function main() {
     tenantId = tenant.id;
   }
 
-  const result = await scanDueReminders({ tenantId });
+  const result = await runDueScan({ tenantId });
   console.log(JSON.stringify(result, null, 2));
 }
 
