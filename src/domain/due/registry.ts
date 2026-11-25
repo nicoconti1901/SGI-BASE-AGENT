@@ -2,7 +2,7 @@
  * Única fuente de los tipos de vencimiento (`DueItem.entityType`): de qué módulo es cada uno, cómo se llama
  * y dónde se resuelve. Crear un vencimiento de un tipo que no esté acá no compila.
  */
-import type { ModuleKey } from "@/domain/modules/catalog";
+import { MODULE_CATALOG, type ModuleKey } from "@/domain/modules/catalog";
 
 /** Ids del registro padre cuando el destino no se arma solo con `entityId` (los resuelve `lib/dashboard.ts`). */
 export type DueParentRef = {
@@ -49,16 +49,9 @@ export const DUE_REGISTRY = {
   road_km_period: { module: "road_safety", label: "Kilómetros de la flota", path: (id) => monthly("road-safety/km", id) },
   driver_license: { module: "road_safety", label: "Licencia de conducir", path: () => "road-safety/conductores" },
   training_person: { module: "training", label: "Capacitación pendiente", path: (id) => (id ? `training/people/${id}` : "training") },
-  training_session_effectiveness: {
-    module: "training",
-    label: "Eficacia de capacitación",
-    path: (id) => (id ? `training/effectiveness/session/${id}` : "training/effectiveness"),
-  },
-  training_record_effectiveness: {
-    module: "training",
-    label: "Eficacia de capacitación",
-    path: (id) => (id ? `training/effectiveness/record/${id}` : "training/effectiveness"),
-  },
+  // La ficha de cada evaluación exige permiso de registro; la bandeja la puede abrir cualquiera.
+  training_session_effectiveness: { module: "training", label: "Eficacia de capacitación", path: () => "training/effectiveness" },
+  training_record_effectiveness: { module: "training", label: "Eficacia de capacitación", path: () => "training/effectiveness" },
   supplier_evaluation: { module: "suppliers", label: "Evaluación de proveedor", path: (id) => detail("suppliers", id) },
   supplier_document: { module: "suppliers", label: "Documento de proveedor", path: (_id, p) => detail("suppliers", p.supplierId) },
   /** Cargado a mano desde la plataforma, sin registro de origen. */
@@ -66,6 +59,15 @@ export const DUE_REGISTRY = {
 } as const satisfies Record<string, DueTypeDefinition>;
 
 export type DueEntityType = keyof typeof DUE_REGISTRY;
+
+/** ¿La pantalla de destino está disponible para la empresa? La de un módulo inactivo responde 404. */
+export function isDestinationEnabled(path: string, enabled: ReadonlySet<ModuleKey>): boolean {
+  const root = path.split(/[/?]/)[0];
+  // Activos se comparte entre Inspecciones y Equipos de medición.
+  if (root === "assets") return enabled.has("inspections") || enabled.has("instruments");
+  const target = MODULE_CATALOG.find((m) => m.path === root);
+  return !target || enabled.has(target.key);
+}
 
 /** Definición de un `entityType` leído de la base; los tipos viejos o desconocidos no tienen. */
 export function dueDefinition(entityType: string): DueTypeDefinition | undefined {

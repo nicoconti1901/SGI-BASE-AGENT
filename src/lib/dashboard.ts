@@ -8,6 +8,7 @@ import {
 } from "@/domain/dashboard/summary";
 import { dueToday } from "@/domain/due/day";
 import type { DueEntityType, DueParentRef } from "@/domain/due/registry";
+import { getEnabledModules } from "@/lib/modules";
 
 const DUE_LIST_SIZE = 8;
 
@@ -47,7 +48,8 @@ async function toDueViews(
     const rows = await query({ tenantId, id: { in: ids } });
     return rows.map((row) => [`${type}:${row.id}`, { [key]: row[key] } as DueParentRef] as const);
   };
-  const found = await Promise.all([
+  const [enabled, ...found] = await Promise.all([
+    getEnabledModules(tenantId, db),
     parentsOf("indicator_measurement", "objectiveId", (where) => db.indicator.findMany({ where, select: { id: true, objectiveId: true } })),
     parentsOf("finding_measure", "findingId", (where) => db.findingMeasure.findMany({ where, select: { id: true, findingId: true } })),
     parentsOf("asset_due_date", "assetId", (where) => db.assetDueDate.findMany({ where, select: { id: true, assetId: true } })),
@@ -63,7 +65,7 @@ async function toDueViews(
       id: item.id,
       title: item.title,
       dueAt: item.dueAt,
-      ...describeDueItem(item, slug, now, item.leadDays, parent),
+      ...describeDueItem(item, slug, now, item.leadDays, parent, enabled),
     };
   });
 }

@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { DUE_REGISTRY, dueDefinition, dueTypesOf, type DueEntityType } from "@/domain/due/registry";
+import { DUE_REGISTRY, dueDefinition, dueTypesOf, isDestinationEnabled, type DueEntityType } from "@/domain/due/registry";
 import { MODULE_CATALOG } from "@/domain/modules/catalog";
 
 const TENANT_ROUTES = path.resolve(__dirname, "../src/app/(tenant)/t/[slug]");
@@ -74,6 +74,17 @@ describe("registro de tipos de vencimiento", () => {
     expect(dueDefinition("toString")).toBeUndefined();
   });
 
+  it("un destino de un módulo inactivo no se puede abrir", () => {
+    const enabled = new Set(["findings", "instruments"] as const);
+
+    expect(isDestinationEnabled("findings/f1", enabled)).toBe(true);
+    expect(isDestinationEnabled("training/people/p1", enabled)).toBe(false);
+    expect(isDestinationEnabled("safety/exposure?mes=2026-09", enabled)).toBe(false);
+    // Activos se comparte entre Inspecciones y Equipos de medición.
+    expect(isDestinationEnabled("assets/a1", enabled)).toBe(true);
+    expect(isDestinationEnabled("assets/a1", new Set(["findings"]))).toBe(false);
+  });
+
   it.each([
     ["asset_due_date", "d1", { assetId: "as1" }, "assets/as1"],
     ["inspection_plan", "p1", { assetId: "as1" }, "assets/as1"],
@@ -83,8 +94,8 @@ describe("registro de tipos de vencimiento", () => {
     ["exposure_period", "site1:2026-09", {}, "safety/exposure?mes=2026-09"],
     ["road_km_period", "2026-09", {}, "road-safety/km?mes=2026-09"],
     ["training_person", "p1", {}, "training/people/p1"],
-    ["training_session_effectiveness", "se1", {}, "training/effectiveness/session/se1"],
-    ["training_record_effectiveness", "re1", {}, "training/effectiveness/record/re1"],
+    ["training_session_effectiveness", "se1", {}, "training/effectiveness"],
+    ["training_record_effectiveness", "re1", {}, "training/effectiveness"],
     ["supplier_evaluation", "s1", {}, "suppliers/s1"],
     ["supplier_document", "doc1", { supplierId: "s1" }, "suppliers/s1"],
   ] as const)("%s lleva al registro donde se resuelve", (type, id, parent, expected) => {

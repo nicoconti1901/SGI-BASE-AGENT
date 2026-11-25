@@ -115,6 +115,7 @@ describe.skipIf(!hasDatabase)("destino de los vencimientos que dependen de otro 
 
   afterAll(async () => {
     await db.dueItem.deleteMany({ where: { tenantId } });
+    await db.tenantModuleActivation.deleteMany({ where: { tenantId } });
     await db.supplierDocument.deleteMany({ where: { tenantId } });
     await db.supplierDocumentType.deleteMany({ where: { tenantId } });
     await db.supplier.deleteMany({ where: { tenantId } });
@@ -127,7 +128,18 @@ describe.skipIf(!hasDatabase)("destino de los vencimientos que dependen de otro 
     await db.$disconnect();
   });
 
+  it("no enlaza a un módulo inactivo, porque su pantalla responde 404", async () => {
+    // Inspecciones, Equipos y Proveedores vienen inactivos.
+    const { dueItems } = await getTenantDashboard(tenantId, new Date("2031-01-01T12:00:00.000Z"), slug, db);
+
+    expect(dueItems.map((d) => d.href)).toEqual([null, null, null]);
+  });
+
   it("lleva al activo, al equipo y al proveedor", async () => {
+    await db.tenantModuleActivation.createMany({
+      data: ["inspections", "instruments", "suppliers"].map((moduleKey) => ({ tenantId, moduleKey, enabled: true })),
+    });
+
     const { dueItems } = await getTenantDashboard(tenantId, new Date("2031-01-01T12:00:00.000Z"), slug, db);
 
     expect(Object.fromEntries(dueItems.map((d) => [d.title, d.href]))).toEqual({

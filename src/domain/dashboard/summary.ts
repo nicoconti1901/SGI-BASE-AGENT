@@ -5,7 +5,8 @@ import {
 } from "@/domain/assessment/gap";
 import { classifyDueWindow } from "@/domain/automation/due";
 import { dueDay } from "@/domain/due/day";
-import { dueDefinition, type DueParentRef } from "@/domain/due/registry";
+import { dueDefinition, isDestinationEnabled, type DueParentRef } from "@/domain/due/registry";
+import type { ModuleKey } from "@/domain/modules/catalog";
 import { diffDays, todayIso } from "@/domain/inspections/dates";
 
 export type ComplianceSummary = {
@@ -54,13 +55,16 @@ export function describeDueItem(
   now: Date,
   leadDays = 7,
   parent: DueParentRef = {},
+  /** Módulos activos de la empresa; sin ellos se enlaza siempre. */
+  enabled?: ReadonlySet<ModuleKey>,
 ): DueItemView {
   const def = dueDefinition(item.entityType);
   const day = dueDay(item.dueAt);
+  const path = def?.path(item.entityId, parent);
   const classification = classifyDueWindow({ dueAt: item.dueAt, now, leadDays });
   return {
     typeLabel: def?.label ?? "Vencimiento",
-    href: def ? `/t/${slug}/${def.path(item.entityId, parent)}` : null,
+    href: path && (!enabled || isDestinationEnabled(path, enabled)) ? `/t/${slug}/${path}` : null,
     dueDay: day,
     daysLeft: diffDays(todayIso(now), day),
     tone:
