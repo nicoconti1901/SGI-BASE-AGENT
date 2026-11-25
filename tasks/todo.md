@@ -931,6 +931,7 @@ Verificación común a cada tarea: `npx tsc --noEmit`, `npm run lint`, `npm test
   - Verificar: integración del control repetido en el mismo día y en días distintos.
 - [ ] 21.12 `/platform/reminders` y retiro de ofertas y de sus tablas (confirmado por el PO el 2026-11-25)
   - Aceptación: último control, errores en palabras, alerta a las 26 h, «Controlar ahora»; semillas, `demo-seed` y tests adaptados.
+  - En la misma migración: eliminar los índices sobre `remindAt` (sin lectores desde 21.3).
   - Verificar: suite, e2e de plataforma, 401 y 503 del endpoint.
 
 ### Checkpoint V4
