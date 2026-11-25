@@ -12,6 +12,7 @@ import {
   type ActionLinkTarget,
   type EffectivenessStatus,
 } from "@/domain/actions/types";
+import { pastDueFilter } from "@/domain/due/day";
 
 export async function createAction(
   input: {
@@ -208,7 +209,7 @@ export async function hasOverdueActionsForTarget(
     where: {
       tenantId,
       status: { in: ["open", "in_progress"] },
-      dueAt: { lt: now },
+      dueAt: pastDueFilter(now),
       links: { some: { targetType, targetId } },
     },
   });

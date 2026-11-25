@@ -4,6 +4,7 @@ import {
   type FindingType,
   type MeasureWorkflowStatus,
 } from "@/domain/findings/types";
+import { isPastDue } from "@/domain/due/day";
 
 /**
  * Ciclo de vida del hallazgo — docs/specs/SPEC-findings-lifecycle.md (§10.2 y guía
@@ -173,7 +174,7 @@ export function pendingSteps(input: {
       steps.push("Agregá una nueva medida correctiva: la anterior no resolvió el problema");
     }
     const open = measures.filter((m) => m.status !== "closed");
-    const overdue = open.filter((m) => m.dueAt && m.dueAt < input.now).length;
+    const overdue = open.filter((m) => m.dueAt && isPastDue(m.dueAt, input.now)).length;
     if (open.length > 0) {
       steps.push(
         `${open.length === 1 ? "Falta cerrar 1 medida" : `Faltan cerrar ${open.length} medidas`}${

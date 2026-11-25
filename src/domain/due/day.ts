@@ -22,6 +22,19 @@ export function dueDay(dueAt: Date): string {
   return dueAt.getTime() % MS_PER_DAY === 0 ? isoFromDate(dueAt) : todayIso(dueAt);
 }
 
+/** Venció: su día calendario es anterior a hoy. Lo que vence hoy no está vencido. */
+export function isPastDue(dueAt: Date, now: Date): boolean {
+  return dueDay(dueAt) < todayIso(now);
+}
+
+/**
+ * La regla de `isPastDue` como filtro de una columna que guarda fechas sin hora o instantes: anteriores al inicio
+ * del día de Argentina, salvo la fecha sin hora de hoy, que cae justo antes de ese inicio.
+ */
+export function pastDueFilter(now: Date) {
+  return { lt: new Date(`${todayIso(now)}T00:00:00-03:00`), not: dueToday(now) };
+}
+
 /** Todas las columnas de fecha de un `DueItem`. Se escriben siempre juntas, en el alta y en cada cambio. */
 export function dueColumns(dueAt: Date, leadDays: number) {
   const day = dueDay(dueAt);

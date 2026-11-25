@@ -188,7 +188,7 @@ export async function listDueItems(
 ) {
   return db.dueItem.findMany({
     where: { tenantId },
-    orderBy: [{ status: "asc" }, { dueAt: "asc" }],
+    orderBy: [{ status: "asc" }, { dueOn: "asc" }, { dueAt: "asc" }],
   });
 }
 

@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
-import { createDueItem, scanDueReminders, setOfferActivation, upsertOpenDueItemForEntity } from "@/lib/automation";
+import { createDueItem, listDueItems, scanDueReminders, setOfferActivation, upsertOpenDueItemForEntity } from "@/lib/automation";
+import { hasOverdueActionsForTarget } from "@/lib/actions";
 import { DUE_REMINDERS_OFFER_CODE } from "@/domain/automation/due";
 import { MemoryEmailSender } from "@/lib/mail";
 
@@ -23,6 +24,7 @@ describe.skipIf(!hasDatabase)("día calendario guardado en los vencimientos", ()
     await db.automationRun.deleteMany({ where: { tenantId } });
     await db.tenantOfferActivation.deleteMany({ where: { tenantId } });
     await db.dueItem.deleteMany({ where: { tenantId } });
+    await db.action.deleteMany({ where: { tenantId } });
     await db.tenantRequirement.deleteMany({ where: { tenantId } });
     await db.tenant.deleteMany({ where: { id: tenantId } });
     await db.$disconnect();
@@ -51,6 +53,28 @@ describe.skipIf(!hasDatabase)("día calendario guardado en los vencimientos", ()
     const notice = await db.inAppNotification.findFirstOrThrow({ where: { tenantId, dueItemId: item.id } });
     expect(notice.title).toBe("Próximo a vencer: Calibración");
     expect(notice.body).toContain("2036-08-15");
+  });
+
+  it("lista en el orden del día calendario que muestra", async () => {
+    await createDueItem({ tenantId, title: "Orden B (día 2)", entityType: "risk", dueAt: new Date("2039-01-02T00:00:00.000Z") }, db);
+    await createDueItem({ tenantId, title: "Orden A (día 1)", entityType: "risk", dueAt: new Date("2039-01-01T23:59:59.999-03:00") }, db);
+
+    const titles = (await listDueItems(tenantId, db)).map((i) => i.title).filter((t) => t.startsWith("Orden"));
+
+    expect(titles).toEqual(["Orden A (día 1)", "Orden B (día 2)"]);
+  });
+
+  it.each([
+    ["fecha sin hora de hoy", "2040-06-10T00:00:00.000Z", false],
+    ["fin del día de hoy", "2040-06-10T23:59:59.999-03:00", false],
+    ["fecha sin hora de ayer", "2040-06-09T00:00:00.000Z", true],
+    ["fin del día de ayer", "2040-06-09T23:59:59.999-03:00", true],
+  ])("acción con %s: vencida = %s", async (name, dueAt, expected) => {
+    await db.action.create({
+      data: { tenantId, title: name, ownerUserId: "x", dueAt: new Date(dueAt), links: { create: { targetType: "risk", targetId: name } } },
+    });
+
+    expect(await hasOverdueActionsForTarget(tenantId, "risk", name, new Date("2040-06-10T22:00:00-03:00"), db)).toBe(expected);
   });
 
   it("la base rechaza una fecha cambiada sin su día calendario", async () => {

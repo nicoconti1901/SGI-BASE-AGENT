@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { dueColumns, dueDay } from "@/domain/due/day";
+import { dueColumns, dueDay, isPastDue, pastDueFilter } from "@/domain/due/day";
+import { endOfDayInstant } from "@/domain/inspections/dates";
 
 const day = (date: Date) => date.toISOString().slice(0, 10);
 
@@ -27,5 +28,36 @@ describe("día calendario de un vencimiento", () => {
     const columns = dueColumns(new Date("2026-03-10T00:00:00.000Z"), -5);
 
     expect(day(columns.remindOn)).toBe("2026-03-10");
+  });
+});
+
+describe("vencido", () => {
+  const now = new Date("2026-03-10T23:30:00-03:00");
+  const cases = [
+    ["fecha sin hora de hoy", "2026-03-10T00:00:00.000Z", false],
+    ["fin del día de hoy", "2026-03-10T23:59:59.999-03:00", false],
+    ["fecha sin hora de ayer", "2026-03-09T00:00:00.000Z", true],
+    ["fin del día de ayer", "2026-03-09T23:59:59.999-03:00", true],
+    ["mañana", "2026-03-11T00:00:00.000Z", false],
+  ] as const;
+
+  it.each(cases)("%s", (_name, dueAt, expected) => {
+    expect(isPastDue(new Date(dueAt), now)).toBe(expected);
+  });
+
+  it("el filtro de la base aplica la misma regla", () => {
+    for (const moment of [now, new Date("2026-03-10T00:00:00-03:00")]) {
+      const { lt, not } = pastDueFilter(moment);
+      for (const [name, dueAt] of cases) {
+        const date = new Date(dueAt);
+        expect(date < lt && date.getTime() !== not.getTime(), name).toBe(isPastDue(date, moment));
+      }
+    }
+  });
+
+  it("una fecha con año de tres cifras no rompe el cálculo", () => {
+    const columns = dueColumns(endOfDayInstant("0225-05-05"), 7);
+
+    expect([day(columns.dueOn), day(columns.remindOn)]).toEqual(["0225-05-05", "0225-04-28"]);
   });
 });

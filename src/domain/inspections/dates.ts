@@ -54,12 +54,16 @@ export function diffDays(a: string, b: string): number {
 
 /** Hoy en el huso de la empresa. */
 export function todayIso(now: Date = new Date(), timeZone: string = DEFAULT_TIMEZONE): string {
-  return new Intl.DateTimeFormat("en-CA", {
+  const [year, ...rest] = new Intl.DateTimeFormat("en-CA", {
     timeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(now);
+  })
+    .format(now)
+    .split("-");
+  // `Intl` no completa con ceros los años de menos de cuatro cifras.
+  return [year.padStart(4, "0"), ...rest].join("-");
 }
 
 /** Medianoche UTC de una fecha de calendario (así se guardan las columnas `@db.Date`). */

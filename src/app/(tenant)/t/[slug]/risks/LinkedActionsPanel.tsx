@@ -18,6 +18,7 @@ import { Field, FilePicker, FormError, INPUT_CLASS, StatusChip } from "@/compone
 import { RemoveAttachmentButton } from "@/components/attachments/RemoveAttachmentButton";
 import { canOfferRemoval, type AttachmentActor } from "@/domain/attachments/removal";
 import { canImplement, type ImplementationKind } from "@/domain/risks/ownership";
+import { isPastDue } from "@/domain/due/day";
 
 type Member = { id: string; name: string; email: string };
 type ActionRow = {
@@ -100,7 +101,7 @@ export function LinkedActionsPanel({
         <ul className="flex flex-col gap-3">
           {actions.map((a) => {
             const status = a.status as ActionStatus;
-            const overdue = Boolean(a.dueAt && new Date(a.dueAt).getTime() < now && status !== "completed" && status !== "cancelled");
+            const overdue = Boolean(a.dueAt && isPastDue(new Date(a.dueAt), new Date(now)) && status !== "completed" && status !== "cancelled");
             const workable = canWrite && mayImplement(a.ownerUserId) && status !== "completed" && status !== "cancelled";
             return (
               <li
