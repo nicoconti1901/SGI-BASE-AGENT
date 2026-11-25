@@ -205,6 +205,23 @@ export async function listTenantNotifications(
   });
 }
 
+/**
+ * Lo que un integrante puede leer: lo dirigido a su usuario y los avisos de vencimiento sin responsable.
+ * Un aviso sin `userId` ni `dueItemId` era personal y perdió su destinatario: no se muestra.
+ */
+export async function listVisibleNotifications(
+  tenantId: string,
+  userId: string,
+  db: PrismaClient = prisma,
+  take = 30,
+) {
+  return db.inAppNotification.findMany({
+    where: { tenantId, OR: [{ userId }, { userId: null, dueItemId: { not: null } }] },
+    orderBy: { createdAt: "desc" },
+    take,
+  });
+}
+
 export async function listRecentAutomationRuns(
   db: PrismaClient = prisma,
   take = 20,

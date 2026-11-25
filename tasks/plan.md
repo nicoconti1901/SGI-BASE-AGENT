@@ -235,3 +235,41 @@ Cada módulo de la Fase 5 trabaja en su worktree (`npm run wt:setup`), agrega su
 - Entrega de EPP.
 - Carga sin conexión.
 - Etiquetas con código QR (opcional dentro de la 16 si el PO lo pide).
+
+## Vencimientos y avisos (Task 21, 2026-11-25)
+
+Spec aprobada: `docs/specs/SPEC-vencimientos.md`. Tareas en `tasks/todo.md`, Task 21.
+
+### Dependencias
+
+```
+21.0 privacidad (independiente)
+21.1 registro → 21.2 día (datos) → 21.3 día (lecturas) → 21.4 sin duplicados
+  → 21.5–21.7 agenda  y  21.8–21.9 campanita
+  → 21.10–21.12 motor y plataforma
+  → 21.13–21.14 acciones → 21.15–21.16 propios
+  → 21.17 ajustes  y  21.18 cobertura
+```
+
+### Decisiones de implementación
+
+- `dueOn` y `remindOn` quedan obligatorios después del backfill: así no compila ningún alta directa que los omita (`assets.ts`, `safety-exposure.ts`, `road-safety.ts`, `training-followup.ts`, `inspection-support.ts`).
+- `dueAt` no cambia: los módulos que concilian siguen comparando contra él.
+- Un solo registro de tipos; `DUE_ROUTES` y `hub.dueTypes` se derivan de él.
+- En serie: V0 a V4, y 21.13 a 21.16 (comparten agenda y esquema). En paralelo, hasta 2 sesiones: agenda y campanita; 21.17 y 21.18.
+- Un PR por capacidad (V0–V8).
+- Eliminación de las tablas de ofertas en 21.12: confirmada por el PO el 2026-11-25.
+
+### Riesgos
+
+| Riesgo | Impacto | Mitigación |
+|---|---|---|
+| El cambio de día altera conteos de panel y hubs | Alto | Pruebas de borde en `domain/due/day.ts` y suite completa en 21.3 |
+| Al encender avisos por defecto sale una tanda de avisos atrasados | Medio | Los ya avisados no se repiten; los semanales cuentan desde `lastRemindedAt` |
+| Reprogramar deja origen y `DueItem` distintos | Alto | Una transacción por operación y prueba de «todo o nada» |
+| Tests, semillas y `demo-seed` usan las ofertas | Medio | 21.12 los adapta en el mismo PR |
+| Sin programador definido no hay avisos automáticos | Medio | Alerta de 26 h en la plataforma; se define antes de producción |
+
+### Pendientes del PO
+
+- Hosting y programador del control diario.
