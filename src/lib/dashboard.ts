@@ -6,6 +6,7 @@ import {
   summarizeCompliance,
   type DueItemView,
 } from "@/domain/dashboard/summary";
+import { dueToday } from "@/domain/due/day";
 import type { DueEntityType, DueParentRef } from "@/domain/due/registry";
 
 const DUE_LIST_SIZE = 8;
@@ -75,13 +76,14 @@ export async function getTenantDashboard(
   db: PrismaClient = prisma,
 ): Promise<TenantDashboard> {
   // Los conteos salen de la base: con la Fase 5 una empresa puede tener miles de vencimientos abiertos.
-  // "Por vencer" ⇔ remindAt ≤ ahora ≤ dueAt, igual que classifyDueWindow.
+  // "Por vencer" ⇔ remindOn ≤ hoy ≤ dueOn, igual que classifyDueWindow.
+  const today = dueToday(now);
   const open = { tenantId, status: "open" as const };
   const [requirements, shown, overdue, soon, openCount] = await Promise.all([
     db.tenantRequirement.findMany({ where: { tenantId }, select: { status: true } }),
     db.dueItem.findMany({
       where: open,
-      orderBy: { dueAt: "asc" },
+      orderBy: [{ dueOn: "asc" }, { dueAt: "asc" }],
       take: DUE_LIST_SIZE,
       select: {
         id: true,
@@ -92,8 +94,8 @@ export async function getTenantDashboard(
         leadDays: true,
       },
     }),
-    db.dueItem.count({ where: { ...open, dueAt: { lt: now } } }),
-    db.dueItem.count({ where: { ...open, dueAt: { gte: now }, remindAt: { lte: now } } }),
+    db.dueItem.count({ where: { ...open, dueOn: { lt: today } } }),
+    db.dueItem.count({ where: { ...open, dueOn: { gte: today }, remindOn: { lte: today } } }),
     db.dueItem.count({ where: open }),
   ]);
 
@@ -123,6 +125,7 @@ export async function getModuleTelemetry(
   if (entityTypes.length === 0) {
     return { dueItems: [], dueCounts: { overdue: 0, soon: 0, open: 0 } };
   }
+  const today = dueToday(now);
   const open = {
     tenantId,
     status: "open" as const,
@@ -131,7 +134,7 @@ export async function getModuleTelemetry(
   const [shown, overdue, soon, openCount] = await Promise.all([
     db.dueItem.findMany({
       where: open,
-      orderBy: { dueAt: "asc" },
+      orderBy: [{ dueOn: "asc" }, { dueAt: "asc" }],
       take: MODULE_DUE_LIST_SIZE,
       select: {
         id: true,
@@ -142,8 +145,8 @@ export async function getModuleTelemetry(
         leadDays: true,
       },
     }),
-    db.dueItem.count({ where: { ...open, dueAt: { lt: now } } }),
-    db.dueItem.count({ where: { ...open, dueAt: { gte: now }, remindAt: { lte: now } } }),
+    db.dueItem.count({ where: { ...open, dueOn: { lt: today } } }),
+    db.dueItem.count({ where: { ...open, dueOn: { gte: today }, remindOn: { lte: today } } }),
     db.dueItem.count({ where: open }),
   ]);
   return {
@@ -162,7 +165,7 @@ export async function getPlatformOverview(
   const [tenants, openDue, overdue] = await Promise.all([
     db.tenant.count(),
     db.dueItem.count({ where: { status: "open" } }),
-    db.dueItem.count({ where: { status: "open", dueAt: { lt: now } } }),
+    db.dueItem.count({ where: { status: "open", dueOn: { lt: dueToday(now) } } }),
   ]);
   return { tenants, openDue, overdue };
 }

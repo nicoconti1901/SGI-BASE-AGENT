@@ -884,7 +884,7 @@ Verificación común a cada tarea: `npx tsc --noEmit`, `npm run lint`, `npm test
   - Aceptación: migración con backfill; toda alta o cambio los completa; medianoche UTC conserva su día y 23:59:59-03 también.
   - Verificar: unit de `day.ts`; integración de altas por módulo; `prisma migrate dev` sin diferencias.
   - Archivos: `schema.prisma` y migración, `day.ts`, escritores de `DueItem`.
-- [ ] 21.3 Lecturas por día
+- [x] 21.3 (hecho 2026-11-25) Lecturas por día
   - Aceptación: panel, hubs, ficha de activo y control diario clasifican igual; lo que vence hoy no figura vencido en ningún horario.
   - Verificar: `tests/automation-due.test.ts`, `tests/dashboard.integration.test.ts`.
   - Archivos: `domain/automation/due.ts`, `domain/dashboard/summary.ts`, `lib/dashboard.ts`, `lib/automation.ts`.

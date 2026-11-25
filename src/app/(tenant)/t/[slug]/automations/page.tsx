@@ -95,7 +95,7 @@ export default async function TenantAutomationsPage({
               key={item.id}
               className="rounded-[var(--radius-md)] border border-[var(--color-card-line)] px-4 py-3 text-sm"
             >
-              {item.title} · {item.dueAt.toISOString().slice(0, 10)}
+              {item.title} · {item.dueOn.toISOString().slice(0, 10)}
               {item.lastReminderKind
                 ? ` · ${labelReminderKind(item.lastReminderKind)}`
                 : ""}

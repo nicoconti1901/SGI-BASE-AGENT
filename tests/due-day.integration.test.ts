@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import { createTenantWithTemplate } from "@/lib/tenant-provisioning";
-import { createDueItem, upsertOpenDueItemForEntity } from "@/lib/automation";
+import { createDueItem, scanDueReminders, setOfferActivation, upsertOpenDueItemForEntity } from "@/lib/automation";
+import { DUE_REMINDERS_OFFER_CODE } from "@/domain/automation/due";
+import { MemoryEmailSender } from "@/lib/mail";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
@@ -17,6 +19,9 @@ describe.skipIf(!hasDatabase)("día calendario guardado en los vencimientos", ()
   });
 
   afterAll(async () => {
+    await db.inAppNotification.deleteMany({ where: { tenantId } });
+    await db.automationRun.deleteMany({ where: { tenantId } });
+    await db.tenantOfferActivation.deleteMany({ where: { tenantId } });
     await db.dueItem.deleteMany({ where: { tenantId } });
     await db.tenantRequirement.deleteMany({ where: { tenantId } });
     await db.tenant.deleteMany({ where: { id: tenantId } });
@@ -32,6 +37,20 @@ describe.skipIf(!hasDatabase)("día calendario guardado en los vencimientos", ()
     expect(days(created)).toEqual(["2035-03-05", "2035-02-23"]);
     expect(updated.id).toBe(created.id);
     expect(days(updated)).toEqual(["2035-04-20", "2035-04-10"]);
+  });
+
+  it("el control diario no da por vencido lo de hoy y avisa con el día correcto", async () => {
+    await setOfferActivation({ tenantId, offerCode: DUE_REMINDERS_OFFER_CODE, active: true, db });
+    const item = await createDueItem(
+      { tenantId, title: "Calibración", entityType: "instrument_calibration", dueAt: new Date("2036-08-15T23:59:59.999-03:00") },
+      db,
+    );
+
+    await scanDueReminders({ db, mail: new MemoryEmailSender(), now: new Date("2036-08-15T23:30:00-03:00"), tenantId });
+
+    const notice = await db.inAppNotification.findFirstOrThrow({ where: { tenantId, dueItemId: item.id } });
+    expect(notice.title).toBe("Próximo a vencer: Calibración");
+    expect(notice.body).toContain("2036-08-15");
   });
 
   it("la base rechaza una fecha cambiada sin su día calendario", async () => {

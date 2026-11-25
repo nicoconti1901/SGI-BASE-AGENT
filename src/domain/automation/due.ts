@@ -1,3 +1,6 @@
+import { dueDay } from "@/domain/due/day";
+import { addDays, todayIso } from "@/domain/inspections/dates";
+
 export type ReminderKind = "upcoming" | "overdue" | "none";
 
 export type DueWindowInput = {
@@ -7,25 +10,16 @@ export type DueWindowInput = {
   leadDays: number;
 };
 
-/** Momento desde el que un vencimiento pasa a "próximo": dueAt − leadDays días (leadDays < 0 cuenta como 0). */
-export function reminderStartsAt(dueAt: Date, leadDays: number): Date {
-  return new Date(dueAt.getTime() - Math.max(0, leadDays) * 24 * 60 * 60 * 1000);
-}
+export { reminderStartsAt } from "@/domain/due/day";
 
-/** Clasifica un ítem según la ventana de vencimiento. */
+/** Clasifica por día calendario de Argentina: lo que vence hoy sigue "por vencer" hasta que termina el día. */
 export function classifyDueWindow(input: DueWindowInput): ReminderKind {
-  const leadDays = Math.max(0, input.leadDays);
-  const msPerDay = 24 * 60 * 60 * 1000;
-  const daysUntil =
-    (input.dueAt.getTime() - input.now.getTime()) / msPerDay;
-
-  if (daysUntil < 0) {
+  const day = dueDay(input.dueAt);
+  const today = todayIso(input.now);
+  if (day < today) {
     return "overdue";
   }
-  if (daysUntil <= leadDays) {
-    return "upcoming";
-  }
-  return "none";
+  return addDays(day, -Math.max(0, input.leadDays)) <= today ? "upcoming" : "none";
 }
 
 /**

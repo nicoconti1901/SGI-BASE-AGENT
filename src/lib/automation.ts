@@ -7,7 +7,7 @@ import {
   shouldEmitReminder,
   type ReminderKind,
 } from "@/domain/automation/due";
-import { dueColumns } from "@/domain/due/day";
+import { dueColumns, dueToday } from "@/domain/due/day";
 import type { DueEntityType } from "@/domain/due/registry";
 import { buildReminderDigests, type DigestItem, type DigestMember } from "@/domain/automation/digest";
 import { getEmailSender, type EmailSender } from "@/lib/mail";
@@ -240,7 +240,7 @@ export type ScanDueRemindersResult = {
 };
 
 /**
- * Recorre los vencimientos que entraron en ventana (remindAt ≤ ahora) y avisa una vez por
+ * Recorre los vencimientos que entraron en ventana (remindOn ≤ hoy) y avisa una vez por
  * transición (próximo → vencido). En la app: una notificación por vencimiento, al responsable
  * o a la empresa. Por mail: un resumen por persona (ver buildReminderDigests).
  */
@@ -272,7 +272,7 @@ export async function scanDueReminders(options?: {
     const activeTenants = offer?.enabledGlobal ? offer.activations.map((a) => a.tenantId) : [];
     const inWindow = {
       status: "open" as const,
-      remindAt: { lte: now },
+      remindOn: { lte: dueToday(now) },
       ...(options?.tenantId ? { tenantId: options.tenantId } : {}),
     };
 
@@ -285,13 +285,14 @@ export async function scanDueReminders(options?: {
           title: true,
           entityType: true,
           dueAt: true,
+          dueOn: true,
           leadDays: true,
           ownerUserId: true,
           lastReminderKind: true,
           tenant: { select: { name: true } },
           site: { select: { name: true } },
         },
-        orderBy: { dueAt: "asc" },
+        orderBy: [{ dueOn: "asc" }, { dueAt: "asc" }],
       }),
       db.dueItem.count({ where: { ...inWindow, AND: [{ tenantId: { notIn: activeTenants } }] } }),
     ]);
@@ -316,7 +317,8 @@ export async function scanDueReminders(options?: {
         tenantName: item.tenant.name,
         title: item.title,
         kind,
-        dueAt: item.dueAt,
+        // El resumen muestra el día calendario, no el instante.
+        dueAt: item.dueOn,
         ownerUserId: item.ownerUserId,
         siteName: item.site?.name ?? null,
       });

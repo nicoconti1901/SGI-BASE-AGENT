@@ -4,7 +4,9 @@ import {
   type RequirementStatus,
 } from "@/domain/assessment/gap";
 import { classifyDueWindow } from "@/domain/automation/due";
+import { dueDay } from "@/domain/due/day";
 import { dueDefinition, type DueParentRef } from "@/domain/due/registry";
+import { diffDays, todayIso } from "@/domain/inspections/dates";
 
 export type ComplianceSummary = {
   total: number;
@@ -39,12 +41,12 @@ export type DueTone = "overdue" | "soon" | "ok";
 export type DueItemView = {
   typeLabel: string;
   href: string | null;
-  /** Días enteros hasta el vencimiento; negativo si ya venció. */
+  /** Día calendario en que vence ("AAAA-MM-DD"). */
+  dueDay: string;
+  /** Días de calendario hasta el vencimiento: 0 hoy, negativo si ya venció. */
   daysLeft: number;
   tone: DueTone;
 };
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export function describeDueItem(
   item: { entityType: string; entityId: string | null; dueAt: Date },
@@ -54,11 +56,13 @@ export function describeDueItem(
   parent: DueParentRef = {},
 ): DueItemView {
   const def = dueDefinition(item.entityType);
+  const day = dueDay(item.dueAt);
   const classification = classifyDueWindow({ dueAt: item.dueAt, now, leadDays });
   return {
     typeLabel: def?.label ?? "Vencimiento",
     href: def ? `/t/${slug}/${def.path(item.entityId, parent)}` : null,
-    daysLeft: Math.floor((item.dueAt.getTime() - now.getTime()) / MS_PER_DAY),
+    dueDay: day,
+    daysLeft: diffDays(todayIso(now), day),
     tone:
       classification === "overdue" ? "overdue" : classification === "upcoming" ? "soon" : "ok",
   };
