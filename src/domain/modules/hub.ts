@@ -58,8 +58,6 @@ export type HubScreen = {
 type ModuleHub = {
   icon: HubIconName;
   tagline: string;
-  /** entityType de los DueItem que genera el módulo: alimentan su tablero chico. */
-  dueTypes: readonly string[];
   screens: readonly HubScreen[];
 };
 
@@ -82,7 +80,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   documents: {
     icon: "documents",
     tagline: "Manual, políticas, registros y procedimientos con su versión vigente.",
-    dueTypes: ["document_validity"],
     screens: [
       {
         label: "Documentos",
@@ -95,7 +92,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   audits: {
     icon: "audits",
     tagline: "Programa del año, planes y resultados de auditoría.",
-    dueTypes: ["audit_start", "audit_report", "audit_external_response"],
     screens: [
       {
         label: "Programa de auditorías",
@@ -123,7 +119,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   findings: {
     icon: "findings",
     tagline: "No conformidades, observaciones y acciones hasta su cierre.",
-    dueTypes: ["finding_verification", "finding_measure"],
     screens: [
       {
         label: "Lista de hallazgos",
@@ -143,7 +138,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   risks: {
     icon: "risks",
     tagline: "Riesgos y oportunidades evaluados, con su tratamiento.",
-    dueTypes: ["risk", "opportunity", "operational_action"],
     screens: [
       {
         label: "Registro de riesgos",
@@ -171,7 +165,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   indicators: {
     icon: "target",
     tagline: "Metas, mediciones y desvíos del sistema.",
-    dueTypes: ["indicator_measurement"],
     screens: [
       {
         label: "Objetivos e indicadores",
@@ -192,7 +185,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   inspections: {
     icon: "inspections",
     tagline: "Inspecciones programadas, en campo y sus planillas.",
-    dueTypes: ["inspection", "inspection_plan", "inspection_target", "asset_due_date"],
     screens: [
       {
         label: "Agenda de inspecciones",
@@ -225,7 +217,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   instruments: {
     icon: "gauge",
     tagline: "Calibraciones y verificaciones de cada equipo.",
-    dueTypes: ["instrument", "instrument_calibration", "instrument_verification"],
     screens: [
       {
         label: "Estado de los equipos",
@@ -246,7 +237,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   safety_stats: {
     icon: "pulse",
     tagline: "Accidentes, horas trabajadas e índices de siniestralidad.",
-    dueTypes: ["incident_followup", "exposure_period"],
     screens: [
       {
         label: "Tablero de índices",
@@ -272,7 +262,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   road_safety: {
     icon: "road",
     tagline: "Kilómetros, conductores e indicadores viales.",
-    dueTypes: ["road_km_period", "driver_license"],
     screens: [
       {
         label: "Tablero vial",
@@ -298,7 +287,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   master_data: {
     icon: "database",
     tagline: "Personas, sedes, puestos y tareas que usan todos los módulos.",
-    dueTypes: [],
     screens: [
       {
         label: "Personas",
@@ -329,7 +317,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   training: {
     icon: "training",
     tagline: "Plan anual, sesiones, asistencia y eficacia.",
-    dueTypes: [],
     screens: [
       {
         label: "Resumen",
@@ -379,7 +366,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   suppliers: {
     icon: "truck",
     tagline: "Evaluación, aprobación y seguimiento de proveedores.",
-    dueTypes: [],
     screens: [
       {
         label: "Todos los proveedores",
@@ -412,7 +398,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   automations: {
     icon: "bolt",
     tagline: "Vencimientos y avisos programados.",
-    dueTypes: [],
     screens: [
       {
         label: "Automatizaciones",
@@ -425,7 +410,6 @@ export const MODULE_HUB: Record<ModuleKey, ModuleHub> = {
   users: {
     icon: "users",
     tagline: "Quiénes forman parte de la empresa y con qué rol.",
-    dueTypes: [],
     screens: [
       {
         label: "Usuarios",

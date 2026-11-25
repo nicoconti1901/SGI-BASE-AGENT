@@ -67,7 +67,7 @@ describe.skipIf(!hasDatabase)("automation due reminders integration", () => {
       {
         tenantId,
         title: "Revisión documental",
-        entityType: "document",
+        entityType: "document_validity",
         dueAt: new Date("2030-09-28T12:00:00.000Z"),
         leadDays: 7,
       },
@@ -119,7 +119,7 @@ describe.skipIf(!hasDatabase)("automation due reminders integration", () => {
     // El vencimiento del test anterior ya pasó a vencido y volvería a avisar.
     await db.dueItem.updateMany({ where: { tenantId }, data: { status: "closed" } });
 
-    await createDueItem({ tenantId, title: "Carga del extintor E-07", entityType: "asset_due", dueAt: new Date(now.getTime() - day), ownerUserId: owner.id, siteId: site.id }, db);
+    await createDueItem({ tenantId, title: "Carga del extintor E-07", entityType: "asset_due_date", dueAt: new Date(now.getTime() - day), ownerUserId: owner.id, siteId: site.id }, db);
     await createDueItem({ tenantId, title: "Medida: señalizar acopio", entityType: "finding_measure", dueAt: new Date(now.getTime() + 2 * day), ownerUserId: owner.id }, db);
     await createDueItem({ tenantId, title: "Vigencia del documento: Plan de emergencia", entityType: "document_validity", dueAt: new Date(now.getTime() + 3 * day) }, db);
     await createDueItem({ tenantId, title: "Todavía lejos", entityType: "risk", dueAt: new Date(now.getTime() + 60 * day) }, db);

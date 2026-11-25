@@ -223,7 +223,7 @@ async function syncDocumentDueItems(
 /** Las funciones de automatización tipan `PrismaClient`; en una transacción usan los mismos delegados. */
 export const asClient = (db: Tx | PrismaClient) => db as unknown as PrismaClient;
 
-export const SUPPLIER_EVALUATION_ENTITY = "supplier_evaluation";
+export const SUPPLIER_EVALUATION_ENTITY = "supplier_evaluation" as const;
 export const SUPPLIER_DOCUMENT_ENTITY = "supplier_document";
 const REEVALUATION_LEAD_DAYS = 30;
 const INITIAL_EVALUATION_LEAD_DAYS = 7;

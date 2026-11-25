@@ -6,8 +6,7 @@ import {
   summarizeCompliance,
   type DueItemView,
 } from "@/domain/dashboard/summary";
-import { FINDING_MEASURE_ENTITY_TYPE } from "@/domain/findings/types";
-import { INDICATOR_MEASUREMENT_ENTITY_TYPE } from "@/domain/indicators/types";
+import type { DueEntityType, DueParentRef } from "@/domain/due/registry";
 
 const DUE_LIST_SIZE = 8;
 
@@ -34,28 +33,31 @@ async function toDueViews(
   slug: string,
   db: PrismaClient,
 ) {
-  const idsOf = (type: string) =>
+  const idsOf = (type: DueEntityType) =>
     shown.flatMap((i) => (i.entityType === type && i.entityId ? [i.entityId] : []));
-  const [indicators, measures] = await Promise.all([
-    db.indicator.findMany({
-      where: { tenantId, id: { in: idsOf(INDICATOR_MEASUREMENT_ENTITY_TYPE) } },
-      select: { id: true, objectiveId: true },
-    }),
-    db.findingMeasure.findMany({
-      where: { tenantId, id: { in: idsOf(FINDING_MEASURE_ENTITY_TYPE) } },
-      select: { id: true, findingId: true },
-    }),
+  /** Consulta los padres solo de los tipos presentes en la lista. */
+  const parentsOf = async <K extends keyof DueParentRef>(
+    type: DueEntityType,
+    key: K,
+    query: (where: { tenantId: string; id: { in: string[] } }) => Promise<({ id: string } & Pick<DueParentRef, K>)[]>,
+  ) => {
+    const ids = idsOf(type);
+    if (ids.length === 0) return [];
+    const rows = await query({ tenantId, id: { in: ids } });
+    return rows.map((row) => [`${type}:${row.id}`, { [key]: row[key] } as DueParentRef] as const);
+  };
+  const found = await Promise.all([
+    parentsOf("indicator_measurement", "objectiveId", (where) => db.indicator.findMany({ where, select: { id: true, objectiveId: true } })),
+    parentsOf("finding_measure", "findingId", (where) => db.findingMeasure.findMany({ where, select: { id: true, findingId: true } })),
+    parentsOf("asset_due_date", "assetId", (where) => db.assetDueDate.findMany({ where, select: { id: true, assetId: true } })),
+    parentsOf("inspection_plan", "assetId", (where) => db.inspectionPlan.findMany({ where, select: { id: true, assetId: true } })),
+    parentsOf("instrument_impact", "assetId", (where) => db.impactAssessment.findMany({ where, select: { id: true, assetId: true } })),
+    parentsOf("supplier_document", "supplierId", (where) => db.supplierDocument.findMany({ where, select: { id: true, supplierId: true } })),
   ]);
-  const objectiveByIndicator = new Map(indicators.map((i) => [i.id, i.objectiveId]));
-  const findingByMeasure = new Map(measures.map((m) => [m.id, m.findingId]));
+  const parents = new Map<string, DueParentRef>(found.flat());
 
   return shown.map((item) => {
-    const parent = item.entityId
-      ? {
-          objectiveId: objectiveByIndicator.get(item.entityId),
-          findingId: findingByMeasure.get(item.entityId),
-        }
-      : {};
+    const parent = parents.get(`${item.entityType}:${item.entityId}`) ?? {};
     return {
       id: item.id,
       title: item.title,

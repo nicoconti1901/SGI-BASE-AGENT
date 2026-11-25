@@ -876,7 +876,7 @@ Verificación común a cada tarea: `npx tsc --noEmit`, `npm run lint`, `npm test
   - Archivos: `src/lib/automation.ts`, `t/[slug]/automations/page.tsx`, el test.
 
 ### V1 — fundación (en serie)
-- [ ] 21.1 Registro único de tipos (`src/domain/due/registry.ts`)
+- [x] 21.1 (hecho 2026-11-25) Registro único de tipos (`src/domain/due/registry.ts`)
   - Aceptación: todo tipo existente tiene módulo, etiqueta y destino; un tipo sin registrar no compila; `DUE_ROUTES` y `hub.dueTypes` salen del registro.
   - Verificar: unit del registro y de `describeDueItem`.
   - Archivos: registro, `domain/dashboard/summary.ts`, `domain/modules/hub.ts`, `lib/automation.ts`, `lib/inspection-support.ts`, `lib/dashboard.ts`.

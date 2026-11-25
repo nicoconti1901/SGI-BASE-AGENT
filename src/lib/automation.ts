@@ -8,13 +8,14 @@ import {
   shouldEmitReminder,
   type ReminderKind,
 } from "@/domain/automation/due";
+import type { DueEntityType } from "@/domain/due/registry";
 import { buildReminderDigests, type DigestItem, type DigestMember } from "@/domain/automation/digest";
 import { getEmailSender, type EmailSender } from "@/lib/mail";
 
 export type CreateDueItemInput = {
   tenantId: string;
   title: string;
-  entityType: string;
+  entityType: DueEntityType;
   entityId?: string | null;
   dueAt: Date;
   leadDays?: number;

@@ -109,7 +109,6 @@ export async function createDueItemAction(
   if (!tenant) return { error: "Tenant no encontrado" };
 
   const title = String(formData.get("title") ?? "");
-  const entityType = String(formData.get("entityType") ?? "manual");
   const dueAtRaw = String(formData.get("dueAt") ?? "");
   const leadDays = Number(formData.get("leadDays") ?? 7);
 
@@ -117,7 +116,7 @@ export async function createDueItemAction(
     await createDueItem({
       tenantId: tenant.id,
       title,
-      entityType,
+      entityType: "manual",
       dueAt: new Date(dueAtRaw),
       leadDays: Number.isFinite(leadDays) ? leadDays : 7,
     });

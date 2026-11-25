@@ -6,6 +6,7 @@ import { getMembership } from "@/lib/identity";
 import { getModuleTelemetry } from "@/lib/dashboard";
 import { requireModuleEnabled } from "@/lib/modules";
 import { canTenantRole } from "@/domain/identity/authz";
+import { dueTypesOf } from "@/domain/due/registry";
 import { MODULE_CATALOG, MODULE_SECTIONS, clauseSummary } from "@/domain/modules/catalog";
 import { MODULE_HUB, screenHref, visibleScreens } from "@/domain/modules/hub";
 import { PageFrame, PageHeader } from "@/components/ui";
@@ -41,11 +42,12 @@ export default async function ModuleHubPage({ params }: { params: Params }) {
   if (screens.length < 2) redirect(screenHref(slug, mod, screens[0]));
 
   const hub = MODULE_HUB[mod.key];
+  const dueTypes = dueTypesOf(mod.key);
   const area = MODULE_SECTIONS.find((s) => s.key === mod.section)?.label ?? "";
   const clauses = clauseSummary(mod.clauses);
   const { dueItems, dueCounts } = await getModuleTelemetry(
     tenant.id,
-    hub.dueTypes,
+    dueTypes,
     new Date(),
     slug,
   );
@@ -84,7 +86,7 @@ export default async function ModuleHubPage({ params }: { params: Params }) {
         </HubStage>
 
         <TelemetryPanel title="Tablero del módulo">
-          {hub.dueTypes.length > 0 ? (
+          {dueTypes.length > 0 ? (
             <>
               <TelemetryCounts
                 items={[

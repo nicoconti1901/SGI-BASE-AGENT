@@ -84,3 +84,56 @@ describe.skipIf(!hasDatabase)("tenant dashboard integration", () => {
     expect(d.compliance.applicable).toBe(d.compliance.total - 1);
   });
 });
+
+describe.skipIf(!hasDatabase)("destino de los vencimientos que dependen de otro registro", () => {
+  const db = new PrismaClient();
+  const slug = `dash-dest-${Date.now()}`;
+  const dueAt = new Date("2031-01-10T12:00:00.000Z");
+  let tenantId = "";
+  let assetId = "";
+  let supplierId = "";
+
+  beforeAll(async () => {
+    tenantId = (await createTenantWithTemplate({ name: "Dash Destinos", slug, size: "small", activity: "servicios" })).id;
+    const site = await db.site.create({ data: { tenantId, name: "Planta" } });
+    assetId = (await db.asset.create({ data: { tenantId, siteId: site.id, typeKey: "extinguisher", code: "EXT-1", description: "Matafuego", attributes: {} } })).id;
+    const assetDue = await db.assetDueDate.create({ data: { tenantId, assetId, kind: "charge", dueAt } });
+    const impact = await db.impactAssessment.create({ data: { tenantId, assetId, trigger: "functional_check_failed", windowTo: dueAt } });
+    supplierId = (await db.supplier.create({ data: { tenantId, legalName: "Proveedor SA", type: "service" } })).id;
+    const docType = await db.supplierDocumentType.create({ data: { tenantId, key: "art", name: "ART" } });
+    const document = await db.supplierDocument.create({
+      data: { tenantId, supplierId, typeId: docType.id, storageKey: "k", fileName: "art.pdf", contentType: "application/pdf", sizeBytes: 1 },
+    });
+    for (const [entityType, entityId] of [
+      ["asset_due_date", assetDue.id],
+      ["instrument_impact", impact.id],
+      ["supplier_document", document.id],
+    ] as const) {
+      await createDueItem({ tenantId, title: entityType, entityType, entityId, dueAt }, db);
+    }
+  });
+
+  afterAll(async () => {
+    await db.dueItem.deleteMany({ where: { tenantId } });
+    await db.supplierDocument.deleteMany({ where: { tenantId } });
+    await db.supplierDocumentType.deleteMany({ where: { tenantId } });
+    await db.supplier.deleteMany({ where: { tenantId } });
+    await db.impactAssessment.deleteMany({ where: { tenantId } });
+    await db.assetDueDate.deleteMany({ where: { tenantId } });
+    await db.asset.deleteMany({ where: { tenantId } });
+    await db.site.deleteMany({ where: { tenantId } });
+    await db.tenantRequirement.deleteMany({ where: { tenantId } });
+    await db.tenant.deleteMany({ where: { id: tenantId } });
+    await db.$disconnect();
+  });
+
+  it("lleva al activo, al equipo y al proveedor", async () => {
+    const { dueItems } = await getTenantDashboard(tenantId, new Date("2031-01-01T12:00:00.000Z"), slug, db);
+
+    expect(Object.fromEntries(dueItems.map((d) => [d.title, d.href]))).toEqual({
+      asset_due_date: `/t/${slug}/assets/${assetId}`,
+      instrument_impact: `/t/${slug}/instruments/${assetId}`,
+      supplier_document: `/t/${slug}/suppliers/${supplierId}`,
+    });
+  });
+});

@@ -1,6 +1,6 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { reminderStartsAt } from "@/domain/automation/due";
-import type { ACTION_ENTITY_TYPE } from "@/domain/actions/types";
+import type { DueEntityType } from "@/domain/due/registry";
 
 export type Db = PrismaClient;
 export type Tx = Prisma.TransactionClient;
@@ -24,12 +24,10 @@ export async function writeAudit(
   await db.inspectionAudit.create({ data: input });
 }
 
-/** Vencimientos de equipos de medición (Task 16): `entityId` es el equipo, o la evaluación en `instrument_impact`. */
-export type InstrumentDueEntityType = "instrument_calibration" | "instrument_verification" | "instrument_impact";
-
 export type DueItemSpec = {
   tenantId: string;
-  entityType: "inspection_plan" | "asset_due_date" | InstrumentDueEntityType | typeof ACTION_ENTITY_TYPE;
+  entityType: DueEntityType;
+  /** En los equipos de medición es el equipo, o la evaluación en `instrument_impact`. */
   entityId: string;
   title: string;
   dueAt: Date;
