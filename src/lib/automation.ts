@@ -4,10 +4,10 @@ import {
   classifyDueWindow,
   DUE_REMINDERS_OFFER_CODE,
   NATIVE_OFFER_CATALOG,
-  reminderStartsAt,
   shouldEmitReminder,
   type ReminderKind,
 } from "@/domain/automation/due";
+import { dueColumns } from "@/domain/due/day";
 import type { DueEntityType } from "@/domain/due/registry";
 import { buildReminderDigests, type DigestItem, type DigestMember } from "@/domain/automation/digest";
 import { getEmailSender, type EmailSender } from "@/lib/mail";
@@ -118,9 +118,7 @@ export async function createDueItem(
       title,
       entityType: input.entityType,
       entityId: input.entityId ?? null,
-      dueAt: input.dueAt,
-      leadDays,
-      remindAt: reminderStartsAt(input.dueAt, leadDays),
+      ...dueColumns(input.dueAt, leadDays),
       ownerUserId: input.ownerUserId ?? null,
       siteId: input.siteId ?? null,
       personId: input.personId ?? null,
@@ -150,9 +148,7 @@ export async function upsertOpenDueItemForEntity(
       where: { id: existing.id },
       data: {
         title: input.title.trim(),
-        dueAt: input.dueAt,
-        leadDays,
-        remindAt: reminderStartsAt(input.dueAt, leadDays),
+        ...dueColumns(input.dueAt, leadDays),
         ...(input.ownerUserId !== undefined ? { ownerUserId: input.ownerUserId } : {}),
         ...(input.siteId !== undefined ? { siteId: input.siteId } : {}),
         ...(input.personId !== undefined ? { personId: input.personId } : {}),

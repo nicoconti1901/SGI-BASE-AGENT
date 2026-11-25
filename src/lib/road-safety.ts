@@ -2,10 +2,10 @@
  * Seguridad vial (Task 18, docs/specs/SPEC-road-safety.md): registro del evento vial, km por vehículo y mes, reinicios
  * de odómetro y avisos mensuales. Todo lleva `tenantId`; los permisos se verifican acá, no solo en la UI.
  */
+import { dueColumns } from "@/domain/due/day";
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { closeDueItemsForEntity, createDueItem } from "@/lib/automation";
-import { reminderStartsAt } from "@/domain/automation/due";
 import { canManageRoadSafety, canReportRoadEvent, type RoadActor } from "@/domain/road-safety/access";
 import { isKmMonthClosed, kmDueDay, KM_LEAD_DAYS, lastClosedMonth } from "@/domain/road-safety/due";
 import { computeVehicleMonthKm, type OdometerReading, type OdometerReset, type VehicleMonthKm } from "@/domain/road-safety/km";
@@ -579,7 +579,7 @@ export async function syncKmDueItems(
       await createDueItem({ tenantId, title, entityType: KM_DUE_ENTITY_TYPE, entityId: month, dueAt, leadDays: KM_LEAD_DAYS }, db);
     } else if (current.title !== title || current.dueAt.getTime() !== dueAt.getTime()) {
       // Solo se toca si cambió algo: reescribirlo cada vez reiniciaría el aviso ya enviado.
-      await db.dueItem.update({ where: { id: current.id }, data: { title, dueAt, remindAt: reminderStartsAt(dueAt, KM_LEAD_DAYS) } });
+      await db.dueItem.update({ where: { id: current.id }, data: { title, ...dueColumns(dueAt, KM_LEAD_DAYS) } });
     }
     result.opened.push(month);
   }

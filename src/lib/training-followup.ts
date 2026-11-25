@@ -8,13 +8,14 @@
  *   no avisa; solo avisan las transiciones posteriores (se marca como ya avisado con `lastReminderKind`).
  * - Evaluación de eficacia por sesión, con excepciones por persona; "no eficaz" crea una `Action` o reprograma.
  */
+import { dueColumns } from "@/domain/due/day";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { closeDueItemsForEntity, createDueItem, upsertOpenDueItemForEntity } from "@/lib/automation";
 import { ACTION_ENTITY_TYPE } from "@/domain/actions/types";
 import { TrainingError, audit } from "@/lib/training-config";
 import { cellsCte, trainingToday } from "@/lib/training";
-import { classifyDueWindow, reminderStartsAt } from "@/domain/automation/due";
+import { classifyDueWindow } from "@/domain/automation/due";
 import { addDays, dateOnly, isIsoDate, type IsoDate } from "@/domain/training/dates";
 import {
   EVALUATION_METHOD_LABELS,
@@ -204,9 +205,7 @@ async function reconcilePeople(
         where: { id: current.id },
         data: {
           title: plan.title,
-          dueAt,
-          leadDays: plan.leadDays,
-          remindAt: reminderStartsAt(dueAt, plan.leadDays),
+          ...dueColumns(dueAt, plan.leadDays),
           ownerUserId: plan.ownerUserId,
           siteId: plan.siteId,
           personId: summary.personId,

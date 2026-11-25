@@ -880,7 +880,7 @@ Verificación común a cada tarea: `npx tsc --noEmit`, `npm run lint`, `npm test
   - Aceptación: todo tipo existente tiene módulo, etiqueta y destino; un tipo sin registrar no compila; `DUE_ROUTES` y `hub.dueTypes` salen del registro.
   - Verificar: unit del registro y de `describeDueItem`.
   - Archivos: registro, `domain/dashboard/summary.ts`, `domain/modules/hub.ts`, `lib/automation.ts`, `lib/inspection-support.ts`, `lib/dashboard.ts`.
-- [ ] 21.2 Día calendario en los datos (`domain/due/day.ts`, `dueOn`, `remindOn`)
+- [x] 21.2 (hecho 2026-11-25) Día calendario en los datos (`domain/due/day.ts`, `dueOn`, `remindOn`)
   - Aceptación: migración con backfill; toda alta o cambio los completa; medianoche UTC conserva su día y 23:59:59-03 también.
   - Verificar: unit de `day.ts`; integración de altas por módulo; `prisma migrate dev` sin diferencias.
   - Archivos: `schema.prisma` y migración, `day.ts`, escritores de `DueItem`.

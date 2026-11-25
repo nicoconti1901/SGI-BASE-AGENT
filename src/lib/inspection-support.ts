@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import { reminderStartsAt } from "@/domain/automation/due";
+import { dueColumns } from "@/domain/due/day";
 import type { DueEntityType } from "@/domain/due/registry";
 
 export type Db = PrismaClient;
@@ -37,16 +37,14 @@ export type DueItemSpec = {
   personId: string | null;
 };
 
-/** Fila de `DueItem` con el mismo cálculo de `remindAt` que `src/lib/automation.ts`. */
+/** Fila de `DueItem` con el mismo cálculo de fechas que `src/lib/automation.ts`. */
 export function dueItemRow(spec: DueItemSpec) {
   return {
     tenantId: spec.tenantId,
     title: spec.title,
     entityType: spec.entityType,
     entityId: spec.entityId,
-    dueAt: spec.dueAt,
-    leadDays: spec.leadDays,
-    remindAt: reminderStartsAt(spec.dueAt, spec.leadDays),
+    ...dueColumns(spec.dueAt, spec.leadDays),
     ownerUserId: spec.ownerUserId,
     siteId: spec.siteId,
     personId: spec.personId,
@@ -73,9 +71,7 @@ export async function syncOpenDueItem(tx: Tx, spec: DueItemSpec) {
     where: { id: keep.id },
     data: {
       title: row.title,
-      dueAt: row.dueAt,
-      leadDays: row.leadDays,
-      remindAt: row.remindAt,
+      ...dueColumns(row.dueAt, row.leadDays),
       ownerUserId: row.ownerUserId,
       siteId: row.siteId,
       personId: row.personId,

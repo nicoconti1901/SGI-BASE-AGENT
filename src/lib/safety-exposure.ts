@@ -4,9 +4,9 @@
  * (`DueItem`) por sede y mes hasta que se cargan los dos grupos.
  * Todo está acotado por `tenantId`; cada carga o corrección deja registro en `MasterDataAudit`.
  */
+import { dueColumns } from "@/domain/due/day";
 import type { PersonEmployer, Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { reminderStartsAt } from "@/domain/automation/due";
 import { closeDueItemsForEntity, createDueItem } from "@/lib/automation";
 import { SafetyStatsError, getSafetySettings, type SafetyUser } from "@/lib/safety-stats";
 import { canManageHealthData } from "@/domain/safety-stats/access";
@@ -405,7 +405,7 @@ export async function syncExposureDueItems(
     } else if (current.title !== title || current.dueAt.getTime() !== dueAt.getTime() || current.ownerUserId !== owner || current.siteId !== site.id) {
       await db.dueItem.update({
         where: { id: current.id },
-        data: { title, dueAt, remindAt: reminderStartsAt(dueAt, EXPOSURE_LEAD_DAYS), ownerUserId: owner, siteId: site.id },
+        data: { title, ...dueColumns(dueAt, EXPOSURE_LEAD_DAYS), ownerUserId: owner, siteId: site.id },
       });
       result.updated++;
     }
